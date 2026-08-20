@@ -5,7 +5,7 @@ import { SubjectCategory } from '../../types/quiz';
 import { parseUploadedDocument } from '../../utils/documentParser';
 import {
   UploadCloud, PlusCircle, Trash2,
-  Bell, Lock, Unlock, Eye, X
+  Bell, Lock, Unlock, Eye, X, Clock, FileText, CheckCircle2
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -19,6 +19,41 @@ interface TeacherAssignmentManagerProps {
   onToggleOpen: (id: string) => void;
   onGradeSubmission: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
   onMarkNotificationAsRead: (id: string) => void;
+}
+
+// Format Date & Time to readable Vietnamese format
+function formatReadableDateTime(isoString: string): string {
+  if (!isoString) return 'Chưa thiết lập';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return isoString;
+    const hours = d.getHours().toString().padStart(2, '0');
+    const mins = d.getMinutes().toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const dayName = daysOfWeek[d.getDay()];
+    return `${hours}:${mins} - ${dayName}, ${day}/${month}/${year}`;
+  } catch (e) {
+    return isoString;
+  }
+}
+
+// Calculate diff in days & hours
+function calculateDurationText(startIso: string, endIso: string): string {
+  try {
+    const s = new Date(startIso).getTime();
+    const e = new Date(endIso).getTime();
+    if (isNaN(s) || isNaN(e) || e <= s) return 'Thời gian không hợp lệ';
+    const diffHours = Math.round((e - s) / (1000 * 3600));
+    if (diffHours < 24) return `${diffHours} giờ`;
+    const days = Math.floor(diffHours / 24);
+    const remainHours = diffHours % 24;
+    return remainHours > 0 ? `${days} ngày ${remainHours} giờ` : `${days} ngày`;
+  } catch (e) {
+    return '';
+  }
 }
 
 export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> = ({
@@ -40,12 +75,21 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   const [category, setCategory] = useState<SubjectCategory>('mos-excel');
   const [targetClass, setTargetClass] = useState('Lớp Luyện Thi MOS & IC3');
   const [durationMinutes, setDurationMinutes] = useState(45);
-  const [startTime, setStartTime] = useState(() => new Date().toISOString().slice(0, 16));
+  
+  // Format current local time for datetime-local input
+  const getLocalDatetimeString = (date: Date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    const local = new Date(date.getTime() - offset);
+    return local.toISOString().slice(0, 16);
+  };
+
+  const [startTime, setStartTime] = useState(() => getLocalDatetimeString(new Date()));
   const [endTime, setEndTime] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
-    return d.toISOString().slice(0, 16);
+    return getLocalDatetimeString(d);
   });
+
   const [rawContent, setRawContent] = useState('');
   const [sourceFileName, setSourceFileName] = useState('');
   const [sourceFileType, setSourceFileType] = useState<'docx' | 'doc' | 'pdf' | 'image' | 'text'>('docx');
@@ -77,6 +121,31 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
     } finally {
       setIsParsing(false);
     }
+  };
+
+  // Quick preset helper for start time
+  const setQuickStart = (type: 'now' | 'plus1h' | 'tomorrow8am') => {
+    const now = new Date();
+    if (type === 'now') {
+      setStartTime(getLocalDatetimeString(now));
+    } else if (type === 'plus1h') {
+      now.setHours(now.getHours() + 1);
+      setStartTime(getLocalDatetimeString(now));
+    } else if (type === 'tomorrow8am') {
+      const tom = new Date();
+      tom.setDate(tom.getDate() + 1);
+      tom.setHours(8, 0, 0, 0);
+      setStartTime(getLocalDatetimeString(tom));
+    }
+    soundFx.playClick();
+  };
+
+  // Quick preset helper for deadline
+  const setQuickDeadline = (days: number) => {
+    const sDate = startTime ? new Date(startTime) : new Date();
+    const eDate = new Date(sDate.getTime() + days * 24 * 3600 * 1000);
+    setEndTime(getLocalDatetimeString(eDate));
+    soundFx.playClick();
   };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
@@ -150,7 +219,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             Giao Đề Thi Tài Liệu (DOC/PDF/Ảnh) & Quản Lý Nộp Bài
           </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Đọc tự động file đề thi, thiết lập thời gian đóng/mở, chống tải về và nhận thông báo học viên nộp bài.
+            Đọc tự động file đề thi, thiết lập thời gian đóng/mở chuẩn hóa, chống tải về và nhận thông báo học viên nộp bài.
           </p>
         </div>
 
@@ -226,7 +295,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                   <th style={{ padding: '12px 14px' }}>Môn Học</th>
                   <th style={{ padding: '12px 14px' }}>Lớp Áp Dụng</th>
                   <th style={{ padding: '12px 14px' }}>Thời Lượng</th>
-                  <th style={{ padding: '12px 14px' }}>Khung Giờ Mở/Đóng</th>
+                  <th style={{ padding: '12px 14px' }}>Khung Giờ Mở/Đóng (Rõ Ràng)</th>
                   <th style={{ padding: '12px 14px' }}>Trạng Thái</th>
                   <th style={{ padding: '12px 16px', textAlign: 'right' }}>Thao Tác</th>
                 </tr>
@@ -242,10 +311,15 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                       {a.category}
                     </td>
                     <td style={{ padding: '12px 14px' }}>{a.targetClass}</td>
-                    <td style={{ padding: '12px 14px' }}>{a.durationMinutes} phút</td>
-                    <td style={{ padding: '12px 14px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      <div>Mở: {new Date(a.startTime).toLocaleDateString('vi-VN')}</div>
-                      <div>Đóng: {new Date(a.endTime).toLocaleDateString('vi-VN')}</div>
+                    <td style={{ padding: '12px 14px' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{a.durationMinutes} phút</span>
+                    </td>
+                    <td style={{ padding: '12px 14px', fontSize: '0.8rem' }}>
+                      <div style={{ color: '#10b981', fontWeight: 600 }}>🟢 Mở: {formatReadableDateTime(a.startTime)}</div>
+                      <div style={{ color: '#ef4444', fontWeight: 600 }}>🔴 Đóng: {formatReadableDateTime(a.endTime)}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        (Mở trong: {calculateDurationText(a.startTime, a.endTime)})
+                      </div>
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       <button
@@ -287,10 +361,15 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
 
       {/* 2. CREATE ASSIGNMENT FROM FILE TAB */}
       {activeTab === 'create' && (
-        <form onSubmit={handleCreateSubmit} className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            1. Tải Lên Tệp Đề Bài (DOCX, PDF hoặc Hình Ảnh)
-          </h3>
+        <form onSubmit={handleCreateSubmit} className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          <div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              1. Tải Lên Tệp Đề Bài (DOCX, PDF hoặc Hình Ảnh)
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              Hệ thống tự động đọc và khóa bảo mật chống tải về đối với học viên.
+            </p>
+          </div>
 
           {/* Drag & Drop File Upload Box */}
           <label
@@ -300,7 +379,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              padding: '36px 20px',
+              padding: '32px 20px',
               borderRadius: 'var(--radius-md)',
               background: 'var(--bg-primary)',
               border: '2px dashed var(--accent-primary)',
@@ -311,10 +390,10 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             <UploadCloud size={36} color="var(--accent-primary)" />
             <div>
               <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {isParsing ? 'Đang đọc và phân tích cấu trúc file đề bài...' : (sourceFileName ? `✓ Đã nạp file: ${sourceFileName}` : 'Nhấp để tải file Word (.docx), PDF hoặc Hình ảnh')}
+                {isParsing ? 'Đang đọc và phân tích cấu trúc file đề bài...' : (sourceFileName ? `✓ Đã nạp file: ${sourceFileName} (${sourceFileType.toUpperCase()})` : 'Nhấp để tải file Word (.docx), PDF hoặc Hình ảnh')}
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Hệ thống tự động trích xuất nội dung và khóa bảo mật chống tải về cho học viên
+                Hỗ trợ tệp .docx, .doc, .pdf, .png, .jpg, .jpeg
               </p>
             </div>
             <input
@@ -325,10 +404,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             />
           </label>
 
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '10px' }}>
-            2. Cấu Hình Khung Giờ Làm Bài & Lớp Học
-          </h3>
-
+          {/* Basic Exam Info */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
@@ -374,60 +450,183 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                 style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
               />
             </div>
+          </div>
 
+          {/* STANDARDIZED TIME & SCHEDULE SECTION */}
+          <div style={{ padding: '20px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Clock size={20} color="var(--accent-primary)" />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                2. Cấu Hình Thời Gian & Khung Giờ Thi Chuẩn Hóa
+              </h3>
+            </div>
+
+            {/* A. Duration Selector */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Thời Lượng Làm Bài (Phút)
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                ⏱️ THỜI LƯỢNG LÀM BÀI (Đồng hồ đếm ngược khi học sinh bắt đầu làm)
               </label>
-              <input
-                type="number"
-                min={5}
-                max={180}
-                value={durationMinutes}
-                onChange={e => setDurationMinutes(Number(e.target.value))}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-              />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                {[15, 30, 45, 60, 90, 120].map(mins => (
+                  <button
+                    key={mins}
+                    type="button"
+                    onClick={() => {
+                      setDurationMinutes(mins);
+                      soundFx.playClick();
+                    }}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: 'var(--radius-full)',
+                      border: durationMinutes === mins ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                      background: durationMinutes === mins ? 'rgba(37, 99, 235, 0.12)' : 'var(--bg-card)',
+                      color: durationMinutes === mins ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                      fontWeight: durationMinutes === mins ? 800 : 500,
+                      fontSize: '0.82rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {mins} phút {mins === 15 ? '(Kiểm tra 15p)' : mins === 45 ? '(1 Tiết)' : mins === 90 ? '(Thi học kỳ)' : ''}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Hoặc tùy chỉnh số phút:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={300}
+                  value={durationMinutes}
+                  onChange={e => setDurationMinutes(Number(e.target.value))}
+                  style={{ width: '90px', padding: '6px 10px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 700, outline: 'none' }}
+                />
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>phút</span>
+              </div>
+            </div>
+
+            {/* B. Start Time & Deadline Selectors */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {/* Start Time */}
+              <div style={{ padding: '14px', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#10b981', marginBottom: '8px' }}>
+                  🟢 NGÀY GIỜ MỞ ĐỀ (Bắt đầu cho phép học sinh vào thi)
+                </label>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setQuickStart('now')}
+                    style={{ flex: 1, padding: '5px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', fontSize: '0.74rem', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    ⚡ Mở ngay bây giờ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuickStart('tomorrow8am')}
+                    style={{ flex: 1, padding: '5px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', fontSize: '0.74rem', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    🌅 08:00 Sáng mai
+                  </button>
+                </div>
+                <input
+                  type="datetime-local"
+                  required
+                  value={startTime}
+                  onChange={e => setStartTime(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
+                />
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  📅 Hiển thị: <b>{formatReadableDateTime(startTime)}</b>
+                </div>
+              </div>
+
+              {/* End Time */}
+              <div style={{ padding: '14px', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#ef4444', marginBottom: '8px' }}>
+                  🔴 HẠN CHÓT ĐÓNG ĐỀ (Tự động khóa sau thời điểm này)
+                </label>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '+1 Ngày', days: 1 },
+                    { label: '+3 Ngày', days: 3 },
+                    { label: '+7 Ngày (1 tuần)', days: 7 },
+                    { label: '+30 Ngày', days: 30 }
+                  ].map(p => (
+                    <button
+                      key={p.days}
+                      type="button"
+                      onClick={() => setQuickDeadline(p.days)}
+                      style={{ padding: '5px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', fontSize: '0.74rem', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="datetime-local"
+                  required
+                  value={endTime}
+                  onChange={e => setEndTime(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
+                />
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  📅 Hiển thị: <b>{formatReadableDateTime(endTime)}</b>
+                </div>
+              </div>
+            </div>
+
+            {/* LIVE SCHEDULE SUMMARY CARD */}
+            <div
+              style={{
+                padding: '14px 18px',
+                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(37, 99, 235, 0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                fontSize: '0.85rem'
+              }}
+            >
+              <div style={{ fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle2 size={16} color="#10b981" />
+                <span>Tóm Tắt Lịch Thi Hiển Thị Cho Học Viên:</span>
+              </div>
+              <div style={{ color: 'var(--text-secondary)' }}>
+                • <b>Thời gian mở cửa nhận bài:</b> Từ <b>{formatReadableDateTime(startTime)}</b> đến <b>{formatReadableDateTime(endTime)}</b> ({calculateDurationText(startTime, endTime)}).
+              </div>
+              <div style={{ color: 'var(--text-secondary)' }}>
+                • <b>Thời gian làm bài:</b> Mỗi học viên có <b>{durationMinutes} phút</b> làm bài đếm ngược kể từ thời điểm bấm vào đề.
+              </div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Ngày Giờ Mở Đề
-              </label>
-              <input
-                type="datetime-local"
-                value={startTime}
-                onChange={e => setStartTime(e.target.value)}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Hạn Chót Đóng Đề
-              </label>
-              <input
-                type="datetime-local"
-                value={endTime}
-                onChange={e => setEndTime(e.target.value)}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-              />
-            </div>
-          </div>
-
-          {/* Raw Content Preview & Edit */}
+          {/* Raw Content / PDF / Image Preview & Edit */}
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Nội Dung Đề Bài (Hệ thống sẽ hiển thị trong khung bảo mật chống tải về):
+              3. Nội Dung Đề Bài (Hiển thị trong khung xem bảo mật chống tải về):
             </label>
-            <textarea
-              rows={8}
-              value={rawContent}
-              onChange={e => setRawContent(e.target.value)}
-              placeholder="Nội dung đề bài trích xuất từ file hoặc nhập trực tiếp tại đây..."
-              style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
-            />
+
+            {sourceFileType === 'pdf' ? (
+              <div style={{ padding: '16px', borderRadius: 'var(--radius-md)', background: 'rgba(37, 99, 235, 0.08)', border: '1px solid rgba(37, 99, 235, 0.25)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <FileText size={28} color="var(--accent-primary)" />
+                <div>
+                  <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                    Tệp PDF Đã Tải Lên: {sourceFileName || 'De_Thi.pdf'}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    ✓ Đã nạp vào hệ thống bảo mật • Hiển thị trực tuyến trong khung DRM Watermark, không lộ mã nguồn thô.
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <textarea
+                rows={8}
+                value={rawContent}
+                onChange={e => setRawContent(e.target.value)}
+                placeholder="Nội dung đề bài trích xuất từ file hoặc nhập trực tiếp tại đây..."
+                style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
+              />
+            )}
           </div>
 
           <button
@@ -436,7 +635,8 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             style={{
               padding: '14px',
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)'
             }}
           >
             <span>Phát Hành & Mở Đề Thi Cho Học Viên</span>

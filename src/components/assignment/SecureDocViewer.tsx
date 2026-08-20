@@ -196,7 +196,7 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
           )}
         </div>
 
-        {/* Render Image or Text */}
+        {/* Render PDF, Image or Text */}
         {sourceFileType === 'image' && content.startsWith('data:image') ? (
           <div style={{ textAlign: 'center', margin: '10px 0' }}>
             <img
@@ -211,6 +211,14 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
                 pointerEvents: 'none',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
               }}
+            />
+          </div>
+        ) : sourceFileType === 'pdf' && content.startsWith('data:application/pdf') ? (
+          <div style={{ width: '100%', height: '420px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+            <iframe
+              src={`${content}#toolbar=0&navpanes=0&scrollbar=0`}
+              title="Đề thi PDF bảo mật"
+              style={{ width: '100%', height: '100%', border: 'none' }}
             />
           </div>
         ) : (

@@ -74,7 +74,7 @@ export function extractQuestionsFromText(text: string): Array<{
 }
 
 /**
- * Smart file loader: reads File object and parses content
+ * Smart file loader: reads File object and parses content cleanly
  */
 export async function parseUploadedDocument(file: File): Promise<ParsedDocumentResult> {
   const fileName = file.name;
@@ -87,8 +87,8 @@ export async function parseUploadedDocument(file: File): Promise<ParsedDocumentR
 
   let rawContent = '';
 
+  // 1. Image File Handling
   if (fileType === 'image') {
-    // Convert image to Data URL for secure viewer rendering
     rawContent = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
@@ -121,7 +121,39 @@ export async function parseUploadedDocument(file: File): Promise<ParsedDocumentR
     };
   }
 
-  // Read text / docx / pdf text content
+  // 2. PDF File Handling (Read as Base64 Data URL instead of binary raw bytecode!)
+  if (fileType === 'pdf') {
+    const pdfDataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    return {
+      title: fileName.replace(/\.[^/.]+$/, ''),
+      description: `Tài liệu đề thi định dạng PDF (${(file.size / 1024).toFixed(1)} KB) - Hiển thị bảo mật chống tải về`,
+      sourceFileName: fileName,
+      sourceFileType: 'pdf',
+      rawContent: pdfDataUrl,
+      parsedQuestions: [
+        {
+          id: `q-pdf-1`,
+          number: 1,
+          prompt: 'Đọc kỹ toàn bộ nội dung đề bài trong file PDF bảo mật phía trên và thực hiện yêu cầu:',
+          points: 50
+        },
+        {
+          id: `q-pdf-2`,
+          number: 2,
+          prompt: 'Nhập câu trả lời hoặc đính kèm tệp bài làm thực hành (.xlsx, .docx) để nộp:',
+          points: 50
+        }
+      ]
+    };
+  }
+
+  // 3. Text / Docx File Handling
   const textContent = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve((reader.result as string) || '');
@@ -129,15 +161,21 @@ export async function parseUploadedDocument(file: File): Promise<ParsedDocumentR
     reader.readAsText(file);
   });
 
-  rawContent = textContent;
-  const questions = extractQuestionsFromText(textContent);
+  // Filter out any binary garbage if a binary doc was read
+  let cleanText = textContent;
+  if (textContent.includes('%PDF-') || textContent.includes('PK\u0003\u0004')) {
+    cleanText = `TÀI LIỆU ĐỀ THI TIN HỌC: ${fileName}\n\nYêu cầu học viên:\n1. Quan sát nội dung đề bài và hoàn thành các câu hỏi theo hướng dẫn của giảng viên.\n2. Làm bài trực tiếp vào các ô bên dưới và nộp bài trước hạn chót.`;
+  }
+
+  rawContent = cleanText;
+  const questions = extractQuestionsFromText(cleanText);
 
   return {
     title: fileName.replace(/\.[^/.]+$/, ''),
     description: `Đề thi trích xuất từ tệp ${fileName}`,
     sourceFileName: fileName,
     sourceFileType: fileType,
-    rawContent: rawContent || `[Tài liệu đề thi ${fileName}]`,
+    rawContent,
     parsedQuestions: questions.length > 0 ? questions : [
       {
         id: `q-1`,
