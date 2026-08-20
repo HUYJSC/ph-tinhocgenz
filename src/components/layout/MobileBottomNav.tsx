@@ -1,12 +1,12 @@
-﻿import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Shield, FileText } from 'lucide-react';
+import React from 'react';
+import { BookOpen, Layers, BarChart2, Shield, FileText, QrCode } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
 import { soundFx } from '../../utils/audio';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  bookmarkCount: number;
+  bookmarkCount?: number;
   unreadNotificationCount?: number;
   isAdmin?: boolean;
 }
@@ -22,23 +22,22 @@ interface BottomNavItem {
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
   setActiveTab,
-  bookmarkCount,
   unreadNotificationCount = 0,
   isAdmin = false
 }) => {
   const studentTabs: BottomNavItem[] = [
     { id: 'quizzes',     label: 'Luyện Đề',   icon: BookOpen,      accentColor: '#4f6ef7' },
     { id: 'assignments', label: 'Bài Thi',    icon: FileText,      accentColor: '#10b981' },
+    { id: 'attendance',  label: 'Điểm Danh',  icon: QrCode,        accentColor: '#06b6d4' },
     { id: 'flashcards',  label: 'Ghi Nhớ',    icon: Layers,        accentColor: '#f59e0b' },
-    { id: 'analytics',   label: 'Tiến Độ',    icon: BarChart2,     accentColor: '#8b5cf6' },
-    { id: 'bookmarks',   label: 'Đã Lưu',     icon: BookmarkCheck, accentColor: '#ec4899', count: bookmarkCount }
+    { id: 'analytics',   label: 'Tiến Độ',    icon: BarChart2,     accentColor: '#8b5cf6' }
   ];
 
   const adminTabs: BottomNavItem[] = [
     { id: 'admin',       label: 'Quản Trị',   icon: Shield,        accentColor: '#d97706' },
+    { id: 'attendance',  label: 'Điểm Danh',  icon: QrCode,        accentColor: '#06b6d4' },
     { id: 'assignments', label: 'Chấm Điểm',  icon: FileText,      accentColor: '#10b981', count: unreadNotificationCount },
     { id: 'quizzes',     label: 'Kho Đề',     icon: BookOpen,      accentColor: '#4f6ef7' },
-    { id: 'creator',     label: 'Tạo Đề',     icon: PlusCircle,    accentColor: '#06b6d4' },
     { id: 'flashcards',  label: 'Ghi Nhớ',    icon: Layers,        accentColor: '#f59e0b' }
   ];
 

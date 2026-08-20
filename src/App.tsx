@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppStorage } from './hooks/useLocalStorage';
 import { useAuth } from './hooks/useAuth';
 import { useAssignmentStorage } from './hooks/useAssignmentStorage';
+import { useAttendanceStorage } from './hooks/useAttendanceStorage';
 import { Header } from './components/layout/Header';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
@@ -15,11 +16,14 @@ import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions'
 import { AdminPortal } from './components/admin/AdminPortal';
 import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
 import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
+import { AttendanceManager } from './components/attendance/AttendanceManager';
+import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
 import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
+import { QrCode } from 'lucide-react';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
@@ -68,6 +72,17 @@ export function App() {
     markNotificationAsRead
   } = useAssignmentStorage();
 
+  const {
+    sessions: attendanceSessions,
+    createSession: createAttendanceSession,
+    rotateSessionQR: rotateAttendanceQR,
+    updateStudentStatus: updateAttendanceStatus,
+    markAllPresent: markAllAttendancePresent,
+    studentCheckIn: studentAttendanceCheckIn,
+    saveSession: saveAttendanceSession,
+    deleteSession: deleteAttendanceSession
+  } = useAttendanceStorage(studentAccounts);
+
   // Active Session state (Enforces Unified Auth Gateway upfront!)
   const [isSessionActive, setIsSessionActive] = useState<boolean>(() => {
     try {
@@ -83,6 +98,7 @@ export function App() {
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showCheckInModal, setShowCheckInModal] = useState(false);
 
   // Sync auth name to storage stats
   useEffect(() => {
@@ -282,6 +298,48 @@ export function App() {
                 )
               )}
 
+              {activeTab === 'attendance' && (
+                isStaff ? (
+                  <AttendanceManager
+                    sessions={attendanceSessions}
+                    studentAccounts={studentAccounts}
+                    currentUser={user}
+                    onCreateSession={createAttendanceSession}
+                    onRotateQR={rotateAttendanceQR}
+                    onUpdateStatus={updateAttendanceStatus}
+                    onMarkAllPresent={markAllAttendancePresent}
+                    onSaveSession={saveAttendanceSession}
+                    onDeleteSession={deleteAttendanceSession}
+                  />
+                ) : (
+                  <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }} className="animate-slide-up">
+                    <div className="card" style={{ padding: '28px 20px', textAlign: 'center' }}>
+                      <div style={{
+                        width: '56px', height: '56px', borderRadius: '16px',
+                        background: 'rgba(6, 182, 212, 0.1)', color: '#0891b2',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 14px'
+                      }}>
+                        <QrCode size={30} />
+                      </div>
+                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                        Điểm Danh Học Viên
+                      </h2>
+                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '18px', lineHeight: 1.5 }}>
+                        Quét mã QR từ màn hình giáo viên hoặc nhập mã PIN 6 chữ số để xác nhận có mặt trong buổi học hôm nay.
+                      </p>
+                      <button
+                        onClick={() => setShowCheckInModal(true)}
+                        className="btn btn-primary"
+                        style={{ padding: '10px 20px', fontSize: '0.88rem', fontWeight: 800 }}
+                      >
+                        Nhập Mã PIN Điểm Danh 5 Phút
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
+
               {activeTab === 'quizzes' && (
                 <QuizCatalog
                   quizzes={allQuizzes}
@@ -339,6 +397,15 @@ export function App() {
       <PWAInstallModal
         isOpen={showInstallModal}
         onClose={() => setShowInstallModal(false)}
+      />
+
+      <StudentCheckInModal
+        isOpen={showCheckInModal}
+        onClose={() => setShowCheckInModal(false)}
+        studentName={user.name}
+        studentCode={user.studentCode || 'THGZ01'}
+        programTrack={user.programTrack}
+        onCheckIn={studentAttendanceCheckIn}
       />
     </div>
   );

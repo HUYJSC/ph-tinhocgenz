@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck,
-  Smartphone, Shield, FileText, LogOut, ChevronRight
+  Smartphone, Shield, FileText, LogOut, ChevronRight, QrCode
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
-export type ActiveTab = 'quizzes' | 'assignments' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
+export type ActiveTab = 'quizzes' | 'assignments' | 'attendance' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -35,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const studentNav: NavItem[] = [
     { id: 'quizzes',     label: 'Luyện Đề & Khảo Thí', icon: BookOpen,      color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
     { id: 'assignments', label: 'Đề Thi & Nộp Bài',    icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+    { id: 'attendance',  label: 'Điểm Danh QR',        icon: QrCode,        color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
     { id: 'flashcards',  label: 'Thẻ Ghi Nhớ',          icon: Layers,        color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
     { id: 'analytics',   label: 'Tiến Độ Học Tập',      icon: BarChart2,     color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' },
     { id: 'bookmarks',   label: 'Câu Hỏi Đã Lưu',       icon: BookmarkCheck, color: '#ec4899', bg: 'rgba(236,72,153,0.1)', count: bookmarkCount }
@@ -42,9 +43,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const adminNav: NavItem[] = [
     { id: 'admin',       label: 'Quản Trị Hệ Thống',   icon: Shield,        color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
+    { id: 'attendance',  label: 'Điểm Danh QR (5 Phút)',icon: QrCode,       color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
     { id: 'assignments', label: 'Quản Lý Đề & Chấm',   icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)', count: unreadNotificationCount },
     { id: 'quizzes',     label: 'Ngân Hàng Câu Hỏi',   icon: BookOpen,      color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
-    { id: 'creator',     label: 'Soạn Đề Thi Mới',      icon: PlusCircle,    color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
+    { id: 'creator',     label: 'Soạn Đề Thi Mới',      icon: PlusCircle,    color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
     { id: 'flashcards',  label: 'Bộ Thẻ Ghi Nhớ',      icon: Layers,        color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' }
   ];
 
