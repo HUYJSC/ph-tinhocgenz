@@ -13,7 +13,7 @@ interface AttendanceManagerProps {
   studentAccounts?: StudentAccount[];
   currentUser: UserProfile;
   onCreateSession: (track: CurriculumTrack, className: string, teacherId: string, teacherName: string) => AttendanceSession;
-  onRotateQR: (sessionId: string) => { token: string; pinCode: string; expiresAt: number };
+  onRotateQR: (sessionId: string, intervalSeconds?: number) => { token: string; pinCode: string; expiresAt: number };
   onUpdateStatus: (sessionId: string, studentId: string, status: AttendanceStatus, note?: string, method?: 'manual' | 'qr_scan' | 'pin_code') => void;
   onMarkAllPresent: (sessionId: string) => void;
   onSaveSession: (session: AttendanceSession) => void;
@@ -46,6 +46,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'qr_mode' | 'manual_list' | 'history'>('qr_mode');
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+  const [rotationInterval, setRotationInterval] = useState<number>(300); // default 5 minutes
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(300);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
 
@@ -58,7 +59,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     }
   }, [activeSession, selectedSessionId]);
 
-  // 5-minute Countdown Timer logic for dynamic QR code
+  // Countdown Timer logic for dynamic QR code
   useEffect(() => {
     if (!activeSession || !activeSession.qrExpiresAt) return;
 
@@ -68,7 +69,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
 
       // Auto-rotate when timer hits 0
       if (remaining === 0) {
-        onRotateQR(activeSession.id);
+        onRotateQR(activeSession.id, rotationInterval);
         soundFx.playCorrect();
       }
     };
@@ -76,7 +77,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [activeSession?.id, activeSession?.qrExpiresAt, onRotateQR]);
+  }, [activeSession?.id, activeSession?.qrExpiresAt, onRotateQR, rotationInterval]);
 
   const formatCountdown = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -98,7 +99,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
 
   const handleRotateNow = () => {
     if (!activeSession) return;
-    onRotateQR(activeSession.id);
+    onRotateQR(activeSession.id, rotationInterval);
     soundFx.playClick();
   };
 
@@ -391,6 +392,42 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 marginTop: '4px'
               }}>
                 {activeSession?.qrPinCode || '------'}
+              </div>
+            </div>
+
+            {/* Anti-cheat rotation speed selector */}
+            <div style={{ width: '100%', maxWidth: '320px', marginBottom: '14px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '6px' }}>
+                🛡️ TỐC ĐỘ TỰ ĐỘNG XOAY MÃ (CHỐNG GỬI ẢNH ZALO):
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
+                {[
+                  { sec: 30, label: '30s ⚡' },
+                  { sec: 60, label: '1 phút' },
+                  { sec: 120, label: '2 phút' },
+                  { sec: 300, label: '5 phút' }
+                ].map(item => (
+                  <button
+                    key={item.sec}
+                    onClick={() => {
+                      setRotationInterval(item.sec);
+                      if (activeSession) onRotateQR(activeSession.id, item.sec);
+                      soundFx.playClick();
+                    }}
+                    style={{
+                      padding: '5px 4px',
+                      borderRadius: '6px',
+                      border: rotationInterval === item.sec ? '1.5px solid var(--brand)' : '1px solid var(--border-color)',
+                      background: rotationInterval === item.sec ? 'var(--brand-light)' : 'var(--bg-card)',
+                      color: rotationInterval === item.sec ? 'var(--brand)' : 'var(--text-secondary)',
+                      fontSize: '0.72rem',
+                      fontWeight: rotationInterval === item.sec ? 800 : 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </div>
 

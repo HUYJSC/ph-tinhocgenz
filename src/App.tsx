@@ -18,12 +18,13 @@ import { StudentAssignmentView } from './components/assignment/StudentAssignment
 import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
 import { AttendanceManager } from './components/attendance/AttendanceManager';
 import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
+import { CameraQRScanner } from './components/attendance/CameraQRScanner';
 import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
-import { QrCode } from 'lucide-react';
+import { QrCode, Camera } from 'lucide-react';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
@@ -99,6 +100,7 @@ export function App() {
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showCameraScanner, setShowCameraScanner] = useState(false);
 
   // Sync auth name to storage stats
   useEffect(() => {
@@ -320,21 +322,34 @@ export function App() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 14px'
                       }}>
-                        <QrCode size={30} />
+                        <Camera size={30} />
                       </div>
                       <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
                         Điểm Danh Học Viên
                       </h2>
-                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '18px', lineHeight: 1.5 }}>
-                        Quét mã QR từ màn hình giáo viên hoặc nhập mã PIN 6 chữ số để xác nhận có mặt trong buổi học hôm nay.
+                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.5 }}>
+                        Quét mã QR trực tiếp qua Camera trên màn hình chiếu của giáo viên hoặc nhập mã PIN 6 số để xác nhận có mặt.
                       </p>
-                      <button
-                        onClick={() => setShowCheckInModal(true)}
-                        className="btn btn-primary"
-                        style={{ padding: '10px 20px', fontSize: '0.88rem', fontWeight: 800 }}
-                      >
-                        Nhập Mã PIN Điểm Danh 5 Phút
-                      </button>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '340px', margin: '0 auto' }}>
+                        <button
+                          onClick={() => setShowCameraScanner(true)}
+                          className="btn btn-primary"
+                          style={{ padding: '12px 20px', fontSize: '0.92rem', fontWeight: 800, gap: '8px' }}
+                        >
+                          <Camera size={18} />
+                          <span>Mở Camera Quét Mã QR</span>
+                        </button>
+
+                        <button
+                          onClick={() => setShowCheckInModal(true)}
+                          className="btn btn-secondary"
+                          style={{ padding: '10px 18px', fontSize: '0.84rem', fontWeight: 700, gap: '6px' }}
+                        >
+                          <QrCode size={15} />
+                          <span>Nhập Mã PIN 6 Số Thủ Công</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -406,6 +421,21 @@ export function App() {
         studentCode={user.studentCode || 'THGZ01'}
         programTrack={user.programTrack}
         onCheckIn={studentAttendanceCheckIn}
+      />
+
+      <CameraQRScanner
+        isOpen={showCameraScanner}
+        onClose={() => setShowCameraScanner(false)}
+        studentName={user.name}
+        studentCode={user.studentCode || 'THGZ01'}
+        onScanResult={(scannedText) => {
+          return studentAttendanceCheckIn(
+            user.studentCode || 'THGZ01',
+            user.name,
+            scannedText,
+            user.programTrack || 'office-fast-3in1'
+          );
+        }}
       />
     </div>
   );

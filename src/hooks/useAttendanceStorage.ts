@@ -83,11 +83,11 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     return newSession;
   }, [studentAccounts]);
 
-  // Rotate QR code (max 5 minutes)
-  const rotateSessionQR = useCallback((sessionId: string) => {
+  // Rotate QR code (custom interval e.g. 30s, 60s, 300s)
+  const rotateSessionQR = useCallback((sessionId: string, intervalSeconds: number = 300) => {
     const newToken = generateToken();
     const newPin = generatePin();
-    const newExpiresAt = Date.now() + 5 * 60 * 1000;
+    const newExpiresAt = Date.now() + intervalSeconds * 1000;
 
     setSessions(prev =>
       prev.map(s => {
