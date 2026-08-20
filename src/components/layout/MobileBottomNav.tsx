@@ -15,6 +15,7 @@ interface BottomNavItem {
   id: ActiveTab;
   label: string;
   icon: any;
+  accentColor: string;
   count?: number;
 }
 
@@ -26,18 +27,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   isAdmin = false
 }) => {
   const studentTabs: BottomNavItem[] = [
-    { id: 'quizzes', label: 'Trắc nghiệm', icon: BookOpen },
-    { id: 'assignments', label: 'Đề tài liệu', icon: FileText },
-    { id: 'flashcards', label: 'Flashcard', icon: Layers },
-    { id: 'analytics', label: 'Tiến độ', icon: BarChart2 },
-    { id: 'bookmarks', label: 'Đã lưu', icon: BookmarkCheck, count: bookmarkCount }
+    { id: 'quizzes', label: 'Trắc Nghiệm', icon: BookOpen, accentColor: '#2563eb' },
+    { id: 'assignments', label: 'Đề Thi', icon: FileText, accentColor: '#10b981' },
+    { id: 'flashcards', label: 'Flashcard', icon: Layers, accentColor: '#f59e0b' },
+    { id: 'analytics', label: 'Tiến Độ', icon: BarChart2, accentColor: '#8b5cf6' },
+    { id: 'bookmarks', label: 'Đã Lưu', icon: BookmarkCheck, accentColor: '#ec4899', count: bookmarkCount }
   ];
 
   const adminTabs: BottomNavItem[] = [
-    { id: 'admin', label: 'Quản trị', icon: Shield },
-    { id: 'assignments', label: 'Giao đề', icon: FileText, count: unreadNotificationCount },
-    { id: 'quizzes', label: 'Đề thi', icon: BookOpen },
-    { id: 'creator', label: 'Tạo đề', icon: PlusCircle }
+    { id: 'admin', label: 'Quản Trị', icon: Shield, accentColor: '#d97706' },
+    { id: 'assignments', label: 'Giao Đề', icon: FileText, accentColor: '#10b981', count: unreadNotificationCount },
+    { id: 'quizzes', label: 'Đề Thi', icon: BookOpen, accentColor: '#2563eb' },
+    { id: 'creator', label: 'Tạo Đề', icon: PlusCircle, accentColor: '#06b6d4' },
+    { id: 'flashcards', label: 'Flashcard', icon: Layers, accentColor: '#f59e0b' }
   ];
 
   const tabs: BottomNavItem[] = isAdmin ? adminTabs : studentTabs;
@@ -48,10 +50,28 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   };
 
   return (
-    <nav className="mobile-nav">
+    <nav
+      className="mobile-nav"
+      style={{
+        display: 'none', // Controlled by CSS media query @media (max-width: 768px) { display: flex }
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '66px',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid var(--border-color)',
+        zIndex: 100,
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
+        padding: '0 8px'
+      }}
+    >
       {tabs.map(tab => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
+
         return (
           <button
             key={tab.id}
@@ -62,55 +82,91 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: '3px',
               height: '100%',
               background: 'transparent',
               border: 'none',
-              color: isActive ? (tab.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'var(--text-muted)',
               cursor: 'pointer',
               position: 'relative',
-              padding: '6px 0'
+              padding: '6px 2px',
+              transition: 'all 0.2s ease',
+              outline: 'none'
             }}
           >
-            <div style={{ position: 'relative' }}>
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+            {/* Top Active Indicator Glow Bar */}
+            {isActive && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  width: '32px',
+                  height: '3px',
+                  borderRadius: '0 0 4px 4px',
+                  background: tab.accentColor,
+                  boxShadow: `0 2px 8px ${tab.accentColor}`
+                }}
+              />
+            )}
+
+            {/* Icon Box with Active Capsule */}
+            <div
+              style={{
+                position: 'relative',
+                width: '34px',
+                height: '28px',
+                borderRadius: '8px',
+                background: isActive ? `${tab.accentColor}18` : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: isActive ? 'scale(1.08)' : 'scale(1)'
+              }}
+            >
+              <Icon
+                size={19}
+                color={isActive ? tab.accentColor : 'var(--text-muted)'}
+                strokeWidth={isActive ? 2.5 : 2}
+              />
+
+              {/* Notification Badge */}
               {tab.count !== undefined && tab.count > 0 && (
                 <span
                   style={{
                     position: 'absolute',
-                    top: '-4px',
-                    right: '-8px',
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    background: 'var(--danger)',
-                    color: '#fff',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
+                    top: '-3px',
+                    right: '-5px',
+                    minWidth: '15px',
+                    height: '15px',
+                    padding: '0 3px',
+                    borderRadius: 'var(--radius-full)',
+                    background: '#ef4444',
+                    color: '#ffffff',
+                    fontSize: '0.62rem',
+                    fontWeight: 900,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
                   }}
                 >
                   {tab.count}
                 </span>
               )}
             </div>
-            <span style={{ fontSize: '0.72rem', fontWeight: isActive ? 700 : 500 }}>
+
+            {/* Micro Label */}
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: isActive ? 800 : 600,
+                color: isActive ? tab.accentColor : 'var(--text-muted)',
+                letterSpacing: '-0.01em',
+                lineHeight: 1
+              }}
+            >
               {tab.label}
             </span>
-            {isActive && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '24px',
-                  height: '3px',
-                  borderRadius: '0 0 4px 4px',
-                  background: tab.id === 'admin' ? '#d97706' : 'var(--accent-primary)'
-                }}
-              />
-            )}
           </button>
         );
       })}
