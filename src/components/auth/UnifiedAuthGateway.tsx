@@ -563,7 +563,11 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               </button>
 
               {/* Quick Staff Shortcuts */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '4px' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, margin: '2px 0' }}>
+                  TÀI KHOẢN GIẢNG VIÊN MẪU (BẤM ĐỂ CHỌN NHANH):
+                </div>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -588,7 +592,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   }}
                 >
                   <span>👑 Admin: Thầy Huy</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Toàn quyền</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Toàn quyền 10 môn</span>
                 </button>
 
                 <button
@@ -614,8 +618,62 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     justifyContent: 'space-between'
                   }}
                 >
-                  <span>👩‍🏫 Giảng Viên: Cô Hoàng Mai (GV01)</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Quyền theo môn</span>
+                  <span>👩‍🏫 Cô Hoàng Mai (GV01)</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Office, CC Cơ bản, Word...</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminName('Thầy Đức Nam');
+                    setAdminPin('123');
+                    setAdminTrackChoice('cc-cntt-advanced');
+                    setAdminError('');
+                    soundFx.playClick();
+                  }}
+                  style={{
+                    background: 'rgba(16, 185, 129, 0.06)',
+                    border: '1px dashed rgba(16, 185, 129, 0.25)',
+                    color: '#10b981',
+                    padding: '5px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>👨‍🏫 Thầy Đức Nam (GV02)</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>CC Nâng cao, AI, Kế toán...</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminName('Thầy Quang Huy');
+                    setAdminPin('123');
+                    setAdminTrackChoice('all');
+                    setAdminError('');
+                    soundFx.playClick();
+                  }}
+                  style={{
+                    background: 'rgba(139, 92, 246, 0.06)',
+                    border: '1px dashed rgba(139, 92, 246, 0.25)',
+                    color: '#8b5cf6',
+                    padding: '5px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>👨‍🏫 Thầy Quang Huy (GV03)</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Toàn bộ các môn</span>
                 </button>
               </div>
             </form>
