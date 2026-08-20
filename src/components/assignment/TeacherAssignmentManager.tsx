@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
-import { UserProfile } from '../../types/auth';
+import { UserProfile, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import { SubjectCategory } from '../../types/quiz';
 import { parseUploadedDocument } from '../../utils/documentParser';
 import { GOOGLE_APPS_SCRIPT_CODE } from '../../utils/googleDriveService';
@@ -10,6 +10,19 @@ import {
   FolderOpen, Cloud, Copy, Check, ExternalLink, Link2
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+
+const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string; icon: string }[] = [
+  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3Buổi 1 môn)', icon: '⚡' },
+  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6 buổi)', icon: '💻' },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', icon: '⚙️' },
+  { id: 'cntt-basic-we', label: '4. CNTT Cơ bản: Word + Excel (10-12b)', icon: '📄' },
+  { id: 'cntt-adv-we', label: '5. CNTT Nâng Cao: Word + Excel (10-12b)', icon: '📊' },
+  { id: 'ai-office', label: '6. Ứng dụng AI vào công việc Văn phòng (5b)', icon: '🤖' },
+  { id: 'excel-accounting', label: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)', icon: '📈' },
+  { id: 'word-6b', label: '8. Word (6 buổi)', icon: '📝' },
+  { id: 'excel-6b', label: '9. Excel (6 buổi)', icon: '📊' },
+  { id: 'ppt-6b', label: '10. PPT (6 buổi)', icon: '📽️' }
+];
 
 interface TeacherAssignmentManagerProps {
   assignments: Assignment[];
@@ -305,7 +318,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                    {a.targetClass}
+                    {TRACK_LABELS[a.category as CurriculumTrack] || a.targetClass}
                   </span>
                   <button
                     onClick={() => onDeleteAssignment(a.id)}
@@ -620,19 +633,24 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
 
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                Phân Hệ Môn Học
+                Phân Hệ Môn Học Đào Tạo *
               </label>
               <select
                 value={category}
-                onChange={e => setCategory(e.target.value as SubjectCategory)}
+                onChange={e => {
+                  const trk = e.target.value as SubjectCategory;
+                  setCategory(trk);
+                  if (TRACK_LABELS[trk as CurriculumTrack]) {
+                    setTargetClass(`Lớp ${TRACK_LABELS[trk as CurriculumTrack]}`);
+                  }
+                }}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
               >
-                <option value="mos-office">2. MOS Quốc Tế</option>
-                <option value="cntt-basic">1. CNTT Cơ Bản</option>
-                <option value="ic3-gs">3. IC3 GS6</option>
-                <option value="cntt-advanced">4. CNTT Nâng Cao</option>
-                <option value="programming">5. Lập Trình Python</option>
-                <option value="cyber-security">6. Mạng & Bảo Mật</option>
+                {ALL_TRACK_OPTIONS.map(trk => (
+                  <option key={trk.id} value={trk.id}>
+                    {trk.icon} {trk.label}
+                  </option>
+                ))}
               </select>
             </div>
 

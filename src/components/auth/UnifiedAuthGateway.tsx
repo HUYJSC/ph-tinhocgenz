@@ -508,7 +508,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     cursor: 'pointer'
                   }}
                 >
-                  <option value="all">🌟 Toàn Bộ 6 Phân Hệ Đào Tạo</option>
+                  <option value="all">🌟 Toàn Bộ 10 Phân Hệ Đào Tạo</option>
                   {TRACK_LIST.map(t => (
                     <option key={t.id} value={t.id}>
                       {t.icon} {t.label}
