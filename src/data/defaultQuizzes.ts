@@ -2,272 +2,430 @@ import { Quiz } from '../types/quiz';
 
 export const DEFAULT_QUIZZES: Quiz[] = [
   {
-    id: 'quiz-web-dev',
-    title: 'Lập Trình Web Hiện Đại & JavaScript ES6+',
-    description: 'Kiểm tra kiến thức cốt lõi về JavaScript, React, HTML5/CSS3 và các kỹ năng lập trình web frontend.',
-    category: 'programming',
+    id: 'quiz-mos-excel',
+    title: 'Luyện Thi MOS Excel Specialist & Xử Lý Bảng Tính',
+    description: 'Chuyên đề ôn luyện các hàm VLOOKUP, INDEX-MATCH, IF lồng, PivotTable, Định dạng có điều kiện và Quản lý dữ liệu trong Microsoft Excel.',
+    category: 'mos-excel',
     difficulty: 'medium',
-    timeLimitMinutes: 10,
-    icon: 'Code2',
-    badgeColor: '#3b82f6',
-    author: 'PH- TINHOCGENZ Team',
-    createdAt: '2026-08-15',
-    questions: [
-      {
-        id: 'web-q1',
-        type: 'single',
-        prompt: 'Trong JavaScript ES6, từ khóa nào dùng để khai báo hằng số không thể gán lại giá trị?',
-        options: ['var', 'let', 'const', 'static'],
-        correctAnswer: 2,
-        explanation: 'Từ khóa `const` dùng để khai báo hằng số (immutable binding). Biến khai báo bằng `const` không thể gán lại giá trị bằng toán tử gán `=`, mặc dù các thuộc tính của object khai báo bằng `const` vẫn có thể sửa đổi được.',
-        hint: 'Nghĩ về từ viết tắt của "constant".',
-        points: 10
-      },
-      {
-        id: 'web-q2',
-        type: 'multiple',
-        prompt: 'Những phương thức nào sau đây của JavaScript Array KHÔNG làm thay đổi (mutate) mảng gốc?',
-        options: ['map()', 'filter()', 'push()', 'concat()', 'splice()'],
-        correctAnswer: [0, 1, 3],
-        explanation: '`map()`, `filter()`, và `concat()` đều trả về một mảng mới mà không làm thay đổi mảng ban đầu (immutable). Ngược lại, `push()` và `splice()` trực tiếp làm thay đổi (mutate) mảng gốc.',
-        hint: 'Các hàm thuộc lập trình hàm (functional programming) thường trả về mảng mới.',
-        points: 15
-      },
-      {
-        id: 'web-q3',
-        type: 'true-false',
-        prompt: 'Đoạn mã sau trả về `true` trong JavaScript: `[] == false`',
-        codeSnippet: 'console.log([] == false);',
-        correctAnswer: true,
-        explanation: 'Trong JavaScript, khi so sánh `[] == false` bằng toán tử so sánh lỏng lẻo (`==`), cả hai vế được ép kiểu (coercion) về số (`Number([])` là 0 và `Number(false)` là 0), do đó kết quả là `true`. Để tránh lỗi này nên dùng `===`.',
-        hint: 'Hãy nhớ về cơ chế ép kiểu ngầm định (Type Coercion) với toán tử ==.',
-        points: 10
-      },
-      {
-        id: 'web-q4',
-        type: 'fill-blank',
-        prompt: 'Trong React, Hook nào được sử dụng để quản lý các tác vụ bất đồng bộ hoặc can thiệp vào vòng đời component (Side Effects)? (Nhập tên hàm Hook)',
-        correctAnswer: 'useEffect',
-        explanation: '`useEffect` là Hook dùng để xử lý side effects như gọi API, lắng nghe sự kiện DOM, đăng ký subscription hoặc hẹn giờ trong Function Component.',
-        hint: 'Bắt đầu bằng chữ "use" và kết thúc bằng "Effect".',
-        points: 15
-      },
-      {
-        id: 'web-q5',
-        type: 'matching',
-        prompt: 'Hãy ghép nối các giao thức / công nghệ web với vai trò chính xác của chúng:',
-        matchingPairs: [
-          { id: 'm1', left: 'HTTP / HTTPS', right: 'Giao thức truyền tải siêu văn bản an toàn giữa Client và Server' },
-          { id: 'm2', left: 'WebSocket', right: 'Giao tiếp 2 chiều thời gian thực (Full-duplex real-time)' },
-          { id: 'm3', left: 'CSS Flexbox / Grid', right: 'Bố cục và dàn trang giao diện người dùng đáp ứng (Responsive)' },
-          { id: 'm4', left: 'Local Storage', right: 'Lưu trữ dữ liệu key-value bền vững trên trình duyệt' }
-        ],
-        explanation: 'HTTPS bảo mật kênh truyền, WebSocket phục vụ realtime, CSS Layout điều khiển giao diện hiển thị và Local Storage lưu dữ liệu cục bộ.',
-        points: 20
-      }
-    ]
-  },
-  {
-    id: 'quiz-english-master',
-    title: 'Tiếng Anh Giao Tiếp & Ngữ Pháp Ứng Dụng',
-    description: 'Thử thách trình độ từ vựng, ngữ pháp câu điều kiện, thì động từ và các thành ngữ tiếng Anh thông dụng.',
-    category: 'english',
-    difficulty: 'easy',
-    timeLimitMinutes: 8,
-    icon: 'Languages',
+    timeLimitMinutes: 15,
+    icon: 'Table',
     badgeColor: '#10b981',
-    author: 'Language Hub',
-    createdAt: '2026-08-14',
+    author: 'PH- TINHOCGENZ MOS Master',
+    createdAt: '2026-08-20',
     questions: [
       {
-        id: 'eng-q1',
+        id: 'excel-q1',
         type: 'single',
-        prompt: 'Choose the correct form to complete the sentence: "If she _______ harder, she would have passed the final examination."',
-        options: ['studied', 'had studied', 'studies', 'has studied'],
-        correctAnswer: 1,
-        explanation: 'Đây là câu điều kiện loại 3 (Third Conditional) diễn tả điều kiện trái với thực tế trong quá khứ. Cấu trúc mệnh đề If: `If + S + had + V3/ed, S + would have + V3/ed`.',
-        hint: 'Chú ý vế sau có "would have passed" (dấu hiệu của điều kiện loại 3).',
-        points: 10
-      },
-      {
-        id: 'eng-q2',
-        type: 'single',
-        prompt: 'What does the idiom "Break a leg" mean in English?',
-        options: ['Làm gãy chân', 'Chúc may mắn', 'Cẩn thận tai nạn', 'Bỏ cuộc'],
-        correctAnswer: 1,
-        explanation: '"Break a leg" là một thành ngữ phổ biến trong tiếng Anh, đặc biệt trong ngành nghệ thuật sân khấu, mang ý nghĩa chúc ai đó biểu diễn tốt hoặc chúc may mắn ("Good luck!").',
-        hint: 'Đây là lời chúc dành cho diễn viên trước khi lên sân khấu.',
-        points: 10
-      },
-      {
-        id: 'eng-q3',
-        type: 'multiple',
-        prompt: 'Những từ nào sau đây là TÍNH TỪ (Adjectives)? (Chọn tất cả đáp án đúng)',
-        options: ['Efficient', 'Quickly', 'Magnificent', 'Happiness', 'Reliable'],
-        correctAnswer: [0, 2, 4],
-        explanation: '`Efficient` (hiệu quả), `Magnificent` (tráng lệ), và `Reliable` (đáng tin cậy) là tính từ. `Quickly` là trạng từ (adverb) và `Happiness` là danh từ (noun).',
-        hint: 'Chú ý các hậu tố phổ biến của tính từ như: -ent, -cent, -able.',
-        points: 15
-      },
-      {
-        id: 'eng-q4',
-        type: 'fill-blank',
-        prompt: 'Complete the sentence with the correct preposition: "She has been working as a software engineer _______ 2021."',
-        correctAnswer: 'since',
-        explanation: 'Trong thì Hiện tại hoàn thành tiếp diễn (Present Perfect Continuous), "since" được dùng trước một mốc thời gian xác định (ví dụ: since 2021, since Monday), còn "for" dùng trước một khoảng thời gian (for 3 years).',
-        hint: 'Từ chỉ mốc thời gian bắt đầu từ 4 chữ cái: s-i-...',
-        points: 10
-      },
-      {
-        id: 'eng-q5',
-        type: 'true-false',
-        prompt: 'The word "Information" can be used in plural form as "Informations".',
-        correctAnswer: false,
-        explanation: 'False. "Information" là một danh từ không đếm được (uncountable noun) trong tiếng Anh, không có dạng số nhiều "informations". Nếu muốn đếm, ta dùng cụm "a piece of information".',
-        hint: 'Information có đếm được trực tiếp không?',
-        points: 10
-      }
-    ]
-  },
-  {
-    id: 'quiz-math-logic',
-    title: 'Toán Học & Tư Duy Logic Ứng Dụng',
-    description: 'Các bài toán đố tư duy logic, xác suất thống kê cơ bản và suy luận logic thực tế.',
-    category: 'math',
-    difficulty: 'hard',
-    timeLimitMinutes: 12,
-    icon: 'Binary',
-    badgeColor: '#f59e0b',
-    author: 'Math & Logic Institute',
-    createdAt: '2026-08-16',
-    questions: [
-      {
-        id: 'math-q1',
-        type: 'single',
-        prompt: 'Một cái gậy và một quả bóng có tổng giá tiền là 110.000 VNĐ. Cái gậy đắt hơn quả bóng 100.000 VNĐ. Hỏi quả bóng giá bao nhiêu?',
-        options: ['10.000 VNĐ', '5.000 VNĐ', '15.000 VNĐ', '20.000 VNĐ'],
-        correctAnswer: 1,
-        explanation: 'Gọi giá quả bóng là x. Giá gậy là x + 100.000. Ta có: x + (x + 100.000) = 110.000 => 2x = 10.000 => x = 5.000 VNĐ. Khi đó gậy giá 105.000 VNĐ, chênh lệch đúng 100.000 VNĐ.',
-        hint: 'Đừng để trực giác đánh lừa! Hãy đặt phương trình đại số đơn giản.',
-        points: 15
-      },
-      {
-        id: 'math-q2',
-        type: 'single',
-        prompt: 'Gieo đồng thời hai con xúc xắc 6 mặt cân đối. Xác suất để tổng số chấm xuất hiện bằng 7 là bao nhiêu?',
-        options: ['1/6', '1/12', '7/36', '5/36'],
+        prompt: 'Trong Microsoft Excel, cú pháp chuẩn của hàm tìm kiếm theo cột `VLOOKUP` là gì?',
+        options: [
+          'VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])',
+          'VLOOKUP(table_array, lookup_value, row_index_num, [range_lookup])',
+          'VLOOKUP(lookup_value, col_index_num, table_array, [exact_match])',
+          'VLOOKUP(range_lookup, lookup_value, table_array, col_index_num)'
+        ],
         correctAnswer: 0,
-        explanation: 'Không gian mẫu có 6 x 6 = 36 trường hợp. Các cặp có tổng bằng 7 là: (1,6), (2,5), (3,4), (4,3), (5,2), (6,1) gồm 6 trường hợp. Xác suất = 6/36 = 1/6.',
-        hint: 'Liệt kê các cặp (x, y) sao cho x + y = 7.',
-        points: 15
-      },
-      {
-        id: 'math-q3',
-        type: 'true-false',
-        prompt: 'Tất cả các số nguyên tố đều là số lẻ.',
-        correctAnswer: false,
-        explanation: 'Sai (False). Số 2 là số nguyên tố chẵn duy nhất và cũng là số nguyên tố nhỏ nhất.',
-        hint: 'Hãy nhớ số nguyên tố chẵn duy nhất.',
+        explanation: 'Cú pháp chuẩn của VLOOKUP là: `VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])`, trong đó `range_lookup` là 0 (hoặc FALSE) để tìm kiếm chính xác tuyệt đối.',
+        hint: 'Giá trị cần tìm kiếm (lookup_value) luôn đứng ở vị trí tham số đầu tiên.',
         points: 10
       },
       {
-        id: 'math-q4',
+        id: 'excel-q2',
+        type: 'single',
+        prompt: 'Để cố định tuyệt đối cả cột và dòng của ô $C$5 trong công thức Excel, bạn sử dụng phím tắt nào?',
+        options: ['F2', 'F4', 'F9', 'Ctrl + Shift + $'],
+        correctAnswer: 1,
+        explanation: 'Phím F4 (hoặc Fn + F4 trên laptop) dùng để chuyển đổi nhanh giữa các kiểu địa chỉ: Tương đối (C5), Tuyệt đối ($C$5), Hỗn hợp ($C5 hoặc C$5).',
+        hint: 'Phím chức năng từ F1 đến F12 ở hàng trên cùng của bàn phím.',
+        points: 10
+      },
+      {
+        id: 'excel-q3',
+        type: 'multiple',
+        prompt: 'Những tính năng nào sau đây của Excel cho phép bạn tổng hợp, phân tích và lọc dữ liệu đa chiều tự động?',
+        options: [
+          'PivotTable (Bảng tổng hợp động)',
+          'Slicer (Bộ lọc trực quan)',
+          'Track Changes',
+          'PivotChart (Biểu đồ động liên kết)'
+        ],
+        correctAnswer: [0, 1, 3],
+        explanation: 'PivotTable, Slicer và PivotChart là bộ ba công cụ mạnh mẽ nhất của Excel để phân tích dữ liệu đa chiều, báo cáo tổng hợp và dashboard.',
+        hint: 'Chọn các công cụ có chữ Pivot hoặc bộ lọc Slicer.',
+        points: 15
+      },
+      {
+        id: 'excel-q4',
+        type: 'true-false',
+        prompt: 'Trong Excel, hàm `COUNTIF(range, criteria)` có thể đếm số ô thỏa mãn nhiều điều kiện cùng lúc trên nhiều vùng khác nhau.',
+        correctAnswer: false,
+        explanation: 'Sai. Hàm `COUNTIF` chỉ đếm theo 1 điều kiện duy nhất. Để đếm thỏa mãn nhiều điều kiện trên nhiều vùng dữ liệu khác nhau, bạn phải dùng hàm `COUNTIFS`.',
+        hint: 'Chú ý chữ "S" ở cuối tên hàm khi xử lý số nhiều.',
+        points: 10
+      },
+      {
+        id: 'excel-q5',
         type: 'fill-blank',
-        prompt: 'Cho dãy số: 2, 6, 12, 20, 30, ... Số tiếp theo của dãy là bao nhiêu?',
-        correctAnswer: '42',
-        explanation: 'Quy luật của dãy số: Khoảng cách giữa các số tăng dần: +4, +6, +8, +10. Vậy bước nhảy tiếp theo là +12. 30 + 12 = 42. (Hoặc công thức n*(n+1): 1*2, 2*3, 3*4, 4*5, 5*6, 6*7 = 42).',
-        hint: 'Bước nhảy giữa 2 số liên tiếp tăng thêm 2 đơn vị mỗi lần.',
+        prompt: 'Nhập tên hàm trong Excel dùng để tính trung bình cộng có điều kiện (ví dụ: tính lương trung bình của phòng Kỹ Thuật):',
+        correctAnswer: 'AVERAGEIF',
+        explanation: 'Hàm `AVERAGEIF` dùng để tính giá trị trung bình cộng của các ô thỏa mãn một tiêu chí nhất định.',
+        hint: 'Ghép từ "AVERAGE" và "IF".',
+        points: 15
+      },
+      {
+        id: 'excel-q6',
+        type: 'matching',
+        prompt: 'Hãy ghép nối các hàm Excel với công dụng chính xác:',
+        matchingPairs: [
+          { id: 'm1', left: 'INDEX & MATCH', right: 'Tìm kiếm dữ liệu linh hoạt sang trái/phải không giới hạn' },
+          { id: 'm2', left: 'CONCATENATE / TEXTJOIN', right: 'Ghép nối các chuỗi văn bản từ nhiều ô' },
+          { id: 'm3', left: 'IFERROR', right: 'Bẫy và xử lý các giá trị lỗi (#N/A, #VALUE!) trong bảng tính' },
+          { id: 'm4', left: 'DATA VALIDATION', right: 'Thiết lập danh sách thả xuống (Drop-down) và giới hạn nhập liệu' }
+        ],
+        explanation: 'INDEX-MATCH thay thế VLOOKUP linh hoạt, TEXTJOIN ghép chuỗi, IFERROR bẫy lỗi và Data Validation kiểm soát dữ liệu.',
         points: 20
       }
     ]
   },
   {
-    id: 'quiz-informatics-skills',
-    title: 'Tin Học Văn Phòng & An Toàn Số',
-    description: 'Kỹ năng Excel, phím tắt năng suất, an toàn mạng và phòng chống lừa đảo trực tuyến.',
-    category: 'informatics',
-    difficulty: 'easy',
-    timeLimitMinutes: 7,
-    icon: 'ShieldCheck',
-    badgeColor: '#ec4899',
-    author: 'Digital Skills Academy',
-    createdAt: '2026-08-17',
+    id: 'quiz-ic3-gs6',
+    title: 'Luyện Thi Chuẩn Tin Học Quốc Tế IC3 GS6 Global Standard',
+    description: 'Bộ câu hỏi chuẩn quốc tế IC3: Kiến thức phần cứng máy tính, Mạng Internet, An toàn thông tin số, Bản quyền số và Điện toán đám mây.',
+    category: 'ic3-gs',
+    difficulty: 'medium',
+    timeLimitMinutes: 15,
+    icon: 'Cpu',
+    badgeColor: '#3b82f6',
+    author: 'PH- TINHOCGENZ IC3 Dept',
+    createdAt: '2026-08-20',
     questions: [
       {
-        id: 'info-q1',
+        id: 'ic3-q1',
         type: 'single',
-        prompt: 'Trong Microsoft Excel, hàm nào dùng để tìm kiếm giá trị theo chiều dọc trong một bảng dữ liệu?',
-        options: ['HLOOKUP', 'VLOOKUP / XLOOKUP', 'COUNTIF', 'INDEX-MATCH'],
-        correctAnswer: 1,
-        explanation: '`VLOOKUP` (Vertical Lookup) và hàm mới `XLOOKUP` dùng để tra cứu giá trị theo cột dọc trong Excel.',
-        hint: 'Chữ V đại diện cho "Vertical" (dọc).',
+        prompt: 'Thiết bị nào sau đây đóng vai trò là "bộ não" xử lý tất cả các chỉ thị và phép toán logic của máy vi tính?',
+        options: [
+          'CPU (Central Processing Unit)',
+          'RAM (Random Access Memory)',
+          'HDD / SSD (Ổ cứng lưu trữ)',
+          'GPU (Card đồ họa)'
+        ],
+        correctAnswer: 0,
+        explanation: 'CPU (Bộ xử lý trung tâm) là cơ quan đầu não thực hiện việc giải mã và thực thi toàn bộ các lệnh phần mềm của máy tính.',
+        hint: 'Viết tắt của Central Processing Unit.',
         points: 10
       },
       {
-        id: 'info-q2',
+        id: 'ic3-q2',
+        type: 'single',
+        prompt: 'Khi mất nguồn điện đột ngột, dữ liệu lưu trong thành phần bộ nhớ nào của máy tính sẽ bị xóa sạch hoàn toàn (Volatile Memory)?',
+        options: ['ROM', 'RAM', 'Ổ cứng SSD', 'Thẻ nhớ Flash USB'],
+        correctAnswer: 1,
+        explanation: 'RAM là bộ nhớ truy xuất ngẫu nhiên tạm thời, dữ liệu trong RAM sẽ biến mất ngay khi mất nguồn cấp điện (khác với ROM, SSD lưu trữ cố định).',
+        hint: 'Bộ nhớ tạm thời đọc ghi tốc độ cao.',
+        points: 10
+      },
+      {
+        id: 'ic3-q3',
         type: 'multiple',
-        prompt: 'Những biện pháp nào giúp nâng cao an toàn tài khoản trực tuyến? (Chọn tất cả các đáp án đúng)',
+        prompt: 'Những hành vi nào sau đây giúp bảo vệ an toàn thông tin cá nhân trên không gian mạng (Digital Security)?',
         options: [
-          'Kích hoạt xác thực 2 yếu tố (2FA / OTP)',
-          'Sử dụng chung một mật khẩu cho tất cả tài khoản',
-          'Sử dụng mật khẩu mạnh dài trên 12 ký tự kết hợp chữ hoa, số và ký tự đặc biệt',
-          'Không bấm vào các đường link lạ trong email mạo danh ngân hàng'
+          'Bật tính năng xác thực 2 lớp (2FA / Multi-Factor Authentication)',
+          'Không nhấp vào các liên kết lạ hoặc tệp đính kèm trong Email mạo danh (Phishing)',
+          'Đặt mật khẩu trùng với ngày sinh và số điện thoại để dễ nhớ',
+          'Sử dụng mạng riêng ảo (VPN) khi truy cập Wi-Fi công cộng không có mật khẩu'
         ],
-        correctAnswer: [0, 2, 3],
-        explanation: 'Dùng chung 1 mật khẩu là thói quen rất nguy hiểm (nếu 1 nơi rò rỉ sẽ mất hết). Bật 2FA, dùng mật khẩu phức tạp và cảnh giác phishing là các nguyên tắc cốt lõi.',
-        hint: 'Hành vi dùng chung mật khẩu có an toàn không?',
+        correctAnswer: [0, 1, 3],
+        explanation: 'Bật 2FA, cảnh giác với Phishing và dùng VPN trên mạng công cộng là 3 nguyên tắc vàng về an ninh mạng.',
+        hint: 'Đặt mật khẩu theo ngày sinh là hành vi mất an toàn.',
         points: 15
       },
       {
-        id: 'info-q3',
+        id: 'ic3-q4',
+        type: 'true-false',
+        prompt: 'Điện toán đám mây (Cloud Computing) cho phép người dùng truy cập dữ liệu và ứng dụng từ bất kỳ đâu chỉ cần có kết nối Internet.',
+        correctAnswer: true,
+        explanation: 'Đúng. Điện toán đám mây (như Google Drive, Microsoft OneDrive, AWS) lưu trữ tài nguyên trên máy chủ Internet và truy cập mọi lúc mọi nơi.',
+        points: 10
+      },
+      {
+        id: 'ic3-q5',
+        type: 'matching',
+        prompt: 'Hãy ghép nối các đơn vị đo lường dung lượng máy tính theo đúng giá trị byte:',
+        matchingPairs: [
+          { id: 'm1', left: '1 Kilobyte (KB)', right: '1,024 Bytes' },
+          { id: 'm2', left: '1 Megabyte (MB)', right: '1,024 Kilobytes' },
+          { id: 'm3', left: '1 Gigabyte (GB)', right: '1,024 Megabytes' },
+          { id: 'm4', left: '1 Terabyte (TB)', right: '1,024 Gigabytes' }
+        ],
+        explanation: 'Trong hệ nhị phân tin học, các đơn vị dung lượng tăng theo lũy thừa của 2 (2^10 = 1024).',
+        points: 20
+      }
+    ]
+  },
+  {
+    id: 'quiz-mos-word',
+    title: 'Luyện Thi MOS Word & Soạn Thảo Văn Bản Chuyên Nghiệp',
+    description: 'Chuyên đề định dạng văn bản chuẩn hành chính, Mail Merge (Trộn thư), Mục lục tự động, Header/Footer phân trang Section Breaks.',
+    category: 'mos-word',
+    difficulty: 'easy',
+    timeLimitMinutes: 12,
+    icon: 'FileText',
+    badgeColor: '#2563eb',
+    author: 'PH- TINHOCGENZ Word Team',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'word-q1',
+        type: 'single',
+        prompt: 'Để tạo mục lục tự động (Automatic Table of Contents) chuẩn trong Word, các tiêu đề đoạn văn cần được gán định dạng gì?',
+        options: [
+          'Các kiểu Heading (Heading 1, Heading 2, Heading 3...) trong nhóm Styles',
+          'Đổi màu chữ thành màu đỏ và in đậm (Bold)',
+          'Tăng cỡ chữ (Font size) lên 18pt',
+          'Gõ mục lục thủ công bằng phím Tab'
+        ],
+        correctAnswer: 0,
+        explanation: 'Tính năng Table of Contents trong Word tự động quét và thu thập các văn bản được áp dụng thẻ Styles Heading (Heading 1, 2, 3...) để tạo mục lục tự động.',
+        hint: 'Tìm nhóm công cụ Styles trên thanh Ribbon tab Home.',
+        points: 10
+      },
+      {
+        id: 'word-q2',
+        type: 'single',
+        prompt: 'Để ngắt trang sao cho trang sau có thể xoay khổ giấy Ngang (Landscape) mà các trang trước vẫn giữ khổ Dọc (Portrait), bạn dùng loại ngắt nào?',
+        options: [
+          'Section Break (Next Page)',
+          'Page Break thông thường (Ctrl + Enter)',
+          'Column Break',
+          'Line Break (Shift + Enter)'
+        ],
+        correctAnswer: 0,
+        explanation: 'Section Break (Next Page) phân tách tài liệu thành các phân vùng độc lập, cho phép đổi hướng giấy (Orientation), Header/Footer hoặc viền trang riêng biệt cho từng Section.',
+        hint: 'Cần phân chia Section (Phân vùng) thay vì chỉ ngắt trang Page thông thường.',
+        points: 10
+      },
+      {
+        id: 'word-q3',
+        type: 'multiple',
+        prompt: 'Tính năng Mail Merge (Trộn thư) trong Microsoft Word hỗ trợ lấy dữ liệu danh sách người nhận từ các nguồn nào?',
+        options: [
+          'Bảng tính Microsoft Excel (.xlsx)',
+          'Danh bạ Outlook Contacts',
+          'File âm thanh MP3',
+          'Bảng dữ liệu Word Table hoặc Access Database'
+        ],
+        correctAnswer: [0, 1, 3],
+        explanation: 'Mail Merge liên kết với các nguồn dữ liệu có cấu trúc như Excel, Outlook Contacts, Access Database, Word Table hoặc file CSV.',
+        hint: 'File âm thanh không thể chứa bảng danh sách dữ liệu.',
+        points: 15
+      },
+      {
+        id: 'word-q4',
         type: 'fill-blank',
-        prompt: 'Tổ hợp phím tắt tiêu chuẩn trên Windows để tìm kiếm nhanh nội dung trong trang web hoặc tài liệu là gì? (Ví dụ nhập: Ctrl + F)',
-        correctAnswer: 'Ctrl + F',
-        explanation: 'Phím tắt `Ctrl + F` (Find) dùng để mở hộp thoại tìm kiếm trên hầu hết các trình duyệt và phần mềm văn phòng.',
-        hint: 'Ctrl kết hợp với chữ cái đầu của từ "Find".',
+        prompt: 'Nhập tổ hợp phím tắt dùng để căn đều 2 bên lề đoạn văn bản trong Microsoft Word (ví dụ: Ctrl + ...):',
+        correctAnswer: 'Ctrl + J',
+        explanation: 'Phím tắt `Ctrl + J` (Justify) dùng để căn đều văn bản sang cả 2 bên mép lề trái và phải chuẩn văn bản hành chính.',
+        hint: 'Chữ J viết tắt của Justify.',
+        points: 15
+      },
+      {
+        id: 'word-q5',
+        type: 'matching',
+        prompt: 'Hãy ghép nối phím tắt Microsoft Word với chức năng định dạng tương ứng:',
+        matchingPairs: [
+          { id: 'm1', left: 'Ctrl + E', right: 'Căn giữa đoạn văn bản (Center Align)' },
+          { id: 'm2', left: 'Ctrl + K', right: 'Chèn siêu liên kết (Insert Hyperlink)' },
+          { id: 'm3', left: 'Ctrl + H', right: 'Mở hộp thoại Tìm kiếm và Thay thế (Find & Replace)' },
+          { id: 'm4', left: 'Ctrl + Shift + C', right: 'Sao chép định dạng (Copy Formatting / Format Painter)' }
+        ],
+        explanation: 'Ctrl + E căn giữa, Ctrl + K chèn link, Ctrl + H thay thế từ ngữ và Ctrl+Shift+C sao chép nhanh định dạng.',
+        points: 20
+      }
+    ]
+  },
+  {
+    id: 'quiz-python-programming',
+    title: 'Lập Trình Python & Thuật Toán Tin Học Trẻ',
+    description: 'Kiểm tra kiến thức cú pháp Python 3, cấu trúc dữ liệu List/Dict/Set, giải thuật tìm kiếm, sắp xếp và tư duy lập trình căn bản.',
+    category: 'programming',
+    difficulty: 'hard',
+    timeLimitMinutes: 20,
+    icon: 'Code2',
+    badgeColor: '#f59e0b',
+    author: 'PH- TINHOCGENZ Coding Lab',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'py-q1',
+        type: 'single',
+        prompt: 'Cho đoạn mã Python sau. Kết quả in ra màn hình là gì?',
+        codeSnippet: 'numbers = [1, 2, 3, 4, 5]\nresult = [x**2 for x in numbers if x % 2 != 0]\nprint(result)',
+        options: ['[1, 9, 25]', '[4, 16]', '[1, 4, 9, 16, 25]', '[1, 3, 5]'],
+        correctAnswer: 0,
+        explanation: 'List comprehension duyệt qua các phần tử số lẻ trong `numbers` (1, 3, 5) và bình phương chúng lên (1^2=1, 3^2=9, 5^2=25), cho ra `[1, 9, 25]`.',
+        hint: 'Điều kiện `x % 2 != 0` lọc ra các số lẻ.',
+        points: 15
+      },
+      {
+        id: 'py-q2',
+        type: 'single',
+        prompt: 'Độ phức tạp thời gian trung bình (Average Time Complexity) của thuật toán sắp xếp nhanh QuickSort là bao nhiêu?',
+        options: ['O(n log n)', 'O(n^2)', 'O(n)', 'O(log n)'],
+        correctAnswer: 0,
+        explanation: 'QuickSort có độ phức tạp thời gian trung bình là `O(n log n)`. Trường hợp xấu nhất (worst case khi mảng đã sắp xếp và chọn pivot không tối ưu) là `O(n^2)`.',
+        hint: 'Tương tự như Merge Sort và Heap Sort.',
+        points: 15
+      },
+      {
+        id: 'py-q3',
+        type: 'multiple',
+        prompt: 'Những kiểu dữ liệu nào sau đây trong Python thuộc nhóm Bất Biến (Immutable - Không thể thay đổi giá trị sau khi tạo)?',
+        options: [
+          'tuple (Bộ giá trị cố định)',
+          'str (Chuỗi ký tự)',
+          'list (Danh sách mảng)',
+          'int / float (Số nguyên và số thực)'
+        ],
+        correctAnswer: [0, 1, 3],
+        explanation: 'Trong Python: `tuple`, `str`, `int`, `float`, `frozenset` là immutable. Ngược lại, `list`, `dict`, `set` là mutable (có thể thay đổi được).',
+        hint: 'Kiểu list cho phép dùng hàm .append() để sửa đổi nên là mutable.',
+        points: 15
+      },
+      {
+        id: 'py-q4',
+        type: 'fill-blank',
+        prompt: 'Nhập từ khóa trong Python dùng để định nghĩa một hàm tự tạo (Function Definition):',
+        correctAnswer: 'def',
+        explanation: 'Từ khóa `def` (viết tắt của define) dùng để khai báo hàm trong Python, theo cú pháp: `def function_name(params):`',
+        hint: 'Có 3 chữ cái, viết tắt của "define".',
+        points: 15
+      },
+      {
+        id: 'py-q5',
+        type: 'true-false',
+        prompt: 'Trong Python, kiểu dữ liệu `set` cho phép chứa các phần tử trùng lặp và duy trì thứ tự chèn ban đầu.',
+        correctAnswer: false,
+        explanation: 'Sai. `set` trong Python là tập hợp các phần tử KHÔNG trùng lặp (duy nhất) và không có thứ tự chỉ mục (unordered).',
+        hint: 'Set tự động loại bỏ các giá trị trùng nhau.',
         points: 10
       }
     ]
   },
   {
-    id: 'quiz-science-nature',
-    title: 'Khoa Học & Trí Tuệ Tự Nhiên',
-    description: 'Khám phá thế giới vật lý, hóa học, vũ trụ và môi trường sống quanh ta.',
-    category: 'science',
-    difficulty: 'medium',
-    timeLimitMinutes: 10,
-    icon: 'Sparkles',
-    badgeColor: '#8b5cf6',
-    author: 'Science Daily',
-    createdAt: '2026-08-18',
+    id: 'quiz-mos-powerpoint',
+    title: 'Luyện Thi MOS PowerPoint & Kỹ Năng Thuyết Trình Đỉnh Cao',
+    description: 'Thiết kế Slide Master, hiệu ứng chuyển trang Morph, lồng ghép Video/Audio và thiết lập xuất bản bài thuyết trình chuẩn quốc tế.',
+    category: 'mos-powerpoint',
+    difficulty: 'easy',
+    timeLimitMinutes: 12,
+    icon: 'Presentation',
+    badgeColor: '#ea580c',
+    author: 'PH- TINHOCGENZ Presentation Unit',
+    createdAt: '2026-08-20',
     questions: [
       {
-        id: 'sci-q1',
+        id: 'ppt-q1',
         type: 'single',
-        prompt: 'Hành tinh nào gần Mặt Trời nhất trong Hệ Mặt Trời?',
-        options: ['Sao Kim (Venus)', 'Sao Thủy (Mercury)', 'Sao Hỏa (Mars)', 'Trái Đất (Earth)'],
-        correctAnswer: 1,
-        explanation: 'Sao Thủy (Mercury) là hành tinh nằm gần Mặt Trời nhất và cũng là hành tinh nhỏ nhất trong Hệ Mặt Trời.',
-        hint: 'Tên của một nguyên tố kim loại ở thể lỏng ở nhiệt độ thường.',
+        prompt: 'Chế độ xem nào trong PowerPoint cho phép bạn tạo một mẫu thiết kế chung (Logo, Font, Màu nền) tự động áp dụng cho tất cả slide con?',
+        options: [
+          'Slide Master View',
+          'Reading View',
+          'Outline View',
+          'Slide Sorter View'
+        ],
+        correctAnswer: 0,
+        explanation: 'Slide Master (trong tab View) là slide mẹ quy định bố cục, font chữ, logo và hình nền cho toàn bộ bài thuyết trình.',
+        hint: 'Tìm từ có chữ "Master" (Slide mẹ).',
         points: 10
       },
       {
-        id: 'sci-q2',
+        id: 'ppt-q2',
+        type: 'single',
+        prompt: 'Hiệu ứng chuyển trang (Transition) đột phá nào trong PowerPoint giúp tạo chuyển động mượt mà biến đổi hình khối giữa 2 slide liên tiếp?',
+        options: ['Morph', 'Fade', 'Push', 'Wipe'],
+        correctAnswer: 0,
+        explanation: 'Hiệu ứng Morph Transition tự động nhận diện đối tượng ở slide trước và biến đổi vị trí, kích thước, hình dáng mượt mà sang slide kế tiếp.',
+        hint: 'Hiệu ứng có tên Morph.',
+        points: 10
+      },
+      {
+        id: 'ppt-q3',
+        type: 'multiple',
+        prompt: 'Khi trình chiếu PowerPoint trước khán giả, những phím tắt nào sau đây hữu ích để điều khiển màn hình?',
+        options: [
+          'Phím B: Làm đen màn hình tạm thời (Black screen) để khán giả tập trung vào diễn giả',
+          'Phím W: Làm trắng màn hình tạm thời (White screen)',
+          'Phím F5: Bắt đầu trình chiếu từ slide đầu tiên',
+          'Phím Shift + F5: Bắt đầu trình chiếu từ slide hiện tại đang chọn'
+        ],
+        correctAnswer: [0, 1, 2, 3],
+        explanation: 'Tất cả 4 phím tắt trên đều là các phím trình chiếu tiêu chuẩn cực kỳ quan trọng trong PowerPoint.',
+        hint: 'Tất cả các lựa chọn đều chính xác.',
+        points: 20
+      }
+    ]
+  },
+  {
+    id: 'quiz-general-it-security',
+    title: 'Tin Học Cơ Sở, Mạng Máy Tính & An Toàn Thông Tin',
+    description: 'Kiến thức về địa chỉ IP, tên miền DNS, mô hình Client-Server, mã hóa dữ liệu, tường lửa và phòng chống mã độc/mã hóa tống tiền Ransomware.',
+    category: 'general-it',
+    difficulty: 'medium',
+    timeLimitMinutes: 15,
+    icon: 'Network',
+    badgeColor: '#6366f1',
+    author: 'PH- TINHOCGENZ Security Lab',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'net-q1',
+        type: 'single',
+        prompt: 'Hệ thống phân giải tên miền (DNS - Domain Name System) có nhiệm vụ chính là gì trong mạng Internet?',
+        options: [
+          'Chuyển đổi tên miền dạng chữ (vd: tinhocgenz.io.vn) sang địa chỉ IP dạng số (vd: 76.76.21.21)',
+          'Tăng tốc độ đường truyền dây cáp quang',
+          'Quét và diệt virus trên máy tính người dùng',
+          'Nén dung lượng file gửi qua email'
+        ],
+        correctAnswer: 0,
+        explanation: 'DNS giống như một cuốn "Danh bạ điện thoại" của Internet, giúp ánh xạ tên miền dễ nhớ của con người sang địa chỉ IP của máy chủ máy tính.',
+        hint: 'DNS giúp kết nối tên miền với IP máy chủ.',
+        points: 10
+      },
+      {
+        id: 'net-q2',
+        type: 'single',
+        prompt: 'Địa chỉ IPv4 chuẩn được tạo thành bởi bao nhiêu bit nhị phân và chia thành mấy nhóm (Octets)?',
+        options: [
+          '32 bits, chia thành 4 nhóm (mỗi nhóm 8 bits)',
+          '64 bits, chia thành 8 nhóm',
+          '128 bits, chia thành 16 nhóm',
+          '16 bits, chia thành 2 nhóm'
+        ],
+        correctAnswer: 0,
+        explanation: 'Địa chỉ IPv4 có độ dài 32 bit, biểu diễn dưới dạng 4 số thập phân cách nhau bằng dấu chấm (ví dụ: 192.168.1.1). IPv6 có độ dài 128 bit.',
+        hint: 'IPv4 gồm 4 số thập phân từ 0 đến 255.',
+        points: 10
+      },
+      {
+        id: 'net-q3',
         type: 'true-false',
-        prompt: 'Âm thanh có thể truyền đi trong môi trường chân không ngoài không gian.',
-        correctAnswer: false,
-        explanation: 'Sai (False). Âm thanh là sóng cơ học, cần môi trường vật chất (chất rắn, lỏng, khí) có các phân tử dao động để truyền đi. Chân không không có vật chất nên âm thanh không truyền được.',
-        hint: 'Sóng âm có cần hạt vật chất để dao động không?',
+        prompt: 'Giao thức HTTPS sử dụng chứng chỉ SSL/TLS để mã hóa dữ liệu truyền giữa trình duyệt của người dùng và máy chủ web nhằm chống nghe lén.',
+        correctAnswer: true,
+        explanation: 'Đúng. Chữ "S" trong HTTPS là "Secure", dữ liệu được mã hóa đầu cuối bằng SSL/TLS ngăn chặn kẻ tấn công đánh cắp mật khẩu và thông tin trên đường truyền.',
         points: 10
       },
       {
-        id: 'sci-q3',
-        type: 'fill-blank',
-        prompt: 'Công thức hóa học của nước là gì? (Nhập ký hiệu)',
-        correctAnswer: 'H2O',
-        explanation: 'Nước được cấu tạo bởi hai nguyên tử Hydro và một nguyên tử Oxy (H2O).',
-        hint: '2 nguyên tử H và 1 nguyên tử O.',
-        points: 10
+        id: 'net-q4',
+        type: 'matching',
+        prompt: 'Hãy ghép nối các cổng dịch vụ mạng (Network Port) tiêu chuẩn với giao thức tương ứng:',
+        matchingPairs: [
+          { id: 'm1', left: 'Port 80', right: 'HTTP (Web không mã hóa)' },
+          { id: 'm2', left: 'Port 443', right: 'HTTPS (Web bảo mật SSL/TLS)' },
+          { id: 'm3', left: 'Port 22', right: 'SSH (Truy cập dòng lệnh máy chủ từ xa an toàn)' },
+          { id: 'm4', left: 'Port 53', right: 'DNS (Phân giải tên miền mạng)' }
+        ],
+        explanation: 'Port 80 HTTP, Port 443 HTTPS, Port 22 SSH và Port 53 DNS là các cổng mạng tiêu chuẩn thế giới.',
+        points: 20
       }
     ]
   }

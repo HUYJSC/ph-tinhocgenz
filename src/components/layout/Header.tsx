@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Volume2, VolumeX, Flame, Award } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -8,7 +8,9 @@ interface HeaderProps {
   streak: number;
   totalPoints: number;
   studentName: string;
-  onEditName?: () => void;
+  studentCode?: string;
+  isAdmin?: boolean;
+  onOpenAuthModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,7 +19,9 @@ export const Header: React.FC<HeaderProps> = ({
   streak,
   totalPoints,
   studentName,
-  onEditName
+  studentCode,
+  isAdmin = false,
+  onOpenAuthModal
 }) => {
   const [isMuted, setIsMuted] = React.useState(soundFx.isMuted);
 
@@ -29,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="app-header">
+      {/* Brand & User Profile Pill */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div
           style={{
@@ -52,16 +57,51 @@ export const Header: React.FC<HeaderProps> = ({
           />
         </div>
         <div>
-          <h1 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            PH- TINHOCGENZ
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <h1 style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              PH- TINHOCGENZ
+            </h1>
+            {isAdmin ? (
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                  color: '#fff',
+                  padding: '1px 6px',
+                  borderRadius: 'var(--radius-full)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px'
+                }}
+              >
+                <Shield size={10} />
+                <span>Giảng Viên</span>
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  color: 'var(--accent-primary)',
+                  padding: '1px 6px',
+                  borderRadius: 'var(--radius-full)'
+                }}
+              >
+                Học Viên
+              </span>
+            )}
+          </div>
+
           <p
-            onClick={onEditName}
-            title="Bấm để đổi tên học viên"
+            onClick={onOpenAuthModal}
+            title="Bấm để đổi tài khoản Học Viên / Giảng Viên"
             style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
             <span>{studentName}</span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>✎</span>
+            {studentCode && <span style={{ color: 'var(--text-muted)' }}>({studentCode})</span>}
+            <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>✎ Đổi</span>
           </p>
         </div>
       </div>

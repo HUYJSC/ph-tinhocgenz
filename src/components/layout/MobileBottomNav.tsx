@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck } from 'lucide-react';
+import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Shield } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
 import { soundFx } from '../../utils/audio';
 
@@ -7,20 +7,38 @@ interface MobileBottomNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   bookmarkCount: number;
+  isAdmin?: boolean;
+}
+
+interface BottomNavItem {
+  id: ActiveTab;
+  label: string;
+  icon: any;
+  count?: number;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
   setActiveTab,
-  bookmarkCount
+  bookmarkCount,
+  isAdmin = false
 }) => {
-  const tabs = [
-    { id: 'quizzes', label: 'Bài tập', icon: BookOpen },
+  const studentTabs: BottomNavItem[] = [
+    { id: 'quizzes', label: 'Đề thi', icon: BookOpen },
     { id: 'flashcards', label: 'Flashcard', icon: Layers },
     { id: 'creator', label: 'Tạo đề', icon: PlusCircle },
     { id: 'analytics', label: 'Tiến độ', icon: BarChart2 },
     { id: 'bookmarks', label: 'Đã lưu', icon: BookmarkCheck, count: bookmarkCount }
   ];
+
+  const adminTabs: BottomNavItem[] = [
+    { id: 'admin', label: 'Quản trị', icon: Shield },
+    { id: 'quizzes', label: 'Đề thi', icon: BookOpen },
+    { id: 'creator', label: 'Tạo đề', icon: PlusCircle },
+    { id: 'flashcards', label: 'Flashcard', icon: Layers }
+  ];
+
+  const tabs: BottomNavItem[] = isAdmin ? adminTabs : studentTabs;
 
   const handleSelect = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -46,7 +64,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               height: '100%',
               background: 'transparent',
               border: 'none',
-              color: isActive ? 'var(--accent-primary)' : 'var(--text-muted)',
+              color: isActive ? (tab.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'var(--text-muted)',
               cursor: 'pointer',
               position: 'relative',
               padding: '6px 0'
@@ -87,7 +105,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   width: '24px',
                   height: '3px',
                   borderRadius: '0 0 4px 4px',
-                  background: 'var(--accent-primary)'
+                  background: tab.id === 'admin' ? '#d97706' : 'var(--accent-primary)'
                 }}
               />
             )}

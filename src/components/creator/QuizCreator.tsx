@@ -238,11 +238,12 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
                     outline: 'none'
                   }}
                 >
-                  <option value="programming">Lập trình & CNTT</option>
-                  <option value="english">Tiếng Anh</option>
-                  <option value="math">Toán & Logic</option>
-                  <option value="informatics">Tin học văn phòng</option>
-                  <option value="science">Khoa học tự nhiên</option>
+                  <option value="mos-excel">MOS Excel (Bảng tính & Hàm)</option>
+                  <option value="mos-word">MOS Word (Văn bản & Mail Merge)</option>
+                  <option value="mos-powerpoint">MOS PowerPoint (Trình chiếu)</option>
+                  <option value="ic3-gs">Chuẩn Quốc Tế IC3 GS6</option>
+                  <option value="programming">Lập trình Python & Thuật toán</option>
+                  <option value="general-it">Mạng Máy Tính & An Toàn IT</option>
                 </select>
               </div>
 

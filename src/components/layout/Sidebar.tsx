@@ -1,29 +1,51 @@
 import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone } from 'lucide-react';
+import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, User } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
-export type ActiveTab = 'quizzes' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks';
+export type ActiveTab = 'quizzes' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
 
 interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   bookmarkCount: number;
   onOpenInstallModal: () => void;
+  onOpenAuthModal: () => void;
+  isAdmin: boolean;
+  studentName: string;
+}
+
+interface NavItem {
+  id: ActiveTab;
+  label: string;
+  icon: any;
+  count?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   bookmarkCount,
-  onOpenInstallModal
+  onOpenInstallModal,
+  onOpenAuthModal,
+  isAdmin,
+  studentName
 }) => {
-  const navItems = [
-    { id: 'quizzes', label: 'Kho Bài Tập & Đề Thi', icon: BookOpen },
-    { id: 'flashcards', label: 'Thẻ Ghi Nhớ (Cards)', icon: Layers },
+  const studentNavItems: NavItem[] = [
+    { id: 'quizzes', label: 'Kho Đề Thi Tin Học', icon: BookOpen },
+    { id: 'flashcards', label: 'Thẻ Ghi Nhớ (MOS/IC3)', icon: Layers },
     { id: 'analytics', label: 'Tiến Độ & Thành Tích', icon: BarChart2 },
-    { id: 'creator', label: 'Tạo Đề Thi Mới', icon: PlusCircle },
-    { id: 'bookmarks', label: 'Câu Đã Đánh Dấu', icon: BookmarkCheck, count: bookmarkCount }
+    { id: 'creator', label: 'Soạn Đề Thi Tự Do', icon: PlusCircle },
+    { id: 'bookmarks', label: 'Câu Hỏi Đã Lưu', icon: BookmarkCheck, count: bookmarkCount }
   ];
+
+  const adminNavItems: NavItem[] = [
+    { id: 'admin', label: 'Cổng Quản Trị Giảng Viên', icon: Shield },
+    { id: 'quizzes', label: 'Xem Đề Thi Học Sinh', icon: BookOpen },
+    { id: 'creator', label: 'Tạo Đề Thi Mới', icon: PlusCircle },
+    { id: 'flashcards', label: 'Thẻ Ghi Nhớ Flashcards', icon: Layers }
+  ];
+
+  const currentNavItems: NavItem[] = isAdmin ? adminNavItems : studentNavItems;
 
   const handleSelect = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -32,6 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className="sidebar">
+      {/* Brand Header */}
       <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid var(--border-color)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
@@ -66,9 +89,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
+      {/* Account Info Pill */}
+      <div style={{ padding: '12px 14px 4px' }}>
+        <div
+          onClick={onOpenAuthModal}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 12px',
+            borderRadius: 'var(--radius-md)',
+            background: isAdmin ? 'rgba(217, 119, 6, 0.1)' : 'rgba(37, 99, 235, 0.08)',
+            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(37, 99, 235, 0.2)',
+            cursor: 'pointer'
+          }}
+          title="Bấm để đổi tài khoản Học Viên / Giảng Viên"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            {isAdmin ? (
+              <Shield size={16} color="#d97706" />
+            ) : (
+              <User size={16} color="var(--accent-primary)" />
+            )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {studentName}
+              </div>
+              <div style={{ fontSize: '0.68rem', color: isAdmin ? '#d97706' : 'var(--text-secondary)' }}>
+                {isAdmin ? 'Quản Trị Viên 🔑' : 'Tài Khoản Học Viên'}
+              </div>
+            </div>
+          </div>
+          <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 700 }}>Đổi</span>
+        </div>
+      </div>
+
       {/* Navigation List */}
-      <nav style={{ padding: '16px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        {navItems.map(item => {
+      <nav style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {currentNavItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
@@ -80,20 +138,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 width: '100%',
-                padding: '12px 14px',
+                padding: '11px 14px',
                 borderRadius: 'var(--radius-md)',
-                background: isActive ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
-                border: isActive ? '1px solid rgba(37, 99, 235, 0.25)' : '1px solid transparent',
-                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                background: isActive ? (item.id === 'admin' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(37, 99, 235, 0.08)') : 'transparent',
+                border: isActive ? (item.id === 'admin' ? '1px solid #d97706' : '1px solid rgba(37, 99, 235, 0.25)') : '1px solid transparent',
+                color: isActive ? (item.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'var(--text-secondary)',
                 fontWeight: isActive ? 700 : 500,
-                fontSize: '0.9rem',
+                fontSize: '0.88rem',
                 cursor: 'pointer',
                 textAlign: 'left',
                 transition: 'all 0.18s ease'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Icon size={18} color={isActive ? 'var(--accent-primary)' : 'currentColor'} />
+                <Icon size={18} color={isActive ? (item.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'currentColor'} />
                 <span>{item.label}</span>
               </div>
               {item.count !== undefined && item.count > 0 && (
@@ -115,18 +173,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Bottom PWA Info / Help */}
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
+      {/* Bottom PWA & Admin switch info */}
+      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button
           onClick={onOpenInstallModal}
           style={{
             width: '100%',
-            padding: '10px',
+            padding: '9px',
             borderRadius: 'var(--radius-md)',
             background: 'rgba(37, 99, 235, 0.05)',
             border: '1px dashed rgba(37, 99, 235, 0.25)',
             color: 'var(--text-secondary)',
-            fontSize: '0.82rem',
+            fontSize: '0.8rem',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -134,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             gap: '8px'
           }}
         >
-          <Smartphone size={16} color="var(--accent-primary)" />
+          <Smartphone size={15} color="var(--accent-primary)" />
           <span>Cài app trên Điện thoại</span>
         </button>
       </div>

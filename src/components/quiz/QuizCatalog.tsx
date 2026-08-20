@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Quiz, SubjectCategory, Difficulty } from '../../types/quiz';
 import { QuizMode } from '../../hooks/useQuizEngine';
-import { Search, Timer, HelpCircle, Play, Sparkles, BookOpen, Trash2, Code2, Languages, Binary, ShieldCheck } from 'lucide-react';
+import { Search, Timer, HelpCircle, Play, Sparkles, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu, Network } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface QuizCatalogProps {
@@ -12,11 +12,12 @@ interface QuizCatalogProps {
 
 const CATEGORIES: { id: SubjectCategory; label: string; icon: any }[] = [
   { id: 'all', label: 'Tất cả', icon: BookOpen },
-  { id: 'programming', label: 'Lập Trình & CNTT', icon: Code2 },
-  { id: 'english', label: 'Tiếng Anh', icon: Languages },
-  { id: 'math', label: 'Toán & Logic', icon: Binary },
-  { id: 'informatics', label: 'Tin Học Văn Phòng', icon: ShieldCheck },
-  { id: 'science', label: 'Khoa Học', icon: Sparkles }
+  { id: 'mos-excel', label: 'MOS Excel', icon: FileSpreadsheet },
+  { id: 'mos-word', label: 'MOS Word', icon: FileText },
+  { id: 'mos-powerpoint', label: 'MOS PowerPoint', icon: Presentation },
+  { id: 'ic3-gs', label: 'Chuẩn Quốc Tế IC3', icon: Cpu },
+  { id: 'programming', label: 'Lập Trình Python', icon: Code2 },
+  { id: 'general-it', label: 'Mạng & Bảo Mật IT', icon: Network }
 ];
 
 export const QuizCatalog: React.FC<QuizCatalogProps> = ({

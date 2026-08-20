@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStorage } from './hooks/useLocalStorage';
+import { useAuth } from './hooks/useAuth';
 import { Header } from './components/layout/Header';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
@@ -10,8 +11,9 @@ import { FlashcardDeck } from './components/flashcards/FlashcardDeck';
 import { Dashboard } from './components/analytics/Dashboard';
 import { QuizCreator } from './components/creator/QuizCreator';
 import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions';
+import { AdminPortal } from './components/admin/AdminPortal';
+import { AuthModal } from './components/auth/AuthModal';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
-import { EditNameModal } from './components/ui/EditNameModal';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 
@@ -29,12 +31,43 @@ export function App() {
     resetAllProgress
   } = useAppStorage();
 
+  const {
+    user,
+    isAdmin,
+    loginAsStudent,
+    loginAsAdmin
+  } = useAuth();
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('quizzes');
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showEditNameModal, setShowEditNameModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Sync auth name to storage stats
+  useEffect(() => {
+    if (user.name && user.name !== stats.studentName) {
+      updateStudentName(user.name);
+    }
+  }, [user.name]);
+
+  // If user is admin, auto-switch to admin tab on initial load if desired
+  const handleStudentLogin = (name: string, studentCode?: string, schoolOrClass?: string) => {
+    loginAsStudent(name, studentCode, schoolOrClass);
+    updateStudentName(name);
+    if (activeTab === 'admin') {
+      setActiveTab('quizzes');
+    }
+  };
+
+  const handleAdminLogin = (pin: string, name?: string) => {
+    const res = loginAsAdmin(pin, name);
+    if (res.success) {
+      setActiveTab('admin');
+    }
+    return res;
+  };
 
   // Start a quiz session
   const handleStartQuiz = (quiz: Quiz, mode: QuizMode) => {
@@ -73,6 +106,9 @@ export function App() {
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
           onOpenInstallModal={() => setShowInstallModal(true)}
+          onOpenAuthModal={() => setShowAuthModal(true)}
+          isAdmin={isAdmin}
+          studentName={user.name}
         />
       )}
 
@@ -84,8 +120,10 @@ export function App() {
           toggleTheme={toggleTheme}
           streak={stats.currentStreak}
           totalPoints={stats.totalPoints}
-          studentName={stats.studentName}
-          onEditName={() => setShowEditNameModal(true)}
+          studentName={user.name}
+          studentCode={user.studentCode}
+          isAdmin={isAdmin}
+          onOpenAuthModal={() => setShowAuthModal(true)}
         />
 
         {/* Content Router */}
@@ -107,7 +145,7 @@ export function App() {
             <QuizResult
               quiz={activeQuiz}
               attempt={latestAttempt}
-              studentName={stats.studentName}
+              studentName={user.name}
               onRetry={handleRetryQuiz}
               onGoHome={handleExitQuiz}
             />
@@ -116,6 +154,18 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
+              {/* Admin Portal Tab */}
+              {activeTab === 'admin' && (
+                <AdminPortal
+                  quizzes={allQuizzes}
+                  attempts={stats.history}
+                  onAddQuiz={addCustomQuiz}
+                  onDeleteCustomQuiz={deleteCustomQuiz}
+                  onNavigateToCreator={() => setActiveTab('creator')}
+                  currentUser={user}
+                />
+              )}
+
               {activeTab === 'quizzes' && (
                 <QuizCatalog
                   quizzes={allQuizzes}
@@ -138,7 +188,7 @@ export function App() {
               {activeTab === 'creator' && (
                 <QuizCreator
                   onAddQuiz={addCustomQuiz}
-                  onSuccessNavigate={() => setActiveTab('quizzes')}
+                  onSuccessNavigate={() => setActiveTab(isAdmin ? 'admin' : 'quizzes')}
                 />
               )}
 
@@ -160,6 +210,7 @@ export function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
+          isAdmin={isAdmin}
         />
       )}
 
@@ -169,11 +220,12 @@ export function App() {
         onClose={() => setShowInstallModal(false)}
       />
 
-      <EditNameModal
-        isOpen={showEditNameModal}
-        currentName={stats.studentName}
-        onSave={updateStudentName}
-        onClose={() => setShowEditNameModal(false)}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        currentUser={user}
+        onLoginStudent={handleStudentLogin}
+        onLoginAdmin={handleAdminLogin}
       />
     </div>
   );

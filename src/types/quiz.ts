@@ -2,7 +2,14 @@ export type QuestionType = 'single' | 'multiple' | 'true-false' | 'fill-blank' |
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
-export type SubjectCategory = 'all' | 'programming' | 'english' | 'math' | 'informatics' | 'science';
+export type SubjectCategory =
+  | 'all'
+  | 'mos-excel'
+  | 'mos-word'
+  | 'mos-powerpoint'
+  | 'ic3-gs'
+  | 'programming'
+  | 'general-it';
 
 export interface MatchingPair {
   id: string;
