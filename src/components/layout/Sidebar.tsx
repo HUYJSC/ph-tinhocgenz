@@ -42,11 +42,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   studentName
 }) => {
   const studentNavItems: EdTechNavItem[] = [
-    // Section 1: HỌC TẬP & LUYỆN ĐỀ
+    // Section 1: HỌC TẬP & KHẢO THÍ
     {
       id: 'quizzes',
-      label: 'Kho Trắc Nghiệm',
-      subtitle: '300+ câu hỏi chuẩn hóa',
+      label: 'Khảo Thí & Luyện Đề',
+      subtitle: 'Ngân hàng câu hỏi chuẩn hóa',
       icon: BookOpen,
       accentColor: '#2563eb',
       bgTint: 'rgba(37, 99, 235, 0.12)',
@@ -54,8 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'assignments',
-      label: 'Đề Thi & Nộp Bài',
-      subtitle: 'Lưu tự động Google Drive',
+      label: 'Bài Tập & Đề Thi Mở',
+      subtitle: 'Nộp bài & bảo mật khảo thí',
       icon: FileText,
       accentColor: '#10b981',
       bgTint: 'rgba(16, 185, 129, 0.12)',
@@ -63,18 +63,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'flashcards',
-      label: 'Thẻ Ghi Nhớ Flashcard',
-      subtitle: 'Phím tắt & mẹo làm bài',
+      label: 'Học Phần Thẻ Ghi Nhớ',
+      subtitle: 'Hệ thống thuật ngữ & phím tắt',
       icon: Layers,
       accentColor: '#f59e0b',
       bgTint: 'rgba(245, 158, 11, 0.12)',
       section: 'learn'
     },
-    // Section 2: CÁ NHÂN & TIẾN ĐỘ
+    // Section 2: CÁ NHÂN & TIẾN ĐỘ HỌC TẬP
     {
       id: 'analytics',
-      label: 'Tiến Độ & Bảng Điểm',
-      subtitle: 'Thống kê XP & kỹ năng',
+      label: 'Hồ Sơ & Tiến Độ Học Tập',
+      subtitle: 'Báo cáo đánh giá năng lực',
       icon: BarChart2,
       accentColor: '#8b5cf6',
       bgTint: 'rgba(139, 92, 246, 0.12)',
@@ -82,8 +82,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'bookmarks',
-      label: 'Câu Hỏi Đã Lưu',
-      subtitle: 'Xem lại câu khó ôn tập',
+      label: 'Câu Hỏi Trọng Tâm Đã Lưu',
+      subtitle: 'Ôn tập kiến thức củng cố',
       icon: BookmarkCheck,
       accentColor: '#ec4899',
       bgTint: 'rgba(236, 72, 153, 0.12)',
@@ -93,11 +93,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const adminNavItems: EdTechNavItem[] = [
-    // Section 3: QUẢN TRỊ & GIẢNG VIÊN
+    // Section 3: QUẢN TRỊ & HỘI ĐỒNG KHẢO THÍ
     {
       id: 'admin',
-      label: 'Cổng Quản Trị Hệ Thống',
-      subtitle: 'Phân quyền & khảo thí',
+      label: 'Cổng Quản Trị Học Thuật',
+      subtitle: 'Phân quyền & giám sát đào tạo',
       icon: Shield,
       accentColor: '#d97706',
       bgTint: 'rgba(217, 119, 6, 0.15)',
@@ -105,8 +105,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'assignments',
-      label: 'Quản Lý Đề & Chấm Điểm',
-      subtitle: 'Đồng bộ Google Drive lớp',
+      label: 'Quản Lý Khảo Thí & Chấm Điểm',
+      subtitle: 'Đánh giá & công bố kết quả',
       icon: FileText,
       accentColor: '#10b981',
       bgTint: 'rgba(16, 185, 129, 0.12)',
@@ -115,8 +115,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'quizzes',
-      label: 'Ngân Hàng Trắc Nghiệm',
-      subtitle: 'Xem đề theo 6 phân hệ',
+      label: 'Ngân Hàng Khảo Thí',
+      subtitle: '10 Chương trình đào tạo chuẩn',
       icon: BookOpen,
       accentColor: '#2563eb',
       bgTint: 'rgba(37, 99, 235, 0.12)',
@@ -124,8 +124,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'creator',
-      label: 'Soạn Đề Thi Mới',
-      subtitle: 'Tạo trắc nghiệm & tự luận',
+      label: 'Xây Dựng Đề Thi Mới',
+      subtitle: 'Soạn thảo & ma trận đề thi',
       icon: PlusCircle,
       accentColor: '#06b6d4',
       bgTint: 'rgba(6, 182, 212, 0.12)',
@@ -133,8 +133,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'flashcards',
-      label: 'Bộ Thẻ Ghi Nhớ',
-      subtitle: 'Thuật ngữ & phím tắt',
+      label: 'Hệ Thống Thẻ Kiến Thức',
+      subtitle: 'Học phần thuật ngữ chuyên ngành',
       icon: Layers,
       accentColor: '#f59e0b',
       bgTint: 'rgba(245, 158, 11, 0.12)',

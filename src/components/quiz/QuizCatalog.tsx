@@ -104,14 +104,14 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
               <span>
                 {isStudent
                   ? `Chương Trình Đào Tạo: ${currentTrackName}`
-                  : 'Cổng Khảo Thí Giảng Viên • Toàn Bộ 6 Phân Hệ'}
+                  : 'Cổng Khảo Thí Học Thuật & Đánh Giá Chuẩn Hóa'}
               </span>
             </div>
 
             {isStudent && currentUser?.studentCode && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.12)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
-                  Mã SV: {currentUser.studentCode}
+                  Mã Học Viên: {currentUser.studentCode}
                 </span>
                 <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
                   {currentUser.schoolOrClass || 'Lớp Tin Học'}
@@ -122,14 +122,14 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
 
           <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '6px' }}>
             {isStudent
-              ? `Xin chào, ${currentUser?.name || 'Học viên'}! 👋`
-              : 'Ngân Hàng Đề Thi & Khảo Thí 6 Phân Hệ'}
+              ? `Không Gian Học Tập: ${currentUser?.name || 'Học Viên'}`
+              : 'Hệ Thống Đề Thi & Đánh Giá Năng Lực Chuẩn Hóa'}
           </h2>
 
           <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '780px', lineHeight: 1.5, margin: 0 }}>
             {isStudent
-              ? `Chào mừng bạn đến với không gian học tập trực tuyến môn "${currentTrackName}". Lựa chọn bài trắc nghiệm bên dưới để bắt đầu ôn luyện và kiểm tra kiến thức nhé!`
-              : 'Nền tảng kiểm tra đánh giá kiến thức tin học chuẩn hóa theo từng phân hệ đào tạo.'}
+              ? `Chào mừng bạn đến với học phần "${currentTrackName}". Hãy lựa chọn bài kiểm tra đánh giá năng lực bên dưới để thực hiện quá trình ôn luyện và kiểm tra chuẩn đầu ra.`
+              : 'Nền tảng kiểm tra, đánh giá kiến thức và khảo thí năng lực tin học theo 10 chương trình đào tạo chuẩn hóa.'}
           </p>
         </div>
       </div>
