@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell, RefreshCw } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -12,6 +12,7 @@ interface HeaderProps {
   programTrack?: string;
   isAdmin?: boolean;
   unreadNotificationCount?: number;
+  onChangeTrack?: () => void;
   onOpenNotifications?: () => void;
   onOpenAuthModal?: () => void;
 }
@@ -26,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   programTrack,
   isAdmin = false,
   unreadNotificationCount = 0,
+  onChangeTrack,
   onOpenNotifications,
   onOpenAuthModal
 }) => {
@@ -113,6 +115,31 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Switch Track Button */}
+        {onChangeTrack && (
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              onChangeTrack();
+            }}
+            title="Đổi Phân Hệ Đào Tạo (6 Khối CNTT)"
+            className="btn btn-secondary"
+            style={{
+              padding: '6px 12px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-secondary)'
+            }}
+          >
+            <RefreshCw size={14} color="var(--accent-primary)" />
+            <span>Đổi Phân Hệ</span>
+          </button>
+        )}
+
         {/* Teacher Real-time Notification Bell */}
         {isAdmin && onOpenNotifications && (
           <button

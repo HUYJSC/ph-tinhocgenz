@@ -17,8 +17,10 @@ import { StudentAssignmentView } from './components/assignment/StudentAssignment
 import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
 import { AuthModal } from './components/auth/AuthModal';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
+import { TrackGatewayScreen } from './components/gateway/TrackGatewayScreen';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
+import { CurriculumTrack } from './types/auth';
 
 export function App() {
   const {
@@ -41,7 +43,8 @@ export function App() {
     loginWithStudentCode,
     loginAsAdmin,
     createStudentAccount,
-    deleteStudentAccount
+    deleteStudentAccount,
+    switchStudentTrack
   } = useAuth();
 
   const {
@@ -57,6 +60,17 @@ export function App() {
     markNotificationAsRead
   } = useAssignmentStorage();
 
+  // Track Gateway State (Forced track selection upfront)
+  const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack | null>(() => {
+    try {
+      const saved = localStorage.getItem('phtinhocgenz_selected_track_v1');
+      if (saved) return saved as CurriculumTrack;
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('quizzes');
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
@@ -71,11 +85,36 @@ export function App() {
     }
   }, [user.name]);
 
+  // Handle Track Selection from Gateway
+  const handleSelectTrack = (track: CurriculumTrack) => {
+    setSelectedTrack(track);
+    switchStudentTrack(track);
+    try {
+      localStorage.setItem('phtinhocgenz_selected_track_v1', track);
+    } catch (e) {
+      console.error(e);
+    }
+    setActiveTab('quizzes');
+  };
+
+  // Open Gateway to change track anytime
+  const handleOpenGateway = () => {
+    setSelectedTrack(null);
+    try {
+      localStorage.removeItem('phtinhocgenz_selected_track_v1');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Handle Login Handlers
   const handleStudentLogin = (studentCode: string, password?: string) => {
     const res = loginWithStudentCode(studentCode, password);
     if (res.success && res.user) {
       updateStudentName(res.user.name);
+      if (res.user.programTrack) {
+        setSelectedTrack(res.user.programTrack);
+      }
       if (activeTab === 'admin' || activeTab === 'creator') {
         setActiveTab('quizzes');
       }
@@ -119,6 +158,28 @@ export function App() {
     }
   };
 
+  // 1. Mandatory Track Gateway Screen (Shown when visitor hasn't chosen a track yet)
+  if (!selectedTrack && !isAdmin) {
+    return (
+      <div className={`app-container ${theme}`}>
+        <TrackGatewayScreen
+          onSelectTrack={handleSelectTrack}
+          onOpenAdminLogin={() => setShowAuthModal(true)}
+        />
+
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          currentUser={user}
+          studentAccounts={studentAccounts}
+          onLoginStudent={handleStudentLogin}
+          onLoginAdmin={handleAdminLogin}
+        />
+      </div>
+    );
+  }
+
+  // 2. Normal In-Session Learning App (Locked to selected track or Admin)
   return (
     <div className={`app-container ${theme}`}>
       {/* Desktop Sidebar (hidden when taking active quiz) */}
@@ -128,6 +189,7 @@ export function App() {
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
           unreadNotificationCount={unreadNotificationCount}
+          onChangeTrack={handleOpenGateway}
           onOpenInstallModal={() => setShowInstallModal(true)}
           onOpenAuthModal={() => setShowAuthModal(true)}
           isAdmin={isAdmin}
@@ -145,9 +207,10 @@ export function App() {
           totalPoints={stats.totalPoints}
           studentName={user.name}
           studentCode={user.studentCode}
-          programTrack={user.programTrack}
+          programTrack={selectedTrack || user.programTrack}
           isAdmin={isAdmin}
           unreadNotificationCount={unreadNotificationCount}
+          onChangeTrack={handleOpenGateway}
           onOpenNotifications={() => setActiveTab('assignments')}
           onOpenAuthModal={() => setShowAuthModal(true)}
         />
@@ -213,7 +276,7 @@ export function App() {
                   <StudentAssignmentView
                     assignments={assignments}
                     submissions={submissions}
-                    currentUser={user}
+                    currentUser={{ ...user, programTrack: selectedTrack || user.programTrack }}
                     onSubmitAssignment={submitAssignment}
                   />
                 )
@@ -222,7 +285,7 @@ export function App() {
               {activeTab === 'quizzes' && (
                 <QuizCatalog
                   quizzes={allQuizzes}
-                  currentUser={user}
+                  currentUser={{ ...user, programTrack: selectedTrack || user.programTrack }}
                   onStartQuiz={handleStartQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
                 />
@@ -231,7 +294,7 @@ export function App() {
               {activeTab === 'flashcards' && (
                 <FlashcardDeck
                   quizzes={allQuizzes}
-                  currentUser={user}
+                  currentUser={{ ...user, programTrack: selectedTrack || user.programTrack }}
                 />
               )}
 
