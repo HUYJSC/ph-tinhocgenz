@@ -36,6 +36,14 @@ export interface Assignment {
   createdAt: string;
 }
 
+export interface GoogleDriveConfig {
+  driveFolderUrl: string;
+  scriptWebhookUrl?: string;
+  folderName: string;
+  autoSyncEnabled: boolean;
+  lastConnectedAt?: string;
+}
+
 export interface AssignmentSubmission {
   id: string;
   assignmentId: string;
@@ -48,6 +56,9 @@ export interface AssignmentSubmission {
   attachedFileName?: string;
   attachedFileSize?: string;
   attachedFileUrl?: string; // base64 or object
+  driveFileUrl?: string; // Google Drive file link
+  driveFolderUrl?: string; // Google Drive target folder link
+  driveSyncStatus?: 'synced' | 'local' | 'cloud_link' | 'pending';
   timeSpentSeconds: number;
   submittedAt: string;
   status: 'submitted' | 'graded' | 'late';

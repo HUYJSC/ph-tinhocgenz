@@ -58,6 +58,8 @@ export function App() {
     submissions,
     notifications,
     unreadNotificationCount,
+    googleDriveConfig,
+    updateGoogleDriveConfig,
     createAssignment,
     deleteAssignment,
     toggleAssignmentOpen,
@@ -261,6 +263,8 @@ export function App() {
                     assignments={assignments}
                     submissions={submissions}
                     notifications={notifications}
+                    googleDriveConfig={googleDriveConfig}
+                    onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
                     currentUser={user}
                     onCreateAssignment={createAssignment}
                     onDeleteAssignment={deleteAssignment}

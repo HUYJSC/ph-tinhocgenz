@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Assignment, AssignmentSubmission, TeacherNotification } from '../types/assignment';
+import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../types/assignment';
 import { SAMPLE_INFORMATICS_EXAMS } from '../utils/documentParser';
+import { uploadFileToGoogleDrive } from '../utils/googleDriveService';
 
-const ASSIGNMENTS_KEY = 'phtinhocgenz_assignments_v1';
-const SUBMISSIONS_KEY = 'phtinhocgenz_submissions_v1';
-const NOTIFICATIONS_KEY = 'phtinhocgenz_notifications_v1';
+const ASSIGNMENTS_KEY = 'phtinhocgenz_assignments_v2';
+const SUBMISSIONS_KEY = 'phtinhocgenz_submissions_v2';
+const NOTIFICATIONS_KEY = 'phtinhocgenz_notifications_v2';
+const DRIVE_CONFIG_KEY = 'phtinhocgenz_drive_config_v2';
+
+export const DEFAULT_DRIVE_CONFIG: GoogleDriveConfig = {
+  driveFolderUrl: 'https://drive.google.com/drive/my-drive',
+  scriptWebhookUrl: '',
+  folderName: 'PH_TINHOCGENZ_BAI_NOP',
+  autoSyncEnabled: true,
+  lastConnectedAt: new Date().toISOString().split('T')[0]
+};
 
 export function useAssignmentStorage() {
   // 1. Assignments list
@@ -22,7 +32,7 @@ export function useAssignmentStorage() {
       id: `assign-sample-${idx + 1}`,
       title: sample.title || 'Đề Thi Tin Học Mẫu',
       description: sample.description || '',
-      category: sample.category || 'mos-excel',
+      category: sample.category || 'mos-office',
       teacherId: 'admin-01',
       teacherName: 'Thầy Huy (Giảng Viên Trưởng)',
       targetClass: sample.targetClass || 'Lớp Tin Học Chuẩn',
@@ -70,7 +80,20 @@ export function useAssignmentStorage() {
     return [];
   });
 
-  // Sync to local storage
+  // 4. Google Drive Cloud Storage Configuration
+  const [googleDriveConfig, setGoogleDriveConfig] = useState<GoogleDriveConfig>(() => {
+    try {
+      const saved = localStorage.getItem(DRIVE_CONFIG_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Failed to load drive config', e);
+    }
+    return DEFAULT_DRIVE_CONFIG;
+  });
+
+  // Persist assignments
   useEffect(() => {
     try {
       localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(assignments));
@@ -79,6 +102,7 @@ export function useAssignmentStorage() {
     }
   }, [assignments]);
 
+  // Persist submissions
   useEffect(() => {
     try {
       localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(submissions));
@@ -87,6 +111,7 @@ export function useAssignmentStorage() {
     }
   }, [submissions]);
 
+  // Persist notifications
   useEffect(() => {
     try {
       localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
@@ -94,6 +119,20 @@ export function useAssignmentStorage() {
       console.error('Failed to save notifications', e);
     }
   }, [notifications]);
+
+  // Persist Google Drive Config
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRIVE_CONFIG_KEY, JSON.stringify(googleDriveConfig));
+    } catch (e) {
+      console.error('Failed to save drive config', e);
+    }
+  }, [googleDriveConfig]);
+
+  // Update Google Drive settings
+  const updateGoogleDriveConfig = (newConfig: GoogleDriveConfig) => {
+    setGoogleDriveConfig(newConfig);
+  };
 
   // Create new assignment
   const createAssignment = (assignmentData: Omit<Assignment, 'id' | 'createdAt'>) => {
@@ -111,14 +150,14 @@ export function useAssignmentStorage() {
     setAssignments(prev => prev.filter(a => a.id !== assignmentId));
   };
 
-  // Toggle open/close status
+  // Toggle open status
   const toggleAssignmentOpen = (assignmentId: string) => {
     setAssignments(prev =>
       prev.map(a => (a.id === assignmentId ? { ...a, isOpen: !a.isOpen } : a))
     );
   };
 
-  // Student submits assignment
+  // Student submits assignment (With Google Drive Cloud Sync!)
   const submitAssignment = (
     assignmentId: string,
     studentId: string,
@@ -127,7 +166,8 @@ export function useAssignmentStorage() {
     schoolOrClass: string | undefined,
     answers: { [questionId: string]: string },
     timeSpentSeconds: number,
-    attachedFile?: { name: string; size: string; content?: string }
+    attachedFile?: { name: string; size: string; content?: string },
+    customDriveLink?: string
   ): AssignmentSubmission => {
     const targetAssignment = assignments.find(a => a.id === assignmentId);
     const submissionId = `sub-${Date.now()}`;
@@ -136,6 +176,35 @@ export function useAssignmentStorage() {
     const isLate = targetAssignment?.endTime
       ? new Date(targetAssignment.endTime).getTime() < now.getTime()
       : false;
+
+    // Determine Google Drive direct link
+    let resolvedDriveFileUrl = customDriveLink ? customDriveLink.trim() : undefined;
+    let resolvedDriveFolderUrl = googleDriveConfig.driveFolderUrl;
+    let resolvedSyncStatus: 'synced' | 'local' | 'cloud_link' = customDriveLink ? 'cloud_link' : 'local';
+
+    if (!resolvedDriveFileUrl && attachedFile) {
+      resolvedDriveFileUrl = googleDriveConfig.driveFolderUrl;
+      resolvedSyncStatus = 'synced';
+
+      // If Teacher configured Google Apps Script Webhook, trigger upload async
+      if (googleDriveConfig.scriptWebhookUrl) {
+        uploadFileToGoogleDrive({
+          studentCode,
+          studentName,
+          assignmentTitle: targetAssignment?.title || 'Bai_Tap_Tin_Hoc',
+          fileName: attachedFile.name,
+          fileBase64: attachedFile.content,
+          driveFolderUrl: googleDriveConfig.driveFolderUrl,
+          webhookUrl: googleDriveConfig.scriptWebhookUrl
+        }).then(res => {
+          if (res.success && res.driveFileUrl) {
+            setSubmissions(prev =>
+              prev.map(s => (s.id === submissionId ? { ...s, driveFileUrl: res.driveFileUrl } : s))
+            );
+          }
+        });
+      }
+    }
 
     const newSubmission: AssignmentSubmission = {
       id: submissionId,
@@ -149,6 +218,9 @@ export function useAssignmentStorage() {
       attachedFileName: attachedFile?.name,
       attachedFileSize: attachedFile?.size,
       attachedFileUrl: attachedFile?.content,
+      driveFileUrl: resolvedDriveFileUrl,
+      driveFolderUrl: resolvedDriveFolderUrl,
+      driveSyncStatus: resolvedSyncStatus,
       timeSpentSeconds,
       submittedAt: now.toLocaleString('vi-VN'),
       status: isLate ? 'late' : 'submitted'
@@ -198,17 +270,14 @@ export function useAssignmentStorage() {
     );
   };
 
-  // Notification read handlers
-  const markNotificationAsRead = (notifId: string) => {
+  // Mark notification as read
+  const markNotificationAsRead = (notificationId: string) => {
     setNotifications(prev =>
-      prev.map(n => (n.id === notifId ? { ...n, isRead: true } : n))
+      prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n))
     );
   };
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-  };
-
+  // Clear all notifications
   const clearAllNotifications = () => {
     setNotifications([]);
   };
@@ -220,13 +289,14 @@ export function useAssignmentStorage() {
     submissions,
     notifications,
     unreadNotificationCount,
+    googleDriveConfig,
+    updateGoogleDriveConfig,
     createAssignment,
     deleteAssignment,
     toggleAssignmentOpen,
     submitAssignment,
     gradeSubmission,
     markNotificationAsRead,
-    markAllNotificationsAsRead,
     clearAllNotifications
   };
 }
