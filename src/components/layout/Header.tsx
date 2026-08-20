@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell, RefreshCw } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell, LogOut } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -12,7 +12,7 @@ interface HeaderProps {
   programTrack?: string;
   isAdmin?: boolean;
   unreadNotificationCount?: number;
-  onChangeTrack?: () => void;
+  onLogout?: () => void;
   onOpenNotifications?: () => void;
   onOpenAuthModal?: () => void;
 }
@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   programTrack,
   isAdmin = false,
   unreadNotificationCount = 0,
-  onChangeTrack,
+  onLogout,
   onOpenNotifications,
   onOpenAuthModal
 }) => {
@@ -115,14 +115,14 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        {/* Switch Track Button */}
-        {onChangeTrack && (
+        {/* Logout / Switch Account Button */}
+        {onLogout && (
           <button
             onClick={() => {
               soundFx.playClick();
-              onChangeTrack();
+              onLogout();
             }}
-            title="Đổi Phân Hệ Đào Tạo (6 Khối CNTT)"
+            title="Đăng xuất / Đổi môn học hoặc đổi tài khoản"
             className="btn btn-secondary"
             style={{
               padding: '6px 12px',
@@ -131,12 +131,13 @@ export const Header: React.FC<HeaderProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-secondary)'
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'rgba(239, 68, 68, 0.08)',
+              color: '#ef4444'
             }}
           >
-            <RefreshCw size={14} color="var(--accent-primary)" />
-            <span>Đổi Phân Hệ</span>
+            <LogOut size={14} />
+            <span>Đăng Xuất</span>
           </button>
         )}
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, User, FileText, RefreshCw } from 'lucide-react';
+import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, User, FileText, LogOut } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 export type ActiveTab = 'quizzes' | 'assignments' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
@@ -9,7 +9,7 @@ interface SidebarProps {
   setActiveTab: (tab: ActiveTab) => void;
   bookmarkCount: number;
   unreadNotificationCount?: number;
-  onChangeTrack?: () => void;
+  onLogout?: () => void;
   onOpenInstallModal: () => void;
   onOpenAuthModal: () => void;
   isAdmin: boolean;
@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   bookmarkCount,
   unreadNotificationCount = 0,
-  onChangeTrack,
+  onLogout,
   onOpenInstallModal,
   onOpenAuthModal,
   isAdmin,
@@ -178,21 +178,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Bottom PWA info & Switch Track */}
+      {/* Bottom PWA info & Logout */}
       <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {onChangeTrack && (
+        {onLogout && (
           <button
             onClick={() => {
               soundFx.playClick();
-              onChangeTrack();
+              onLogout();
             }}
             style={{
               width: '100%',
               padding: '9px',
               borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--accent-primary)',
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#ef4444',
               fontSize: '0.82rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -202,8 +202,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               gap: '8px'
             }}
           >
-            <RefreshCw size={14} />
-            <span>Đổi Phân Hệ Đào Tạo</span>
+            <LogOut size={14} />
+            <span>Đăng Xuất / Đổi Môn</span>
           </button>
         )}
 

@@ -15,12 +15,13 @@ import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions'
 import { AdminPortal } from './components/admin/AdminPortal';
 import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
 import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
-import { AuthModal } from './components/auth/AuthModal';
+import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
-import { TrackGatewayScreen } from './components/gateway/TrackGatewayScreen';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
+
+const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
 export function App() {
   const {
@@ -60,15 +61,14 @@ export function App() {
     markNotificationAsRead
   } = useAssignmentStorage();
 
-  // Track Gateway State (Forced track selection upfront)
-  const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack | null>(() => {
+  // Active Session state (Enforces Unified Auth Gateway upfront!)
+  const [isSessionActive, setIsSessionActive] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('phtinhocgenz_selected_track_v1');
-      if (saved) return saved as CurriculumTrack;
+      const saved = localStorage.getItem(SESSION_ACTIVE_KEY);
+      return saved === 'true';
     } catch (e) {
-      console.error(e);
+      return false;
     }
-    return null;
   });
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('quizzes');
@@ -76,7 +76,6 @@ export function App() {
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sync auth name to storage stats
   useEffect(() => {
@@ -85,49 +84,45 @@ export function App() {
     }
   }, [user.name]);
 
-  // Handle Track Selection from Gateway
-  const handleSelectTrack = (track: CurriculumTrack) => {
-    setSelectedTrack(track);
-    switchStudentTrack(track);
-    try {
-      localStorage.setItem('phtinhocgenz_selected_track_v1', track);
-    } catch (e) {
-      console.error(e);
-    }
-    setActiveTab('quizzes');
-  };
-
-  // Open Gateway to change track anytime
-  const handleOpenGateway = () => {
-    setSelectedTrack(null);
-    try {
-      localStorage.removeItem('phtinhocgenz_selected_track_v1');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // Handle Login Handlers
-  const handleStudentLogin = (studentCode: string, password?: string) => {
+  // Unified Student Login (Choose track + login code + locked inside that track!)
+  const handleStudentUnifiedLogin = (studentCode: string, password: string, selectedTrack: CurriculumTrack) => {
     const res = loginWithStudentCode(studentCode, password);
     if (res.success && res.user) {
       updateStudentName(res.user.name);
-      if (res.user.programTrack) {
-        setSelectedTrack(res.user.programTrack);
-      }
-      if (activeTab === 'admin' || activeTab === 'creator') {
-        setActiveTab('quizzes');
-      }
+      switchStudentTrack(selectedTrack);
+      setIsSessionActive(true);
+      setActiveTab('quizzes');
+      try {
+        localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
+      } catch (e) {}
     }
     return res;
   };
 
-  const handleAdminLogin = (pin: string, name?: string) => {
+  // Unified Admin Login (Choose track or All tracks + PIN)
+  const handleAdminUnifiedLogin = (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => {
     const res = loginAsAdmin(pin, name);
-    if (res.success) {
+    if (res.success && res.user) {
+      if (selectedTrack && selectedTrack !== 'all') {
+        switchStudentTrack(selectedTrack);
+      }
+      setIsSessionActive(true);
       setActiveTab('admin');
+      try {
+        localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
+      } catch (e) {}
     }
     return res;
+  };
+
+  // Logout / Switch track handler
+  const handleLogout = () => {
+    setIsSessionActive(false);
+    setActiveQuiz(null);
+    setLatestAttempt(null);
+    try {
+      localStorage.removeItem(SESSION_ACTIVE_KEY);
+    } catch (e) {}
   };
 
   // Start a quiz session
@@ -158,28 +153,20 @@ export function App() {
     }
   };
 
-  // 1. Mandatory Track Gateway Screen (Shown when visitor hasn't chosen a track yet)
-  if (!selectedTrack && !isAdmin) {
+  // 1. UNIFIED AUTH GATEWAY (Mandatory screen when not authenticated)
+  if (!isSessionActive) {
     return (
       <div className={`app-container ${theme}`}>
-        <TrackGatewayScreen
-          onSelectTrack={handleSelectTrack}
-          onOpenAdminLogin={() => setShowAuthModal(true)}
-        />
-
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          currentUser={user}
+        <UnifiedAuthGateway
           studentAccounts={studentAccounts}
-          onLoginStudent={handleStudentLogin}
-          onLoginAdmin={handleAdminLogin}
+          onStudentLogin={handleStudentUnifiedLogin}
+          onAdminLogin={handleAdminUnifiedLogin}
         />
       </div>
     );
   }
 
-  // 2. Normal In-Session Learning App (Locked to selected track or Admin)
+  // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
     <div className={`app-container ${theme}`}>
       {/* Desktop Sidebar (hidden when taking active quiz) */}
@@ -189,9 +176,9 @@ export function App() {
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
           unreadNotificationCount={unreadNotificationCount}
-          onChangeTrack={handleOpenGateway}
+          onLogout={handleLogout}
           onOpenInstallModal={() => setShowInstallModal(true)}
-          onOpenAuthModal={() => setShowAuthModal(true)}
+          onOpenAuthModal={handleLogout}
           isAdmin={isAdmin}
           studentName={user.name}
         />
@@ -207,12 +194,12 @@ export function App() {
           totalPoints={stats.totalPoints}
           studentName={user.name}
           studentCode={user.studentCode}
-          programTrack={selectedTrack || user.programTrack}
+          programTrack={user.programTrack}
           isAdmin={isAdmin}
           unreadNotificationCount={unreadNotificationCount}
-          onChangeTrack={handleOpenGateway}
+          onLogout={handleLogout}
           onOpenNotifications={() => setActiveTab('assignments')}
-          onOpenAuthModal={() => setShowAuthModal(true)}
+          onOpenAuthModal={handleLogout}
         />
 
         {/* Content Router */}
@@ -276,7 +263,7 @@ export function App() {
                   <StudentAssignmentView
                     assignments={assignments}
                     submissions={submissions}
-                    currentUser={{ ...user, programTrack: selectedTrack || user.programTrack }}
+                    currentUser={user}
                     onSubmitAssignment={submitAssignment}
                   />
                 )
@@ -285,7 +272,7 @@ export function App() {
               {activeTab === 'quizzes' && (
                 <QuizCatalog
                   quizzes={allQuizzes}
-                  currentUser={{ ...user, programTrack: selectedTrack || user.programTrack }}
+                  currentUser={user}
                   onStartQuiz={handleStartQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
                 />
@@ -294,7 +281,7 @@ export function App() {
               {activeTab === 'flashcards' && (
                 <FlashcardDeck
                   quizzes={allQuizzes}
-                  currentUser={{ ...user, programTrack: selectedTrack || user.programTrack }}
+                  currentUser={user}
                 />
               )}
 
@@ -339,15 +326,6 @@ export function App() {
       <PWAInstallModal
         isOpen={showInstallModal}
         onClose={() => setShowInstallModal(false)}
-      />
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        currentUser={user}
-        studentAccounts={studentAccounts}
-        onLoginStudent={handleStudentLogin}
-        onLoginAdmin={handleAdminLogin}
       />
     </div>
   );
