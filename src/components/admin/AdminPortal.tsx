@@ -59,7 +59,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   // SEO State
-  const [googleVerificationCode, setGoogleVerificationCode] = useState(() => localStorage.getItem('phtinhocgenz_google_verification') || '');
+  const [googleVerificationCode, setGoogleVerificationCode] = useState(() => localStorage.getItem('phtinhocgenz_google_verification') || 'F0YlMxxac86DrPlxEzNaOWlngIDCknlTW5BfpyP9FZo');
   const [ga4Id, setGa4Id] = useState(() => localStorage.getItem('phtinhocgenz_ga4_id') || '');
   const [isCopiedSitemap, setIsCopiedSitemap] = useState(false);
   const [seoSavedSuccess, setSeoSavedSuccess] = useState(false);
