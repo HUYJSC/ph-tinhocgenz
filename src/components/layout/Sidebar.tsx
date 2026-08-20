@@ -1,13 +1,14 @@
 import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, User } from 'lucide-react';
+import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, User, FileText } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
-export type ActiveTab = 'quizzes' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
+export type ActiveTab = 'quizzes' | 'assignments' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
 
 interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   bookmarkCount: number;
+  unreadNotificationCount?: number;
   onOpenInstallModal: () => void;
   onOpenAuthModal: () => void;
   isAdmin: boolean;
@@ -25,13 +26,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   bookmarkCount,
+  unreadNotificationCount = 0,
   onOpenInstallModal,
   onOpenAuthModal,
   isAdmin,
   studentName
 }) => {
   const studentNavItems: NavItem[] = [
-    { id: 'quizzes', label: 'Kho Đề Thi Tin Học', icon: BookOpen },
+    { id: 'quizzes', label: 'Kho Trắc Nghiệm Tin Học', icon: BookOpen },
+    { id: 'assignments', label: 'Đề Thi Tài Liệu (Bảo Mật)', icon: FileText },
     { id: 'flashcards', label: 'Thẻ Ghi Nhớ (MOS/IC3)', icon: Layers },
     { id: 'analytics', label: 'Tiến Độ & Thành Tích', icon: BarChart2 },
     { id: 'creator', label: 'Soạn Đề Thi Tự Do', icon: PlusCircle },
@@ -40,6 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const adminNavItems: NavItem[] = [
     { id: 'admin', label: 'Cổng Quản Trị Giảng Viên', icon: Shield },
+    { id: 'assignments', label: 'Giao Đề & Quản Lý Nộp Bài', icon: FileText, count: unreadNotificationCount },
     { id: 'quizzes', label: 'Xem Đề Thi Học Sinh', icon: BookOpen },
     { id: 'creator', label: 'Tạo Đề Thi Mới', icon: PlusCircle },
     { id: 'flashcards', label: 'Thẻ Ghi Nhớ Flashcards', icon: Layers }
@@ -158,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span
                   style={{
                     fontSize: '0.75rem',
-                    background: 'var(--accent-primary)',
+                    background: item.id === 'assignments' && isAdmin ? '#ef4444' : 'var(--accent-primary)',
                     color: '#fff',
                     padding: '2px 8px',
                     borderRadius: 'var(--radius-full)',
@@ -173,7 +177,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Bottom PWA & Admin switch info */}
+      {/* Bottom PWA info */}
       <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button
           onClick={onOpenInstallModal}

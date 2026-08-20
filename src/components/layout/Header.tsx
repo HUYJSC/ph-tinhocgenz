@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -10,6 +10,8 @@ interface HeaderProps {
   studentName: string;
   studentCode?: string;
   isAdmin?: boolean;
+  unreadNotificationCount?: number;
+  onOpenNotifications?: () => void;
   onOpenAuthModal?: () => void;
 }
 
@@ -21,6 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   studentName,
   studentCode,
   isAdmin = false,
+  unreadNotificationCount = 0,
+  onOpenNotifications,
   onOpenAuthModal
 }) => {
   const [isMuted, setIsMuted] = React.useState(soundFx.isMuted);
@@ -107,6 +111,40 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Teacher Real-time Notification Bell */}
+        {isAdmin && onOpenNotifications && (
+          <button
+            onClick={onOpenNotifications}
+            title="Thông báo học sinh nộp bài"
+            className="btn btn-secondary btn-icon"
+            style={{ width: '36px', height: '36px', position: 'relative' }}
+          >
+            <Bell size={16} color={unreadNotificationCount > 0 ? '#ef4444' : 'currentColor'} />
+            {unreadNotificationCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '50%',
+                  background: '#ef4444',
+                  color: '#ffffff',
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 6px rgba(239, 68, 68, 0.5)'
+                }}
+              >
+                {unreadNotificationCount}
+              </span>
+            )}
+          </button>
+        )}
+
         {/* Streak Badge */}
         <div
           title="Chuỗi ngày học liên tục"

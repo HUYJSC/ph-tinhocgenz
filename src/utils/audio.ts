@@ -149,6 +149,10 @@ class SoundEngine {
       osc.stop(now + note.t + 0.4);
     });
   }
+
+  public playVictory() {
+    this.playFanfare();
+  }
 }
 
 export const soundFx = new SoundEngine();

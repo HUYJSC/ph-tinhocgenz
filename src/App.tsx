@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppStorage } from './hooks/useLocalStorage';
 import { useAuth } from './hooks/useAuth';
+import { useAssignmentStorage } from './hooks/useAssignmentStorage';
 import { Header } from './components/layout/Header';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
@@ -12,6 +13,8 @@ import { Dashboard } from './components/analytics/Dashboard';
 import { QuizCreator } from './components/creator/QuizCreator';
 import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions';
 import { AdminPortal } from './components/admin/AdminPortal';
+import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
+import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
 import { AuthModal } from './components/auth/AuthModal';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { Quiz, QuizAttempt } from './types/quiz';
@@ -38,6 +41,19 @@ export function App() {
     loginAsAdmin
   } = useAuth();
 
+  const {
+    assignments,
+    submissions,
+    notifications,
+    unreadNotificationCount,
+    createAssignment,
+    deleteAssignment,
+    toggleAssignmentOpen,
+    submitAssignment,
+    gradeSubmission,
+    markNotificationAsRead
+  } = useAssignmentStorage();
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('quizzes');
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
@@ -52,7 +68,7 @@ export function App() {
     }
   }, [user.name]);
 
-  // If user is admin, auto-switch to admin tab on initial load if desired
+  // Handle Login Handlers
   const handleStudentLogin = (name: string, studentCode?: string, schoolOrClass?: string) => {
     loginAsStudent(name, studentCode, schoolOrClass);
     updateStudentName(name);
@@ -105,6 +121,7 @@ export function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
+          unreadNotificationCount={unreadNotificationCount}
           onOpenInstallModal={() => setShowInstallModal(true)}
           onOpenAuthModal={() => setShowAuthModal(true)}
           isAdmin={isAdmin}
@@ -123,6 +140,8 @@ export function App() {
           studentName={user.name}
           studentCode={user.studentCode}
           isAdmin={isAdmin}
+          unreadNotificationCount={unreadNotificationCount}
+          onOpenNotifications={() => setActiveTab('assignments')}
           onOpenAuthModal={() => setShowAuthModal(true)}
         />
 
@@ -164,6 +183,30 @@ export function App() {
                   onNavigateToCreator={() => setActiveTab('creator')}
                   currentUser={user}
                 />
+              )}
+
+              {/* Classroom Assignments (DRM File Exams & Homework) */}
+              {activeTab === 'assignments' && (
+                isAdmin ? (
+                  <TeacherAssignmentManager
+                    assignments={assignments}
+                    submissions={submissions}
+                    notifications={notifications}
+                    currentUser={user}
+                    onCreateAssignment={createAssignment}
+                    onDeleteAssignment={deleteAssignment}
+                    onToggleOpen={toggleAssignmentOpen}
+                    onGradeSubmission={gradeSubmission}
+                    onMarkNotificationAsRead={markNotificationAsRead}
+                  />
+                ) : (
+                  <StudentAssignmentView
+                    assignments={assignments}
+                    submissions={submissions}
+                    currentUser={user}
+                    onSubmitAssignment={submitAssignment}
+                  />
+                )
               )}
 
               {activeTab === 'quizzes' && (
@@ -210,6 +253,7 @@ export function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
+          unreadNotificationCount={unreadNotificationCount}
           isAdmin={isAdmin}
         />
       )}

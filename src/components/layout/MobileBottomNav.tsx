@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Shield } from 'lucide-react';
+import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Shield, FileText } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
 import { soundFx } from '../../utils/audio';
 
@@ -7,6 +7,7 @@ interface MobileBottomNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   bookmarkCount: number;
+  unreadNotificationCount?: number;
   isAdmin?: boolean;
 }
 
@@ -21,21 +22,22 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
   setActiveTab,
   bookmarkCount,
+  unreadNotificationCount = 0,
   isAdmin = false
 }) => {
   const studentTabs: BottomNavItem[] = [
-    { id: 'quizzes', label: 'Đề thi', icon: BookOpen },
+    { id: 'quizzes', label: 'Trắc nghiệm', icon: BookOpen },
+    { id: 'assignments', label: 'Đề tài liệu', icon: FileText },
     { id: 'flashcards', label: 'Flashcard', icon: Layers },
-    { id: 'creator', label: 'Tạo đề', icon: PlusCircle },
     { id: 'analytics', label: 'Tiến độ', icon: BarChart2 },
     { id: 'bookmarks', label: 'Đã lưu', icon: BookmarkCheck, count: bookmarkCount }
   ];
 
   const adminTabs: BottomNavItem[] = [
     { id: 'admin', label: 'Quản trị', icon: Shield },
+    { id: 'assignments', label: 'Giao đề', icon: FileText, count: unreadNotificationCount },
     { id: 'quizzes', label: 'Đề thi', icon: BookOpen },
-    { id: 'creator', label: 'Tạo đề', icon: PlusCircle },
-    { id: 'flashcards', label: 'Flashcard', icon: Layers }
+    { id: 'creator', label: 'Tạo đề', icon: PlusCircle }
   ];
 
   const tabs: BottomNavItem[] = isAdmin ? adminTabs : studentTabs;
