@@ -411,3 +411,15 @@ body {
   overflow-x: auto;
   margin: 12px 0;
 }
+
+/* Responsive Helper Utilities */
+.desktop-inline {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .desktop-inline {
+    display: inline !important;
+  }
+}
+

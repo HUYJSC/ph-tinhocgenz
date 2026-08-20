@@ -77,41 +77,54 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
-      {/* Hero Welcome Banner with Enforced Course Track Badge */}
+      {/* Hero Welcome Banner with Enforced Course Track Badge & Student Greeting */}
       <div
         className="card"
         style={{
-          padding: '26px',
+          padding: '24px 22px',
           background: isStudent
-            ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.05) 100%)'
-            : 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%)',
+            ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%)'
+            : 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
           borderRadius: 'var(--radius-lg)',
-          marginBottom: '24px',
-          border: isStudent ? '1.5px solid rgba(37, 99, 235, 0.25)' : '1.5px solid rgba(217, 119, 6, 0.25)',
+          marginBottom: '22px',
+          border: isStudent ? '1.5px solid rgba(37, 99, 235, 0.22)' : '1.5px solid rgba(217, 119, 6, 0.25)',
           position: 'relative',
           overflow: 'hidden',
           boxShadow: 'var(--shadow-sm)'
         }}
       >
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 800, color: isStudent ? '#2563eb' : '#d97706', textTransform: 'uppercase', marginBottom: '4px' }}>
-            <ShieldCheck size={16} />
-            <span>
-              {isStudent
-                ? `Chương Trình Cấp Quyền Riêng: ${currentTrackName}`
-                : 'Cổng Giảng Viên • Toàn Bộ 6 Phân Hệ Đào Tạo'}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 800, color: isStudent ? '#2563eb' : '#d97706' }}>
+              <ShieldCheck size={16} />
+              <span>
+                {isStudent
+                  ? `Chương Trình Đào Tạo: ${currentTrackName}`
+                  : 'Cổng Khảo Thí Giảng Viên • Toàn Bộ 6 Phân Hệ'}
+              </span>
+            </div>
+
+            {isStudent && currentUser?.studentCode && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.12)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
+                  Mã SV: {currentUser.studentCode}
+                </span>
+                <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
+                  {currentUser.schoolOrClass || 'Lớp Tin Học'}
+                </span>
+              </div>
+            )}
           </div>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
+          <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '6px' }}>
             {isStudent
-              ? `Kho Trắc Nghiệm Dành Riêng Cho Bạn (${currentUser?.name})`
-              : 'Ngân Hàng Trắc Nghiệm Tin Học 6 Phân Hệ'}
+              ? `Xin chào, ${currentUser?.name || 'Học viên'}! 👋`
+              : 'Ngân Hàng Đề Thi & Khảo Thí 6 Phân Hệ'}
           </h2>
 
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', maxWidth: '780px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '780px', lineHeight: 1.5, margin: 0 }}>
             {isStudent
-              ? `Hệ thống đã tự động khóa và chỉ hiển thị các đề thi thuộc môn học "${currentTrackName}" theo phân công của giáo viên. Các môn học khác đã được ẩn để bạn tập trung cao nhất.`
+              ? `Chào mừng bạn đến với không gian học tập trực tuyến môn "${currentTrackName}". Lựa chọn bài trắc nghiệm bên dưới để bắt đầu ôn luyện và kiểm tra kiến thức nhé!`
               : 'Nền tảng kiểm tra đánh giá kiến thức tin học chuẩn hóa theo từng phân hệ đào tạo.'}
           </p>
         </div>

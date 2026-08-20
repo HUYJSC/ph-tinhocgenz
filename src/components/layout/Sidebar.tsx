@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, User, FileText, LogOut } from 'lucide-react';
+import { BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck, Smartphone, Shield, FileText, LogOut } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 export type ActiveTab = 'quizzes' | 'assignments' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
@@ -35,18 +35,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   studentName
 }) => {
   const studentNavItems: NavItem[] = [
-    { id: 'quizzes', label: 'Kho Trắc Nghiệm (6 Phân Hệ)', icon: BookOpen },
-    { id: 'assignments', label: 'Đề Thi & Bài Tập Lớp Học', icon: FileText },
+    { id: 'quizzes', label: 'Kho Trắc Nghiệm', icon: BookOpen },
+    { id: 'assignments', label: 'Đề Thi & Nộp Bài Tập', icon: FileText },
     { id: 'flashcards', label: 'Thẻ Ghi Nhớ Kiến Thức', icon: Layers },
-    { id: 'analytics', label: 'Tiến Độ & Điểm Số', icon: BarChart2 },
+    { id: 'analytics', label: 'Bảng Điểm & Tiến Độ', icon: BarChart2 },
     { id: 'bookmarks', label: 'Câu Hỏi Đã Lưu', icon: BookmarkCheck, count: bookmarkCount }
   ];
 
   const adminNavItems: NavItem[] = [
     { id: 'admin', label: 'Cổng Quản Trị Giảng Viên', icon: Shield },
-    { id: 'assignments', label: 'Giao Đề & Quản Lý Nộp Bài', icon: FileText, count: unreadNotificationCount },
-    { id: 'quizzes', label: 'Xem Đề Thi Học Sinh', icon: BookOpen },
-    { id: 'creator', label: 'Tạo Đề Thi Mới', icon: PlusCircle },
+    { id: 'assignments', label: 'Quản Lý Đề Thi & Chấm Bài', icon: FileText, count: unreadNotificationCount },
+    { id: 'quizzes', label: 'Xem Đề Thi Học Viên', icon: BookOpen },
+    { id: 'creator', label: 'Soạn Đề Thi Mới', icon: PlusCircle },
     { id: 'flashcards', label: 'Thẻ Ghi Nhớ Flashcards', icon: Layers }
   ];
 
@@ -60,77 +60,91 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="sidebar">
       {/* Brand Header */}
-      <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid var(--border-color)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div
             style={{
               width: '42px',
               height: '42px',
-              borderRadius: '10px',
+              borderRadius: '12px',
               background: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               padding: '3px',
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.12)',
+              border: '1.5px solid rgba(37, 99, 235, 0.18)',
               flexShrink: 0
             }}
           >
             <img
               src="/logo.png"
-              alt="PH Digital Education Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }}
+              alt="PH Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }}
             />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              PH- TINHOCGENZ
+            <div style={{ fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+              PH - TINHOCGENZ
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
-              Học Trực Tuyến • MOS / IC3
+            <div style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
+              Học Trực Tuyến Chuyên Nghiệp
             </div>
           </div>
         </div>
       </div>
 
-      {/* Account Info Pill */}
-      <div style={{ padding: '12px 14px 4px' }}>
+      {/* Prominent Student / Teacher Profile Card */}
+      <div style={{ padding: '12px 14px' }}>
         <div
           onClick={onOpenAuthModal}
           style={{
+            padding: '12px',
+            borderRadius: 'var(--radius-md)',
+            background: isAdmin
+              ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.09) 0%, rgba(245, 158, 11, 0.04) 100%)'
+              : 'linear-gradient(135deg, rgba(37, 99, 235, 0.09) 0%, rgba(16, 185, 129, 0.05) 100%)',
+            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(37, 99, 235, 0.2)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 12px',
-            borderRadius: 'var(--radius-md)',
-            background: isAdmin ? 'rgba(217, 119, 6, 0.1)' : 'rgba(37, 99, 235, 0.08)',
-            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(37, 99, 235, 0.2)',
-            cursor: 'pointer'
+            gap: '10px'
           }}
-          title="Bấm để đổi tài khoản Học Viên / Giảng Viên"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-            {isAdmin ? (
-              <Shield size={16} color="#d97706" />
-            ) : (
-              <User size={16} color="var(--accent-primary)" />
-            )}
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {studentName}
-              </div>
-              <div style={{ fontSize: '0.68rem', color: isAdmin ? '#d97706' : 'var(--text-secondary)' }}>
-                {isAdmin ? 'Quản Trị Viên 🔑' : 'Tài Khoản Học Viên'}
-              </div>
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: isAdmin
+                ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            {isAdmin ? <Shield size={18} /> : (studentName ? studentName.charAt(0).toUpperCase() : 'H')}
+          </div>
+
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {studentName}
+            </div>
+            <div style={{ fontSize: '0.72rem', color: isAdmin ? '#d97706' : '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isAdmin ? '#d97706' : '#10b981', display: 'inline-block' }}></span>
+              <span>{isAdmin ? 'Giảng Viên Quản Trị' : 'Học Viên Chính Thức'}</span>
             </div>
           </div>
-          <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 700 }}>Đổi</span>
         </div>
       </div>
 
       {/* Navigation List */}
-      <nav style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <nav style={{ padding: '0 10px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {currentNavItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -143,31 +157,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 width: '100%',
-                padding: '11px 14px',
+                padding: '10px 12px',
                 borderRadius: 'var(--radius-md)',
-                background: isActive ? (item.id === 'admin' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(37, 99, 235, 0.08)') : 'transparent',
+                background: isActive ? (item.id === 'admin' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(37, 99, 235, 0.09)') : 'transparent',
                 border: isActive ? (item.id === 'admin' ? '1px solid #d97706' : '1px solid rgba(37, 99, 235, 0.25)') : '1px solid transparent',
                 color: isActive ? (item.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'var(--text-secondary)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.88rem',
+                fontWeight: isActive ? 800 : 600,
+                fontSize: '0.86rem',
                 cursor: 'pointer',
                 textAlign: 'left',
-                transition: 'all 0.18s ease'
+                transition: 'all 0.15s ease'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Icon size={18} color={isActive ? (item.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'currentColor'} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Icon size={17} color={isActive ? (item.id === 'admin' ? '#d97706' : 'var(--accent-primary)') : 'currentColor'} />
                 <span>{item.label}</span>
               </div>
               {item.count !== undefined && item.count > 0 && (
                 <span
                   style={{
-                    fontSize: '0.75rem',
-                    background: item.id === 'assignments' && isAdmin ? '#ef4444' : 'var(--accent-primary)',
-                    color: '#fff',
-                    padding: '2px 8px',
+                    fontSize: '0.7rem',
+                    background: item.id === 'assignments' && unreadNotificationCount > 0 ? '#ef4444' : 'var(--accent-primary)',
+                    color: '#ffffff',
+                    padding: '1px 6px',
                     borderRadius: 'var(--radius-full)',
-                    fontWeight: 700
+                    fontWeight: 800
                   }}
                 >
                   {item.count}
@@ -178,8 +192,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Bottom PWA info & Logout */}
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* Footer Controls: PWA Install & Logout */}
+      <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button
+          onClick={onOpenInstallModal}
+          className="btn btn-secondary"
+          style={{ width: '100%', padding: '8px 12px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+        >
+          <Smartphone size={14} />
+          <span>Cài Đặt App Di Động</span>
+        </button>
+
         {onLogout && (
           <button
             onClick={() => {
@@ -188,45 +211,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }}
             style={{
               width: '100%',
-              padding: '9px',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(239, 68, 68, 0.08)',
+              padding: '8px 12px',
+              borderRadius: 'var(--radius-sm)',
               border: '1px solid rgba(239, 68, 68, 0.25)',
+              background: 'rgba(239, 68, 68, 0.06)',
               color: '#ef4444',
-              fontSize: '0.82rem',
+              fontSize: '0.78rem',
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '6px'
             }}
           >
             <LogOut size={14} />
             <span>Đăng Xuất / Đổi Môn</span>
           </button>
         )}
-
-        <button
-          onClick={onOpenInstallModal}
-          style={{
-            width: '100%',
-            padding: '9px',
-            borderRadius: 'var(--radius-md)',
-            background: 'rgba(37, 99, 235, 0.05)',
-            border: '1px dashed rgba(37, 99, 235, 0.25)',
-            color: 'var(--text-secondary)',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}
-        >
-          <Smartphone size={15} color="var(--accent-primary)" />
-          <span>Cài app trên Điện thoại</span>
-        </button>
       </div>
     </aside>
   );
