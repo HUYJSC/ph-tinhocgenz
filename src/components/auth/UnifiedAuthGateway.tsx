@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CurriculumTrack, StudentAccount, TRACK_LABELS, UserProfile } from '../../types/auth';
 import {
   User, Shield, KeyRound, ArrowRight, CheckCircle2,
-  Cpu, FileSpreadsheet, FileText, Presentation, Code2, Network
+  Cpu, FileSpreadsheet, FileText, Presentation, Code2, Network, ShieldAlert
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -348,8 +348,30 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               </div>
 
               {studentError && (
-                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '0.82rem', fontWeight: 600 }}>
-                  {studentError}
+                <div
+                  style={{
+                    padding: '16px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    border: '1.5px solid rgba(239, 68, 68, 0.35)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.6,
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'flex-start'
+                  }}
+                  className="animate-fade-in"
+                >
+                  <ShieldAlert size={22} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 800, color: '#ef4444', marginBottom: '4px', fontSize: '0.9rem' }}>
+                      Thông Báo Xác Thực & Phân Quyền
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)' }}>
+                      {studentError}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -469,8 +491,30 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               </div>
 
               {adminError && (
-                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '0.82rem', fontWeight: 600 }}>
-                  {adminError}
+                <div
+                  style={{
+                    padding: '16px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    border: '1.5px solid rgba(239, 68, 68, 0.35)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.6,
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'flex-start'
+                  }}
+                  className="animate-fade-in"
+                >
+                  <ShieldAlert size={22} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 800, color: '#ef4444', marginBottom: '4px', fontSize: '0.9rem' }}>
+                      Xác Thực Quản Trị Không Thành Công
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)' }}>
+                      {adminError}
+                    </div>
+                  </div>
                 </div>
               )}
 
