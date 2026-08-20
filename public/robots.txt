@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hoctructuyen.tinhocgenz.io.vn/sitemap.xml
