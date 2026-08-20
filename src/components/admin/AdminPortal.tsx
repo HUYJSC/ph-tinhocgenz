@@ -356,8 +356,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
               {isSuperAdmin
-                ? `Quản trị viên: ${currentUser.name} • Toàn quyền 10 chương trình đào tạo`
-                : `Giảng viên: ${currentUser.name} • Quản lý các chương trình được phân công`}
+                ? `Quản trị viên: ${currentUser.name} • Toàn quyền 6 phân hệ`
+                : `Giảng viên: ${currentUser.name} • Quản lý các phân hệ được phân công`}
             </p>
           </div>
         </div>
@@ -429,72 +429,70 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {activeSubTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Key Metrics Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
-            <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #2563eb' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Học Viên</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{studentAccounts.length}</div>
-              <div style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 600 }}>Đã cấp mã đăng nhập</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #2563eb' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tổng Số Học Viên</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{studentAccounts.length}</div>
+              <div style={{ fontSize: '0.75rem', color: '#2563eb' }}>Đã cấp mã đăng nhập</div>
             </div>
 
             {isSuperAdmin && (
-              <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #d97706' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Giảng Viên</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{teacherAccounts.length}</div>
-                <div style={{ fontSize: '0.7rem', color: '#d97706', fontWeight: 600 }}>Phụ trách chương trình</div>
+              <div className="card" style={{ padding: '18px', borderLeft: '4px solid #d97706' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Giảng Viên Đứng Lớp</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{teacherAccounts.length}</div>
+                <div style={{ fontSize: '0.75rem', color: '#d97706' }}>Phụ trách các phân hệ</div>
               </div>
             )}
 
-            <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #10b981' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kho Đề Thi</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{totalQuizzes}</div>
-              <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>10 chương trình đào tạo</div>
+            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #10b981' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Kho Đề Thi Phân Hệ</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{totalQuizzes}</div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981' }}>6 Phân hệ đào tạo CNTT</div>
             </div>
 
-            <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #8b5cf6' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tỷ Lệ Đạt (≥70%)</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{passRate}%</div>
-              <div style={{ fontSize: '0.7rem', color: '#8b5cf6', fontWeight: 600 }}>Điểm TB: {avgScore}%</div>
+            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #8b5cf6' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tỷ Lệ Đạt Chuẩn (≥70%)</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{passRate}%</div>
+              <div style={{ fontSize: '0.75rem', color: '#8b5cf6' }}>Điểm TB: {avgScore}%</div>
             </div>
           </div>
 
           {/* Structured Curriculum Tracks Summary */}
-          <div className="card" style={{ padding: '18px 20px' }}>
-            <h3 style={{ fontSize: '0.88rem', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px', color: 'var(--text-primary)' }}>
-              <Sparkles size={15} color="#d97706" />
-              <span>10 Chương Trình Đào Tạo CNTT — PH Digital Education</span>
+          <div className="card" style={{ padding: '22px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={18} color="#d97706" />
+              <span>6 Phân Hệ Đào Tạo CNTT Chuẩn Hóa Tại PH Digital Education</span>
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '8px' }}>
-              {[
-                { n: '01', label: 'Word · Excel · PowerPoint', note: '3 buổi / môn', color: '#2563eb' },
-                { n: '02', label: 'CC CNTT Cơ Bản', note: '6 buổi · TT03/2014', color: '#10b981' },
-                { n: '03', label: 'CC CNTT Nâng Cao', note: '6 buổi · chuyên sâu', color: '#3b82f6' },
-                { n: '04', label: 'CNTT Cơ Bản: Word + Excel', note: '10–12 buổi', color: '#06b6d4' },
-                { n: '05', label: 'CNTT Nâng Cao: Word + Excel', note: '10–12 buổi', color: '#8b5cf6' },
-                { n: '06', label: 'AI Ứng Dụng Văn Phòng', note: '5 buổi · Copilot · GPT', color: '#ec4899' },
-                { n: '07', label: 'Excel Kế Toán – Tài Chính', note: 'Tuỳ nhu cầu', color: '#ea580c' },
-                { n: '08', label: 'Chuyên Đề Word', note: '6 buổi · Mail Merge', color: '#2563eb' },
-                { n: '09', label: 'Chuyên Đề Excel', note: '6 buổi · Lookup · Chart', color: '#10b981' },
-                { n: '10', label: 'Chuyên Đề PowerPoint', note: '6 buổi · Motion · Design', color: '#f59e0b' },
-              ].map(({ n, label, note, color }) => (
-                <div key={n} style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '9px 12px',
-                  background: 'var(--bg-primary)',
-                  borderRadius: '8px',
-                  borderLeft: `3px solid ${color}`,
-                }}>
-                  <span style={{
-                    minWidth: '24px', height: '24px', borderRadius: '6px',
-                    background: `${color}18`, color, fontSize: '0.68rem',
-                    fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    letterSpacing: '0.02em', flexShrink: 0,
-                  }}>{n}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '1px' }}>{note}</div>
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px', fontSize: '0.85rem' }}>
+              <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #10b981' }}>
+                <div style={{ fontWeight: 800, color: '#10b981' }}>1. CNTT & Tin Học Cơ Bản</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Phần cứng, hệ điều hành Windows, thao tác tệp tin và Internet an toàn.</div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #2563eb' }}>
+                <div style={{ fontWeight: 800, color: '#2563eb' }}>2. Tin Học Văn Phòng Quốc Tế MOS</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>MOS Word (văn bản), MOS Excel (hàm & biểu đồ), MOS PowerPoint.</div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #3b82f6' }}>
+                <div style={{ fontWeight: 800, color: '#3b82f6' }}>3. Chuẩn Tin Học Quốc Tế IC3 GS6</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Computing Fundamentals, Key Applications và Living Online.</div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #ea580c' }}>
+                <div style={{ fontWeight: 800, color: '#ea580c' }}>4. CNTT Nâng Cao & Xử Lý Dữ Liệu</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Hàm lồng phức hợp, Dynamic Arrays, PivotTable nâng cao và VBA.</div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #f59e0b' }}>
+                <div style={{ fontWeight: 800, color: '#f59e0b' }}>5. Lập Trình Python & Thuật Toán</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Cú pháp Python 3, cấu trúc dữ liệu, giải thuật tìm kiếm, sắp xếp.</div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #6366f1' }}>
+                <div style={{ fontWeight: 800, color: '#6366f1' }}>6. Mạng Máy Tính & An Toàn Thông Tin</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Hệ thống DNS, địa chỉ IP, bảo mật mạng và phòng chống mã độc số.</div>
+              </div>
             </div>
           </div>
         </div>

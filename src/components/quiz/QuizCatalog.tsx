@@ -13,17 +13,17 @@ interface QuizCatalogProps {
 }
 
 const ALL_CATEGORIES: { id: SubjectCategory; label: string; icon: any }[] = [
-  { id: 'all', label: 'Tất cả phân hệ (10 môn)', icon: BookOpen },
-  { id: 'office-fast-3in1', label: '1. Office Cấp Tốc (3b)', icon: FileSpreadsheet },
-  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6b)', icon: Cpu },
-  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6b)', icon: Presentation },
-  { id: 'cntt-basic-we', label: '4. CNTT CB: Word+Excel (10-12b)', icon: FileText },
-  { id: 'cntt-adv-we', label: '5. CNTT NC: Word+Excel (10-12b)', icon: Presentation },
-  { id: 'ai-office', label: '6. Ứng dụng AI VP (5b)', icon: Code2 },
-  { id: 'excel-accounting', label: '7. Excel Kế toán', icon: FileSpreadsheet },
-  { id: 'word-6b', label: '8. Word (6 buổi)', icon: FileText },
-  { id: 'excel-6b', label: '9. Excel (6 buổi)', icon: FileSpreadsheet },
-  { id: 'ppt-6b', label: '10. PPT (6 buổi)', icon: Presentation }
+  { id: 'all', label: 'Tất cả (10 môn)', icon: BookOpen },
+  { id: 'office-fast-3in1', label: 'Office Cấp Tốc', icon: FileSpreadsheet },
+  { id: 'cc-cntt-basic', label: 'CC CNTT Cơ bản', icon: Cpu },
+  { id: 'cc-cntt-advanced', label: 'CC CNTT Nâng cao', icon: Presentation },
+  { id: 'cntt-basic-we', label: 'CNTT Cơ bản (W+E)', icon: FileText },
+  { id: 'cntt-adv-we', label: 'CNTT Nâng Cao (W+E)', icon: Presentation },
+  { id: 'ai-office', label: 'Ứng dụng AI VP', icon: Code2 },
+  { id: 'excel-accounting', label: 'Excel Kế toán', icon: FileSpreadsheet },
+  { id: 'word-6b', label: 'Word', icon: FileText },
+  { id: 'excel-6b', label: 'Excel', icon: FileSpreadsheet },
+  { id: 'ppt-6b', label: 'PowerPoint', icon: Presentation }
 ];
 
 export const QuizCatalog: React.FC<QuizCatalogProps> = ({
@@ -104,14 +104,14 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
               <span>
                 {isStudent
                   ? `Chương Trình Đào Tạo: ${currentTrackName}`
-                  : 'Cổng Khảo Thí Học Thuật & Đánh Giá Chuẩn Hóa'}
+                  : 'Cổng Khảo Thí Giảng Viên • Toàn Bộ 6 Phân Hệ'}
               </span>
             </div>
 
             {isStudent && currentUser?.studentCode && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.12)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
-                  Mã Học Viên: {currentUser.studentCode}
+                  Mã SV: {currentUser.studentCode}
                 </span>
                 <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
                   {currentUser.schoolOrClass || 'Lớp Tin Học'}
@@ -122,14 +122,14 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
 
           <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '6px' }}>
             {isStudent
-              ? `Không Gian Học Tập: ${currentUser?.name || 'Học Viên'}`
-              : 'Hệ Thống Đề Thi & Đánh Giá Năng Lực Chuẩn Hóa'}
+              ? `Xin chào, ${currentUser?.name || 'Học viên'}! 👋`
+              : 'Ngân Hàng Đề Thi & Khảo Thí 6 Phân Hệ'}
           </h2>
 
           <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '780px', lineHeight: 1.5, margin: 0 }}>
             {isStudent
-              ? `Chào mừng bạn đến với học phần "${currentTrackName}". Hãy lựa chọn bài kiểm tra đánh giá năng lực bên dưới để thực hiện quá trình ôn luyện và kiểm tra chuẩn đầu ra.`
-              : 'Nền tảng kiểm tra, đánh giá kiến thức và khảo thí năng lực tin học theo 10 chương trình đào tạo chuẩn hóa.'}
+              ? `Chào mừng bạn đến với không gian học tập trực tuyến môn "${currentTrackName}". Lựa chọn bài trắc nghiệm bên dưới để bắt đầu ôn luyện và kiểm tra kiến thức nhé!`
+              : 'Nền tảng kiểm tra đánh giá kiến thức tin học chuẩn hóa theo từng phân hệ đào tạo.'}
           </p>
         </div>
       </div>
@@ -240,11 +240,10 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
                       background: 'rgba(37, 99, 235, 0.1)',
                       color: 'var(--accent-primary)',
                       fontWeight: 700,
-                      textTransform: 'uppercase',
                       fontSize: '0.72rem'
                     }}
                   >
-                    {quiz.category}
+                    {TRACK_LABELS[quiz.category as CurriculumTrack] || quiz.category}
                   </span>
                   {getDifficultyBadge(quiz.difficulty)}
                 </div>

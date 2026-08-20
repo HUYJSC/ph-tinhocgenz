@@ -4,7 +4,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 1. Word, Excel, PowerPoint (3Buổi 1 môn)
   {
     id: 'quiz-office-fast-3in1',
-    title: '1. Word, Excel, PowerPoint (3Buổi 1 môn) - Đề Thi Cấp Tốc',
+    title: 'Đề Thi Cấp Tốc: Word – Excel – PowerPoint',
     description: 'Chương trình cấp tốc 3 buổi/môn: Kỹ năng định dạng văn bản hành chính Word, tính toán hàm Excel và thiết kế slide thuyết trình PowerPoint chuẩn công sở.',
     category: 'office-fast-3in1',
     difficulty: 'easy',
@@ -50,7 +50,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 2. CC CNTT Cơ bản (6 buổi)
   {
     id: 'quiz-cc-cntt-basic',
-    title: '2. CC CNTT Cơ bản (6 buổi) - Luyện Thi Chuẩn Bộ GD&ĐT',
+    title: 'Luyện Thi Chứng Chỉ CNTT Chuẩn Bộ GD&ĐT',
     description: 'Nội dung chứng chỉ CNTT Cơ bản theo Thông tư 03: Cấu trúc máy tính, hệ điều hành Windows, Internet và bảo mật thông tin.',
     category: 'cc-cntt-basic',
     difficulty: 'easy',
@@ -95,7 +95,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 3. CC CNTT Nâng cao (6 buổi)
   {
     id: 'quiz-cc-cntt-advanced',
-    title: '3. CC CNTT Nâng cao (6 buổi) - Xử Lý Dữ Liệu & Macro',
+    title: 'Xử Lý Dữ Liệu Nâng Cao & Macro',
     description: 'Chuyên đề nâng cao: Hàm tra cứu nhiều điều kiện (INDEX/MATCH, XLOOKUP), xử lý bảng dữ liệu lớn, Pivot Table nâng cao và Mail Merge.',
     category: 'cc-cntt-advanced',
     difficulty: 'hard',
@@ -131,7 +131,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 4. CNTT Cơ bản: Word + Excel (10-12b)
   {
     id: 'quiz-cntt-basic-we',
-    title: '4. CNTT Cơ bản: Word + Excel (10-12b) - Thực Hành Bài Bản',
+    title: 'Thực Hành Văn Bản & Bảng Tính Nền Tảng',
     description: 'Khóa học nền tảng 10-12 buổi: Soạn thảo văn bản chuẩn thể thức Nghị định 30, kỹ năng bảng biểu Word và công thức tính toán tài chính Excel.',
     category: 'cntt-basic-we',
     difficulty: 'medium',
@@ -167,7 +167,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 5. CNTT Nâng Cao: Word + Excel (10-12b)
   {
     id: 'quiz-cntt-adv-we',
-    title: '5. CNTT Nâng Cao: Word + Excel (10-12b) - Chuyên Sâu Văn Phòng',
+    title: 'Chuyên Sâu Văn Phòng: Word Style & Excel Dashboard',
     description: 'Khóa chuyên sâu 10-12 buổi: Tự động hóa văn bản Word với Style, Section Break, Mục lục tự động, phân tích dữ liệu đa chiều PivotTable và Dashboard Excel.',
     category: 'cntt-adv-we',
     difficulty: 'hard',
@@ -203,7 +203,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 6. Ứng dụng AI vào công việc Văn phòng (5b)
   {
     id: 'quiz-ai-office',
-    title: '6. Ứng dụng AI vào công việc Văn phòng (5b) - Tối Ưu Hiệu Suất',
+    title: 'Tối Ưu Hiệu Suất Công Việc Với Trí Tuệ Nhân Tạo',
     description: 'Kỹ năng làm chủ các công cụ Trí tuệ nhân tạo (ChatGPT, Claude, Copilot, Gamma) để viết báo cáo, tóm tắt tài liệu, phân tích Excel và thiết kế slide tự động.',
     category: 'ai-office',
     difficulty: 'medium',
@@ -244,7 +244,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 7. Excel cho Kế toán (Custom tuỳ nhu cầu)
   {
     id: 'quiz-excel-accounting',
-    title: '7. Excel cho Kế toán (Custom tuỳ nhu cầu) - Nghiệp Vụ Tài Chính',
+    title: 'Nghiệp Vụ Tài Chính: Hàm & Mẫu Biểu Kế Toán',
     description: 'Hệ thống hàm và mẫu biểu kế toán: Sổ nhật ký chung, bảng trích khấu hao TSCĐ, hàm SUMIFS tính doanh thu theo kỳ và đối chiếu công nợ.',
     category: 'excel-accounting',
     difficulty: 'hard',
@@ -280,7 +280,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 8. Word (6 buổi)
   {
     id: 'quiz-word-6b',
-    title: '8. Word (6 buổi) - Soạn Thảo & Trình Bày Văn Bản Chuẩn',
+    title: 'Soạn Thảo & Trình Bày Văn Bản Chuẩn',
     description: 'Trọn bộ kỹ năng soạn thảo 6 buổi: Căn lề chuẩn, Tab Stop, Header & Footer, Table chuyên nghiệp và xuất file PDF in ấn sắc nét.',
     category: 'word-6b',
     difficulty: 'easy',
@@ -316,7 +316,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 9. Excel (6 buổi)
   {
     id: 'quiz-excel-6b',
-    title: '9. Excel (6 buổi) - Bảng Tính & Xử Lý Dữ Liệu Thông Minh',
+    title: 'Bảng Tính & Xử Lý Dữ Liệu Thông Minh',
     description: 'Trọn bộ kỹ năng bảng tính 6 buổi: 20 hàm thông dụng (IF, VLOOKUP, HLOOKUP, COUNTIF, SUMIF), lọc nâng cao Advanced Filter và vẽ biểu đồ Chart.',
     category: 'excel-6b',
     difficulty: 'medium',
@@ -352,7 +352,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
   // 10. PPT (6 buổi)
   {
     id: 'quiz-ppt-6b',
-    title: '10. PPT (6 buổi) - Thiết Kế Slide Thuyết Trình Ấn Tượng',
+    title: 'Thiết Kế Slide Thuyết Trình Chuyên Nghiệp',
     description: 'Khóa học thuyết trình 6 buổi: Bố cục trực quan, hiệu ứng chuyển động Animation/Transition mượt mà, kỹ thuật Slide Master và chèn Video/Audio đa phương tiện.',
     category: 'ppt-6b',
     difficulty: 'easy',
