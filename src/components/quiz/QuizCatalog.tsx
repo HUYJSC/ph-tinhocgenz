@@ -59,19 +59,20 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
       <div
         className="card"
         style={{
-          padding: '28px 24px',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%)',
+          padding: '30px 26px',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.07) 0%, rgba(219, 234, 254, 0.4) 100%)',
           borderRadius: 'var(--radius-lg)',
           marginBottom: '24px',
-          border: '1px solid rgba(99, 102, 241, 0.3)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-sm)'
         }}
       >
         <div style={{ maxWidth: '650px', position: 'relative', zIndex: 2 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(99, 102, 241, 0.2)', color: 'var(--accent-primary)', fontSize: '0.8rem', fontWeight: 700, marginBottom: '10px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: 'var(--radius-full)', background: 'rgba(37, 99, 235, 0.1)', color: '#1d4ed8', fontSize: '0.8rem', fontWeight: 700, marginBottom: '12px' }}>
             <Sparkles size={14} />
-            <span>Nền tảng Luyện thi & Bài tập Thông minh</span>
+            <span>Hệ thống Ôn luyện & Luyện thi Tin học Chuẩn Quốc tế</span>
           </div>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px', lineHeight: 1.3 }}>
             Nâng cao kiến thức cùng kho bài tập tương tác

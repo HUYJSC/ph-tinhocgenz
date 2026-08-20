@@ -96,8 +96,8 @@ export const Header: React.FC<HeaderProps> = ({
             gap: '5px',
             padding: '6px 12px',
             borderRadius: 'var(--radius-full)',
-            background: 'rgba(99, 102, 241, 0.12)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
+            background: 'rgba(37, 99, 235, 0.1)',
+            border: '1px solid rgba(37, 99, 235, 0.25)',
             color: 'var(--accent-primary)',
             fontSize: '0.85rem',
             fontWeight: 700

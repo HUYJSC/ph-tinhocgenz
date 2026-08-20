@@ -55,13 +55,10 @@ export function useAppStorage() {
     try {
       const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('eduquest_theme_mode');
       if (saved === 'light' || saved === 'dark') return saved;
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
-      }
     } catch (e) {
       // fallback
     }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
