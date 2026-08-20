@@ -20,7 +20,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLoginStudent,
   onLoginAdmin
 }) => {
-  const [activeTab, setActiveTab] = useState<'student' | 'admin'>(currentUser.role);
+  const [activeTab, setActiveTab] = useState<'student' | 'admin'>(currentUser.role === 'student' ? 'student' : 'admin');
   
   // Student form state
   const [studentCode, setStudentCode] = useState(currentUser.studentCode || 'THGZ01');

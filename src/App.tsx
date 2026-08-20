@@ -39,13 +39,17 @@ export function App() {
 
   const {
     user,
-    isAdmin,
+    isStaff,
     studentAccounts,
+    teacherAccounts,
     loginWithStudentCode,
-    loginAsAdmin,
+    loginAsStaff,
     createStudentAccount,
     updateStudentAccount,
     deleteStudentAccount,
+    createTeacherAccount,
+    updateTeacherAccount,
+    deleteTeacherAccount,
     switchStudentTrack
   } = useAuth();
 
@@ -99,9 +103,9 @@ export function App() {
     return res;
   };
 
-  // Unified Admin Login (Choose track or All tracks + PIN)
-  const handleAdminUnifiedLogin = (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => {
-    const res = loginAsAdmin(pin, name);
+  // Unified Admin / Teacher Login (Choose track or All tracks + PIN/Password)
+  const handleAdminUnifiedLogin = (pinOrPassword: string, name?: string, selectedTrack?: CurriculumTrack | 'all') => {
+    const res = loginAsStaff(pinOrPassword, name, selectedTrack);
     if (res.success && res.user) {
       if (selectedTrack && selectedTrack !== 'all') {
         switchStudentTrack(selectedTrack);
@@ -125,7 +129,7 @@ export function App() {
     } catch (e) {}
   };
 
-  // Start a quiz session
+  // Quiz runner controls
   const handleStartQuiz = (quiz: Quiz, mode: QuizMode) => {
     setActiveQuiz(quiz);
     setActiveMode(mode);
@@ -133,17 +137,10 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Complete a quiz session
   const handleFinishQuiz = (attempt: QuizAttempt) => {
     recordAttempt(attempt);
     setLatestAttempt(attempt);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Exit or reset quiz state
-  const handleExitQuiz = () => {
-    setActiveQuiz(null);
-    setLatestAttempt(null);
   };
 
   const handleRetryQuiz = () => {
@@ -151,6 +148,13 @@ export function App() {
       setLatestAttempt(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  const handleExitQuiz = () => {
+    setActiveQuiz(null);
+    setLatestAttempt(null);
+    setActiveTab('quizzes');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // 1. UNIFIED AUTH GATEWAY (Mandatory screen when not authenticated)
@@ -179,7 +183,7 @@ export function App() {
           onLogout={handleLogout}
           onOpenInstallModal={() => setShowInstallModal(true)}
           onOpenAuthModal={handleLogout}
-          isAdmin={isAdmin}
+          isAdmin={isStaff}
           studentName={user.name}
         />
       )}
@@ -195,7 +199,7 @@ export function App() {
           studentName={user.name}
           studentCode={user.studentCode}
           programTrack={user.programTrack}
-          isAdmin={isAdmin}
+          isAdmin={isStaff}
           unreadNotificationCount={unreadNotificationCount}
           onLogout={handleLogout}
           onOpenNotifications={() => setActiveTab('assignments')}
@@ -236,19 +240,23 @@ export function App() {
                   quizzes={allQuizzes}
                   attempts={stats.history}
                   studentAccounts={studentAccounts}
+                  teacherAccounts={teacherAccounts}
                   onAddQuiz={addCustomQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
                   onNavigateToCreator={() => setActiveTab('creator')}
                   onCreateStudentAccount={createStudentAccount}
                   onUpdateStudentAccount={updateStudentAccount}
                   onDeleteStudentAccount={deleteStudentAccount}
+                  onCreateTeacherAccount={createTeacherAccount}
+                  onUpdateTeacherAccount={updateTeacherAccount}
+                  onDeleteTeacherAccount={deleteTeacherAccount}
                   currentUser={user}
                 />
               )}
 
               {/* Classroom Assignments (DRM File Exams & Homework) */}
               {activeTab === 'assignments' && (
-                isAdmin ? (
+                isStaff ? (
                   <TeacherAssignmentManager
                     assignments={assignments}
                     submissions={submissions}
@@ -293,7 +301,7 @@ export function App() {
                 />
               )}
 
-              {activeTab === 'creator' && isAdmin && (
+              {activeTab === 'creator' && isStaff && (
                 <QuizCreator
                   onAddQuiz={addCustomQuiz}
                   onSuccessNavigate={() => setActiveTab('admin')}
@@ -319,7 +327,7 @@ export function App() {
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
           unreadNotificationCount={unreadNotificationCount}
-          isAdmin={isAdmin}
+          isAdmin={isStaff}
         />
       )}
 

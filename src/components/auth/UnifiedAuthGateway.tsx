@@ -555,8 +555,65 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 }}
               >
                 <Shield size={16} />
-                <span>Vào Trang Quản Trị</span>
+                <span>Vào Cổng Giảng Dạy & Quản Trị</span>
               </button>
+
+              {/* Quick Staff Shortcuts */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminName('Thầy Huy (Giảng Viên Trưởng)');
+                    setAdminPin('admin123');
+                    setAdminTrackChoice('all');
+                    setAdminError('');
+                    soundFx.playClick();
+                  }}
+                  style={{
+                    background: 'rgba(217, 119, 6, 0.08)',
+                    border: '1px dashed rgba(217, 119, 6, 0.3)',
+                    color: '#d97706',
+                    padding: '5px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>👑 Admin: Thầy Huy</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Toàn quyền</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminName('Cô Hoàng Mai');
+                    setAdminPin('123');
+                    setAdminTrackChoice('mos-office');
+                    setAdminError('');
+                    soundFx.playClick();
+                  }}
+                  style={{
+                    background: 'rgba(37, 99, 235, 0.06)',
+                    border: '1px dashed rgba(37, 99, 235, 0.25)',
+                    color: 'var(--accent-primary)',
+                    padding: '5px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>👩‍🏫 Giảng Viên: Cô Hoàng Mai (GV01)</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Quyền theo môn</span>
+                </button>
+              </div>
             </form>
           )}
         </div>

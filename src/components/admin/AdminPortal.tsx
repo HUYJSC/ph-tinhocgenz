@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
-import { UserProfile, StudentAccount, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
+import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import {
   Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2, Download,
-  Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X
+  Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -11,12 +11,16 @@ interface AdminPortalProps {
   quizzes: Quiz[];
   attempts: QuizAttempt[];
   studentAccounts: StudentAccount[];
+  teacherAccounts?: TeacherAccount[];
   onAddQuiz: (quiz: Quiz) => void;
   onDeleteCustomQuiz: (quizId: string) => void;
   onNavigateToCreator: () => void;
   onCreateStudentAccount: (name: string, studentCode: string, password?: string, schoolOrClass?: string, programTrack?: CurriculumTrack, enrolledTracks?: CurriculumTrack[]) => void;
   onUpdateStudentAccount?: (updatedAccount: StudentAccount) => void;
   onDeleteStudentAccount: (id: string) => void;
+  onCreateTeacherAccount?: (name: string, teacherCode: string, password?: string, phoneOrEmail?: string, assignedTracks?: CurriculumTrack[]) => void;
+  onUpdateTeacherAccount?: (updatedTeacher: TeacherAccount) => void;
+  onDeleteTeacherAccount?: (id: string) => void;
   currentUser: UserProfile;
 }
 
@@ -24,18 +28,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   quizzes,
   attempts,
   studentAccounts,
+  teacherAccounts = [],
   onDeleteCustomQuiz,
   onNavigateToCreator,
   onCreateStudentAccount,
   onUpdateStudentAccount,
   onDeleteStudentAccount,
+  onCreateTeacherAccount,
+  onUpdateTeacherAccount,
+  onDeleteTeacherAccount,
   currentUser
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'student_directory' | 'exams' | 'students' | 'question_bank'>('overview');
+  const isSuperAdmin = currentUser.role === 'admin';
+  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'student_directory' | 'teachers' | 'exams' | 'question_bank'>('overview');
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
-  // New Student Account Form State
+  // Student Form State
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentCode, setNewStudentCode] = useState(`THGZ${String(studentAccounts.length + 1).padStart(2, '0')}`);
   const [newStudentPass, setNewStudentPass] = useState('123');
@@ -43,7 +52,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [newStudentTrack, setNewStudentTrack] = useState<CurriculumTrack>('cntt-basic');
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
 
-  // Edit Student Account State
+  // Edit Student State
   const [editingStudent, setEditingStudent] = useState<StudentAccount | null>(null);
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
@@ -51,6 +60,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [editClass, setEditClass] = useState('');
   const [editTrack, setEditTrack] = useState<CurriculumTrack>('mos-office');
   const [editEnrolledTracks, setEditEnrolledTracks] = useState<CurriculumTrack[]>(['mos-office']);
+
+  // Teacher Form State (Admin Only)
+  const [showAddTeacherForm, setShowAddTeacherForm] = useState(false);
+  const [newTeacherName, setNewTeacherName] = useState('');
+  const [newTeacherCode, setNewTeacherCode] = useState(`GV0${teacherAccounts.length + 1}`);
+  const [newTeacherPass, setNewTeacherPass] = useState('123');
+  const [newTeacherContact, setNewTeacherContact] = useState('');
+  const [newTeacherTracks, setNewTeacherTracks] = useState<CurriculumTrack[]>(['mos-office']);
+
+  // Edit Teacher State
+  const [editingTeacher, setEditingTeacher] = useState<TeacherAccount | null>(null);
+  const [editTeacherName, setEditTeacherName] = useState('');
+  const [editTeacherCode, setEditTeacherCode] = useState('');
+  const [editTeacherPass, setEditTeacherPass] = useState('123');
+  const [editTeacherContact, setEditTeacherContact] = useState('');
+  const [editTeacherTracks, setEditTeacherTracks] = useState<CurriculumTrack[]>(['mos-office']);
 
   // Stats computation
   const totalQuizzes = quizzes.length;
@@ -63,7 +88,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     ? Math.round((attempts.filter(a => a.percentage >= 70).length / totalSubmissions) * 100)
     : 0;
 
-  // Filtered quizzes
+  // Filtered lists
+  const filteredStudents = studentAccounts.filter(s =>
+    s.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    s.studentCode.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    s.schoolOrClass.toLowerCase().includes(searchFilter.toLowerCase())
+  );
+
+  const filteredTeachers = teacherAccounts.filter(t =>
+    t.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    t.teacherCode.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    (t.phoneOrEmail && t.phoneOrEmail.toLowerCase().includes(searchFilter.toLowerCase()))
+  );
+
   const filteredQuizzes = quizzes.filter(q => {
     const matchSearch = q.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
       q.description.toLowerCase().includes(searchFilter.toLowerCase());
@@ -71,20 +108,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     return matchSearch && matchCat;
   });
 
-  // Filtered attempts
-  const filteredAttempts = attempts.filter(a => {
-    return a.quizTitle.toLowerCase().includes(searchFilter.toLowerCase());
-  });
-
-  // Filtered students
-  const filteredStudents = studentAccounts.filter(s => {
-    return (
-      s.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      s.studentCode.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      s.schoolOrClass.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  });
-
+  // Student Actions
   const handleCreateStudent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !newStudentCode.trim()) {
@@ -158,6 +182,88 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     soundFx.playClick();
   };
 
+  // Teacher Actions (Admin Only)
+  const handleCreateTeacher = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTeacherName.trim() || !newTeacherCode.trim()) {
+      alert('Vui lòng nhập họ tên và mã giảng viên!');
+      return;
+    }
+
+    if (onCreateTeacherAccount) {
+      onCreateTeacherAccount(
+        newTeacherName,
+        newTeacherCode,
+        newTeacherPass,
+        newTeacherContact,
+        newTeacherTracks
+      );
+    }
+
+    soundFx.playVictory();
+    setNewTeacherName('');
+    setNewTeacherCode(`GV0${teacherAccounts.length + 2}`);
+    setNewTeacherContact('');
+    setShowAddTeacherForm(false);
+  };
+
+  const handleOpenEditTeacher = (teacher: TeacherAccount) => {
+    setEditingTeacher(teacher);
+    setEditTeacherName(teacher.name);
+    setEditTeacherCode(teacher.teacherCode);
+    setEditTeacherPass(teacher.password || '123');
+    setEditTeacherContact(teacher.phoneOrEmail || '');
+    setEditTeacherTracks(teacher.assignedTracks && teacher.assignedTracks.length > 0 ? [...teacher.assignedTracks] : ['mos-office']);
+    soundFx.playClick();
+  };
+
+  const handleSaveEditTeacher = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTeacher) return;
+    if (!editTeacherName.trim() || !editTeacherCode.trim()) {
+      alert('Vui lòng nhập họ tên và mã giảng viên!');
+      return;
+    }
+
+    const updated: TeacherAccount = {
+      ...editingTeacher,
+      name: editTeacherName.trim(),
+      teacherCode: editTeacherCode.trim().toUpperCase(),
+      password: editTeacherPass.trim() || '123',
+      phoneOrEmail: editTeacherContact.trim(),
+      assignedTracks: editTeacherTracks.length > 0 ? editTeacherTracks : ['mos-office']
+    };
+
+    if (onUpdateTeacherAccount) {
+      onUpdateTeacherAccount(updated);
+    }
+    setEditingTeacher(null);
+    soundFx.playVictory();
+  };
+
+  const toggleTeacherTrack = (trackId: CurriculumTrack, isEdit: boolean = false) => {
+    if (isEdit) {
+      setEditTeacherTracks(prev => {
+        if (prev.includes(trackId)) {
+          if (prev.length === 1) return prev;
+          return prev.filter(t => t !== trackId);
+        } else {
+          return [...prev, trackId];
+        }
+      });
+    } else {
+      setNewTeacherTracks(prev => {
+        if (prev.includes(trackId)) {
+          if (prev.length === 1) return prev;
+          return prev.filter(t => t !== trackId);
+        } else {
+          return [...prev, trackId];
+        }
+      });
+    }
+    soundFx.playClick();
+  };
+
   const exportGradebookJSON = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(attempts, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -171,15 +277,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
-      {/* Admin Header Banner */}
+      {/* Header Banner */}
       <div
         className="card"
         style={{
-          padding: '24px',
-          background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%)',
+          padding: '22px 24px',
+          background: isSuperAdmin
+            ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.09) 0%, rgba(245, 158, 11, 0.04) 100%)'
+            : 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)',
           borderRadius: 'var(--radius-lg)',
           marginBottom: '20px',
-          border: '1px solid rgba(245, 158, 11, 0.25)',
+          border: isSuperAdmin ? '1px solid rgba(245, 158, 11, 0.28)' : '1px solid rgba(37, 99, 235, 0.25)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -187,83 +295,82 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           gap: '16px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
+              width: '46px',
+              height: '46px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              background: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff',
-              boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)'
+              padding: '3px',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.12)',
+              border: '1.5px solid rgba(37, 99, 235, 0.18)'
             }}
           >
-            <Shield size={24} />
+            <img src="/logo.png" alt="PH Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <span>Cổng Quản Trị Giảng Viên</span>
-              <span>•</span>
-              <span>{currentUser.name}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
+                {isSuperAdmin ? 'Cổng Quản Trị Hệ Thống' : 'Cổng Khảo Thí & Giảng Dạy'}
+              </h2>
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  background: isSuperAdmin ? '#d97706' : '#2563eb',
+                  color: '#fff',
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-full)',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
+              >
+                {isSuperAdmin ? <Shield size={11} /> : <GraduationCap size={11} />}
+                <span>{isSuperAdmin ? '👑 ADMIN TOÀN QUYỀN' : '👨‍🏫 GIẢNG VIÊN'}</span>
+              </span>
             </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-              Quản Trị Đào Tạo & Phân Hệ Tin Học
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              Cấp tài khoản học viên, quản lý ngân hàng đề thi theo 6 phân hệ đào tạo CNTT.
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+              {isSuperAdmin
+                ? `Quản trị viên: ${currentUser.name} • Toàn quyền 6 phân hệ`
+                : `Giảng viên: ${currentUser.name} • Quản lý các phân hệ được phân công`}
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
-            onClick={() => {
-              setActiveSubTab('student_directory');
-              setShowAddStudentForm(true);
-            }}
-            className="btn btn-primary"
-            style={{
-              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
-            }}
+            onClick={exportGradebookJSON}
+            className="btn btn-secondary"
+            style={{ padding: '8px 14px', fontSize: '0.82rem', fontWeight: 700 }}
           >
-            <UserCheck size={16} />
-            <span>Thêm Học Viên Mới</span>
+            <Download size={15} />
+            <span>Xuất Bảng Điểm JSON</span>
           </button>
 
           <button
             onClick={onNavigateToCreator}
             className="btn btn-primary"
-            style={{
-              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-              boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
-            }}
+            style={{ padding: '8px 16px', fontSize: '0.82rem', fontWeight: 800 }}
           >
             <PlusCircle size={16} />
-            <span>Tạo Đề Thi Mới</span>
+            <span>Soạn Đề Thi Mới</span>
           </button>
         </div>
       </div>
 
-      {/* Sub-Navigation Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '20px',
-          overflowX: 'auto',
-          paddingBottom: '4px'
-        }}
-      >
+      {/* Sub Tabs Navigation */}
+      <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', marginBottom: '20px', overflowX: 'auto' }}>
         {[
-          { id: 'overview', label: 'Tổng Quan Giảng Dạy', icon: BarChart3 },
-          { id: 'student_directory', label: 'Tài Khoản Học Viên', icon: UserCheck, count: studentAccounts.length },
-          { id: 'exams', label: 'Kho Đề Thi Hệ Thống', icon: BookOpen, count: totalQuizzes },
-          { id: 'students', label: 'Bảng Điểm Làm Bài', icon: Users, count: totalSubmissions },
-          { id: 'question_bank', label: 'Ngân Hàng Câu Hỏi', icon: FileSpreadsheet, count: totalQuestions }
+          { id: 'overview', label: 'Tổng Quan Hệ Thống', icon: BarChart3 },
+          { id: 'student_directory', label: `Học Viên (${studentAccounts.length})`, icon: Users },
+          ...(isSuperAdmin ? [{ id: 'teachers', label: `Giảng Viên (${teacherAccounts.length})`, icon: UserCheck }] : []),
+          { id: 'exams', label: `Kho Đề Thi (${totalQuizzes})`, icon: BookOpen },
+          { id: 'question_bank', label: `Ngân Hàng Câu Hỏi (${totalQuestions})`, icon: FileSpreadsheet }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -275,38 +382,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 soundFx.playClick();
               }}
               style={{
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 padding: '10px 16px',
-                borderRadius: 'var(--radius-md)',
-                background: isActive ? 'var(--bg-secondary)' : 'var(--bg-card)',
-                border: isActive ? '1.5px solid #d97706' : '1px solid var(--border-color)',
-                color: isActive ? '#d97706' : 'var(--text-secondary)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.88rem',
+                border: 'none',
+                background: 'transparent',
+                borderBottom: isActive ? '2.5px solid var(--accent-primary)' : '2.5px solid transparent',
+                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                fontWeight: isActive ? 800 : 600,
+                fontSize: '0.86rem',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-                transition: 'all 0.18s ease'
+                transition: 'all 0.15s ease'
               }}
             >
               <Icon size={16} />
               <span>{tab.label}</span>
-              {tab.count !== undefined && (
-                <span
-                  style={{
-                    fontSize: '0.72rem',
-                    background: isActive ? 'rgba(217, 119, 6, 0.15)' : 'var(--border-color)',
-                    color: isActive ? '#d97706' : 'var(--text-muted)',
-                    padding: '2px 8px',
-                    borderRadius: 'var(--radius-full)',
-                    fontWeight: 700
-                  }}
-                >
-                  {tab.count}
-                </span>
-              )}
             </button>
           );
         })}
@@ -323,16 +415,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div style={{ fontSize: '0.75rem', color: '#2563eb' }}>Đã cấp mã đăng nhập</div>
             </div>
 
+            {isSuperAdmin && (
+              <div className="card" style={{ padding: '18px', borderLeft: '4px solid #d97706' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Giảng Viên Đứng Lớp</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{teacherAccounts.length}</div>
+                <div style={{ fontSize: '0.75rem', color: '#d97706' }}>Phụ trách các phân hệ</div>
+              </div>
+            )}
+
             <div className="card" style={{ padding: '18px', borderLeft: '4px solid #10b981' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Kho Đề Thi Phân Hệ</div>
               <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{totalQuizzes}</div>
               <div style={{ fontSize: '0.75rem', color: '#10b981' }}>6 Phân hệ đào tạo CNTT</div>
-            </div>
-
-            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #f59e0b' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Lượt Nộp Bài Thi</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{totalSubmissions}</div>
-              <div style={{ fontSize: '0.75rem', color: '#f59e0b' }}>Từ toàn bộ học viên</div>
             </div>
 
             <div className="card" style={{ padding: '18px', borderLeft: '4px solid #8b5cf6' }}>
@@ -344,7 +438,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
           {/* Structured Curriculum Tracks Summary */}
           <div className="card" style={{ padding: '22px' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Sparkles size={18} color="#d97706" />
               <span>6 Phân Hệ Đào Tạo CNTT Chuẩn Hóa Tại PH Digital Education</span>
             </h3>
@@ -411,7 +505,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           {/* Add Student Form */}
           {showAddStudentForm && (
             <form onSubmit={handleCreateStudent} className="card animate-slide-up" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', border: '1.5px solid var(--accent-primary)' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 Tạo & Cấp Mã Đăng Nhập Cho Học Viên Mới
               </h3>
 
@@ -423,24 +517,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <input
                     type="text"
                     required
-                    placeholder="Ví dụ: Hoàng Minh Trí"
+                    placeholder="Ví dụ: Hoàng Văn Nam"
                     value={newStudentName}
                     onChange={e => setNewStudentName(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Mã Học Viên Đăng Nhập *
+                    Mã Học Viên (Tài Khoản) *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="THGZ04"
+                    placeholder="Ví dụ: THGZ04"
                     value={newStudentCode}
-                    onChange={e => setNewStudentCode(e.target.value.toUpperCase())}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
+                    onChange={e => setNewStudentCode(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
                   />
                 </div>
 
@@ -452,7 +546,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     type="text"
                     value={newStudentPass}
                     onChange={e => setNewStudentPass(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
 
@@ -464,7 +558,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     type="text"
                     value={newStudentClass}
                     onChange={e => setNewStudentClass(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
 
@@ -475,7 +569,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <select
                     value={newStudentTrack}
                     onChange={e => setNewStudentTrack(e.target.value as CurriculumTrack)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                   >
                     <option value="cntt-basic">1. CNTT & Tin Học Cơ Bản</option>
                     <option value="mos-office">2. Tin Học Văn Phòng MOS</option>
@@ -487,8 +581,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                <button type="submit" className="btn btn-primary" style={{ padding: '10px 20px', fontWeight: 800 }}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                <button type="submit" className="btn btn-primary" style={{ padding: '9px 18px', fontWeight: 800 }}>
                   Lưu & Cấp Tài Khoản
                 </button>
                 <button type="button" onClick={() => setShowAddStudentForm(false)} className="btn btn-secondary">
@@ -508,98 +602,101 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <th style={{ padding: '12px 14px' }}>Mật Khẩu</th>
                   <th style={{ padding: '12px 14px' }}>Lớp Học</th>
                   <th style={{ padding: '12px 14px' }}>Phân Hệ Đào Tạo</th>
-                  <th style={{ padding: '12px 14px' }}>Quyền Hạn</th>
+                  <th style={{ padding: '12px 14px' }}>Quyền Hạn Môn Học</th>
                   <th style={{ padding: '12px 16px', textAlign: 'right' }}>Thao Tác</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map(s => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {s.name}
-                    </td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <span style={{ fontWeight: 800, color: 'var(--accent-primary)', background: 'rgba(37, 99, 235, 0.1)', padding: '3px 8px', borderRadius: 'var(--radius-sm)' }}>
-                        {s.studentCode}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 14px', color: 'var(--text-muted)' }}>
-                      <code>{s.password || '123'}</code>
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                      {s.schoolOrClass || `Lớp ${TRACK_LABELS[s.programTrack || 'mos-office']}`}
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                      <div>{TRACK_LABELS[s.programTrack || 'mos-office']}</div>
-                      <div style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>🔒 Phân hệ chính</div>
-                    </td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                        {(s.enrolledTracks && s.enrolledTracks.length > 0 ? s.enrolledTracks : [s.programTrack || 'mos-office']).map(trk => (
-                          <span
-                            key={trk}
+                {filteredStudents.map(s => {
+                  const allowedTracks = s.enrolledTracks && s.enrolledTracks.length > 0 ? s.enrolledTracks : [s.programTrack || 'mos-office'];
+                  return (
+                    <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {s.name}
+                      </td>
+                      <td style={{ padding: '12px 14px' }}>
+                        <span style={{ fontWeight: 800, color: 'var(--accent-primary)', background: 'rgba(37, 99, 235, 0.1)', padding: '3px 8px', borderRadius: 'var(--radius-sm)' }}>
+                          {s.studentCode}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 14px', color: 'var(--text-muted)' }}>
+                        <code>{s.password || '123'}</code>
+                      </td>
+                      <td style={{ padding: '12px 14px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                        {s.schoolOrClass || `Lớp ${TRACK_LABELS[s.programTrack || 'mos-office']}`}
+                      </td>
+                      <td style={{ padding: '12px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                        <div>{TRACK_LABELS[s.programTrack || 'mos-office']}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>🔒 Phân hệ chính</div>
+                      </td>
+                      <td style={{ padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {allowedTracks.map(trk => (
+                            <span
+                              key={trk}
+                              style={{
+                                fontSize: '0.72rem',
+                                background: trk === 'mos-office' ? 'rgba(37, 99, 235, 0.12)' : trk === 'programming' ? 'rgba(245, 158, 11, 0.12)' : trk === 'ic3-gs' ? 'rgba(59, 130, 246, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                                color: trk === 'mos-office' ? '#2563eb' : trk === 'programming' ? '#d97706' : trk === 'ic3-gs' ? '#3b82f6' : '#10b981',
+                                padding: '2px 8px',
+                                borderRadius: 'var(--radius-full)',
+                                fontWeight: 700
+                              }}
+                            >
+                              ✓ {trk === 'mos-office' ? 'MOS' : trk === 'programming' ? 'Python' : trk === 'ic3-gs' ? 'IC3 GS6' : trk === 'cntt-basic' ? 'CNTT Cơ Bản' : trk === 'cntt-advanced' ? 'CNTT Nâng Cao' : 'Bảo Mật IT'}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            onClick={() => handleOpenEdit(s)}
                             style={{
-                              fontSize: '0.72rem',
-                              background: trk === 'mos-office' ? 'rgba(37, 99, 235, 0.12)' : trk === 'programming' ? 'rgba(245, 158, 11, 0.12)' : trk === 'ic3-gs' ? 'rgba(59, 130, 246, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                              color: trk === 'mos-office' ? '#2563eb' : trk === 'programming' ? '#d97706' : trk === 'ic3-gs' ? '#3b82f6' : '#10b981',
-                              padding: '2px 8px',
-                              borderRadius: 'var(--radius-full)',
-                              fontWeight: 700
+                              background: 'rgba(37, 99, 235, 0.08)',
+                              border: '1px solid rgba(37, 99, 235, 0.25)',
+                              color: 'var(--accent-primary)',
+                              padding: '5px 9px',
+                              borderRadius: 'var(--radius-sm)',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}
+                            title="Chỉnh sửa thông tin & phân quyền môn học"
                           >
-                            ✓ {trk === 'mos-office' ? 'MOS' : trk === 'programming' ? 'Python' : trk === 'ic3-gs' ? 'IC3 GS6' : trk === 'cntt-basic' ? 'CNTT Cơ Bản' : trk === 'cntt-advanced' ? 'CNTT Nâng Cao' : 'Bảo Mật IT'}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
-                        <button
-                          onClick={() => handleOpenEdit(s)}
-                          style={{
-                            background: 'rgba(37, 99, 235, 0.08)',
-                            border: '1px solid rgba(37, 99, 235, 0.25)',
-                            color: 'var(--accent-primary)',
-                            padding: '5px 9px',
-                            borderRadius: 'var(--radius-sm)',
-                            cursor: 'pointer',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          title="Chỉnh sửa thông tin & phân quyền môn học"
-                        >
-                          <Edit3 size={13} />
-                          <span>Sửa & Cấp Quyền</span>
-                        </button>
+                            <Edit3 size={13} />
+                            <span>Sửa & Cấp Quyền</span>
+                          </button>
 
-                        <button
-                          onClick={() => onDeleteStudentAccount(s.id)}
-                          style={{
-                            background: 'rgba(239, 68, 68, 0.08)',
-                            border: '1px solid rgba(239, 68, 68, 0.25)',
-                            color: '#ef4444',
-                            padding: '5px 7px',
-                            borderRadius: 'var(--radius-sm)',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center'
-                          }}
-                          title="Xóa học viên này"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          <button
+                            onClick={() => onDeleteStudentAccount(s.id)}
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.08)',
+                              border: '1px solid rgba(239, 68, 68, 0.25)',
+                              color: '#ef4444',
+                              padding: '5px 7px',
+                              borderRadius: 'var(--radius-sm)',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center'
+                            }}
+                            title="Xóa học viên này"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
-          {/* EDIT STUDENT & PERMISSION ASSIGNMENT MODAL */}
+          {/* EDIT STUDENT MODAL */}
           {editingStudent && (
             <div
               style={{
@@ -697,7 +794,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </div>
                   </div>
 
-                  {/* Primary Track */}
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
                       Phân Hệ Đào Tạo Trọng Tâm (Mặc Định):
@@ -722,7 +818,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </select>
                   </div>
 
-                  {/* Multi-Track Permission Assignment Checkboxes */}
                   <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
                       CẤP QUYỀN TRUY CẬP CÁC PHÂN HỆ ĐÀO TẠO (Tích chọn để mở quyền):
@@ -769,7 +864,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </div>
                   </div>
 
-                  {/* Modal Action Buttons */}
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
                     <button
                       type="button"
@@ -794,7 +888,421 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       )}
 
-      {/* 3. EXAMS TAB */}
+      {/* 3. TEACHERS MANAGEMENT TAB (ADMIN ONLY) */}
+      {isSuperAdmin && activeSubTab === 'teachers' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Action Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ position: 'relative', minWidth: '240px', flex: 1 }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                placeholder="Tìm giảng viên theo tên, mã GV, liên hệ..."
+                value={searchFilter}
+                onChange={e => setSearchFilter(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+              />
+            </div>
+
+            <button
+              onClick={() => setShowAddTeacherForm(!showAddTeacherForm)}
+              className="btn btn-primary"
+              style={{ background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
+            >
+              <UserCheck size={16} />
+              <span>{showAddTeacherForm ? 'Đóng Biểu Mẫu' : 'Thêm Giảng Viên / Trợ Giảng Mới'}</span>
+            </button>
+          </div>
+
+          {/* Add Teacher Form */}
+          {showAddTeacherForm && (
+            <form onSubmit={handleCreateTeacher} className="card animate-slide-up" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', border: '1.5px solid #d97706' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                Tạo Tài Khoản Giảng Viên / Trợ Giảng Đứng Lớp
+              </h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Họ và Tên Giảng Viên *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ví dụ: Cô Thu Hằng"
+                    value={newTeacherName}
+                    onChange={e => setNewTeacherName(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Mã Giảng Viên (Tài Khoản Đăng Nhập) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ví dụ: GV03"
+                    value={newTeacherCode}
+                    onChange={e => setNewTeacherCode(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Mật Khẩu (Mặc định: 123)
+                  </label>
+                  <input
+                    type="text"
+                    value={newTeacherPass}
+                    onChange={e => setNewTeacherPass(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Email Hoặc SĐT Liên Hệ
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="thuhang@tinhocgenz.io.vn"
+                    value={newTeacherContact}
+                    onChange={e => setNewTeacherContact(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              {/* Tracks Assignment Checkboxes */}
+              <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  PHÂN CÔNG PHÂN HỆ GIẢNG DẠY (Giảng viên chỉ có quyền soạn đề & chấm bài ở các môn được tích):
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginTop: '8px' }}>
+                  {(
+                    [
+                      { id: 'cntt-basic', label: '1. CNTT Cơ Bản' },
+                      { id: 'mos-office', label: '2. Tin Học MOS' },
+                      { id: 'ic3-gs', label: '3. Chuẩn IC3 GS6' },
+                      { id: 'cntt-advanced', label: '4. CNTT Nâng Cao' },
+                      { id: 'programming', label: '5. Lập Trình Python' },
+                      { id: 'cyber-security', label: '6. Mạng & Bảo Mật IT' }
+                    ] as const
+                  ).map(trk => {
+                    const isChecked = newTeacherTracks.includes(trk.id);
+                    return (
+                      <div
+                        key={trk.id}
+                        onClick={() => toggleTeacherTrack(trk.id, false)}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: isChecked ? 'rgba(217, 119, 6, 0.1)' : 'var(--bg-card)',
+                          border: isChecked ? '1.5px solid #d97706' : '1px solid var(--border-color)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '0.8rem',
+                          fontWeight: isChecked ? 700 : 500,
+                          color: isChecked ? '#d97706' : 'var(--text-secondary)'
+                        }}
+                      >
+                        {isChecked ? <CheckSquare size={15} color="#d97706" /> : <Square size={15} />}
+                        <span>{trk.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                <button type="submit" className="btn btn-primary" style={{ padding: '9px 18px', fontWeight: 800, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}>
+                  Lưu & Cấp Tài Khoản Giảng Viên
+                </button>
+                <button type="button" onClick={() => setShowAddTeacherForm(false)} className="btn btn-secondary">
+                  Hủy
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Teacher Accounts Table */}
+          <div className="card" style={{ overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                  <th style={{ padding: '12px 16px' }}>Họ và Tên Giảng Viên</th>
+                  <th style={{ padding: '12px 14px' }}>Mã GV (Tài Khoản)</th>
+                  <th style={{ padding: '12px 14px' }}>Mật Khẩu</th>
+                  <th style={{ padding: '12px 14px' }}>Liên Hệ</th>
+                  <th style={{ padding: '12px 14px' }}>Phân Hệ Phụ Trách</th>
+                  <th style={{ padding: '12px 14px' }}>Cấp Bậc</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'right' }}>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTeachers.map(t => (
+                  <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#d97706', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800 }}>
+                          {t.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span>{t.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 14px' }}>
+                      <span style={{ fontWeight: 800, color: '#d97706', background: 'rgba(217, 119, 6, 0.1)', padding: '3px 8px', borderRadius: 'var(--radius-sm)' }}>
+                        {t.teacherCode}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 14px', color: 'var(--text-muted)' }}>
+                      <code>{t.password || '123'}</code>
+                    </td>
+                    <td style={{ padding: '12px 14px', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      {t.phoneOrEmail || 'Chưa cập nhật'}
+                    </td>
+                    <td style={{ padding: '12px 14px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {t.assignedTracks.map(trk => (
+                          <span
+                            key={trk}
+                            style={{
+                              fontSize: '0.72rem',
+                              background: 'rgba(37, 99, 235, 0.1)',
+                              color: 'var(--accent-primary)',
+                              padding: '2px 8px',
+                              borderRadius: 'var(--radius-full)',
+                              fontWeight: 700
+                            }}
+                          >
+                            ✓ {trk === 'mos-office' ? 'MOS' : trk === 'programming' ? 'Python' : trk === 'ic3-gs' ? 'IC3 GS6' : trk === 'cntt-basic' ? 'CNTT Cơ Bản' : trk === 'cntt-advanced' ? 'CNTT Nâng Cao' : 'Bảo Mật IT'}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 14px' }}>
+                      <span style={{ fontSize: '0.72rem', background: 'rgba(217, 119, 6, 0.12)', color: '#d97706', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
+                        👨‍🏫 Giảng Viên Đứng Lớp
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          onClick={() => handleOpenEditTeacher(t)}
+                          style={{
+                            background: 'rgba(217, 119, 6, 0.08)',
+                            border: '1px solid rgba(217, 119, 6, 0.25)',
+                            color: '#d97706',
+                            padding: '5px 9px',
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Sửa thông tin & phân hệ giảng dạy"
+                        >
+                          <Edit3 size={13} />
+                          <span>Sửa Quyền</span>
+                        </button>
+
+                        <button
+                          onClick={() => onDeleteTeacherAccount && onDeleteTeacherAccount(t.id)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                            color: '#ef4444',
+                            padding: '5px 7px',
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                          }}
+                          title="Xóa giảng viên này"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* EDIT TEACHER MODAL */}
+          {editingTeacher && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.65)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '16px',
+                backdropFilter: 'blur(4px)'
+              }}
+              className="animate-fade-in"
+            >
+              <div
+                className="card"
+                style={{
+                  maxWidth: '620px',
+                  width: '100%',
+                  padding: '24px',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-xl)',
+                  background: 'var(--bg-card)',
+                  maxHeight: '90vh',
+                  overflowY: 'auto'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <Edit3 size={18} color="#d97706" />
+                    <span>Chỉnh Sửa Giảng Viên & Phân Công Môn Học</span>
+                  </h3>
+                  <button
+                    onClick={() => setEditingTeacher(null)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveEditTeacher} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                        Họ và Tên Giảng Viên *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={editTeacherName}
+                        onChange={e => setEditTeacherName(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                        Mã Giảng Viên (Tài Khoản) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={editTeacherCode}
+                        onChange={e => setEditTeacherCode(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                        Mật Khẩu
+                      </label>
+                      <input
+                        type="text"
+                        value={editTeacherPass}
+                        onChange={e => setEditTeacherPass(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                        Email / SĐT Liên Hệ
+                      </label>
+                      <input
+                        type="text"
+                        value={editTeacherContact}
+                        onChange={e => setEditTeacherContact(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tracks Assignment Checkboxes */}
+                  <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                      PHÂN CÔNG PHÂN HỆ GIẢNG DẠY (Tích chọn để mở quyền):
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginTop: '8px' }}>
+                      {(
+                        [
+                          { id: 'cntt-basic', label: '1. CNTT Cơ Bản' },
+                          { id: 'mos-office', label: '2. Tin Học MOS' },
+                          { id: 'ic3-gs', label: '3. Chuẩn IC3 GS6' },
+                          { id: 'cntt-advanced', label: '4. CNTT Nâng Cao' },
+                          { id: 'programming', label: '5. Lập Trình Python' },
+                          { id: 'cyber-security', label: '6. Mạng & Bảo Mật IT' }
+                        ] as const
+                      ).map(trk => {
+                        const isChecked = editTeacherTracks.includes(trk.id);
+                        return (
+                          <div
+                            key={trk.id}
+                            onClick={() => toggleTeacherTrack(trk.id, true)}
+                            style={{
+                              padding: '8px 10px',
+                              borderRadius: 'var(--radius-sm)',
+                              background: isChecked ? 'rgba(217, 119, 6, 0.1)' : 'var(--bg-card)',
+                              border: isChecked ? '1.5px solid #d97706' : '1px solid var(--border-color)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              fontSize: '0.8rem',
+                              fontWeight: isChecked ? 700 : 500,
+                              color: isChecked ? '#d97706' : 'var(--text-secondary)'
+                            }}
+                          >
+                            {isChecked ? <CheckSquare size={15} color="#d97706" /> : <Square size={15} />}
+                            <span>{trk.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditingTeacher(null)}
+                      className="btn btn-secondary"
+                      style={{ padding: '9px 16px' }}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      style={{ padding: '9px 20px', fontWeight: 800, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
+                    >
+                      Lưu Thay Đổi & Cập Nhật Giảng Viên
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 4. EXAMS TAB */}
       {activeSubTab === 'exams' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -814,7 +1322,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               onChange={e => setCategoryFilter(e.target.value)}
               style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
             >
-              <option value="all">Tất cả 6 phân hệ đào tạo</option>
+              <option value="all">Tất cả phân hệ đào tạo</option>
               <option value="cntt-basic">1. CNTT Cơ Bản</option>
               <option value="mos-office">2. MOS Quốc Tế</option>
               <option value="ic3-gs">3. IC3 GS6</option>
@@ -824,178 +1332,91 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </select>
           </div>
 
-          <div className="card" style={{ overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                  <th style={{ padding: '12px 16px' }}>Tên Đề Thi</th>
-                  <th style={{ padding: '12px 14px' }}>Phân Hệ Đào Tạo</th>
-                  <th style={{ padding: '12px 14px' }}>Số Câu</th>
-                  <th style={{ padding: '12px 14px' }}>Thời Lượng</th>
-                  <th style={{ padding: '12px 14px' }}>Loại Đề</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'right' }}>Thao Tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredQuizzes.map((quiz, i) => (
-                  <tr key={quiz.id} style={{ borderBottom: i < filteredQuizzes.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {quiz.title}
-                    </td>
-                    <td style={{ padding: '12px 14px', color: 'var(--accent-primary)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.78rem' }}>
-                      {quiz.category}
-                    </td>
-                    <td style={{ padding: '12px 14px' }}>{quiz.questions.length} câu</td>
-                    <td style={{ padding: '12px 14px' }}>{quiz.timeLimitMinutes} phút</td>
-                    <td style={{ padding: '12px 14px' }}>
-                      {quiz.isCustom ? (
-                        <span style={{ fontSize: '0.72rem', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                          Giáo viên tạo
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                          Hệ thống chuẩn
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                      {quiz.isCustom ? (
-                        <button
-                          onClick={() => onDeleteCustomQuiz(quiz.id)}
-                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
-                          title="Xóa đề thi này"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cố định</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '14px' }}>
+            {filteredQuizzes.map(q => (
+              <div key={q.id} className="card" style={{ padding: '18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '14px' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
+                      {TRACK_LABELS[q.category as CurriculumTrack] || q.category}
+                    </span>
+                    {q.isCustom && (
+                      <button
+                        onClick={() => onDeleteCustomQuiz(q.id)}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                        title="Xóa đề thi tự tạo"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
 
-      {/* 4. STUDENTS GRADEBOOK TAB */}
-      {activeSubTab === 'students' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ position: 'relative', minWidth: '260px' }}>
-              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                type="text"
-                placeholder="Tìm kiếm kết quả theo tên bài thi..."
-                value={searchFilter}
-                onChange={e => setSearchFilter(e.target.value)}
-                style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
-              />
-            </div>
+                  <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                    {q.title}
+                  </h4>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                    {q.description}
+                  </p>
+                </div>
 
-            <button onClick={exportGradebookJSON} className="btn btn-secondary">
-              <Download size={16} />
-              <span>Tải Bảng Điểm (.JSON)</span>
-            </button>
-          </div>
-
-          <div className="card" style={{ overflow: 'hidden' }}>
-            {filteredAttempts.length === 0 ? (
-              <div style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                Chưa có dữ liệu nộp bài thi nào được ghi nhận.
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--border-color)', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  <span>{q.questions.length} câu hỏi trắc nghiệm</span>
+                  <span>{q.timeLimitMinutes > 0 ? `${q.timeLimitMinutes} phút` : 'Tự do'}</span>
+                </div>
               </div>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '12px 16px' }}>STT</th>
-                    <th style={{ padding: '12px 14px' }}>Bài Kiểm Tra</th>
-                    <th style={{ padding: '12px 14px' }}>Chế Độ</th>
-                    <th style={{ padding: '12px 14px' }}>Điểm Số</th>
-                    <th style={{ padding: '12px 14px' }}>Tỷ Lệ Đúng</th>
-                    <th style={{ padding: '12px 14px' }}>Đánh Giá</th>
-                    <th style={{ padding: '12px 16px' }}>Thời Gian Nộp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAttempts.map((att, i) => (
-                    <tr key={i} style={{ borderBottom: i < filteredAttempts.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>#{i + 1}</td>
-                      <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--text-primary)' }}>{att.quizTitle}</td>
-                      <td style={{ padding: '12px 14px', textTransform: 'capitalize' }}>
-                        {att.mode === 'exam' ? 'Thi tính giờ' : 'Luyện tập'}
-                      </td>
-                      <td style={{ padding: '12px 14px', fontWeight: 700 }}>{att.score}/{att.maxScore}</td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span style={{ fontWeight: 800, color: att.percentage >= 70 ? '#10b981' : '#ef4444' }}>
-                          {att.percentage}%
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        {att.percentage >= 85 ? (
-                          <span style={{ color: '#10b981', fontWeight: 700 }}>Xuất Sắc 🌟</span>
-                        ) : att.percentage >= 70 ? (
-                          <span style={{ color: '#3b82f6', fontWeight: 700 }}>Đạt Chuẩn 👏</span>
-                        ) : (
-                          <span style={{ color: '#ef4444', fontWeight: 700 }}>Cần Luyện Thêm 💪</span>
-                        )}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{att.completedAt}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+            ))}
           </div>
         </div>
       )}
 
       {/* 5. QUESTION BANK TAB */}
       {activeSubTab === 'question_bank' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              Ngân hàng câu hỏi trắc nghiệm phân theo 6 phân hệ đào tạo CNTT:
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="card" style={{ padding: '18px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '6px' }}>
+              Ngân Hàng Toàn Bộ {totalQuestions} Câu Hỏi Khảo Thí
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+              Danh sách chi tiết câu hỏi, đáp án đúng và phần giải thích chi tiết đã được chuẩn hóa theo chương trình tin học.
             </p>
-            <button onClick={onNavigateToCreator} className="btn btn-primary">
-              <PlusCircle size={16} />
-              <span>Thêm Câu Hỏi Mới</span>
-            </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {quizzes.map(quiz => (
-              <div key={quiz.id} className="card" style={{ padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {quiz.title} ({quiz.questions.length} câu)
-                  </h4>
-                  <span className="badge" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)' }}>
-                    {quiz.category}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {quizzes.flatMap(q => q.questions.map((ques, idx) => ({ ...ques, quizTitle: q.title, cat: q.category, quesIdx: idx + 1 }))).slice(0, 50).map((ques, qidx) => (
+              <div key={ques.id || qidx} className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
+                    {ques.quizTitle} • Câu {ques.quesIdx}
                   </span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{ques.points || 10} điểm</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {quiz.questions.map((q, idx) => (
-                    <div
-                      key={q.id}
-                      style={{
-                        padding: '10px 14px',
-                        background: 'var(--bg-primary)',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: '0.85rem'
-                      }}
-                    >
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                        Câu {idx + 1}: {q.prompt}
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        Dạng: <b>{q.type}</b> • Điểm: <b>{q.points} XP</b> • Giải thích: {q.explanation}
-                      </div>
-                    </div>
-                  ))}
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {ques.prompt}
                 </div>
+
+                {ques.options && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '6px', fontSize: '0.82rem' }}>
+                    {ques.options.map((opt, oidx) => {
+                      const isCorrect = Array.isArray(ques.correctAnswer) ? ques.correctAnswer.includes(oidx) : ques.correctAnswer === oidx;
+                      return (
+                        <div
+                          key={oidx}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: 'var(--radius-sm)',
+                            background: isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-primary)',
+                            border: isCorrect ? '1px solid #10b981' : '1px solid var(--border-color)',
+                            color: isCorrect ? '#059669' : 'var(--text-secondary)',
+                            fontWeight: isCorrect ? 700 : 400
+                          }}
+                        >
+                          {String.fromCharCode(65 + oidx)}. {opt} {isCorrect && '✓'}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))}
           </div>

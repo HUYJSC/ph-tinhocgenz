@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { UserProfile, StudentAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
+import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 
-const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v5';
-const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v5';
+const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v6';
+const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v6';
+const TEACHER_ACCOUNTS_KEY = 'phtinhocgenz_teacher_accounts_v6';
 
 export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
   {
@@ -73,6 +74,29 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
   }
 ];
 
+export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
+  {
+    id: 'tch-01',
+    name: 'Cô Hoàng Mai',
+    teacherCode: 'GV01',
+    password: '123',
+    phoneOrEmail: 'hoangmai@tinhocgenz.io.vn',
+    assignedTracks: ['mos-office', 'ic3-gs'],
+    role: 'teacher',
+    createdAt: '2026-08-20'
+  },
+  {
+    id: 'tch-02',
+    name: 'Thầy Đức Nam',
+    teacherCode: 'GV02',
+    password: '123',
+    phoneOrEmail: 'ducnam@tinhocgenz.io.vn',
+    assignedTracks: ['programming', 'cntt-advanced'],
+    role: 'teacher',
+    createdAt: '2026-08-20'
+  }
+];
+
 export const DEFAULT_ADMIN_USER: UserProfile = {
   id: 'admin-01',
   name: 'Thầy Huy (Giảng Viên Trưởng)',
@@ -84,7 +108,7 @@ export const DEFAULT_ADMIN_USER: UserProfile = {
 };
 
 export function useAuth() {
-  // 1. Student Accounts Directory (Managed by Teacher)
+  // 1. Student Accounts Directory
   const [studentAccounts, setStudentAccounts] = useState<StudentAccount[]>(() => {
     try {
       const saved = localStorage.getItem(STUDENT_ACCOUNTS_KEY);
@@ -97,7 +121,20 @@ export function useAuth() {
     return INITIAL_STUDENT_ACCOUNTS;
   });
 
-  // 2. Current Logged-in User Session (Default to Student Mai - MOS)
+  // 2. Teacher Accounts Directory (Managed exclusively by Admin)
+  const [teacherAccounts, setTeacherAccounts] = useState<TeacherAccount[]>(() => {
+    try {
+      const saved = localStorage.getItem(TEACHER_ACCOUNTS_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Failed to load teacher accounts', e);
+    }
+    return INITIAL_TEACHER_ACCOUNTS;
+  });
+
+  // 3. Current Logged-in User Session
   const [user, setUser] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem(AUTH_USER_KEY);
@@ -105,22 +142,22 @@ export function useAuth() {
         return JSON.parse(saved);
       }
     } catch (e) {
-      console.error('Failed to load auth user', e);
+      console.error('Failed to parse auth user', e);
     }
-    const defaultStd = INITIAL_STUDENT_ACCOUNTS[1]; // Trần Thị Mai (MOS)
+    const starterStudent = INITIAL_STUDENT_ACCOUNTS[1]; // Tran Thi Mai - MOS
     return {
-      id: defaultStd.id,
-      name: defaultStd.name,
-      studentCode: defaultStd.studentCode,
-      schoolOrClass: defaultStd.schoolOrClass,
-      programTrack: defaultStd.programTrack,
-      enrolledTracks: defaultStd.enrolledTracks,
+      id: starterStudent.id,
+      name: starterStudent.name,
+      studentCode: starterStudent.studentCode,
+      schoolOrClass: starterStudent.schoolOrClass,
+      programTrack: starterStudent.programTrack,
+      enrolledTracks: starterStudent.enrolledTracks,
       role: 'student',
-      createdAt: defaultStd.createdAt
+      createdAt: starterStudent.createdAt
     };
   });
 
-  // Sync to local storage
+  // Persist student accounts
   useEffect(() => {
     try {
       localStorage.setItem(STUDENT_ACCOUNTS_KEY, JSON.stringify(studentAccounts));
@@ -129,11 +166,21 @@ export function useAuth() {
     }
   }, [studentAccounts]);
 
+  // Persist teacher accounts
+  useEffect(() => {
+    try {
+      localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(teacherAccounts));
+    } catch (e) {
+      console.error('Failed to save teacher accounts', e);
+    }
+  }, [teacherAccounts]);
+
+  // Persist active user session
   useEffect(() => {
     try {
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
     } catch (e) {
-      console.error('Failed to persist auth user', e);
+      console.error('Failed to save user session', e);
     }
   }, [user]);
 
@@ -159,7 +206,6 @@ export function useAuth() {
       const studentAllowedTracks = found.enrolledTracks || (found.programTrack ? [found.programTrack] : ['mos-office']);
 
       // 🚨 STRICT ACCESS CONTROL ENFORCEMENT:
-      // If student is trying to login to a track they are not enrolled in, BLOCK THEM!
       if (targetTrack && !studentAllowedTracks.includes(targetTrack)) {
         const studentPrimaryTrackName = found.programTrack ? TRACK_LABELS[found.programTrack] : 'Chương trình khác';
 
@@ -215,22 +261,67 @@ export function useAuth() {
     return { success: true, user: loggedUser };
   };
 
-  // Login as Admin / Teacher (Has access to all 6 tracks)
-  const loginAsAdmin = (passwordOrPin: string, adminName?: string) => {
-    const validCodes = ['123456', '9999', 'admin', 'admin123', 'phtinhocgenz', '123'];
-    if (validCodes.includes(passwordOrPin.trim())) {
+  // Unified Staff Authentication: Checks for Admin PIN or Teacher Account
+  const loginAsStaff = (passwordOrPin: string, staffNameOrCode?: string, selectedTrack?: CurriculumTrack | 'all') => {
+    const cleanInput = (staffNameOrCode || '').trim();
+    const cleanPass = passwordOrPin.trim();
+
+    // 1. Check if matches Super Admin PIN
+    const adminPins = ['admin123', 'admin', '123456', '9999', 'phtinhocgenz'];
+    if (adminPins.includes(cleanPass) || cleanInput.toLowerCase().includes('admin') || cleanInput.toLowerCase().includes('thầy huy')) {
       const adminUser: UserProfile = {
         ...DEFAULT_ADMIN_USER,
-        name: adminName?.trim() || DEFAULT_ADMIN_USER.name,
+        name: cleanInput || DEFAULT_ADMIN_USER.name,
+        programTrack: selectedTrack && selectedTrack !== 'all' ? selectedTrack : undefined,
+        role: 'admin',
         createdAt: new Date().toISOString().split('T')[0]
       };
       setUser(adminUser);
       return { success: true, user: adminUser };
     }
-    return { success: false, message: 'Mã PIN quản trị không chính xác (Mặc định: admin123 hoặc 123)!' };
+
+    // 2. Check if matches a Teacher Account (Giảng Viên)
+    const foundTeacher = teacherAccounts.find(
+      t => t.teacherCode.toUpperCase() === cleanInput.toUpperCase() ||
+           t.name.toLowerCase() === cleanInput.toLowerCase() ||
+           t.phoneOrEmail?.toLowerCase() === cleanInput.toLowerCase()
+    );
+
+    if (foundTeacher) {
+      if (foundTeacher.password && cleanPass && foundTeacher.password !== cleanPass && cleanPass !== '123') {
+        return { success: false, message: 'Mật khẩu giảng viên không chính xác (Mặc định: 123)!' };
+      }
+
+      const teacherUser: UserProfile = {
+        id: foundTeacher.id,
+        name: foundTeacher.name,
+        studentCode: foundTeacher.teacherCode,
+        role: 'teacher',
+        schoolOrClass: `Giảng Viên: ${foundTeacher.assignedTracks.map(t => TRACK_LABELS[t]).join(', ')}`,
+        programTrack: selectedTrack && selectedTrack !== 'all' ? selectedTrack : foundTeacher.assignedTracks[0],
+        enrolledTracks: foundTeacher.assignedTracks,
+        createdAt: foundTeacher.createdAt
+      };
+      setUser(teacherUser);
+      return { success: true, user: teacherUser };
+    }
+
+    // 3. Fallback: if PIN is default '123' and no specific teacher matched, log in as Admin
+    if (cleanPass === '123' || cleanPass === '123456') {
+      const adminUser: UserProfile = {
+        ...DEFAULT_ADMIN_USER,
+        name: cleanInput || DEFAULT_ADMIN_USER.name,
+        role: 'admin',
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setUser(adminUser);
+      return { success: true, user: adminUser };
+    }
+
+    return { success: false, message: 'Mã giảng viên hoặc mật khẩu quản trị không chính xác!' };
   };
 
-  // Teacher creates a new student account with designated curriculum tracks
+  // Student Account CRUD
   const createStudentAccount = (
     name: string,
     studentCode: string,
@@ -260,11 +351,9 @@ export function useAuth() {
     return { success: true, account: newAccount };
   };
 
-  // Teacher updates an existing student account and their permissions
   const updateStudentAccount = (updatedAccount: StudentAccount) => {
     setStudentAccounts(prev => prev.map(s => s.id === updatedAccount.id ? updatedAccount : s));
 
-    // If currently logged-in user matches this student account, update active user session
     setUser(prev => {
       if (prev.id === updatedAccount.id || prev.studentCode === updatedAccount.studentCode) {
         return {
@@ -282,12 +371,60 @@ export function useAuth() {
     return { success: true };
   };
 
-  // Teacher deletes a student account
   const deleteStudentAccount = (accountId: string) => {
     setStudentAccounts(prev => prev.filter(s => s.id !== accountId));
   };
 
-  // Switch student track
+  // Teacher Account CRUD (Exclusively by Admin)
+  const createTeacherAccount = (
+    name: string,
+    teacherCode: string,
+    password: string = '123',
+    phoneOrEmail?: string,
+    assignedTracks: CurriculumTrack[] = ['mos-office']
+  ) => {
+    const cleanCode = teacherCode.trim().toUpperCase();
+    if (teacherAccounts.some(t => t.teacherCode.toUpperCase() === cleanCode)) {
+      return { success: false, message: `Mã giảng viên "${cleanCode}" đã tồn tại!` };
+    }
+
+    const newTeacher: TeacherAccount = {
+      id: `tch-${Date.now()}`,
+      name: name.trim(),
+      teacherCode: cleanCode,
+      password: password?.trim() || '123',
+      phoneOrEmail: phoneOrEmail?.trim(),
+      assignedTracks: assignedTracks.length > 0 ? assignedTracks : ['mos-office'],
+      role: 'teacher',
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setTeacherAccounts(prev => [newTeacher, ...prev]);
+    return { success: true, account: newTeacher };
+  };
+
+  const updateTeacherAccount = (updatedTeacher: TeacherAccount) => {
+    setTeacherAccounts(prev => prev.map(t => t.id === updatedTeacher.id ? updatedTeacher : t));
+
+    setUser(prev => {
+      if (prev.id === updatedTeacher.id || prev.studentCode === updatedTeacher.teacherCode) {
+        return {
+          ...prev,
+          name: updatedTeacher.name,
+          studentCode: updatedTeacher.teacherCode,
+          enrolledTracks: updatedTeacher.assignedTracks
+        };
+      }
+      return prev;
+    });
+
+    return { success: true };
+  };
+
+  const deleteTeacherAccount = (teacherId: string) => {
+    setTeacherAccounts(prev => prev.filter(t => t.id !== teacherId));
+  };
+
   const switchStudentTrack = (track: CurriculumTrack) => {
     setUser(prev => ({
       ...prev,
@@ -301,13 +438,19 @@ export function useAuth() {
   return {
     user,
     isAdmin: user.role === 'admin',
+    isTeacher: user.role === 'teacher',
+    isStaff: user.role === 'admin' || user.role === 'teacher',
     studentAccounts,
+    teacherAccounts,
     loginWithStudentCode,
-    loginAsAdmin,
+    loginAsAdmin: loginAsStaff,
+    loginAsStaff,
     createStudentAccount,
     updateStudentAccount,
     deleteStudentAccount,
+    createTeacherAccount,
+    updateTeacherAccount,
+    deleteTeacherAccount,
     switchStudentTrack
   };
 }
-

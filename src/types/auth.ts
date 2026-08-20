@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin';
+export type UserRole = 'student' | 'teacher' | 'admin';
 
 export type CurriculumTrack =
   | 'cntt-basic'
@@ -26,6 +26,17 @@ export interface StudentAccount {
   programTrack: CurriculumTrack;
   enrolledTracks: CurriculumTrack[];
   role: 'student';
+  createdAt: string;
+}
+
+export interface TeacherAccount {
+  id: string;
+  name: string;
+  teacherCode: string;
+  password?: string;
+  phoneOrEmail?: string;
+  assignedTracks: CurriculumTrack[];
+  role: 'teacher';
   createdAt: string;
 }
 
