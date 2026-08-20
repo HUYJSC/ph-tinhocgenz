@@ -463,13 +463,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <td style={{ padding: '12px 14px', color: 'var(--text-muted)' }}>
                       <code>{s.password || '123'}</code>
                     </td>
-                    <td style={{ padding: '12px 14px' }}>{s.schoolOrClass}</td>
-                    <td style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.78rem', fontWeight: 600, color: '#d97706' }}>
-                      {s.programTrack}
+                    <td style={{ padding: '12px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                      <div>{s.programTrack === 'mos-office' ? 'MOS Word, Excel, PowerPoint' : s.programTrack === 'programming' ? 'Lập Trình Python' : s.programTrack === 'cntt-basic' ? 'CNTT Cơ Bản' : s.programTrack === 'ic3-gs' ? 'Chuẩn IC3 GS6' : s.programTrack}</div>
+                      <div style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>🔒 Chỉ học đúng môn này</div>
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                        Chỉ Quyền Học Sinh 🎓
+                        Học Viên (Độc Quyền Khóa) 🎓
                       </span>
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>

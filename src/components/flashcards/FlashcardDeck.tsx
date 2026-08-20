@@ -3,20 +3,31 @@ import { Quiz, Question } from '../../types/quiz';
 import { RotateCw, CheckCircle2, XCircle, Shuffle, RotateCcw, ArrowLeft, ArrowRight, Layers, Sparkles } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
+import { UserProfile, CurriculumTrack } from '../../types/auth';
+
 interface FlashcardDeckProps {
   quizzes: Quiz[];
+  currentUser?: UserProfile;
 }
 
-export const FlashcardDeck: React.FC<FlashcardDeckProps> = ({ quizzes }) => {
-  const [selectedQuizId, setSelectedQuizId] = useState<string>(quizzes[0]?.id || '');
+export const FlashcardDeck: React.FC<FlashcardDeckProps> = ({ quizzes, currentUser }) => {
+  const isStudent = currentUser?.role === 'student';
+  const allowedTracks: CurriculumTrack[] = currentUser?.enrolledTracks ||
+    (currentUser?.programTrack ? [currentUser.programTrack] : ['mos-office']);
+
+  const visibleQuizzes = isStudent
+    ? quizzes.filter(q => allowedTracks.includes(q.category as CurriculumTrack))
+    : quizzes;
+
+  const [selectedQuizId, setSelectedQuizId] = useState<string>(visibleQuizzes[0]?.id || '');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredIds, setMasteredIds] = useState<string[]>([]);
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>(() => {
-    return quizzes[0]?.questions || [];
+    return visibleQuizzes[0]?.questions || [];
   });
 
-  const currentQuiz = quizzes.find(q => q.id === selectedQuizId) || quizzes[0];
+  const currentQuiz = visibleQuizzes.find(q => q.id === selectedQuizId) || visibleQuizzes[0];
 
   const handleSelectQuiz = (quizId: string) => {
     setSelectedQuizId(quizId);
@@ -138,7 +149,7 @@ export const FlashcardDeck: React.FC<FlashcardDeckProps> = ({ quizzes }) => {
             fontWeight: 600
           }}
         >
-          {quizzes.map(q => (
+          {visibleQuizzes.map(q => (
             <option key={q.id} value={q.id}>
               {q.title} ({q.questions.length} thẻ)
             </option>

@@ -145,6 +145,7 @@ export function App() {
           totalPoints={stats.totalPoints}
           studentName={user.name}
           studentCode={user.studentCode}
+          programTrack={user.programTrack}
           isAdmin={isAdmin}
           unreadNotificationCount={unreadNotificationCount}
           onOpenNotifications={() => setActiveTab('assignments')}
@@ -221,13 +222,17 @@ export function App() {
               {activeTab === 'quizzes' && (
                 <QuizCatalog
                   quizzes={allQuizzes}
+                  currentUser={user}
                   onStartQuiz={handleStartQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
                 />
               )}
 
               {activeTab === 'flashcards' && (
-                <FlashcardDeck quizzes={allQuizzes} />
+                <FlashcardDeck
+                  quizzes={allQuizzes}
+                  currentUser={user}
+                />
               )}
 
               {activeTab === 'analytics' && (

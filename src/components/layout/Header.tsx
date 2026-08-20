@@ -9,6 +9,7 @@ interface HeaderProps {
   totalPoints: number;
   studentName: string;
   studentCode?: string;
+  programTrack?: string;
   isAdmin?: boolean;
   unreadNotificationCount?: number;
   onOpenNotifications?: () => void;
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   totalPoints,
   studentName,
   studentCode,
+  programTrack,
   isAdmin = false,
   unreadNotificationCount = 0,
   onOpenNotifications,
@@ -93,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
                   borderRadius: 'var(--radius-full)'
                 }}
               >
-                Học Viên
+                Học Viên • {programTrack === 'mos-office' ? 'Khóa MOS Quốc Tế' : programTrack === 'programming' ? 'Khóa Lập Trình Python' : programTrack === 'cntt-basic' ? 'Khóa CNTT Cơ Bản' : programTrack === 'ic3-gs' ? 'Khóa Chuẩn IC3' : 'Tin Học Chuẩn'}
               </span>
             )}
           </div>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { UserProfile, StudentAccount, CurriculumTrack } from '../types/auth';
 
-const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v2';
-const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v2';
+const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v3';
+const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v3';
 
 export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
   {
@@ -12,6 +12,7 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     password: '123',
     schoolOrClass: 'Lớp CNTT Cơ Bản K1',
     programTrack: 'cntt-basic',
+    enrolledTracks: ['cntt-basic'],
     role: 'student',
     createdAt: '2026-08-20'
   },
@@ -20,8 +21,9 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     name: 'Trần Thị Mai',
     studentCode: 'THGZ02',
     password: '123',
-    schoolOrClass: 'Lớp Luyện Thi MOS Quốc Tế',
+    schoolOrClass: 'Lớp Tin Học Văn Phòng MOS',
     programTrack: 'mos-office',
+    enrolledTracks: ['mos-office'],
     role: 'student',
     createdAt: '2026-08-20'
   },
@@ -32,6 +34,7 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     password: '123',
     schoolOrClass: 'Lớp Lập Trình Python K12',
     programTrack: 'programming',
+    enrolledTracks: ['programming'],
     role: 'student',
     createdAt: '2026-08-20'
   }
@@ -43,6 +46,7 @@ export const DEFAULT_ADMIN_USER: UserProfile = {
   email: 'admin@tinhocgenz.io.vn',
   role: 'admin',
   schoolOrClass: 'PH Digital Education • Ban Giảng Huấn',
+  enrolledTracks: ['cntt-basic', 'mos-office', 'ic3-gs', 'cntt-advanced', 'programming', 'cyber-security'],
   createdAt: '2026-08-15'
 };
 
@@ -60,7 +64,7 @@ export function useAuth() {
     return INITIAL_STUDENT_ACCOUNTS;
   });
 
-  // 2. Current Logged-in User Session
+  // 2. Current Logged-in User Session (Default to Student Mai - MOS)
   const [user, setUser] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem(AUTH_USER_KEY);
@@ -70,14 +74,16 @@ export function useAuth() {
     } catch (e) {
       console.error('Failed to load auth user', e);
     }
+    const defaultStd = INITIAL_STUDENT_ACCOUNTS[1]; // Trần Thị Mai (MOS)
     return {
-      id: INITIAL_STUDENT_ACCOUNTS[0].id,
-      name: INITIAL_STUDENT_ACCOUNTS[0].name,
-      studentCode: INITIAL_STUDENT_ACCOUNTS[0].studentCode,
-      schoolOrClass: INITIAL_STUDENT_ACCOUNTS[0].schoolOrClass,
-      programTrack: INITIAL_STUDENT_ACCOUNTS[0].programTrack,
+      id: defaultStd.id,
+      name: defaultStd.name,
+      studentCode: defaultStd.studentCode,
+      schoolOrClass: defaultStd.schoolOrClass,
+      programTrack: defaultStd.programTrack,
+      enrolledTracks: defaultStd.enrolledTracks,
       role: 'student',
-      createdAt: INITIAL_STUDENT_ACCOUNTS[0].createdAt
+      createdAt: defaultStd.createdAt
     };
   });
 
@@ -108,7 +114,6 @@ export function useAuth() {
     );
 
     if (found) {
-      // Check password if set (default allow 123, 123456, or matching password)
       if (found.password && cleanPass && found.password !== cleanPass && cleanPass !== '123' && cleanPass !== '123456') {
         return { success: false, message: 'Mật khẩu học sinh không chính xác (Mặc định: 123)!' };
       }
@@ -119,6 +124,7 @@ export function useAuth() {
         studentCode: found.studentCode,
         schoolOrClass: found.schoolOrClass,
         programTrack: found.programTrack,
+        enrolledTracks: found.enrolledTracks || [found.programTrack || 'mos-office'],
         role: 'student',
         createdAt: found.createdAt
       };
@@ -126,14 +132,15 @@ export function useAuth() {
       return { success: true, user: loggedUser };
     }
 
-    // If code doesn't exist, allow auto quick create for instant onboarding
+    // If code doesn't exist, create a new MOS student by default
     const newStudent: StudentAccount = {
       id: `std-${Date.now()}`,
       name: studentCodeInput.trim(),
       studentCode: `THGZ${Math.floor(10 + Math.random() * 90)}`,
       password: '123',
-      schoolOrClass: 'Lớp Tin Học Chuẩn',
-      programTrack: 'cntt-basic',
+      schoolOrClass: 'Lớp Tin Học Văn Phòng MOS',
+      programTrack: 'mos-office',
+      enrolledTracks: ['mos-office'],
       role: 'student',
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -146,6 +153,7 @@ export function useAuth() {
       studentCode: newStudent.studentCode,
       schoolOrClass: newStudent.schoolOrClass,
       programTrack: newStudent.programTrack,
+      enrolledTracks: newStudent.enrolledTracks,
       role: 'student',
       createdAt: newStudent.createdAt
     };
@@ -153,13 +161,14 @@ export function useAuth() {
     return { success: true, user: loggedUser };
   };
 
-  // Login as Admin / Teacher
+  // Login as Admin / Teacher (Has access to all 6 tracks)
   const loginAsAdmin = (passwordOrPin: string, adminName?: string) => {
     const validCodes = ['123456', '9999', 'admin', 'admin123', 'phtinhocgenz', '123'];
     if (validCodes.includes(passwordOrPin.trim())) {
       const adminUser: UserProfile = {
         ...DEFAULT_ADMIN_USER,
-        name: adminName?.trim() || DEFAULT_ADMIN_USER.name
+        name: adminName?.trim() || DEFAULT_ADMIN_USER.name,
+        enrolledTracks: ['cntt-basic', 'mos-office', 'ic3-gs', 'cntt-advanced', 'programming', 'cyber-security']
       };
       setUser(adminUser);
       return { success: true, user: adminUser };
@@ -167,13 +176,14 @@ export function useAuth() {
     return { success: false, message: 'Mã PIN hoặc mật khẩu quản trị không đúng!' };
   };
 
-  // Teacher creates a new student account
+  // Teacher creates a new student account with specific enrolled tracks
   const createStudentAccount = (
     name: string,
     studentCode: string,
     password: string = '123',
     schoolOrClass: string = 'Lớp Tin Học',
-    programTrack: CurriculumTrack = 'cntt-basic'
+    programTrack: CurriculumTrack = 'mos-office',
+    enrolledTracks: CurriculumTrack[] = [programTrack]
   ): StudentAccount => {
     const newAcc: StudentAccount = {
       id: `std-${Date.now()}`,
@@ -182,6 +192,7 @@ export function useAuth() {
       password: password.trim() || '123',
       schoolOrClass: schoolOrClass.trim() || 'Lớp Tin Học',
       programTrack,
+      enrolledTracks: enrolledTracks.length > 0 ? enrolledTracks : [programTrack],
       role: 'student',
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -195,15 +206,26 @@ export function useAuth() {
     setStudentAccounts(prev => prev.filter(s => s.id !== studentId));
   };
 
-  // Logout / Switch
+  // Switch student active track (if enrolled in multiple)
+  const switchStudentTrack = (track: CurriculumTrack) => {
+    if (user.enrolledTracks?.includes(track) || user.role === 'admin') {
+      setUser(prev => ({
+        ...prev,
+        programTrack: track
+      }));
+    }
+  };
+
+  // Logout
   const logout = () => {
-    const defaultStd = studentAccounts[0] || INITIAL_STUDENT_ACCOUNTS[0];
+    const defaultStd = studentAccounts[1] || INITIAL_STUDENT_ACCOUNTS[1];
     setUser({
       id: defaultStd.id,
       name: defaultStd.name,
       studentCode: defaultStd.studentCode,
       schoolOrClass: defaultStd.schoolOrClass,
       programTrack: defaultStd.programTrack,
+      enrolledTracks: defaultStd.enrolledTracks,
       role: 'student',
       createdAt: defaultStd.createdAt
     });
@@ -219,6 +241,7 @@ export function useAuth() {
     loginAsAdmin,
     createStudentAccount,
     deleteStudentAccount,
+    switchStudentTrack,
     logout
   };
 }

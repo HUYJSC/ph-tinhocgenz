@@ -8,6 +8,15 @@ export type CurriculumTrack =
   | 'programming'
   | 'cyber-security';
 
+export const TRACK_LABELS: Record<CurriculumTrack, string> = {
+  'cntt-basic': '1. CNTT & Tin Học Cơ Bản',
+  'mos-office': '2. Tin Học Văn Phòng MOS (Word, Excel, PPT)',
+  'ic3-gs': '3. Chuẩn Tin Học Quốc Tế IC3 GS6',
+  'cntt-advanced': '4. CNTT Nâng Cao & Xử Lý Dữ Liệu',
+  'programming': '5. Lập Trình Python & Thuật Toán',
+  'cyber-security': '6. Mạng Máy Tính & Bảo Mật IT'
+};
+
 export interface StudentAccount {
   id: string;
   name: string;
@@ -15,6 +24,7 @@ export interface StudentAccount {
   password?: string;
   schoolOrClass: string;
   programTrack: CurriculumTrack;
+  enrolledTracks: CurriculumTrack[];
   role: 'student';
   createdAt: string;
 }
@@ -28,6 +38,7 @@ export interface UserProfile {
   avatar?: string;
   schoolOrClass?: string;
   programTrack?: CurriculumTrack;
+  enrolledTracks?: CurriculumTrack[];
   createdAt: string;
 }
 

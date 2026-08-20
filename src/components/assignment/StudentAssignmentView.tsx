@@ -416,12 +416,27 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
 
           {/* List of Classroom Assignments */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-            {assignments.map(assign => {
-              const mySubmissions = submissions.filter(
-                s => s.assignmentId === assign.id && s.studentId === currentUser.id
+            {(() => {
+              const allowedTracks = currentUser.enrolledTracks || (currentUser.programTrack ? [currentUser.programTrack] : ['mos-office']);
+              const visibleList = assignments.filter(a =>
+                allowedTracks.includes(a.category as any) ||
+                (a.targetClass && currentUser.schoolOrClass && a.targetClass.toLowerCase().includes(currentUser.schoolOrClass.toLowerCase()))
               );
-              const hasSubmitted = mySubmissions.length > 0;
-              const latestSub = mySubmissions[0];
+
+              if (visibleList.length === 0) {
+                return (
+                  <div className="card" style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>
+                    Không có đề thi tài liệu nào được giao cho khóa học của bạn ({currentUser.schoolOrClass || 'Lớp của bạn'}).
+                  </div>
+                );
+              }
+
+              return visibleList.map(assign => {
+                const mySubmissions = submissions.filter(
+                  s => s.assignmentId === assign.id && s.studentId === currentUser.id
+                );
+                const hasSubmitted = mySubmissions.length > 0;
+                const latestSub = mySubmissions[0];
 
               const now = new Date().getTime();
               const start = new Date(assign.startTime).getTime();
@@ -501,8 +516,9 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   </div>
                 </div>
               );
-            })}
-          </div>
+            });
+          })()}
+        </div>
         </div>
       )}
 
