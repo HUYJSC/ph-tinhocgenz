@@ -60,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               PH- TINHOCGENZ
             </div>
             <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
-              Digital Education • MOS / IC3
+              Học Trực Tuyến • MOS / IC3
             </div>
           </div>
         </div>
