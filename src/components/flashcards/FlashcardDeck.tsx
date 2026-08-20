@@ -13,7 +13,7 @@ interface FlashcardDeckProps {
 export const FlashcardDeck: React.FC<FlashcardDeckProps> = ({ quizzes, currentUser }) => {
   const isStudent = currentUser?.role === 'student';
   const allowedTracks: CurriculumTrack[] = currentUser?.enrolledTracks ||
-    (currentUser?.programTrack ? [currentUser.programTrack] : ['mos-office']);
+    (currentUser?.programTrack ? [currentUser.programTrack] : ['office-fast-3in1']);
 
   const visibleQuizzes = isStudent
     ? quizzes.filter(q => allowedTracks.includes(q.category as CurriculumTrack))

@@ -1,291 +1,385 @@
 import { Quiz } from '../types/quiz';
 
 export const DEFAULT_QUIZZES: Quiz[] = [
+  // 1. Word, Excel, PowerPoint (3Buổi 1 môn)
   {
-    id: 'quiz-cntt-basic',
-    title: '1. CNTT & Tin Học Cơ Bản (Máy Tính & Internet)',
-    description: 'Chương trình chuẩn Tin học cơ bản: Cấu trúc phần cứng máy tính, hệ điều hành Windows, thao tác tệp thư mục và sử dụng Internet an toàn.',
-    category: 'cntt-basic',
+    id: 'quiz-office-fast-3in1',
+    title: '1. Word, Excel, PowerPoint (3Buổi 1 môn) - Đề Thi Cấp Tốc',
+    description: 'Chương trình cấp tốc 3 buổi/môn: Kỹ năng định dạng văn bản hành chính Word, tính toán hàm Excel và thiết kế slide thuyết trình PowerPoint chuẩn công sở.',
+    category: 'office-fast-3in1',
     difficulty: 'easy',
     timeLimitMinutes: 15,
+    icon: 'Layers',
+    badgeColor: '#2563eb',
+    author: 'PH - TINHOCGENZ Văn Phòng Unit',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'fast3in1-q1',
+        type: 'single',
+        prompt: 'Trong Microsoft Word, tổ hợp phím tắt nào dùng để căn lề đều hai bên (Justify) cho đoạn văn bản?',
+        options: ['Ctrl + J', 'Ctrl + E', 'Ctrl + L', 'Ctrl + R'],
+        correctAnswer: 0,
+        explanation: 'Phím `Ctrl + J` (Justify) căn đều hai lề văn bản. `Ctrl + E` căn giữa, `Ctrl + L` căn trái, `Ctrl + R` căn phải.',
+        hint: 'Chữ J viết tắt của Justify.',
+        points: 10
+      },
+      {
+        id: 'fast3in1-q2',
+        type: 'single',
+        prompt: 'Trong Excel, hàm nào được dùng để tính trung bình cộng của một vùng dữ liệu số?',
+        options: ['AVERAGE', 'SUM', 'COUNT', 'MEDIAN'],
+        correctAnswer: 0,
+        explanation: 'Hàm `AVERAGE(number1, [number2], ...)` trả về giá trị trung bình cộng của các đối số.',
+        hint: 'Hàm tiếng Anh nghĩa là trung bình.',
+        points: 10
+      },
+      {
+        id: 'fast3in1-q3',
+        type: 'single',
+        prompt: 'Trong PowerPoint, phím tắt nào dùng để bắt đầu trình chiếu bài giảng từ Slide đầu tiên?',
+        options: ['F5', 'Shift + F5', 'Ctrl + F5', 'Alt + F5'],
+        correctAnswer: 0,
+        explanation: 'Phím `F5` bắt đầu trình chiếu từ slide đầu tiên. `Shift + F5` trình chiếu từ slide hiện hành.',
+        hint: 'Phím chức năng F ở hàng đầu bàn phím.',
+        points: 10
+      }
+    ]
+  },
+
+  // 2. CC CNTT Cơ bản (6 buổi)
+  {
+    id: 'quiz-cc-cntt-basic',
+    title: '2. CC CNTT Cơ bản (6 buổi) - Luyện Thi Chuẩn Bộ GD&ĐT',
+    description: 'Nội dung chứng chỉ CNTT Cơ bản theo Thông tư 03: Cấu trúc máy tính, hệ điều hành Windows, Internet và bảo mật thông tin.',
+    category: 'cc-cntt-basic',
+    difficulty: 'easy',
+    timeLimitMinutes: 20,
     icon: 'Cpu',
     badgeColor: '#10b981',
-    author: 'PH- TINHOCGENZ Cơ Bản Unit',
+    author: 'PH - TINHOCGENZ Khảo Thí Unit',
     createdAt: '2026-08-20',
     questions: [
       {
-        id: 'basic-q1',
+        id: 'ccbasic-q1',
         type: 'single',
-        prompt: 'Tổ hợp phím tắt tiêu chuẩn nào trong hệ điều hành Windows dùng để mở nhanh File Explorer (Trình quản lý tệp tin)?',
-        options: ['Windows + E', 'Windows + R', 'Windows + D', 'Ctrl + Shift + Esc'],
+        prompt: '1 Gigabyte (GB) tương đương với bao nhiêu Megabyte (MB) theo chuẩn đo lường dung lượng máy tính?',
+        options: ['1024 MB', '1000 MB', '1048576 MB', '512 MB'],
         correctAnswer: 0,
-        explanation: 'Phím `Windows + E` (Explorer) mở ngay cửa sổ quản lý thư mục và tệp tin trong Windows.',
-        hint: 'Chữ E viết tắt của Explorer.',
+        explanation: 'Trong hệ nhị phân tin học, 1 GB = 1024 MB = 1,048,576 KB.',
+        hint: 'Lũy thừa 2^10 = 1024.',
         points: 10
       },
       {
-        id: 'basic-q2',
-        type: 'single',
-        prompt: 'Thành phần nào sau đây là thiết bị ĐẦU VÀO (Input Device) của hệ thống máy tính?',
-        options: ['Bàn phím (Keyboard)', 'Màn hình (Monitor)', 'Máy in (Printer)', 'Loa (Speaker)'],
-        correctAnswer: 0,
-        explanation: 'Bàn phím, chuột, máy quét (scanner) là thiết bị đầu vào (Input). Màn hình, máy in, loa là thiết bị đầu ra (Output).',
-        hint: 'Thiết bị truyền thông tin từ người dùng vào máy tính.',
-        points: 10
-      },
-      {
-        id: 'basic-q3',
+        id: 'ccbasic-q2',
         type: 'multiple',
-        prompt: 'Những đuôi mở rộng nào sau đây là định dạng tệp nén dữ liệu phổ biến?',
-        options: ['.zip', '.rar', '.7z', '.exe'],
+        prompt: 'Những thiết bị nào sau đây là thiết bị ngoại vi ĐẦU VÀO (Input Devices)?',
+        options: ['Bàn phím (Keyboard)', 'Chuột máy tính (Mouse)', 'Máy quét (Scanner)', 'Máy in (Printer)'],
         correctAnswer: [0, 1, 2],
-        explanation: '.zip, .rar và .7z là các định dạng nén tệp tin thông dụng. .exe là tệp thực thi chương trình.',
-        hint: '.exe là file chạy phần mềm.',
+        explanation: 'Bàn phím, chuột và máy quét đưa dữ liệu vào máy tính. Máy in là thiết bị đầu ra (Output).',
+        hint: 'Máy in là thiết bị xuất ra giấy.',
         points: 15
       },
       {
-        id: 'basic-q4',
+        id: 'ccbasic-q3',
         type: 'true-false',
-        prompt: 'Thao tác nhấn phím `Shift + Delete` khi xóa một tệp tin trong Windows sẽ chuyển tệp đó vào thùng rác (Recycle Bin).',
-        correctAnswer: false,
-        explanation: 'Sai. Phím `Shift + Delete` sẽ xóa vĩnh viễn tệp tin khỏi ổ cứng mà KHÔNG đưa vào thùng rác Recycle Bin.',
-        hint: 'Shift + Delete là xóa vĩnh viễn không qua thùng rác.',
-        points: 10
-      }
-    ]
-  },
-  {
-    id: 'quiz-mos-office',
-    title: '2. Tin Học Văn Phòng Quốc Tế MOS (Word, Excel, PowerPoint)',
-    description: 'Chuyên đề ôn luyện thi chứng chỉ MOS: Kỹ năng định dạng văn bản hành chính Word, bảng tính Excel và thiết kế trình chiếu PowerPoint.',
-    category: 'mos-office',
-    difficulty: 'medium',
-    timeLimitMinutes: 15,
-    icon: 'Table',
-    badgeColor: '#2563eb',
-    author: 'PH- TINHOCGENZ MOS Master',
-    createdAt: '2026-08-20',
-    questions: [
-      {
-        id: 'mos-q1',
-        type: 'single',
-        prompt: 'Trong Microsoft Excel, cú pháp chuẩn của hàm tìm kiếm theo cột `VLOOKUP` là gì?',
-        options: [
-          'VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])',
-          'VLOOKUP(table_array, lookup_value, row_index_num, [range_lookup])',
-          'VLOOKUP(lookup_value, col_index_num, table_array, [exact_match])',
-          'VLOOKUP(range_lookup, lookup_value, table_array, col_index_num)'
-        ],
-        correctAnswer: 0,
-        explanation: 'Cú pháp chuẩn của VLOOKUP là: `VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])`.',
-        hint: 'Giá trị tìm kiếm luôn đứng ở vị trí đầu tiên.',
-        points: 10
-      },
-      {
-        id: 'mos-q2',
-        type: 'single',
-        prompt: 'Trong Microsoft Word, để tạo mục lục tự động (Table of Contents), văn bản tiêu đề cần áp dụng định dạng nào?',
-        options: ['Các thẻ Heading trong nhóm Styles', 'Chữ in đậm và màu đỏ', 'Tăng font size lên 18pt', 'Gõ phím Tab thủ công'],
-        correctAnswer: 0,
-        explanation: 'Word tự động quét các tiêu đề được gán Heading 1, Heading 2... trong Styles để tạo mục lục tự động.',
-        points: 10
-      },
-      {
-        id: 'mos-q3',
-        type: 'multiple',
-        prompt: 'Những tính năng nào sau đây của Excel cho phép phân tích và tổng hợp dữ liệu đa chiều tự động?',
-        options: [
-          'PivotTable (Bảng tổng hợp động)',
-          'Slicer (Bộ lọc trực quan)',
-          'Track Changes',
-          'PivotChart (Biểu đồ động)'
-        ],
-        correctAnswer: [0, 1, 3],
-        explanation: 'PivotTable, Slicer và PivotChart là bộ ba công cụ phân tích dữ liệu đa chiều hàng đầu của Excel.',
-        points: 15
-      },
-      {
-        id: 'mos-q4',
-        type: 'fill-blank',
-        prompt: 'Trong PowerPoint, hiệu ứng chuyển trang mượt mà giúp biến đổi hình khối giữa 2 slide liên tiếp có tên là gì?',
-        correctAnswer: 'Morph',
-        explanation: 'Hiệu ứng Morph Transition tự động biến đổi vị trí, kích thước đối tượng mượt mà giữa các slide.',
-        points: 15
-      }
-    ]
-  },
-  {
-    id: 'quiz-ic3-gs6',
-    title: '3. Chuẩn Tin Học Quốc Tế IC3 GS6 (Global Standard)',
-    description: 'Bộ câu hỏi chuẩn thế giới IC3: Điện toán đám mây Cloud Computing, an toàn thông tin số, bản quyền số và ứng dụng then chốt.',
-    category: 'ic3-gs',
-    difficulty: 'medium',
-    timeLimitMinutes: 15,
-    icon: 'ShieldCheck',
-    badgeColor: '#3b82f6',
-    author: 'PH- TINHOCGENZ IC3 Dept',
-    createdAt: '2026-08-20',
-    questions: [
-      {
-        id: 'ic3-q1',
-        type: 'single',
-        prompt: 'Bộ nhớ nào sau đây sẽ bị xóa sạch toàn bộ dữ liệu khi ngắt nguồn cấp điện (Volatile Memory)?',
-        options: ['RAM', 'ROM', 'Ổ cứng SSD', 'Thẻ nhớ Flash USB'],
-        correctAnswer: 0,
-        explanation: 'RAM là bộ nhớ truy xuất ngẫu nhiên tạm thời, dữ liệu trong RAM sẽ biến mất ngay khi mất nguồn điện.',
-        points: 10
-      },
-      {
-        id: 'ic3-q2',
-        type: 'multiple',
-        prompt: 'Những hành động nào sau đây giúp đảm bảo an toàn thông tin trên không gian mạng?',
-        options: [
-          'Kích hoạt xác thực 2 lớp (2FA / Multi-Factor Authentication)',
-          'Không nhấp vào đường link lạ trong Email mạo danh (Phishing)',
-          'Sử dụng chung một mật khẩu cho tất cả tài khoản ngân hàng và mạng xã hội',
-          'Sử dụng VPN khi truy cập Wi-Fi công cộng không có mật khẩu'
-        ],
-        correctAnswer: [0, 1, 3],
-        explanation: 'Bật 2FA, cảnh giác Phishing và dùng VPN bảo vệ an toàn trên mạng.',
-        points: 15
-      },
-      {
-        id: 'ic3-q3',
-        type: 'true-false',
-        prompt: 'Điện toán đám mây (Cloud Computing) cho phép người dùng truy cập dữ liệu và tài nguyên từ bất kỳ đâu có kết nối Internet.',
+        prompt: 'Mật khẩu mạnh nên có tối thiểu 8 ký tự bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
         correctAnswer: true,
-        explanation: 'Đúng. Tài nguyên trên đám mây được lưu trữ máy chủ từ xa và truy xuất mọi lúc mọi nơi.',
+        explanation: 'Đúng. Mật khẩu phức tạp giúp chống lại các cuộc tấn công Brute-force và rò rỉ dữ liệu.',
+        hint: 'Nguyên tắc an toàn thông tin.',
         points: 10
       }
     ]
   },
+
+  // 3. CC CNTT Nâng cao (6 buổi)
   {
-    id: 'quiz-cntt-advanced',
-    title: '4. CNTT Nâng Cao & Xử Lý Dữ Liệu Chuyên Sâu',
-    description: 'Chuyên đề nâng cao: Hàm INDEX-MATCH lồng phức hợp, Data Validation nâng cao, xử lý mảng động Dynamic Arrays và Tự động hóa bảng tính.',
-    category: 'cntt-advanced',
+    id: 'quiz-cc-cntt-advanced',
+    title: '3. CC CNTT Nâng cao (6 buổi) - Xử Lý Dữ Liệu & Macro',
+    description: 'Chuyên đề nâng cao: Hàm tra cứu nhiều điều kiện (INDEX/MATCH, XLOOKUP), xử lý bảng dữ liệu lớn, Pivot Table nâng cao và Mail Merge.',
+    category: 'cc-cntt-advanced',
     difficulty: 'hard',
-    timeLimitMinutes: 20,
-    icon: 'Layers',
-    badgeColor: '#ea580c',
-    author: 'PH- TINHOCGENZ Advanced Lab',
+    timeLimitMinutes: 25,
+    icon: 'Database',
+    badgeColor: '#8b5cf6',
+    author: 'PH - TINHOCGENZ Nâng Cao Unit',
     createdAt: '2026-08-20',
     questions: [
       {
-        id: 'adv-q1',
+        id: 'ccadv-q1',
         type: 'single',
-        prompt: 'Ưu điểm vượt trội của cặp hàm `INDEX & MATCH` so với hàm `VLOOKUP` truyền thống trong Excel là gì?',
-        options: [
-          'Có thể tra cứu dữ liệu sang trái của cột tìm kiếm và không bị ảnh hưởng khi chèn/xóa cột',
-          'Chỉ chạy được trên hệ điều hành MacOS',
-          'Không hỗ trợ tìm kiếm chính xác tuyệt đối',
-          'Tự động in đậm kết quả tìm được'
-        ],
+        prompt: 'Trong Excel nâng cao, sự kết hợp hàm nào cho phép tra cứu dữ liệu từ phải sang trái mà VLOOKUP không làm được?',
+        options: ['INDEX + MATCH', 'SUMIFS + COUNTIFS', 'LEFT + RIGHT', 'CONCATENATE + FIND'],
         correctAnswer: 0,
-        explanation: 'INDEX & MATCH tra cứu dữ liệu 2 chiều sang trái hoặc phải linh hoạt và không bị vỡ công thức khi thay đổi cấu trúc cột.',
-        points: 15
+        explanation: 'Cặp hàm `INDEX` và `MATCH` tra cứu linh hoạt ở bất kỳ cột nào sang trái hoặc sang phải, không bị giới hạn cột đầu tiên như VLOOKUP.',
+        hint: 'Hàm INDEX lấy giá trị theo hàng/cột kết hợp MATCH tìm vị trí.',
+        points: 10
       },
       {
-        id: 'adv-q2',
-        type: 'multiple',
-        prompt: 'Những hàm mảng động (Dynamic Array Functions) nào sau đây được bổ sung trong các phiên bản Excel mới (Excel 365 / 2021)?',
-        options: ['FILTER()', 'UNIQUE()', 'SORT()', 'SUM()'],
-        correctAnswer: [0, 1, 2],
-        explanation: 'FILTER, UNIQUE, SORT, XLOOKUP là các hàm mảng động thế hệ mới mạnh mẽ của Microsoft Excel.',
-        points: 15
-      },
-      {
-        id: 'adv-q3',
-        type: 'fill-blank',
-        prompt: 'Nhập tên hàm trong Excel dùng để bẫy và thay thế các giá trị lỗi (#N/A, #DIV/0!) bằng một giá trị tùy biến:',
-        correctAnswer: 'IFERROR',
-        explanation: 'Hàm `IFERROR(value, value_if_error)` dùng để bẫy và xử lý mọi lỗi phát sinh trong công thức tính toán.',
-        points: 15
+        id: 'ccadv-q2',
+        type: 'single',
+        prompt: 'Trong Microsoft Word nâng cao, tính năng nào cho phép tự động trộn thư hàng loạt từ danh sách dữ liệu Excel?',
+        options: ['Mail Merge', 'Track Changes', 'AutoCorrect', 'Cross-reference'],
+        correctAnswer: 0,
+        explanation: 'Tính năng `Mail Merge` (Trộn thư) tạo hàng loạt thư mời, bảng điểm, hợp đồng từ file danh sách Excel.',
+        hint: 'Tab Mailings trong Word.',
+        points: 10
       }
     ]
   },
+
+  // 4. CNTT Cơ bản: Word + Excel (10-12b)
   {
-    id: 'quiz-programming',
-    title: '5. Lập Trình Python & Thuật Toán Tin Học Trẻ',
-    description: 'Chương trình đào tạo lập trình: Cú pháp Python 3, cấu trúc dữ liệu List/Dict/Set, giải thuật tìm kiếm, sắp xếp và tư duy giải quyết bài toán.',
-    category: 'programming',
-    difficulty: 'hard',
+    id: 'quiz-cntt-basic-we',
+    title: '4. CNTT Cơ bản: Word + Excel (10-12b) - Thực Hành Bài Bản',
+    description: 'Khóa học nền tảng 10-12 buổi: Soạn thảo văn bản chuẩn thể thức Nghị định 30, kỹ năng bảng biểu Word và công thức tính toán tài chính Excel.',
+    category: 'cntt-basic-we',
+    difficulty: 'medium',
     timeLimitMinutes: 20,
-    icon: 'Code2',
+    icon: 'BookOpen',
+    badgeColor: '#06b6d4',
+    author: 'PH - TINHOCGENZ Thực Chiến Unit',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'we-basic-q1',
+        type: 'single',
+        prompt: 'Theo Nghị định 30/2020/NĐ-CP về thể thức văn bản hành chính, font chữ bắt buộc sử dụng là:',
+        options: ['Times New Roman', 'Arial', 'Calibri', 'Tahoma'],
+        correctAnswer: 0,
+        explanation: 'Quy định chuẩn văn bản hành chính nhà nước sử dụng phông chữ Times New Roman, bảng mã Unicode.',
+        hint: 'Font chữ có chân phổ biến nhất.',
+        points: 10
+      },
+      {
+        id: 'we-basic-q2',
+        type: 'single',
+        prompt: 'Để cố định dòng hoặc cột tiêu đề khi cuộn bảng tính Excel, ta dùng tính năng nào?',
+        options: ['Freeze Panes', 'Split', 'Hide Columns', 'Format as Table'],
+        correctAnswer: 0,
+        explanation: 'Tính năng `Freeze Panes` trong tab View giúp cố định dòng/cột tiêu đề khi cuộn trang.',
+        hint: 'View -> Freeze Panes.',
+        points: 10
+      }
+    ]
+  },
+
+  // 5. CNTT Nâng Cao: Word + Excel (10-12b)
+  {
+    id: 'quiz-cntt-adv-we',
+    title: '5. CNTT Nâng Cao: Word + Excel (10-12b) - Chuyên Sâu Văn Phòng',
+    description: 'Khóa chuyên sâu 10-12 buổi: Tự động hóa văn bản Word với Style, Section Break, Mục lục tự động, phân tích dữ liệu đa chiều PivotTable và Dashboard Excel.',
+    category: 'cntt-adv-we',
+    difficulty: 'hard',
+    timeLimitMinutes: 25,
+    icon: 'BarChart2',
+    badgeColor: '#ec4899',
+    author: 'PH - TINHOCGENZ Master Unit',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'we-adv-q1',
+        type: 'single',
+        prompt: 'Trong Word nâng cao, loại ngắt trang nào (Break) cho phép đặt hướng giấy (Orientation) khác nhau giữa các trang trong cùng một tài liệu?',
+        options: ['Section Break (Next Page)', 'Page Break', 'Column Break', 'Line Break'],
+        correctAnswer: 0,
+        explanation: '`Section Break (Next Page)` chia văn bản thành các phân vùng độc lập, cho phép đổi trang ngang/dọc, đổi Header/Footer riêng biệt.',
+        hint: 'Ngắt phân đoạn Section.',
+        points: 10
+      },
+      {
+        id: 'we-adv-q2',
+        type: 'single',
+        prompt: 'Để bảo vệ công thức tính trong Excel và chỉ cho phép người khác nhập vào các ô dữ liệu chỉ định, ta thực hiện:',
+        options: ['Bỏ khóa ô nhập liệu (Unlock Cells) rồi bật Protect Sheet', 'Bật Protect Sheet trực tiếp', 'Đặt mật khẩu mở file', 'Ẩn cột công thức'],
+        correctAnswer: 0,
+        explanation: 'Đầu tiên bỏ thuộc tính Locked ở các ô nhập liệu, sau đó vào Review -> Protect Sheet để khóa toàn bộ công thức còn lại.',
+        hint: 'Unlock ô nhập trước, sau đó Protect Sheet.',
+        points: 10
+      }
+    ]
+  },
+
+  // 6. Ứng dụng AI vào công việc Văn phòng (5b)
+  {
+    id: 'quiz-ai-office',
+    title: '6. Ứng dụng AI vào công việc Văn phòng (5b) - Tối Ưu Hiệu Suất',
+    description: 'Kỹ năng làm chủ các công cụ Trí tuệ nhân tạo (ChatGPT, Claude, Copilot, Gamma) để viết báo cáo, tóm tắt tài liệu, phân tích Excel và thiết kế slide tự động.',
+    category: 'ai-office',
+    difficulty: 'medium',
+    timeLimitMinutes: 15,
+    icon: 'Sparkles',
     badgeColor: '#f59e0b',
-    author: 'PH- TINHOCGENZ Coding Lab',
+    author: 'PH - TINHOCGENZ AI Innovation Lab',
     createdAt: '2026-08-20',
     questions: [
       {
-        id: 'py-q1',
+        id: 'ai-q1',
         type: 'single',
-        prompt: 'Cho đoạn mã Python sau. Kết quả in ra màn hình là gì?',
-        codeSnippet: 'numbers = [1, 2, 3, 4, 5]\nresult = [x**2 for x in numbers if x % 2 != 0]\nprint(result)',
-        options: ['[1, 9, 25]', '[4, 16]', '[1, 4, 9, 16, 25]', '[1, 3, 5]'],
+        prompt: 'Kỹ thuật viết câu lệnh (Prompting) nào mang lại kết quả AI chính xác nhất cho công việc văn phòng?',
+        options: [
+          'Giao vai trò (Role) + Bối cảnh (Context) + Nhiệm vụ cụ thể (Task) + Định dạng kết quả (Format)',
+          'Chỉ hỏi một câu thật ngắn gọn',
+          'Không cần cung cấp thông tin mẫu',
+          'Sử dụng từ ngữ mơ hồ'
+        ],
         correctAnswer: 0,
-        explanation: 'List comprehension duyệt qua các số lẻ trong numbers (1, 3, 5) và bình phương lên cho ra `[1, 9, 25]`.',
-        points: 15
+        explanation: 'Công thức Prompt chuẩn: [Vai trò] + [Bối cảnh] + [Yêu cầu chi tiết] + [Mẫu định dạng mong muốn] giúp AI đưa ra kết quả sát thực tế nhất.',
+        hint: 'Cấu trúc Prompt chuyên nghiệp RCTF.',
+        points: 10
       },
       {
-        id: 'py-q2',
-        type: 'single',
-        prompt: 'Độ phức tạp thời gian trung bình (Average Time Complexity) của thuật toán QuickSort là:',
-        options: ['O(n log n)', 'O(n^2)', 'O(n)', 'O(1)'],
-        correctAnswer: 0,
-        explanation: 'QuickSort có độ phức tạp thời gian trung bình là `O(n log n)`.',
-        points: 15
-      },
-      {
-        id: 'py-q3',
-        type: 'fill-blank',
-        prompt: 'Nhập từ khóa trong Python dùng để định nghĩa một hàm (Function Definition):',
-        correctAnswer: 'def',
-        explanation: 'Từ khóa `def` dùng để khai báo hàm trong Python.',
+        id: 'ai-q2',
+        type: 'multiple',
+        prompt: 'Những công cụ AI nào sau đây hỗ trợ tự động tạo bài trình chiếu thuyết trình PowerPoint?',
+        options: ['Gamma App', 'Microsoft Copilot in PowerPoint', 'Tome AI', 'WinRAR'],
+        correctAnswer: [0, 1, 2],
+        explanation: 'Gamma, Copilot và Tome là các công cụ AI hàng đầu giúp thiết kế slide tự động. WinRAR là phần mềm nén tệp.',
+        hint: 'WinRAR không phải là AI.',
         points: 15
       }
     ]
   },
+
+  // 7. Excel cho Kế toán (Custom tuỳ nhu cầu)
   {
-    id: 'quiz-cyber-security',
-    title: '6. Mạng Máy Tính & An Toàn Thông Tin Số',
-    description: 'Chương trình mạng & bảo mật: Hệ thống phân giải DNS, địa chỉ IP, mô hình mạng, mã hóa SSL/TLS và các phương thức bảo mật hệ thống.',
-    category: 'cyber-security',
-    difficulty: 'medium',
-    timeLimitMinutes: 15,
-    icon: 'Network',
-    badgeColor: '#6366f1',
-    author: 'PH- TINHOCGENZ Security Lab',
+    id: 'quiz-excel-accounting',
+    title: '7. Excel cho Kế toán (Custom tuỳ nhu cầu) - Nghiệp Vụ Tài Chính',
+    description: 'Hệ thống hàm và mẫu biểu kế toán: Sổ nhật ký chung, bảng trích khấu hao TSCĐ, hàm SUMIFS tính doanh thu theo kỳ và đối chiếu công nợ.',
+    category: 'excel-accounting',
+    difficulty: 'hard',
+    timeLimitMinutes: 25,
+    icon: 'TrendingUp',
+    badgeColor: '#d97706',
+    author: 'PH - TINHOCGENZ Kế Toán Unit',
     createdAt: '2026-08-20',
     questions: [
       {
-        id: 'net-q1',
+        id: 'acc-q1',
         type: 'single',
-        prompt: 'Hệ thống phân giải tên miền (DNS - Domain Name System) có vai trò chính là gì trong mạng Internet?',
-        options: [
-          'Chuyển đổi tên miền dạng chữ (vd: tinhocgenz.io.vn) sang địa chỉ IP máy chủ (vd: 76.76.21.21)',
-          'Tăng tốc độ dây cáp quang',
-          'Quét virus máy tính',
-          'Nén dung lượng ảnh'
-        ],
+        prompt: 'Trong bảng sổ cái kế toán, hàm nào được dùng để tính tổng số tiền phát sinh Nợ/Có theo mã tài khoản và trong khoảng ngày cụ thể?',
+        options: ['SUMIFS', 'SUMIF', 'COUNTIFS', 'VLOOKUP'],
         correctAnswer: 0,
-        explanation: 'DNS chuyển đổi tên miền dạng ký tự dễ nhớ của con người sang địa chỉ IP máy tính.',
+        explanation: 'Hàm `SUMIFS` tính tổng với nhiều điều kiện (tài khoản, từ ngày, đến ngày).',
+        hint: 'Hàm SUM có chữ S ở cuối cho nhiều điều kiện.',
         points: 10
       },
       {
-        id: 'net-q2',
+        id: 'acc-q2',
         type: 'single',
-        prompt: 'Địa chỉ IPv4 chuẩn được tạo thành bởi bao nhiêu bit nhị phân?',
-        options: ['32 bits', '64 bits', '128 bits', '16 bits'],
+        prompt: 'Trong kế toán tiền lương, hàm nào dùng để kiểm tra và xử lý trường hợp tìm kiếm bị lỗi #N/A để hiển thị số 0?',
+        options: ['IFERROR(VLOOKUP(...), 0)', 'ISERROR(...)', 'COUNTIF(...)', 'ROUND(...)'],
         correctAnswer: 0,
-        explanation: 'IPv4 có độ dài 32 bit, chia thành 4 Octets (mỗi octet 8 bit). IPv6 có độ dài 128 bit.',
+        explanation: 'Cấu trúc `IFERROR(biểu_thức, 0)` bắt lỗi và thay thế bằng 0 giúp các công thức cộng tổng phía sau không bị lỗi dây chuyền.',
+        hint: 'Hàm IFERROR.',
+        points: 10
+      }
+    ]
+  },
+
+  // 8. Word (6 buổi)
+  {
+    id: 'quiz-word-6b',
+    title: '8. Word (6 buổi) - Soạn Thảo & Trình Bày Văn Bản Chuẩn',
+    description: 'Trọn bộ kỹ năng soạn thảo 6 buổi: Căn lề chuẩn, Tab Stop, Header & Footer, Table chuyên nghiệp và xuất file PDF in ấn sắc nét.',
+    category: 'word-6b',
+    difficulty: 'easy',
+    timeLimitMinutes: 15,
+    icon: 'FileText',
+    badgeColor: '#2563eb',
+    author: 'PH - TINHOCGENZ Word Team',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'w6-q1',
+        type: 'single',
+        prompt: 'Để tạo dấu chấm chấm (...) tự động khi soạn hợp đồng trong Word, ta sử dụng công cụ nào trên thanh thước kẻ (Ruler)?',
+        options: ['Tab Stop với Leader', 'Dấu chấm bàn phím', 'Dấu gạch dưới', 'Bullet Point'],
+        correctAnswer: 0,
+        explanation: 'Sử dụng điểm dừng Tab (Tab Stop) kết hợp tùy chọn Leader dấu chấm trong hộp thoại Tabs để đường chấm thẳng hàng tuyệt đối.',
+        hint: 'Tính năng Tab Leader.',
         points: 10
       },
       {
-        id: 'net-q3',
-        type: 'true-false',
-        prompt: 'Giao thức HTTPS sử dụng chứng chỉ SSL/TLS để mã hóa dữ liệu truyền tải giữa trình duyệt và máy chủ web.',
-        correctAnswer: true,
-        explanation: 'Đúng. HTTPS mã hóa đường truyền nhằm chống nghe lén và bảo vệ an toàn thông tin.',
+        id: 'w6-q2',
+        type: 'single',
+        prompt: 'Phím tắt để tăng/giảm cỡ chữ nhanh từng bước trong Word là:',
+        options: ['Ctrl + ] hoặc Ctrl + [', 'Ctrl + Shift + >', 'Alt + H + F + S', 'Tất cả đều đúng'],
+        correctAnswer: 3,
+        explanation: 'Cả `Ctrl + ]/[`, `Ctrl + Shift + >/<` và phím tắt Ribbon đều hỗ trợ điều chỉnh cỡ chữ nhanh.',
+        hint: 'Tất cả các phương án đều đúng.',
+        points: 10
+      }
+    ]
+  },
+
+  // 9. Excel (6 buổi)
+  {
+    id: 'quiz-excel-6b',
+    title: '9. Excel (6 buổi) - Bảng Tính & Xử Lý Dữ Liệu Thông Minh',
+    description: 'Trọn bộ kỹ năng bảng tính 6 buổi: 20 hàm thông dụng (IF, VLOOKUP, HLOOKUP, COUNTIF, SUMIF), lọc nâng cao Advanced Filter và vẽ biểu đồ Chart.',
+    category: 'excel-6b',
+    difficulty: 'medium',
+    timeLimitMinutes: 20,
+    icon: 'FileSpreadsheet',
+    badgeColor: '#10b981',
+    author: 'PH - TINHOCGENZ Excel Team',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'e6-q1',
+        type: 'single',
+        prompt: 'Ký hiệu nào trong Excel dùng để chuyển đổi địa chỉ ô từ tương đối sang tuyệt đối (ví dụ $A$1)?',
+        options: ['Phím F4 (Ký tự $)', 'Phím F2', 'Phím F9', 'Phím Alt + Enter'],
+        correctAnswer: 0,
+        explanation: 'Nhấn phím `F4` để tự động thêm ký hiệu `$` khóa dòng và cột cố định.',
+        hint: 'Phím F4.',
+        points: 10
+      },
+      {
+        id: 'e6-q2',
+        type: 'single',
+        prompt: 'Công thức `=IF(8 >= 5, "Đậu", "Rớt")` sẽ trả về kết quả gì?',
+        options: ['Đậu', 'Rớt', '#VALUE!', 'TRUE'],
+        correctAnswer: 0,
+        explanation: 'Vì điều kiện 8 >= 5 là TRUE, hàm IF trả về giá trị nhánh đúng là "Đậu".',
+        hint: '8 lớn hơn 5.',
+        points: 10
+      }
+    ]
+  },
+
+  // 10. PPT (6 buổi)
+  {
+    id: 'quiz-ppt-6b',
+    title: '10. PPT (6 buổi) - Thiết Kế Slide Thuyết Trình Ấn Tượng',
+    description: 'Khóa học thuyết trình 6 buổi: Bố cục trực quan, hiệu ứng chuyển động Animation/Transition mượt mà, kỹ thuật Slide Master và chèn Video/Audio đa phương tiện.',
+    category: 'ppt-6b',
+    difficulty: 'easy',
+    timeLimitMinutes: 15,
+    icon: 'MonitorPlay',
+    badgeColor: '#f97316',
+    author: 'PH - TINHOCGENZ Presentation Team',
+    createdAt: '2026-08-20',
+    questions: [
+      {
+        id: 'ppt6-q1',
+        type: 'single',
+        prompt: 'Công cụ nào trong PowerPoint cho phép định dạng màu sắc, font chữ và logo đồng bộ cho toàn bộ các slide một cách tự động?',
+        options: ['Slide Master', 'Format Background', 'Design Ideas', 'Themes'],
+        correctAnswer: 0,
+        explanation: '`Slide Master` (View -> Slide Master) là trang mẫu quản lý định dạng gốc cho toàn bộ bài thuyết trình.',
+        hint: 'View -> Slide Master.',
+        points: 10
+      },
+      {
+        id: 'ppt6-q2',
+        type: 'single',
+        prompt: 'Hiệu ứng nào dùng để tạo chuyển cảnh biến hình (Morph) mượt mà giữa hai slide liên tiếp?',
+        options: ['Morph Transition', 'Fade', 'Push', 'Wipe'],
+        correctAnswer: 0,
+        explanation: 'Hiệu ứng `Morph` trong tab Transitions nhận diện các đối tượng giống nhau giữa 2 slide và biến đổi chuyển động liền mạch.',
+        hint: 'Chuyển cảnh Morph.',
         points: 10
       }
     ]

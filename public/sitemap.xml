@@ -7,37 +7,61 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=mos-office</loc>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=office-fast-3in1</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cntt-basic</loc>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cc-cntt-basic</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=ic3-gs</loc>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cc-cntt-advanced</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cntt-advanced</loc>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cntt-basic-we</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=programming</loc>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cntt-adv-we</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=cyber-security</loc>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=ai-office</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=excel-accounting</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=word-6b</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=excel-6b</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://hoctructuyen.tinhocgenz.io.vn/?track=ppt-6b</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>

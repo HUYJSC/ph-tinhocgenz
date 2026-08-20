@@ -4,12 +4,16 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type SubjectCategory =
   | 'all'
-  | 'cntt-basic'
-  | 'mos-office'
-  | 'ic3-gs'
-  | 'cntt-advanced'
-  | 'programming'
-  | 'cyber-security';
+  | 'office-fast-3in1'
+  | 'cc-cntt-basic'
+  | 'cc-cntt-advanced'
+  | 'cntt-basic-we'
+  | 'cntt-adv-we'
+  | 'ai-office'
+  | 'excel-accounting'
+  | 'word-6b'
+  | 'excel-6b'
+  | 'ppt-6b';
 
 export interface MatchingPair {
   id: string;

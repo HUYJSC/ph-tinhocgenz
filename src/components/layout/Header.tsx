@@ -41,12 +41,16 @@ export const Header: React.FC<HeaderProps> = ({
 
   const getTrackShortName = (track?: string) => {
     switch (track) {
-      case 'cntt-basic': return 'CNTT Cơ Bản';
-      case 'mos-office': return 'MOS Quốc Tế';
-      case 'ic3-gs': return 'IC3 GS6';
-      case 'cntt-advanced': return 'CNTT Nâng Cao';
-      case 'programming': return 'Lập Trình Python';
-      case 'cyber-security': return 'Bảo Mật IT';
+      case 'office-fast-3in1': return 'Word, Excel, PPT (3b)';
+      case 'cc-cntt-basic': return 'CC CNTT Cơ bản (6b)';
+      case 'cc-cntt-advanced': return 'CC CNTT Nâng cao (6b)';
+      case 'cntt-basic-we': return 'CNTT Cơ bản: Word+Excel';
+      case 'cntt-adv-we': return 'CNTT Nâng Cao: Word+Excel';
+      case 'ai-office': return 'Ứng dụng AI Văn phòng';
+      case 'excel-accounting': return 'Excel cho Kế toán';
+      case 'word-6b': return 'Word (6 buổi)';
+      case 'excel-6b': return 'Excel (6 buổi)';
+      case 'ppt-6b': return 'PPT (6 buổi)';
       default: return 'Tin Học Chuẩn';
     }
   };

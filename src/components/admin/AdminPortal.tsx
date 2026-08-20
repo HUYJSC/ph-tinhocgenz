@@ -25,6 +25,19 @@ interface AdminPortalProps {
   currentUser: UserProfile;
 }
 
+export const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string; short: string }[] = [
+  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3Buổi 1 môn)', short: 'Office 3b' },
+  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6 buổi)', short: 'CC CNTT Cơ bản' },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', short: 'CC CNTT Nâng cao' },
+  { id: 'cntt-basic-we', label: '4. CNTT Cơ bản: Word + Excel (10-12b)', short: 'CNTT CB (W+E)' },
+  { id: 'cntt-adv-we', label: '5. CNTT Nâng Cao: Word + Excel (10-12b)', short: 'CNTT NC (W+E)' },
+  { id: 'ai-office', label: '6. Ứng dụng AI vào công việc Văn phòng (5b)', short: 'Ứng dụng AI VP' },
+  { id: 'excel-accounting', label: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)', short: 'Excel Kế toán' },
+  { id: 'word-6b', label: '8. Word (6 buổi)', short: 'Word 6b' },
+  { id: 'excel-6b', label: '9. Excel (6 buổi)', short: 'Excel 6b' },
+  { id: 'ppt-6b', label: '10. PPT (6 buổi)', short: 'PPT 6b' }
+];
+
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   quizzes,
   attempts,
@@ -55,8 +68,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentCode, setNewStudentCode] = useState(`THGZ${String(studentAccounts.length + 1).padStart(2, '0')}`);
   const [newStudentPass, setNewStudentPass] = useState('123');
-  const [newStudentClass, setNewStudentClass] = useState('Lớp CNTT Cơ Bản K1');
-  const [newStudentTrack, setNewStudentTrack] = useState<CurriculumTrack>('cntt-basic');
+  const [newStudentClass, setNewStudentClass] = useState('Lớp Word, Excel, PowerPoint (3b/môn)');
+  const [newStudentTrack, setNewStudentTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
 
   // Edit Student State
@@ -65,8 +78,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [editCode, setEditCode] = useState('');
   const [editPass, setEditPass] = useState('123');
   const [editClass, setEditClass] = useState('');
-  const [editTrack, setEditTrack] = useState<CurriculumTrack>('mos-office');
-  const [editEnrolledTracks, setEditEnrolledTracks] = useState<CurriculumTrack[]>(['mos-office']);
+  const [editTrack, setEditTrack] = useState<CurriculumTrack>('office-fast-3in1');
+  const [editEnrolledTracks, setEditEnrolledTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
 
   // Teacher Form State (Admin Only)
   const [showAddTeacherForm, setShowAddTeacherForm] = useState(false);
@@ -74,7 +87,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [newTeacherCode, setNewTeacherCode] = useState(`GV0${teacherAccounts.length + 1}`);
   const [newTeacherPass, setNewTeacherPass] = useState('123');
   const [newTeacherContact, setNewTeacherContact] = useState('');
-  const [newTeacherTracks, setNewTeacherTracks] = useState<CurriculumTrack[]>(['mos-office']);
+  const [newTeacherTracks, setNewTeacherTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
 
   // Edit Teacher State
   const [editingTeacher, setEditingTeacher] = useState<TeacherAccount | null>(null);
@@ -82,7 +95,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [editTeacherCode, setEditTeacherCode] = useState('');
   const [editTeacherPass, setEditTeacherPass] = useState('123');
   const [editTeacherContact, setEditTeacherContact] = useState('');
-  const [editTeacherTracks, setEditTeacherTracks] = useState<CurriculumTrack[]>(['mos-office']);
+  const [editTeacherTracks, setEditTeacherTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
 
   // Stats computation
   const totalQuizzes = quizzes.length;
@@ -220,7 +233,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     setEditTeacherCode(teacher.teacherCode);
     setEditTeacherPass(teacher.password || '123');
     setEditTeacherContact(teacher.phoneOrEmail || '');
-    setEditTeacherTracks(teacher.assignedTracks && teacher.assignedTracks.length > 0 ? [...teacher.assignedTracks] : ['mos-office']);
+    setEditTeacherTracks(teacher.assignedTracks && teacher.assignedTracks.length > 0 ? [...teacher.assignedTracks] : ['office-fast-3in1']);
     soundFx.playClick();
   };
 
@@ -238,7 +251,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       teacherCode: editTeacherCode.trim().toUpperCase(),
       password: editTeacherPass.trim() || '123',
       phoneOrEmail: editTeacherContact.trim(),
-      assignedTracks: editTeacherTracks.length > 0 ? editTeacherTracks : ['mos-office']
+      assignedTracks: editTeacherTracks.length > 0 ? editTeacherTracks : ['office-fast-3in1']
     };
 
     if (onUpdateTeacherAccount) {
@@ -579,12 +592,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     onChange={e => setNewStudentTrack(e.target.value as CurriculumTrack)}
                     style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                   >
-                    <option value="cntt-basic">1. CNTT & Tin Học Cơ Bản</option>
-                    <option value="mos-office">2. Tin Học Văn Phòng MOS</option>
-                    <option value="ic3-gs">3. Chuẩn Quốc Tế IC3 GS6</option>
-                    <option value="cntt-advanced">4. CNTT Nâng Cao & Data</option>
-                    <option value="programming">5. Lập Trình Python</option>
-                    <option value="cyber-security">6. Mạng & Bảo Mật IT</option>
+                    {ALL_TRACK_OPTIONS.map(trk => (
+                      <option key={trk.id} value={trk.id}>
+                        {trk.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -631,10 +643,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <code>{s.password || '123'}</code>
                       </td>
                       <td style={{ padding: '12px 14px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                        {s.schoolOrClass || `Lớp ${TRACK_LABELS[s.programTrack || 'mos-office']}`}
+                        {s.schoolOrClass || `Lớp ${TRACK_LABELS[s.programTrack || 'office-fast-3in1']}`}
                       </td>
                       <td style={{ padding: '12px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                        <div>{TRACK_LABELS[s.programTrack || 'mos-office']}</div>
+                        <div>{TRACK_LABELS[s.programTrack || 'office-fast-3in1']}</div>
                         <div style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>🔒 Phân hệ chính</div>
                       </td>
                       <td style={{ padding: '12px 14px' }}>
@@ -644,14 +656,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               key={trk}
                               style={{
                                 fontSize: '0.72rem',
-                                background: trk === 'mos-office' ? 'rgba(37, 99, 235, 0.12)' : trk === 'programming' ? 'rgba(245, 158, 11, 0.12)' : trk === 'ic3-gs' ? 'rgba(59, 130, 246, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                                color: trk === 'mos-office' ? '#2563eb' : trk === 'programming' ? '#d97706' : trk === 'ic3-gs' ? '#3b82f6' : '#10b981',
+                                background: 'rgba(37, 99, 235, 0.12)',
+                                color: '#2563eb',
                                 padding: '2px 8px',
                                 borderRadius: 'var(--radius-full)',
                                 fontWeight: 700
                               }}
                             >
-                              ✓ {trk === 'mos-office' ? 'MOS' : trk === 'programming' ? 'Python' : trk === 'ic3-gs' ? 'IC3 GS6' : trk === 'cntt-basic' ? 'CNTT Cơ Bản' : trk === 'cntt-advanced' ? 'CNTT Nâng Cao' : 'Bảo Mật IT'}
+                              ✓ {TRACK_LABELS[trk] ? TRACK_LABELS[trk].split('(')[0].replace(/^\d+\.\s*/, '').trim() : trk}
                             </span>
                           ))}
                         </div>
@@ -817,12 +829,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       }}
                       style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                     >
-                      <option value="cntt-basic">1. CNTT & Tin Học Cơ Bản</option>
-                      <option value="mos-office">2. Tin Học Văn Phòng MOS (Word, Excel, PPT)</option>
-                      <option value="ic3-gs">3. Chuẩn Tin Học Quốc Tế IC3 GS6</option>
-                      <option value="cntt-advanced">4. CNTT Nâng Cao & Xử Lý Dữ Liệu</option>
-                      <option value="programming">5. Lập Trình Python & Thuật Toán</option>
-                      <option value="cyber-security">6. Mạng Máy Tính & An Toàn Thông Tin</option>
+                      {ALL_TRACK_OPTIONS.map(trk => (
+                        <option key={trk.id} value={trk.id}>
+                          {trk.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -835,16 +846,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
-                      {(
-                        [
-                          { id: 'cntt-basic', label: '1. CNTT Cơ Bản' },
-                          { id: 'mos-office', label: '2. Tin Học MOS' },
-                          { id: 'ic3-gs', label: '3. Chuẩn IC3 GS6' },
-                          { id: 'cntt-advanced', label: '4. CNTT Nâng Cao' },
-                          { id: 'programming', label: '5. Lập Trình Python' },
-                          { id: 'cyber-security', label: '6. Mạng & Bảo Mật IT' }
-                        ] as const
-                      ).map(trk => {
+                      {ALL_TRACK_OPTIONS.map(trk => {
                         const isChecked = editEnrolledTracks.includes(trk.id);
                         return (
                           <div
@@ -990,16 +992,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   PHÂN CÔNG PHÂN HỆ GIẢNG DẠY (Giảng viên chỉ có quyền soạn đề & chấm bài ở các môn được tích):
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginTop: '8px' }}>
-                  {(
-                    [
-                      { id: 'cntt-basic', label: '1. CNTT Cơ Bản' },
-                      { id: 'mos-office', label: '2. Tin Học MOS' },
-                      { id: 'ic3-gs', label: '3. Chuẩn IC3 GS6' },
-                      { id: 'cntt-advanced', label: '4. CNTT Nâng Cao' },
-                      { id: 'programming', label: '5. Lập Trình Python' },
-                      { id: 'cyber-security', label: '6. Mạng & Bảo Mật IT' }
-                    ] as const
-                  ).map(trk => {
+                  {ALL_TRACK_OPTIONS.map(trk => {
                     const isChecked = newTeacherTracks.includes(trk.id);
                     return (
                       <div
@@ -1088,7 +1081,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               fontWeight: 700
                             }}
                           >
-                            ✓ {trk === 'mos-office' ? 'MOS' : trk === 'programming' ? 'Python' : trk === 'ic3-gs' ? 'IC3 GS6' : trk === 'cntt-basic' ? 'CNTT Cơ Bản' : trk === 'cntt-advanced' ? 'CNTT Nâng Cao' : 'Bảo Mật IT'}
+                            ✓ {TRACK_LABELS[trk] ? TRACK_LABELS[trk].split('(')[0].replace(/^\d+\.\s*/, '').trim() : trk}
                           </span>
                         ))}
                       </div>
@@ -1249,16 +1242,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       PHÂN CÔNG PHÂN HỆ GIẢNG DẠY (Tích chọn để mở quyền):
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginTop: '8px' }}>
-                      {(
-                        [
-                          { id: 'cntt-basic', label: '1. CNTT Cơ Bản' },
-                          { id: 'mos-office', label: '2. Tin Học MOS' },
-                          { id: 'ic3-gs', label: '3. Chuẩn IC3 GS6' },
-                          { id: 'cntt-advanced', label: '4. CNTT Nâng Cao' },
-                          { id: 'programming', label: '5. Lập Trình Python' },
-                          { id: 'cyber-security', label: '6. Mạng & Bảo Mật IT' }
-                        ] as const
-                      ).map(trk => {
+                      {ALL_TRACK_OPTIONS.map(trk => {
                         const isChecked = editTeacherTracks.includes(trk.id);
                         return (
                           <div
@@ -1330,13 +1314,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               onChange={e => setCategoryFilter(e.target.value)}
               style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
             >
-              <option value="all">Tất cả phân hệ đào tạo</option>
-              <option value="cntt-basic">1. CNTT Cơ Bản</option>
-              <option value="mos-office">2. MOS Quốc Tế</option>
-              <option value="ic3-gs">3. IC3 GS6</option>
-              <option value="cntt-advanced">4. CNTT Nâng Cao</option>
-              <option value="programming">5. Lập Trình Python</option>
-              <option value="cyber-security">6. Mạng & Bảo Mật</option>
+              <option value="all">Tất cả phân hệ đào tạo (10 khóa)</option>
+              {ALL_TRACK_OPTIONS.map(trk => (
+                <option key={trk.id} value={trk.id}>
+                  {trk.label}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -62,8 +62,8 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<SubjectCategory>('mos-office');
-  const [targetClass, setTargetClass] = useState('Lớp Luyện Thi MOS & IC3');
+  const [category, setCategory] = useState<SubjectCategory>('office-fast-3in1');
+  const [targetClass, setTargetClass] = useState('Lớp Word, Excel, PowerPoint (3b/môn)');
   const [durationMinutes, setDurationMinutes] = useState(45);
   
   // Format current local time for datetime-local input

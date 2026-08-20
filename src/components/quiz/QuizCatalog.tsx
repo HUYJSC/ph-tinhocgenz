@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Quiz, SubjectCategory, Difficulty } from '../../types/quiz';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import { QuizMode } from '../../hooks/useQuizEngine';
-import { Search, Timer, HelpCircle, Play, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu, Network, ShieldCheck } from 'lucide-react';
+import { Search, Timer, HelpCircle, Play, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu, ShieldCheck } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface QuizCatalogProps {
@@ -13,13 +13,17 @@ interface QuizCatalogProps {
 }
 
 const ALL_CATEGORIES: { id: SubjectCategory; label: string; icon: any }[] = [
-  { id: 'all', label: 'Tất cả phân hệ', icon: BookOpen },
-  { id: 'cntt-basic', label: '1. CNTT Cơ Bản', icon: Cpu },
-  { id: 'mos-office', label: '2. MOS Quốc Tế', icon: FileSpreadsheet },
-  { id: 'ic3-gs', label: '3. IC3 GS6', icon: FileText },
-  { id: 'cntt-advanced', label: '4. CNTT Nâng Cao', icon: Presentation },
-  { id: 'programming', label: '5. Lập Trình Python', icon: Code2 },
-  { id: 'cyber-security', label: '6. Mạng & Bảo Mật', icon: Network }
+  { id: 'all', label: 'Tất cả phân hệ (10 môn)', icon: BookOpen },
+  { id: 'office-fast-3in1', label: '1. Office Cấp Tốc (3b)', icon: FileSpreadsheet },
+  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6b)', icon: Cpu },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6b)', icon: Presentation },
+  { id: 'cntt-basic-we', label: '4. CNTT CB: Word+Excel (10-12b)', icon: FileText },
+  { id: 'cntt-adv-we', label: '5. CNTT NC: Word+Excel (10-12b)', icon: Presentation },
+  { id: 'ai-office', label: '6. Ứng dụng AI VP (5b)', icon: Code2 },
+  { id: 'excel-accounting', label: '7. Excel Kế toán', icon: FileSpreadsheet },
+  { id: 'word-6b', label: '8. Word (6 buổi)', icon: FileText },
+  { id: 'excel-6b', label: '9. Excel (6 buổi)', icon: FileSpreadsheet },
+  { id: 'ppt-6b', label: '10. PPT (6 buổi)', icon: Presentation }
 ];
 
 export const QuizCatalog: React.FC<QuizCatalogProps> = ({
@@ -30,7 +34,7 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
 }) => {
   const isStudent = currentUser?.role === 'student';
   const allowedTracks: CurriculumTrack[] = currentUser?.enrolledTracks ||
-    (currentUser?.programTrack ? [currentUser.programTrack] : ['mos-office']);
+    (currentUser?.programTrack ? [currentUser.programTrack] : ['office-fast-3in1']);
 
   // If student, filter categories and quizzes strictly to their enrolled track
   const visibleCategories = isStudent

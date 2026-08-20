@@ -194,8 +194,8 @@ export const SAMPLE_INFORMATICS_EXAMS: Partial<Assignment>[] = [
   {
     title: 'Đề Thi Thực Hành MOS Excel Specialist - K12 & Đại Cương',
     description: 'Bài kiểm tra kỹ năng xử lý dữ liệu, hàm VLOOKUP, SUMIFS, PivotTable và định dạng bảng tính có điều kiện.',
-    category: 'mos-office',
-    targetClass: 'Lớp Luyện Thi MOS K12',
+    category: 'excel-6b',
+    targetClass: 'Lớp Excel (6 buổi)',
     sourceFileName: 'De_Thi_MOS_Excel_Chuyen_Sau.docx',
     sourceFileType: 'docx',
     rawContent: `TRƯỜNG ĐÀO TẠO TIN HỌC PH DIGITAL EDUCATION • TIN HỌC GENZ
@@ -251,8 +251,8 @@ Tạo một PivotTable tại Sheet mới có tên 'BaoCao_TongHop' để tổng 
   {
     title: 'Đề Thi Lý Thuyết & Thực Hành Chuẩn Quốc Tế IC3 GS6',
     description: 'Kiểm tra kiến thức máy tính căn bản, an toàn mạng và ứng dụng công nghệ đám mây.',
-    category: 'ic3-gs',
-    targetClass: 'Lớp Chứng Chỉ IC3 Quốc Tế',
+    category: 'cc-cntt-basic',
+    targetClass: 'Lớp CC CNTT Cơ bản (6 buổi)',
     sourceFileName: 'De_Thi_IC3_GS6_Global.pdf',
     sourceFileType: 'pdf',
     rawContent: `CHỨNG CHỈ QUỐC TẾ IC3 GS6 (GLOBAL STANDARD 6)

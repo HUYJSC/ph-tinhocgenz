@@ -12,12 +12,16 @@ interface UnifiedAuthGatewayProps {
 }
 
 const TRACK_LIST: { id: CurriculumTrack; label: string; icon: string }[] = [
-  { id: 'cntt-basic', label: '1. CNTT & Tin Học Cơ Bản', icon: '💻' },
-  { id: 'mos-office', label: '2. Tin Học Văn Phòng MOS', icon: '📊' },
-  { id: 'ic3-gs', label: '3. Chuẩn Quốc Tế IC3 GS6', icon: '🌐' },
-  { id: 'cntt-advanced', label: '4. CNTT Nâng Cao & Data', icon: '📈' },
-  { id: 'programming', label: '5. Lập Trình Python', icon: '🐍' },
-  { id: 'cyber-security', label: '6. Mạng & Bảo Mật IT', icon: '🔒' }
+  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3Buổi 1 môn)', icon: '⚡' },
+  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6 buổi)', icon: '💻' },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', icon: '⚙️' },
+  { id: 'cntt-basic-we', label: '4. CNTT Cơ bản: Word + Excel (10-12b)', icon: '📄' },
+  { id: 'cntt-adv-we', label: '5. CNTT Nâng Cao: Word + Excel (10-12b)', icon: '📊' },
+  { id: 'ai-office', label: '6. Ứng dụng AI vào công việc Văn phòng (5b)', icon: '🤖' },
+  { id: 'excel-accounting', label: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)', icon: '📈' },
+  { id: 'word-6b', label: '8. Word (6 buổi)', icon: '📝' },
+  { id: 'excel-6b', label: '9. Excel (6 buổi)', icon: '📊' },
+  { id: 'ppt-6b', label: '10. PPT (6 buổi)', icon: '📽️' }
 ];
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
@@ -26,11 +30,11 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   onAdminLogin
 }) => {
   const [role, setRole] = useState<'student' | 'admin'>('student');
-  const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('mos-office');
+  const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [adminTrackChoice, setAdminTrackChoice] = useState<CurriculumTrack | 'all'>('all');
 
   // Student Form
-  const [studentCode, setStudentCode] = useState('THGZ02');
+  const [studentCode, setStudentCode] = useState('THGZ01');
   const [studentPassword, setStudentPassword] = useState('123');
   const [studentError, setStudentError] = useState('');
 
@@ -592,7 +596,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   onClick={() => {
                     setAdminName('Cô Hoàng Mai');
                     setAdminPin('123');
-                    setAdminTrackChoice('mos-office');
+                    setAdminTrackChoice('office-fast-3in1');
                     setAdminError('');
                     soundFx.playClick();
                   }}

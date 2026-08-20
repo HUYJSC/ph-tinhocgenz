@@ -11,7 +11,7 @@ interface QuizCreatorProps {
 export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNavigate }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<SubjectCategory>('programming');
+  const [category, setCategory] = useState<SubjectCategory>('office-fast-3in1');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(10);
   const [showJsonModal, setShowJsonModal] = useState(false);

@@ -487,9 +487,9 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
           {/* List of Classroom Assignments */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
             {(() => {
-              const allowedTracks = currentUser.enrolledTracks || (currentUser.programTrack ? [currentUser.programTrack] : ['mos-office']);
+              const allowedTracks: string[] = currentUser.enrolledTracks || (currentUser.programTrack ? [currentUser.programTrack] : ['office-fast-3in1']);
               const visibleList = assignments.filter(a =>
-                allowedTracks.includes(a.category as any) ||
+                allowedTracks.includes(a.category || '') ||
                 (a.targetClass && currentUser.schoolOrClass && a.targetClass.toLowerCase().includes(currentUser.schoolOrClass.toLowerCase()))
               );
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CurriculumTrack } from '../../types/auth';
 import {
-  Cpu, FileSpreadsheet, FileText, Presentation, Code2, Network,
+  Cpu, FileSpreadsheet, FileText, Presentation, Code2,
   Shield, ArrowRight, Sparkles, CheckCircle2
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
@@ -24,10 +24,24 @@ interface TrackCardInfo {
 
 const TRACK_CARDS: TrackCardInfo[] = [
   {
-    id: 'cntt-basic',
-    title: '1. CNTT & Tin Học Cơ Bản',
-    subTitle: 'Chuẩn Kỹ Năng CNTT Căn Bản',
-    badge: 'Khởi Đầu Vững Chắc',
+    id: 'office-fast-3in1',
+    title: '1. Word, Excel, PowerPoint (3Buổi 1 môn)',
+    subTitle: 'Cấp Tốc Chuẩn Công Sở 3in1',
+    badge: 'Cấp Tốc Hot',
+    badgeColor: '#2563eb',
+    accentColor: '#2563eb',
+    icon: FileSpreadsheet,
+    features: [
+      'Word: Căn lề hành chính, phím tắt & in ấn văn bản',
+      'Excel: Hàm tính toán tổng hợp & thống kê cơ bản',
+      'PowerPoint: Thiết kế slide thuyết trình nhanh gọn'
+    ]
+  },
+  {
+    id: 'cc-cntt-basic',
+    title: '2. CC CNTT Cơ bản (6 buổi)',
+    subTitle: 'Chứng Chỉ Tin Học Chuẩn Bộ GD&ĐT',
+    badge: 'Chuẩn Quốc Gia',
     badgeColor: '#10b981',
     accentColor: '#10b981',
     icon: Cpu,
@@ -38,73 +52,115 @@ const TRACK_CARDS: TrackCardInfo[] = [
     ]
   },
   {
-    id: 'mos-office',
-    title: '2. Tin Học Văn Phòng Quốc Tế MOS',
-    subTitle: 'Microsoft Office Specialist (Word, Excel, PowerPoint)',
-    badge: 'Chứng Chỉ Quốc Tế Hot',
-    badgeColor: '#2563eb',
-    accentColor: '#2563eb',
-    icon: FileSpreadsheet,
-    features: [
-      'MOS Word: Định dạng văn bản hành chính & Mail Merge',
-      'MOS Excel: Công thức hàm tra cứu, PivotTable & Biểu đồ',
-      'MOS PowerPoint: Thiết kế slide chuyên nghiệp & Morph'
-    ]
-  },
-  {
-    id: 'ic3-gs',
-    title: '3. Chuẩn Tin Học Quốc Tế IC3 GS6',
-    subTitle: 'IC3 Global Standard 6 (Level 1, 2, 3)',
-    badge: 'Toàn Cầu Công Nhận',
-    badgeColor: '#3b82f6',
-    accentColor: '#3b82f6',
-    icon: FileText,
-    features: [
-      'Computing Fundamentals: Điện toán máy tính',
-      'Key Applications: Ứng dụng công nghệ then chốt',
-      'Living Online: Không gian mạng & Bản quyền số'
-    ]
-  },
-  {
-    id: 'cntt-advanced',
-    title: '4. CNTT Nâng Cao & Xử Lý Dữ Liệu',
-    subTitle: 'Data Analysis, Dynamic Arrays & Tự Động Hóa',
-    badge: 'Chuyên Sâu & Nâng Cao',
-    badgeColor: '#ea580c',
-    accentColor: '#ea580c',
+    id: 'cc-cntt-advanced',
+    title: '3. CC CNTT Nâng cao (6 buổi)',
+    subTitle: 'Chứng Chỉ Ứng Dụng CNTT Nâng Cao',
+    badge: 'Chuyên Sâu',
+    badgeColor: '#8b5cf6',
+    accentColor: '#8b5cf6',
     icon: Presentation,
     features: [
-      'Hàm lồng phức hợp: INDEX-MATCH, XLOOKUP, SUMIFS',
-      'Xử lý mảng động Dynamic Arrays (FILTER, UNIQUE, SORT)',
-      'Tổng hợp dữ liệu đa chiều & Tự động hóa Macro'
+      'Hàm tra cứu nhiều điều kiện: INDEX, MATCH, XLOOKUP',
+      'Xử lý bảng dữ liệu lớn & PivotTable nâng cao',
+      'Trộn thư tự động Mail Merge chuyên nghiệp'
     ]
   },
   {
-    id: 'programming',
-    title: '5. Lập Trình Python & Thuật Toán',
-    subTitle: 'Coding Foundation & Giải Thuật Tin Học Trẻ',
-    badge: 'Tư Duy Lập Trình',
+    id: 'cntt-basic-we',
+    title: '4. CNTT Cơ bản: Word + Excel (10-12b)',
+    subTitle: 'Khóa Nền Tảng Thực Hành Bài Bản',
+    badge: 'Bài Bản Thực Chiến',
+    badgeColor: '#06b6d4',
+    accentColor: '#06b6d4',
+    icon: FileText,
+    features: [
+      'Soạn thảo văn bản theo Nghị định 30 chuẩn',
+      'Kỹ năng bảng biểu & định dạng nâng cao Word',
+      'Công thức tính toán bảng lương & tài chính Excel'
+    ]
+  },
+  {
+    id: 'cntt-adv-we',
+    title: '5. CNTT Nâng Cao: Word + Excel (10-12b)',
+    subTitle: 'Chuyên Sâu Văn Phòng Cao Cấp',
+    badge: 'Nâng Cao Toàn Diện',
+    badgeColor: '#ec4899',
+    accentColor: '#ec4899',
+    icon: Presentation,
+    features: [
+      'Tự động hóa Word: Style, Section Break & Mục lục',
+      'Phân tích dữ liệu đa chiều PivotTable & Dashboard',
+      'Bảo vệ dữ liệu, kiểm soát ô nhập & bảo mật file'
+    ]
+  },
+  {
+    id: 'ai-office',
+    title: '6. Ứng dụng AI vào công việc Văn phòng (5b)',
+    subTitle: 'Tối Ưu Hiệu Suất Với AI Thế Hệ Mới',
+    badge: 'Xu Hướng Đột Phá',
     badgeColor: '#f59e0b',
     accentColor: '#f59e0b',
     icon: Code2,
     features: [
-      'Cú pháp Python 3 & Cấu trúc dữ liệu nâng cao',
-      'Thuật toán tìm kiếm, sắp xếp & Đệ quy',
-      'Luyện giải đề thi học sinh giỏi & Olympic Tin học'
+      'Làm chủ Prompt Engineering cho ChatGPT, Claude',
+      'Tự động tóm tắt tài liệu & viết báo cáo với AI',
+      'Tạo slide thuyết trình tự động qua Gamma & Copilot'
     ]
   },
   {
-    id: 'cyber-security',
-    title: '6. Mạng Máy Tính & An Toàn Thông Tin',
-    subTitle: 'Computer Networks & Cybersecurity Fundamentals',
-    badge: 'Bảo Mật & Hạ Tầng',
-    badgeColor: '#6366f1',
-    accentColor: '#6366f1',
-    icon: Network,
+    id: 'excel-accounting',
+    title: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)',
+    subTitle: 'Chuyên Đề Kế Toán Doanh Nghiệp',
+    badge: 'Kế Toán & Thuế',
+    badgeColor: '#d97706',
+    accentColor: '#d97706',
+    icon: FileSpreadsheet,
     features: [
-      'Hạ tầng mạng: Mô hình OSI/TCP-IP, IPv4/IPv6, DNS',
-      'Giao thức bảo mật: SSL/TLS, HTTPS, Tường lửa (Firewall)',
-      'Phòng chống tấn công mạng (Phishing, Malware, DDoS)'
+      'Sổ nhật ký chung & Bảng cân đối phát sinh',
+      'Hàm SUMIFS, IFERROR & Báo cáo công nợ',
+      'Tự động hóa trích khấu hao TSCĐ & Tiền lương'
+    ]
+  },
+  {
+    id: 'word-6b',
+    title: '8. Word (6 buổi)',
+    subTitle: 'Soạn Thảo & Trình Bày Chuẩn Quốc Gia',
+    badge: 'Kỹ Năng Word',
+    badgeColor: '#2563eb',
+    accentColor: '#2563eb',
+    icon: FileText,
+    features: [
+      'Căn lề, thước kẻ Ruler & Tab Stop có Leader',
+      'Header, Footer, đánh số trang theo phân vùng',
+      'Thiết kế Table hợp đồng & xuất bản file in ấn'
+    ]
+  },
+  {
+    id: 'excel-6b',
+    title: '9. Excel (6 buổi)',
+    subTitle: 'Làm Chủ Bảng Tính & 20 Hàm Phổ Biến',
+    badge: 'Kỹ Năng Excel',
+    badgeColor: '#10b981',
+    accentColor: '#10b981',
+    icon: FileSpreadsheet,
+    features: [
+      '20 hàm thông dụng: IF, VLOOKUP, HLOOKUP, COUNTIF',
+      'Lọc nâng cao Advanced Filter & Sắp xếp dữ liệu',
+      'Trực quan hóa số liệu với biểu đồ Chart'
+    ]
+  },
+  {
+    id: 'ppt-6b',
+    title: '10. PPT (6 buổi)',
+    subTitle: 'Thiết Kế Slide Thuyết Trình Thu Hút',
+    badge: 'Thuyết Trình Đỉnh Cao',
+    badgeColor: '#f97316',
+    accentColor: '#f97316',
+    icon: Presentation,
+    features: [
+      'Slide Master thiết kế template đồng bộ',
+      'Hiệu ứng Morph & Motion Animation chuyên nghiệp',
+      'Chèn âm thanh, video & xuất file MP4'
     ]
   }
 ];

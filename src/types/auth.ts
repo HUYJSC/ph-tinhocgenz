@@ -1,20 +1,28 @@
 export type UserRole = 'student' | 'teacher' | 'admin';
 
 export type CurriculumTrack =
-  | 'cntt-basic'
-  | 'cntt-advanced'
-  | 'mos-office'
-  | 'ic3-gs'
-  | 'programming'
-  | 'cyber-security';
+  | 'office-fast-3in1'
+  | 'cc-cntt-basic'
+  | 'cc-cntt-advanced'
+  | 'cntt-basic-we'
+  | 'cntt-adv-we'
+  | 'ai-office'
+  | 'excel-accounting'
+  | 'word-6b'
+  | 'excel-6b'
+  | 'ppt-6b';
 
 export const TRACK_LABELS: Record<CurriculumTrack, string> = {
-  'cntt-basic': '1. CNTT & Tin Học Cơ Bản',
-  'mos-office': '2. Tin Học Văn Phòng MOS (Word, Excel, PPT)',
-  'ic3-gs': '3. Chuẩn Tin Học Quốc Tế IC3 GS6',
-  'cntt-advanced': '4. CNTT Nâng Cao & Xử Lý Dữ Liệu',
-  'programming': '5. Lập Trình Python & Thuật Toán',
-  'cyber-security': '6. Mạng Máy Tính & Bảo Mật IT'
+  'office-fast-3in1': '1. Word, Excel, PowerPoint (3Buổi 1 môn)',
+  'cc-cntt-basic': '2. CC CNTT Cơ bản (6 buổi)',
+  'cc-cntt-advanced': '3. CC CNTT Nâng cao (6 buổi)',
+  'cntt-basic-we': '4. CNTT Cơ bản: Word + Excel (10-12b)',
+  'cntt-adv-we': '5. CNTT Nâng Cao: Word + Excel (10-12b)',
+  'ai-office': '6. Ứng dụng AI vào công việc Văn phòng (5b)',
+  'excel-accounting': '7. Excel cho Kế toán (Custom tuỳ nhu cầu)',
+  'word-6b': '8. Word (6 buổi)',
+  'excel-6b': '9. Excel (6 buổi)',
+  'ppt-6b': '10. PPT (6 buổi)'
 };
 
 export interface StudentAccount {
