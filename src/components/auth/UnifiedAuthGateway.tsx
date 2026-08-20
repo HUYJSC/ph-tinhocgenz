@@ -328,19 +328,57 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     background: 'rgba(239, 68, 68, 0.08)',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.8rem',
+                    fontSize: '0.82rem',
                     lineHeight: 1.5,
                     display: 'flex',
-                    gap: '10px',
-                    alignItems: 'flex-start'
+                    flexDirection: 'column',
+                    gap: '8px'
                   }}
                   className="animate-fade-in"
                 >
-                  <ShieldAlert size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <div style={{ color: 'var(--text-secondary)' }}>
-                    <b style={{ color: '#ef4444' }}>Thông báo: </b>
-                    {studentError}
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                    <ShieldAlert size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ color: 'var(--text-secondary)' }}>
+                      <b style={{ color: '#ef4444' }}>Chưa khớp môn học: </b>
+                      {studentError}
+                    </div>
                   </div>
+
+                  {(() => {
+                    const match = studentAccounts.find(
+                      s => s.studentCode.toUpperCase() === studentCode.trim().toUpperCase() || s.name.toLowerCase() === studentCode.trim().toLowerCase()
+                    );
+                    if (match?.programTrack && match.programTrack !== selectedTrack) {
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedTrack(match.programTrack!);
+                            setStudentError('');
+                            soundFx.playClick();
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'rgba(37, 99, 235, 0.12)',
+                            border: '1px solid var(--accent-primary)',
+                            color: 'var(--accent-primary)',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            marginTop: '2px'
+                          }}
+                        >
+                          <span>👉 Bấm vào đây để chọn đúng môn của bạn</span>
+                        </button>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               )}
 

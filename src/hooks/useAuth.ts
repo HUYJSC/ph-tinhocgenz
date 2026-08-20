@@ -165,7 +165,7 @@ export function useAuth() {
 
         return {
           success: false,
-          message: `Tài khoản "${found.name}" (${found.studentCode}) chỉ được cấp quyền học "${studentPrimaryTrackName}". Quý học viên vui lòng chọn đúng môn đã đăng ký hoặc liên hệ Giảng viên để được hỗ trợ.`
+          message: `Chương trình học không khớp. Tài khoản của bạn hiện thuộc lớp "${studentPrimaryTrackName}". Vui lòng chọn đúng môn này để vào học.`
         };
       }
 
