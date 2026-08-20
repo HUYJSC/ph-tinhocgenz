@@ -4,13 +4,19 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Light Mode */
+  /* Safe Area Variables (iOS & Android notched screens) */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+
+  /* Light Theme */
   --bg-base:       #f3f6fc;
   --bg-primary:    #f3f6fc;
   --bg-secondary:  #ffffff;
   --bg-card:       #ffffff;
   --bg-card-hover: #f8faff;
-  --bg-glass:      rgba(255, 255, 255, 0.86);
+  --bg-glass:      rgba(255, 255, 255, 0.88);
   --bg-overlay:    rgba(15, 23, 42, 0.48);
 
   --border-color:  #e5e9f2;
@@ -48,19 +54,18 @@
   --shadow-glow:  0 0 22px rgba(79, 110, 247, 0.2);
   --shadow-brand: 0 4px 16px rgba(79, 110, 247, 0.28);
 
-  --radius-xs:   5px;
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   22px;
+  --radius-xs:   6px;
+  --radius-sm:   9px;
+  --radius-md:   13px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
   --radius-full: 9999px;
 
-  --sidebar-width: 248px;
+  --sidebar-width: 250px;
   --header-height: 58px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Dark Mode */
+/* Dark Theme */
 .dark {
   --bg-base:       #0a0f1c;
   --bg-primary:    #0a0f1c;
@@ -68,9 +73,9 @@
   --bg-card:       #161f33;
   --bg-card-hover: #1b2540;
   --bg-glass:      rgba(10, 15, 28, 0.88);
-  --bg-overlay:    rgba(0, 0, 0, 0.6);
+  --bg-overlay:    rgba(0, 0, 0, 0.65);
 
-  --border-color:  rgba(255, 255, 255, 0.07);
+  --border-color:  rgba(255, 255, 255, 0.08);
   --border-muted:  rgba(255, 255, 255, 0.04);
   --border-active: rgba(99, 132, 251, 0.5);
 
@@ -102,32 +107,53 @@
   --shadow-brand: 0 4px 20px rgba(99, 132, 251, 0.32);
 }
 
-/* Reset */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { scroll-behavior: smooth; }
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 15px;
+  /* Prevent horizontal scroll globally */
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-base);
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   overflow-x: hidden;
+  width: 100%;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv02', 'cv03', 'cv11';
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: var(--radius-full); }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* App Layout */
-.app-container { display: flex; min-height: 100vh; width: 100%; background: var(--bg-base); }
+/* Responsive Layout */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg-base);
+  position: relative;
+}
 
-/* Sidebar */
+/* Desktop Sidebar */
 .sidebar {
   width: var(--sidebar-width);
   background: var(--bg-secondary);
@@ -141,58 +167,71 @@ body {
   z-index: 40;
 }
 
+/* Main Content Area */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  /* Safe spacing for mobile bottom navigation */
   padding-bottom: calc(72px + var(--safe-bottom));
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
-@media (min-width: 769px) { .main-content { padding-bottom: 28px; } }
+@media (min-width: 769px) {
+  .main-content {
+    padding-bottom: 28px;
+  }
+}
 
-/* Mobile Bottom Nav */
+/* Mobile Bottom Navigation (iPhone 375-390 & Android 360-412 standards) */
 .mobile-nav {
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(60px + var(--safe-bottom));
+  height: calc(56px + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   background: var(--bg-glass);
   backdrop-filter: blur(24px) saturate(1.8);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
   border-top: 1px solid var(--border-color);
-  z-index: 50;
+  z-index: 90;
   justify-content: space-around;
   align-items: center;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
 }
 
 @media (max-width: 768px) {
-  .sidebar    { display: none; }
-  .mobile-nav { display: flex; }
+  .sidebar    { display: none !important; }
+  .mobile-nav { display: flex !important; }
 }
 
-/* Header */
+/* App Header with Safe Area */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 30;
-  height: var(--header-height);
+  height: calc(var(--header-height) + var(--safe-top));
+  padding-top: var(--safe-top);
+  padding-left: max(14px, var(--safe-left));
+  padding-right: max(14px, var(--safe-right));
   background: var(--bg-glass);
   backdrop-filter: blur(20px) saturate(1.6);
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border-bottom: 1px solid var(--border-muted);
-  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   box-shadow: var(--shadow-xs);
 }
 
-/* Card */
+/* Cards & Containers */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -208,6 +247,13 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+/* Standard Mobile Card Padding (16px on mobile, 24px on desktop) */
+@media (max-width: 480px) {
+  .card {
+    border-radius: var(--radius-md);
+  }
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -215,6 +261,7 @@ body {
   justify-content: center;
   gap: 7px;
   padding: 8px 16px;
+  min-height: 38px;
   font-family: var(--font-sans);
   font-size: 0.855rem;
   font-weight: 600;
@@ -254,8 +301,8 @@ body {
 .btn-ghost { background: transparent; color: var(--text-secondary); border: none; box-shadow: none; }
 .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); }
 
-.btn-icon       { width: 34px; height: 34px; padding: 0; border-radius: var(--radius-md);  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
-.btn-icon-round { width: 34px; height: 34px; padding: 0; border-radius: var(--radius-full); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon       { width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: var(--radius-md);  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon-round { width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: var(--radius-full); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
 
 /* Badge */
 .badge {
@@ -270,10 +317,7 @@ body {
   line-height: 1.4;
 }
 
-/* Divider */
-.divider { height: 1px; background: var(--border-muted); }
-
-/* Flashcard */
+/* Flashcard 3D */
 .flashcard-wrapper { perspective: 1200px; width: 100%; max-width: 520px; min-height: 280px; margin: 0 auto; }
 .flashcard-inner {
   position: relative;
@@ -292,7 +336,7 @@ body {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: var(--radius-xl);
-  padding: 28px 22px;
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -302,12 +346,13 @@ body {
 .flashcard-front { background: var(--bg-card); }
 .flashcard-back  { background: linear-gradient(145deg, #1e3a8a, #162d6e); color: #fff; transform: rotateY(180deg); border-color: rgba(99, 132, 251, 0.3); }
 
-/* Quiz Options */
+/* Option Cards for Quiz */
 .option-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 15px;
+  min-height: 48px;
   border-radius: var(--radius-md);
   background: var(--bg-card);
   border: 1.5px solid var(--border-color);
@@ -342,7 +387,7 @@ body {
 .animate-slide-up { animation: slideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-fade-in  { animation: fadeIn 0.2s ease forwards; }
 
-/* Utility */
+/* Responsive Utility */
 .desktop-inline { display: none !important; }
 @media (min-width: 769px) { .desktop-inline { display: inline !important; } }
 
