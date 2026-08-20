@@ -48,7 +48,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'qr_mode' | 'manual_list' | 'history'>('qr_mode');
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  const [rotationInterval, setRotationInterval] = useState<number>(30); // Default 30s for anti-cheat
+  const [rotationInterval, setRotationInterval] = useState<number>(30);
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(30);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
 
@@ -120,16 +120,16 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
 
     const headers = [
       'STT',
-      'Ngày Điểm Danh',
-      'Giờ Bắt Đầu',
-      'Phân Hệ / Lớp Học',
-      'Giảng Viên Điểm Danh',
-      'Mã Học Viên',
-      'Họ Và Tên Học Viên',
+      'Ngày',
+      'Giờ',
+      'Lớp Học',
+      'Giáo Viên',
+      'Mã HV',
+      'Họ Và Tên',
       'Trạng Thái',
-      'Hình Thức Điểm Danh',
-      'Thời Điểm Quét / Điểm Danh',
-      'Ghi Chú Của Giáo Viên'
+      'Hình Thức',
+      'Thời Điểm',
+      'Ghi Chú'
     ];
 
     const escapeCsv = (val: any) => {
@@ -145,9 +145,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     };
 
     const methodMap: Record<string, string> = {
-      qr_scan: 'Quét QR 5 Phút',
-      pin_code: 'Nhập Mã PIN',
-      manual: 'Điểm Danh Thủ Công'
+      qr_scan: 'Quét QR',
+      pin_code: 'Nhập PIN',
+      manual: 'Thủ Công'
     };
 
     const trackTitle = TRACK_LABELS[targetSession.track] || targetSession.track;
@@ -195,41 +195,36 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
-      {/* Header Banner */}
+      {/* Sleek Compact Header */}
       <div
         className="card"
         style={{
-          padding: '16px 20px',
+          padding: '14px 18px',
           background: 'linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)',
           borderRadius: 'var(--radius-lg)',
-          marginBottom: '16px',
-          border: '1px solid rgba(79, 110, 247, 0.22)',
+          marginBottom: '14px',
+          border: '1px solid rgba(79, 110, 247, 0.2)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px'
+          gap: '10px'
         }}
       >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-              Hệ Thống Điểm Danh Thông Minh
-            </h2>
-            <span style={{
-              fontSize: '0.68rem',
-              background: '#10b981',
-              color: '#fff',
-              padding: '2px 8px',
-              borderRadius: 'var(--radius-full)',
-              fontWeight: 800
-            }}>
-              QR ĐỘNG 30S
-            </span>
-          </div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '3px 0 0' }}>
-            Mã QR tự động xoay mỗi 30 giây chống chụp ảnh gian lận • Đồng bộ đa thiết bị • Xuất Excel đầy đủ
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+            Điểm Danh QR
+          </h2>
+          <span style={{
+            fontSize: '0.68rem',
+            background: '#10b981',
+            color: '#fff',
+            padding: '2px 8px',
+            borderRadius: 'var(--radius-full)',
+            fontWeight: 800
+          }}>
+            30S
+          </span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -241,20 +236,20 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               }}
               className="btn"
               style={{
-                padding: '8px 16px',
-                fontSize: '0.84rem',
+                padding: '7px 14px',
+                fontSize: '0.82rem',
                 fontWeight: 800,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
                 background: activeSession.isOpen !== false ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.14)',
                 border: activeSession.isOpen !== false ? '1.5px solid rgba(239, 68, 68, 0.4)' : '1.5px solid rgba(16, 185, 129, 0.4)',
                 color: activeSession.isOpen !== false ? '#ef4444' : '#10b981'
               }}
-              title={activeSession.isOpen !== false ? 'Bấm để tắt/khóa mã điểm danh' : 'Bấm để mở lại mã điểm danh'}
+              title={activeSession.isOpen !== false ? 'Bấm để tắt điểm danh' : 'Bấm để mở lại điểm danh'}
             >
-              {activeSession.isOpen !== false ? <Lock size={16} /> : <Unlock size={16} />}
-              <span>{activeSession.isOpen !== false ? '🔒 Tắt / Khóa Mã Điểm Danh' : '🔓 Bật / Mở Mã Điểm Danh'}</span>
+              {activeSession.isOpen !== false ? <Lock size={15} /> : <Unlock size={15} />}
+              <span>{activeSession.isOpen !== false ? 'Khóa Điểm Danh' : 'Mở Điểm Danh'}</span>
             </button>
           )}
 
@@ -262,7 +257,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             onClick={() => exportAttendanceExcel()}
             className="btn btn-secondary"
             style={{
-              padding: '8px 14px',
+              padding: '7px 14px',
               fontSize: '0.82rem',
               fontWeight: 700,
               display: 'flex',
@@ -275,16 +270,16 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             title="Xuất bảng điểm danh sang file Excel (.CSV UTF-8)"
           >
             <FileSpreadsheet size={15} />
-            <span>Xuất Excel Điểm Danh</span>
+            <span>Xuất Excel</span>
           </button>
         </div>
       </div>
 
       {/* Class Selector Bar */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <div style={{ fontSize: '0.83rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap' }}>
+        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Users size={15} color="var(--brand)" />
-          <span>Chọn Lớp / Phân Hệ:</span>
+          <span>Lớp Học:</span>
         </div>
 
         <select
@@ -299,10 +294,10 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
           style={{
             flex: 1,
             minWidth: '220px',
-            maxWidth: '450px',
-            padding: '8px 30px 8px 12px',
+            maxWidth: '420px',
+            padding: '7px 28px 7px 12px',
             fontSize: '0.84rem',
-            minHeight: '38px'
+            minHeight: '36px'
           }}
         >
           {ALL_TRACKS.map(t => (
@@ -312,11 +307,11 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
+      <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '14px' }}>
         {[
-          { id: 'qr_mode',     label: 'Mã QR Động (5 Phút)', icon: QrCode },
-          { id: 'manual_list', label: `Điểm Danh Thủ Công (${totalStudents})`, icon: CheckCheck },
-          { id: 'history',     label: `Lịch Sử Buổi Học (${sessions.length})`, icon: Calendar }
+          { id: 'qr_mode',     label: 'Mã QR (30s)', icon: QrCode },
+          { id: 'manual_list', label: `Danh Sách Lớp (${totalStudents})`, icon: CheckCheck },
+          { id: 'history',     label: `Lịch Sử (${sessions.length})`, icon: Calendar }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -331,7 +326,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '8px 16px',
+                padding: '7px 14px',
                 border: 'none',
                 background: 'transparent',
                 borderBottom: isActive ? '2.5px solid var(--brand)' : '2.5px solid transparent',
@@ -349,12 +344,12 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         })}
       </div>
 
-      {/* ─── TAB 1: DYNAMIC 5-MINUTE QR CODE ─── */}
+      {/* ─── TAB 1: DYNAMIC 30S QR CODE ─── */}
       {activeSubTab === 'qr_mode' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
           {/* Left: QR Display Card */}
-          <div className="card" style={{ padding: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(79, 110, 247, 0.08)', color: 'var(--brand)', fontSize: '0.74rem', fontWeight: 700, marginBottom: '12px' }}>
+          <div className="card" style={{ padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(79, 110, 247, 0.08)', color: 'var(--brand)', fontSize: '0.74rem', fontWeight: 700, marginBottom: '10px' }}>
               <ShieldCheck size={14} />
               <span>{TRACK_LABELS[selectedTrack] || selectedTrack}</span>
             </div>
@@ -364,56 +359,56 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 14px',
+              padding: '5px 12px',
               borderRadius: 'var(--radius-full)',
               background: activeSession?.isOpen === false
                 ? 'rgba(239, 68, 68, 0.12)'
-                : timeLeftSeconds > 60
+                : timeLeftSeconds > 10
                   ? 'rgba(16, 185, 129, 0.1)'
                   : 'rgba(239, 68, 68, 0.1)',
               color: activeSession?.isOpen === false
                 ? '#ef4444'
-                : timeLeftSeconds > 60
+                : timeLeftSeconds > 10
                   ? '#10b981'
                   : '#ef4444',
-              fontSize: '0.92rem',
+              fontSize: '0.88rem',
               fontWeight: 900,
-              marginBottom: '16px',
+              marginBottom: '12px',
               border: activeSession?.isOpen === false
                 ? '1px solid rgba(239, 68, 68, 0.35)'
-                : timeLeftSeconds > 60
+                : timeLeftSeconds > 10
                   ? '1px solid rgba(16, 185, 129, 0.3)'
                   : '1px solid rgba(239, 68, 68, 0.3)'
             }}>
               {activeSession?.isOpen === false ? (
                 <>
-                  <Lock size={16} />
-                  <span>ĐÃ KHÓA / TẮT ĐIỂM DANH</span>
+                  <Lock size={15} />
+                  <span>ĐÃ KHÓA ĐIỂM DANH</span>
                 </>
               ) : (
                 <>
-                  <Clock size={16} />
-                  <span>Hết hạn sau: {formatCountdown(timeLeftSeconds)}</span>
+                  <Clock size={15} />
+                  <span>Đổi mã sau: {formatCountdown(timeLeftSeconds)}</span>
                 </>
               )}
             </div>
 
-            {/* QR Code Container (Shows locked overlay if toggled off) */}
+            {/* QR Code Container */}
             <div style={{
               position: 'relative',
-              padding: '14px',
+              padding: '12px',
               background: '#ffffff',
               borderRadius: '16px',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
               border: '1.5px solid var(--border-color)',
-              marginBottom: '14px',
+              marginBottom: '12px',
               overflow: 'hidden'
             }}>
               <img
                 src={qrImageUrl}
                 alt="QR Code Điểm Danh"
                 style={{
-                  width: '220px', height: '220px', display: 'block', borderRadius: '8px',
+                  width: '210px', height: '210px', display: 'block', borderRadius: '8px',
                   filter: activeSession?.isOpen === false ? 'blur(8px) grayscale(100%)' : 'none',
                   opacity: activeSession?.isOpen === false ? 0.3 : 1,
                   transition: 'all 0.3s ease'
@@ -434,13 +429,10 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                   color: '#fff',
                   textAlign: 'center'
                 }}>
-                  <Lock size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
-                  <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff' }}>
-                    MÃ ĐIỂM DANH ĐANG TẮT
+                  <Lock size={32} color="#ef4444" style={{ marginBottom: '6px' }} />
+                  <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#fff' }}>
+                    ĐÃ TẮT ĐIỂM DANH
                   </div>
-                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)', margin: '4px 0 10px' }}>
-                    Học sinh không thể quét hoặc nhập PIN lúc này
-                  </p>
                   <button
                     onClick={() => {
                       if (activeSession) {
@@ -449,36 +441,36 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                       }
                     }}
                     className="btn btn-success"
-                    style={{ padding: '6px 12px', fontSize: '0.76rem', fontWeight: 800, gap: '4px' }}
+                    style={{ padding: '6px 12px', fontSize: '0.76rem', fontWeight: 800, gap: '4px', marginTop: '8px' }}
                   >
                     <Unlock size={13} />
-                    <span>Mở Lại Mã QR</span>
+                    <span>Mở Lại QR</span>
                   </button>
                 </div>
               )}
             </div>
 
             {/* 6-Digit PIN Code */}
-            <div style={{ marginBottom: '16px', opacity: activeSession?.isOpen === false ? 0.4 : 1 }}>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                MÃ PIN ĐIỂM DANH THAY THẾ (NẾU KHÔNG QUÉT ĐƯỢC)
+            <div style={{ marginBottom: '12px', opacity: activeSession?.isOpen === false ? 0.4 : 1 }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                MÃ PIN DỰ PHÒNG
               </div>
               <div style={{
-                fontSize: '1.8rem',
+                fontSize: '1.7rem',
                 fontWeight: 900,
                 color: activeSession?.isOpen === false ? 'var(--text-muted)' : 'var(--brand)',
                 letterSpacing: '0.2em',
                 fontFamily: 'var(--font-mono)',
-                marginTop: '4px'
+                marginTop: '2px'
               }}>
                 {activeSession?.isOpen === false ? 'LOCKED' : (activeSession?.qrPinCode || '------')}
               </div>
             </div>
 
             {/* Anti-cheat rotation speed selector */}
-            <div style={{ width: '100%', maxWidth: '320px', marginBottom: '14px' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '6px' }}>
-                🛡️ TỐC ĐỘ TỰ ĐỘNG XOAY MÃ (CHỐNG GỬI ẢNH ZALO):
+            <div style={{ width: '100%', maxWidth: '300px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '4px' }}>
+                ⏱️ Tốc độ xoay:
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
                 {[
@@ -515,52 +507,52 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             <button
               onClick={handleRotateNow}
               className="btn btn-secondary"
-              style={{ width: '100%', maxWidth: '280px', padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+              style={{ width: '100%', maxWidth: '260px', padding: '7px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
             >
-              <RefreshCw size={14} />
-              <span>Làm Mới Mã QR Ngay Lập Tức</span>
+              <RefreshCw size={13} />
+              <span>Đổi Mã Ngay</span>
             </button>
           </div>
 
           {/* Right: Live Attendance Progress Card */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* Stats Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-              <div className="card" style={{ padding: '14px', borderLeft: '4px solid #10b981' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600 }}>CÓ MẶT</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#10b981' }}>{presentCount}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{presentRate}% tỷ lệ tham gia</div>
+              <div className="card" style={{ padding: '12px', borderLeft: '4px solid #10b981' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>CÓ MẶT</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#10b981' }}>{presentCount}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{presentRate}% chuyên cần</div>
               </div>
 
-              <div className="card" style={{ padding: '14px', borderLeft: '4px solid #ef4444' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600 }}>CHƯA ĐIỂM DANH</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#ef4444' }}>{absentCount}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Trên tổng số {totalStudents} bạn</div>
+              <div className="card" style={{ padding: '12px', borderLeft: '4px solid #ef4444' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>CHƯA ĐIỂM DANH</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ef4444' }}>{absentCount}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Tổng số {totalStudents} bạn</div>
               </div>
             </div>
 
-            {/* Instructions & Quick Switch */}
-            <div className="card" style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            {/* Instructions */}
+            <div className="card" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={15} color="var(--brand)" />
-                  <span>Hướng Dẫn Cho Học Viên</span>
+                <h4 style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={14} color="var(--brand)" />
+                  <span>Cách Điểm Danh</span>
                 </h4>
-                <ul style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingLeft: '18px', lineHeight: 1.6, margin: 0 }}>
-                  <li>Học sinh dùng <b>Camera điện thoại / Zalo / Web</b> quét mã QR trên màn hình chiếu.</li>
-                  <li>Hoặc nhập <b>mã PIN 6 số</b> trên góc phải màn hình của mình.</li>
-                  <li>Mã QR sẽ <b>tự động xoay sau 5 phút</b> để chống gian lận.</li>
+                <ul style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', paddingLeft: '16px', lineHeight: 1.5, margin: 0 }}>
+                  <li>Dùng <b>Camera điện thoại / Web</b> quét mã QR.</li>
+                  <li>Hoặc nhập <b>mã PIN 6 số</b> trên điện thoại.</li>
+                  <li>Mã tự động đổi mỗi <b>30 giây</b> chống gửi ảnh.</li>
                 </ul>
               </div>
 
-              <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <button
                   onClick={() => setActiveSubTab('manual_list')}
                   className="btn btn-secondary"
-                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+                  style={{ flex: 1, padding: '7px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
                 >
                   <CheckCheck size={14} />
-                  <span>Xem & Tick Thủ Công</span>
+                  <span>Xem Danh Sách & Chấm Tay</span>
                 </button>
               </div>
             </div>
@@ -570,7 +562,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
 
       {/* ─── TAB 2: MANUAL ATTENDANCE TICK LIST ─── */}
       {activeSubTab === 'manual_list' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* Action Toolbar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -594,70 +586,70 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 style={{ padding: '7px 13px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
               >
                 <Save size={14} />
-                <span>{isSavedNotice ? 'Đã Lưu Thành Công! ✓' : 'Lưu Danh Sách'}</span>
+                <span>{isSavedNotice ? 'Đã Lưu! ✓' : 'Lưu Danh Sách'}</span>
               </button>
             </div>
 
-            <button
-              onClick={() => exportAttendanceExcel()}
-              className="btn btn-secondary"
-              style={{ padding: '7px 13px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
-            >
-              <FileSpreadsheet size={14} color="#059669" />
-              <span>Xuất File Excel</span>
-            </button>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              Đã điểm danh: <b>{presentCount + lateCount}/{totalStudents}</b> ({presentRate}%)
+            </div>
           </div>
 
-          {/* Attendance Table */}
-          <div className="card" style={{ overflow: 'hidden' }}>
-            {!activeSession || activeSession.records.length === 0 ? (
-              <div style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                Chưa có học viên nào trong phân hệ này hoặc chưa mở phiên điểm danh.
-              </div>
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                      <th style={{ padding: '10px 14px', width: '45px' }}>STT</th>
-                      <th style={{ padding: '10px 14px' }}>Học Viên</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'center' }}>Trạng Thái Điểm Danh</th>
-                      <th style={{ padding: '10px 14px' }}>Thời Gian</th>
-                      <th style={{ padding: '10px 14px' }}>Ghi Chú</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {activeSession.records.map((rec, idx) => (
-                      <tr key={rec.studentId || idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontWeight: 600 }}>{idx + 1}</td>
-                        <td style={{ padding: '10px 14px' }}>
-                          <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{rec.studentName}</div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                            {rec.studentCode} {rec.schoolOrClass && `• ${rec.schoolOrClass}`}
-                          </div>
+          {/* Table Container */}
+          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                    <th style={{ padding: '10px 12px', width: '40px', textAlign: 'center' }}>#</th>
+                    <th style={{ padding: '10px 12px', width: '100px' }}>Mã HV</th>
+                    <th style={{ padding: '10px 12px', minWidth: '150px' }}>Họ Và Tên</th>
+                    <th style={{ padding: '10px 12px', minWidth: '220px' }}>Trạng Thái</th>
+                    <th style={{ padding: '10px 12px', width: '110px' }}>Thời Điểm</th>
+                    <th style={{ padding: '10px 12px', minWidth: '160px' }}>Ghi Chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeSession && activeSession.records.length > 0 ? (
+                    activeSession.records.map((rec, idx) => (
+                      <tr
+                        key={rec.studentId}
+                        style={{
+                          borderBottom: '1px solid var(--border-color)',
+                          background: rec.status === 'present' ? 'rgba(16, 185, 129, 0.03)' : 'transparent'
+                        }}
+                      >
+                        <td style={{ padding: '8px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          {idx + 1}
                         </td>
-                        <td style={{ padding: '10px 14px' }}>
-                          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <td style={{ padding: '8px 12px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                          {rec.studentCode}
+                        </td>
+                        <td style={{ padding: '8px 12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {rec.studentName}
+                        </td>
+                        <td style={{ padding: '8px 12px' }}>
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                             {[
-                              { id: 'present', label: 'Có Mặt', bg: '#10b981' },
-                              { id: 'late',    label: 'Trễ',    bg: '#f59e0b' },
-                              { id: 'excused', label: 'Có Phép',bg: '#3b82f6' },
-                              { id: 'absent',  label: 'Vắng',   bg: '#ef4444' }
+                              { id: 'present', label: 'Có Mặt', color: '#10b981' },
+                              { id: 'late',    label: 'Đi Trễ', color: '#f59e0b' },
+                              { id: 'excused', label: 'Có Phép', color: '#3b82f6' },
+                              { id: 'absent',  label: 'Vắng',   color: '#ef4444' }
                             ].map(st => {
                               const isSelected = rec.status === st.id;
                               return (
                                 <button
                                   key={st.id}
                                   onClick={() => {
-                                    onUpdateStatus(activeSession.id, rec.studentId, st.id as AttendanceStatus, rec.note, 'manual');
+                                    onUpdateStatus(activeSession.id, rec.studentId, st.id as AttendanceStatus, rec.note);
                                     soundFx.playClick();
                                   }}
                                   style={{
-                                    padding: '4px 8px',
-                                    borderRadius: '6px',
-                                    border: isSelected ? `1.5px solid ${st.bg}` : '1px solid var(--border-color)',
-                                    background: isSelected ? `${st.bg}18` : 'var(--bg-card)',
-                                    color: isSelected ? st.bg : 'var(--text-muted)',
+                                    padding: '3px 8px',
+                                    borderRadius: 'var(--radius-full)',
+                                    border: isSelected ? `1.5px solid ${st.color}` : '1px solid var(--border-color)',
+                                    background: isSelected ? `${st.color}22` : 'transparent',
+                                    color: isSelected ? st.color : 'var(--text-secondary)',
                                     fontSize: '0.72rem',
                                     fontWeight: isSelected ? 800 : 500,
                                     cursor: 'pointer',
@@ -670,126 +662,131 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                             })}
                           </div>
                         </td>
-                        <td style={{ padding: '10px 14px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                          {rec.checkInTime || '--:--'}
-                          <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>
-                            {rec.checkInMethod === 'qr_scan' ? '📱 Quét QR' : rec.checkInMethod === 'pin_code' ? '🔢 Nhập PIN' : '✍️ Thủ công'}
-                          </div>
+                        <td style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '0.76rem' }}>
+                          {rec.checkInTime ? (
+                            <span style={{ color: '#10b981', fontWeight: 700 }}>
+                              {rec.checkInTime} ({rec.checkInMethod === 'qr_scan' ? 'QR' : rec.checkInMethod === 'pin_code' ? 'PIN' : 'Tay'})
+                            </span>
+                          ) : (
+                            '--:--'
+                          )}
                         </td>
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '8px 12px' }}>
                           <input
                             type="text"
-                            placeholder="Ghi chú..."
+                            placeholder="Thêm ghi chú..."
                             defaultValue={rec.note || ''}
                             onBlur={e => {
-                              onUpdateStatus(activeSession.id, rec.studentId, rec.status, e.target.value, rec.checkInMethod);
+                              if (e.target.value !== rec.note) {
+                                onUpdateStatus(activeSession.id, rec.studentId, rec.status, e.target.value);
+                              }
                             }}
                             style={{
-                              padding: '5px 8px',
+                              width: '100%',
+                              padding: '4px 8px',
                               fontSize: '0.76rem',
-                              minHeight: '30px',
+                              border: '1px solid var(--border-color)',
                               borderRadius: '6px'
                             }}
                           />
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        Chưa có học viên nào trong danh sách lớp này.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ─── TAB 3: ATTENDANCE SESSIONS HISTORY ─── */}
+      {/* ─── TAB 3: ATTENDANCE HISTORY ─── */}
       {activeSubTab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {sessions.length === 0 ? (
-            <div className="card" style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Chưa có phiên điểm danh nào được tạo.
-            </div>
-          ) : (
-            sessions.map(s => {
-              const pCount = s.records.filter(r => r.status === 'present').length;
-              const aCount = s.records.filter(r => r.status === 'absent').length;
-              const lCount = s.records.filter(r => r.status === 'late').length;
-              const eCount = s.records.filter(r => r.status === 'excused').length;
-              const total = s.records.length;
-              const rate = total > 0 ? Math.round(((pCount + lCount) / total) * 100) : 0;
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {sessions.length > 0 ? (
+            sessions.map(sess => {
+              const pCount = sess.records.filter(r => r.status === 'present').length;
+              const lCount = sess.records.filter(r => r.status === 'late').length;
+              const aCount = sess.records.filter(r => r.status === 'absent').length;
+              const tCount = sess.records.length;
+              const pRate = tCount > 0 ? Math.round(((pCount + lCount) / tCount) * 100) : 0;
+              const isCurrent = sess.id === activeSession?.id;
 
               return (
                 <div
-                  key={s.id}
+                  key={sess.id}
                   className="card"
                   style={{
-                    padding: '16px',
+                    padding: '14px 16px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    gap: '12px'
+                    gap: '10px',
+                    borderLeft: isCurrent ? '4px solid var(--brand)' : '4px solid transparent'
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        {TRACK_LABELS[s.track] || s.track}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                        {TRACK_LABELS[sess.track] || sess.track}
                       </span>
-                      <span style={{ fontSize: '0.7rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                        {s.date} lúc {s.startTime}
-                      </span>
+                      {isCurrent && (
+                        <span style={{ fontSize: '0.66rem', background: 'var(--brand)', color: '#fff', padding: '1px 6px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
+                          HIỆN TẠI
+                        </span>
+                      )}
                     </div>
-
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
-                      <span>Có mặt: <b style={{ color: '#10b981' }}>{pCount}</b></span>
-                      <span>Trễ: <b style={{ color: '#f59e0b' }}>{lCount}</b></span>
-                      <span>Có phép: <b style={{ color: '#3b82f6' }}>{eCount}</b></span>
-                      <span>Vắng: <b style={{ color: '#ef4444' }}>{aCount}</b></span>
-                      <span>Tỷ lệ: <b>{rate}%</b></span>
+                    <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      📅 {sess.date} lúc {sess.startTime} • Giảng viên: {sess.teacherName}
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      onClick={() => {
-                        setSelectedSessionId(s.id);
-                        setSelectedTrack(s.track);
-                        setActiveSubTab('manual_list');
-                        soundFx.playClick();
-                      }}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 10px', fontSize: '0.76rem', fontWeight: 700 }}
-                    >
-                      Xem & Chỉnh Sửa
-                    </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ textAlign: 'right', fontSize: '0.78rem' }}>
+                      <div style={{ fontWeight: 800, color: '#10b981' }}>{pCount + lCount}/{tCount} Có mặt ({pRate}%)</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{aCount} vắng</div>
+                    </div>
 
-                    <button
-                      onClick={() => exportAttendanceExcel(s)}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 10px', fontSize: '0.76rem', fontWeight: 700, color: '#059669' }}
-                    >
-                      <FileSpreadsheet size={13} />
-                      <span>Xuất Excel</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => exportAttendanceExcel(sess)}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 10px', fontSize: '0.74rem', gap: '4px' }}
+                        title="Xuất Excel cho buổi học này"
+                      >
+                        <FileSpreadsheet size={13} />
+                        <span>Excel</span>
+                      </button>
 
-                    <button
-                      onClick={() => {
-                        if (confirm(`Bạn có chắc chắn muốn xóa phiên điểm danh ngày ${s.date}?`)) {
-                          onDeleteSession(s.id);
-                          soundFx.playClick();
-                        }
-                      }}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 10px', fontSize: '0.76rem', color: 'var(--danger)' }}
-                      title="Xóa phiên"
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Bạn có chắc chắn muốn xóa phiên điểm danh ngày ${sess.date}?`)) {
+                            onDeleteSession(sess.id);
+                            soundFx.playClick();
+                          }
+                        }}
+                        className="btn btn-danger"
+                        style={{ padding: '6px 8px', fontSize: '0.74rem' }}
+                        title="Xóa phiên"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
             })
+          ) : (
+            <div className="card" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Chưa có lịch sử buổi học nào.
+            </div>
           )}
         </div>
       )}
