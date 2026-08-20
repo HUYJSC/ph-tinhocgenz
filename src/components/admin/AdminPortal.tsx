@@ -429,90 +429,72 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {activeSubTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Key Metrics Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #2563eb' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tổng Số Học Viên</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{studentAccounts.length}</div>
-              <div style={{ fontSize: '0.75rem', color: '#2563eb' }}>Đã cấp mã đăng nhập</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
+            <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #2563eb' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Học Viên</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{studentAccounts.length}</div>
+              <div style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 600 }}>Đã cấp mã đăng nhập</div>
             </div>
 
             {isSuperAdmin && (
-              <div className="card" style={{ padding: '18px', borderLeft: '4px solid #d97706' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Giảng Viên Đứng Lớp</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{teacherAccounts.length}</div>
-                <div style={{ fontSize: '0.75rem', color: '#d97706' }}>Phụ trách các phân hệ</div>
+              <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #d97706' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Giảng Viên</div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{teacherAccounts.length}</div>
+                <div style={{ fontSize: '0.7rem', color: '#d97706', fontWeight: 600 }}>Phụ trách chương trình</div>
               </div>
             )}
 
-            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #10b981' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Kho Đề Thi Chuẩn Hóa</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{totalQuizzes}</div>
-              <div style={{ fontSize: '0.75rem', color: '#10b981' }}>10 Chương trình đào tạo</div>
+            <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #10b981' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kho Đề Thi</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{totalQuizzes}</div>
+              <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>10 chương trình đào tạo</div>
             </div>
 
-            <div className="card" style={{ padding: '18px', borderLeft: '4px solid #8b5cf6' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tỷ Lệ Đạt Chuẩn (≥70%)</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{passRate}%</div>
-              <div style={{ fontSize: '0.75rem', color: '#8b5cf6' }}>Điểm TB: {avgScore}%</div>
+            <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #8b5cf6' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tỷ Lệ Đạt (≥70%)</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '3px 0 2px' }}>{passRate}%</div>
+              <div style={{ fontSize: '0.7rem', color: '#8b5cf6', fontWeight: 600 }}>Điểm TB: {avgScore}%</div>
             </div>
           </div>
 
           {/* Structured Curriculum Tracks Summary */}
-          <div className="card" style={{ padding: '22px' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Sparkles size={18} color="#d97706" />
-              <span>10 Chương Trình Đào Tạo CNTT Chuẩn Hóa Tại PH Digital Education</span>
+          <div className="card" style={{ padding: '18px 20px' }}>
+            <h3 style={{ fontSize: '0.88rem', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px', color: 'var(--text-primary)' }}>
+              <Sparkles size={15} color="#d97706" />
+              <span>10 Chương Trình Đào Tạo CNTT — PH Digital Education</span>
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px', fontSize: '0.85rem' }}>
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #2563eb' }}>
-                <div style={{ fontWeight: 800, color: '#2563eb' }}>1. Word, Excel, PowerPoint (3 Buổi / môn)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Trang bị nghiệp vụ văn phòng cốt lõi: Soạn thảo văn bản, bảng tính phân tích và trình chiếu báo cáo.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #10b981' }}>
-                <div style={{ fontWeight: 800, color: '#10b981' }}>2. Chứng Chỉ Ứng Dụng CNTT Cơ Bản (6 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Chuẩn kỹ năng sử dụng CNTT theo Thông tư 03/2014/TT-BTTTT, phần cứng, hệ điều hành và Internet an toàn.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #3b82f6' }}>
-                <div style={{ fontWeight: 800, color: '#3b82f6' }}>3. Chứng Chỉ Ứng Dụng CNTT Nâng Cao (6 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Kỹ năng tin học chuyên sâu: Xử lý dữ liệu phức hợp, tự động hóa tác vụ và an toàn thông tin nghiệp vụ.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #06b6d4' }}>
-                <div style={{ fontWeight: 800, color: '#06b6d4' }}>4. CNTT Cơ Bản: Word + Excel (10 - 12 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Quy chuẩn văn bản hành chính và kỹ năng thiết lập bảng tính, hàm tính toán xử lý dữ liệu cơ bản.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #8b5cf6' }}>
-                <div style={{ fontWeight: 800, color: '#8b5cf6' }}>5. CNTT Nâng Cao: Word + Excel (10 - 12 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Kỹ thuật văn bản nâng cao, hàm lồng logic phức hợp, PivotTable tổng hợp và bảo mật bảng tính.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #ec4899' }}>
-                <div style={{ fontWeight: 800, color: '#ec4899' }}>6. Ứng Dụng AI Vào Công Việc Văn Phòng (5 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Khai thác Generative AI, ChatGPT, Copilot tự động hóa soạn thảo, xử lý dữ liệu và tối ưu hiệu suất làm việc.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #ea580c' }}>
-                <div style={{ fontWeight: 800, color: '#ea580c' }}>7. Excel Cho Kế Toán - Tài Chính (Theo Nhu Cầu)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Thiết lập sổ sách kế toán, hệ thống hàm tài chính chuyên sâu, bảng cân đối và báo cáo quản trị.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #2563eb' }}>
-                <div style={{ fontWeight: 800, color: '#2563eb' }}>8. Chuyên Đề Soạn Thảo Word (6 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Kỹ thuật dàn trang, định dạng văn bản chuẩn quy phạm, mục lục tự động, trộn thư Mail Merge.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #10b981' }}>
-                <div style={{ fontWeight: 800, color: '#10b981' }}>9. Chuyên Đề Phân Tích Excel (6 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Làm chủ các nhóm hàm Lookup, Math & Trig, Statistical, trực quan hóa biểu đồ và tổng hợp báo cáo.</div>
-              </div>
-
-              <div style={{ padding: '14px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid #f59e0b' }}>
-                <div style={{ fontWeight: 800, color: '#f59e0b' }}>10. Chuyên Đề Thiết Kế PowerPoint (6 buổi)</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Tư duy thiết kế Slide hiện đại, hiệu ứng chuyển động Motion mượt mà, trực quan hóa dữ liệu thuyết trình.</div>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '8px' }}>
+              {[
+                { n: '01', label: 'Word · Excel · PowerPoint', note: '3 buổi / môn', color: '#2563eb' },
+                { n: '02', label: 'CC CNTT Cơ Bản', note: '6 buổi · TT03/2014', color: '#10b981' },
+                { n: '03', label: 'CC CNTT Nâng Cao', note: '6 buổi · chuyên sâu', color: '#3b82f6' },
+                { n: '04', label: 'CNTT Cơ Bản: Word + Excel', note: '10–12 buổi', color: '#06b6d4' },
+                { n: '05', label: 'CNTT Nâng Cao: Word + Excel', note: '10–12 buổi', color: '#8b5cf6' },
+                { n: '06', label: 'AI Ứng Dụng Văn Phòng', note: '5 buổi · Copilot · GPT', color: '#ec4899' },
+                { n: '07', label: 'Excel Kế Toán – Tài Chính', note: 'Tuỳ nhu cầu', color: '#ea580c' },
+                { n: '08', label: 'Chuyên Đề Word', note: '6 buổi · Mail Merge', color: '#2563eb' },
+                { n: '09', label: 'Chuyên Đề Excel', note: '6 buổi · Lookup · Chart', color: '#10b981' },
+                { n: '10', label: 'Chuyên Đề PowerPoint', note: '6 buổi · Motion · Design', color: '#f59e0b' },
+              ].map(({ n, label, note, color }) => (
+                <div key={n} style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '9px 12px',
+                  background: 'var(--bg-primary)',
+                  borderRadius: '8px',
+                  borderLeft: `3px solid ${color}`,
+                }}>
+                  <span style={{
+                    minWidth: '24px', height: '24px', borderRadius: '6px',
+                    background: `${color}18`, color, fontSize: '0.68rem',
+                    fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    letterSpacing: '0.02em', flexShrink: 0,
+                  }}>{n}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '1px' }}>{note}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
