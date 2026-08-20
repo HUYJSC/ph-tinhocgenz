@@ -18,18 +18,9 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  theme,
-  toggleTheme,
-  streak,
-  totalPoints,
-  studentName,
-  studentCode,
-  programTrack,
-  isAdmin = false,
-  unreadNotificationCount = 0,
-  onLogout,
-  onOpenNotifications,
-  onOpenAuthModal
+  theme, toggleTheme, streak, totalPoints, studentName,
+  studentCode, programTrack, isAdmin = false,
+  unreadNotificationCount = 0, onLogout, onOpenNotifications, onOpenAuthModal
 }) => {
   const [isMuted, setIsMuted] = React.useState(soundFx.isMuted);
 
@@ -39,256 +30,142 @@ export const Header: React.FC<HeaderProps> = ({
     if (!muted) soundFx.playClick();
   };
 
-  const getTrackShortName = (track?: string) => {
-    switch (track) {
-      case 'office-fast-3in1': return 'Word, Excel, PPT (3b)';
-      case 'cc-cntt-basic': return 'CC CNTT Cơ bản (6b)';
-      case 'cc-cntt-advanced': return 'CC CNTT Nâng cao (6b)';
-      case 'cntt-basic-we': return 'CNTT Cơ bản: Word+Excel';
-      case 'cntt-adv-we': return 'CNTT Nâng Cao: Word+Excel';
-      case 'ai-office': return 'Ứng dụng AI Văn phòng';
-      case 'excel-accounting': return 'Excel cho Kế toán';
-      case 'word-6b': return 'Word (6 buổi)';
-      case 'excel-6b': return 'Excel (6 buổi)';
-      case 'ppt-6b': return 'PPT (6 buổi)';
-      default: return 'Tin Học Chuẩn';
-    }
+  const TRACK_MAP: Record<string,string> = {
+    'office-fast-3in1': 'Word, Excel, PPT(3b)',
+    'cc-cntt-basic':    'CC CNTT Cơ bản',
+    'cc-cntt-advanced': 'CC CNTT Nâng cao',
+    'cntt-basic-we':    'CNTT Cơ bản (W+E)',
+    'cntt-adv-we':      'CNTT Nâng Cao (W+E)',
+    'ai-office':        'Ứng dụng AI VP',
+    'excel-accounting': 'Excel Kế toán',
+    'word-6b':          'Word',
+    'excel-6b':         'Excel',
+    'ppt-6b':           'PowerPoint',
+  };
+
+  const initial = studentName ? studentName.charAt(0).toUpperCase() : 'H';
+
+  const iconBtn: React.CSSProperties = {
+    width: '34px', height: '34px', borderRadius: '9px', border: '1px solid var(--border-color)',
+    background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    transition: 'all 0.15s ease', boxShadow: 'var(--shadow-xs)'
   };
 
   return (
-    <header
-      className="app-header"
-      style={{
-        padding: '10px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '12px',
-        flexWrap: 'nowrap'
-      }}
-    >
-      {/* 1. LEFT: Brand & Prominent Student / Admin Profile */}
+    <header className="app-header">
+
+      {/* LEFT: Logo + User profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-        {/* Crisp Logo Container */}
-        <div
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '12px',
-            background: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '3px',
-            boxShadow: '0 3px 10px rgba(0, 0, 0, 0.12)',
-            border: '1.5px solid rgba(37, 99, 235, 0.18)',
-            flexShrink: 0
-          }}
-        >
-          <img
-            src="/logo.png"
-            alt="PH Logo"
-            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }}
-          />
+        <div style={{
+          width: '36px', height: '36px', borderRadius: '9px',
+          background: '#fff', padding: '2px',
+          border: '1px solid var(--border-color)',
+          boxShadow: 'var(--shadow-sm)', flexShrink: 0
+        }}>
+          <img src="/logo.png" alt="PH" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '7px' }} />
         </div>
 
-        {/* Student / Admin Highlight Capsule */}
         <div
           onClick={onOpenAuthModal}
-          title="Tài khoản đang đăng nhập"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '5px 12px 5px 6px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '5px 10px 5px 5px',
             borderRadius: 'var(--radius-full)',
-            background: isAdmin ? 'rgba(217, 119, 6, 0.08)' : 'rgba(37, 99, 235, 0.07)',
-            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(37, 99, 235, 0.2)',
-            minWidth: 0,
-            cursor: 'default'
+            background: isAdmin ? 'rgba(217,119,6,0.07)' : 'rgba(79,110,247,0.06)',
+            border: isAdmin ? '1px solid rgba(217,119,6,0.2)' : '1px solid rgba(79,110,247,0.15)',
+            cursor: 'pointer', minWidth: 0, flexShrink: 0
           }}
         >
-          {/* Avatar Initial Circle */}
-          <div
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              background: isAdmin
-                ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
-                : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '0.8rem',
-              flexShrink: 0,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
-            }}
-          >
-            {isAdmin ? <Shield size={14} /> : (studentName ? studentName.charAt(0).toUpperCase() : 'H')}
+          <div style={{
+            width: '27px', height: '27px', borderRadius: '50%',
+            background: isAdmin ? 'linear-gradient(135deg,#d97706,#b45309)' : 'linear-gradient(135deg,#4f6ef7,#6384fb)',
+            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 800, fontSize: '0.78rem', flexShrink: 0
+          }}>
+            {isAdmin ? <Shield size={13} /> : initial}
           </div>
-
-          {/* Name & Track Meta */}
-          <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span
-                style={{
-                  fontSize: '0.88rem',
-                  fontWeight: 800,
-                  color: 'var(--text-primary)',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '160px'
-                }}
-              >
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ fontSize: '0.83rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
                 {studentName}
               </span>
               {studentCode && (
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                    color: 'var(--accent-primary)',
-                    background: 'rgba(37, 99, 235, 0.12)',
-                    padding: '1px 5px',
-                    borderRadius: 'var(--radius-sm)'
-                  }}
-                >
+                <span style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--accent-primary)', background: 'var(--brand-light)', padding: '1px 5px', borderRadius: '5px' }}>
                   {studentCode}
                 </span>
               )}
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-              <span>{isAdmin ? 'Quản Trị Viên' : getTrackShortName(programTrack)}</span>
+            <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '1px' }}>
+              {isAdmin ? 'Quản Trị Viên' : (TRACK_MAP[programTrack || ''] || 'Đổi Môn ▾')}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. RIGHT: Gamification, Utility & Logout Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-        {/* Streak Pill */}
-        <div
-          title="Chuỗi ngày học"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '5px 10px',
-            borderRadius: 'var(--radius-full)',
-            background: 'rgba(245, 158, 11, 0.1)',
-            border: '1px solid rgba(245, 158, 11, 0.25)',
-            color: '#d97706',
-            fontSize: '0.8rem',
-            fontWeight: 800
-          }}
-        >
-          <Flame size={14} fill="#f59e0b" color="#d97706" />
+      {/* RIGHT: Stats + Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+
+        {/* Streak */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '4px',
+          padding: '5px 9px', borderRadius: 'var(--radius-full)',
+          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+          color: '#d97706', fontSize: '0.78rem', fontWeight: 700
+        }}>
+          <Flame size={13} fill="#f59e0b" color="#d97706" />
           <span>{streak}d</span>
         </div>
 
-        {/* XP Points */}
-        <div
-          title="Điểm kinh nghiệm XP"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '5px 10px',
-            borderRadius: 'var(--radius-full)',
-            background: 'rgba(37, 99, 235, 0.08)',
-            border: '1px solid rgba(37, 99, 235, 0.2)',
-            color: 'var(--accent-primary)',
-            fontSize: '0.8rem',
-            fontWeight: 800
-          }}
-        >
-          <Award size={14} />
+        {/* XP */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '4px',
+          padding: '5px 9px', borderRadius: 'var(--radius-full)',
+          background: 'rgba(79,110,247,0.07)', border: '1px solid rgba(79,110,247,0.18)',
+          color: 'var(--accent-primary)', fontSize: '0.78rem', fontWeight: 700
+        }}>
+          <Award size={13} />
           <span>{totalPoints} XP</span>
         </div>
 
-        {/* Teacher Real-time Notification Bell */}
+        {/* Notification Bell (Admin) */}
         {isAdmin && onOpenNotifications && (
-          <button
-            onClick={onOpenNotifications}
-            title="Thông báo bài nộp"
-            className="btn btn-secondary btn-icon"
-            style={{ width: '34px', height: '34px', position: 'relative' }}
-          >
-            <Bell size={15} color={unreadNotificationCount > 0 ? '#ef4444' : 'currentColor'} />
+          <button onClick={onOpenNotifications} title="Thông báo" style={{ ...iconBtn, position: 'relative', color: unreadNotificationCount > 0 ? '#dc2626' : 'var(--text-secondary)' }}>
+            <Bell size={15} />
             {unreadNotificationCount > 0 && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '-3px',
-                  right: '-3px',
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  background: '#ef4444',
-                  color: '#ffffff',
-                  fontSize: '0.62rem',
-                  fontWeight: 900,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
+              <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '15px', height: '15px', borderRadius: '50%', background: '#dc2626', color: '#fff', fontSize: '0.58rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--bg-glass)' }}>
                 {unreadNotificationCount}
               </span>
             )}
           </button>
         )}
 
-        {/* Sound Toggle */}
-        <button
-          onClick={handleToggleMute}
-          title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-          className="btn btn-secondary btn-icon"
-          style={{ width: '34px', height: '34px' }}
-        >
-          {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+        {/* Sound */}
+        <button onClick={handleToggleMute} title={isMuted ? 'Bật âm' : 'Tắt âm'} style={iconBtn}>
+          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          title={theme === 'dark' ? 'Giao diện Sáng' : 'Giao diện Tối'}
-          className="btn btn-secondary btn-icon"
-          style={{ width: '34px', height: '34px' }}
-        >
-          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+        {/* Theme */}
+        <button onClick={toggleTheme} title={theme === 'dark' ? 'Sáng' : 'Tối'} style={iconBtn}>
+          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
         </button>
 
-        {/* Logout Button */}
+        {/* Logout */}
         {onLogout && (
           <button
-            onClick={() => {
-              soundFx.playClick();
-              onLogout();
-            }}
-            title="Đăng xuất khỏi hệ thống"
+            onClick={() => { soundFx.playClick(); onLogout(); }}
+            title="Đăng xuất"
             style={{
-              padding: '6px 10px',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid rgba(239, 68, 68, 0.25)',
-              background: 'rgba(239, 68, 68, 0.08)',
-              color: '#ef4444',
-              cursor: 'pointer'
+              ...iconBtn,
+              paddingInline: '10px', width: 'auto',
+              color: 'var(--danger)',
+              border: '1px solid rgba(220,38,38,0.2)',
+              background: 'rgba(220,38,38,0.05)',
+              gap: '5px', display: 'flex', alignItems: 'center'
             }}
           >
             <LogOut size={13} />
-            <span style={{ display: 'none' }} className="desktop-inline">Đăng Xuất</span>
+            <span className="desktop-inline" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Đăng Xuất</span>
           </button>
         )}
       </div>
