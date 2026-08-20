@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Quiz, SubjectCategory, Difficulty } from '../../types/quiz';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import { QuizMode } from '../../hooks/useQuizEngine';
-import { Search, Timer, HelpCircle, Play, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu, ShieldCheck } from 'lucide-react';
+import { Search, Timer, HelpCircle, Play, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface QuizCatalogProps {
@@ -80,63 +80,58 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
     : 'Tin Học Văn Phòng MOS (Word, Excel, PowerPoint)';
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
-      {/* Hero Welcome Banner with Enforced Course Track Badge & Student Greeting */}
+    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
+      {/* Sleek Compact Header */}
       <div
         className="card"
         style={{
-          padding: '24px 22px',
+          padding: '14px 18px',
           background: isStudent
-            ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%)'
+            ? 'linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)'
             : 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: '22px',
-          border: isStudent ? '1.5px solid rgba(37, 99, 235, 0.22)' : '1.5px solid rgba(217, 119, 6, 0.25)',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: 'var(--shadow-sm)'
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '14px',
+          border: isStudent ? '1px solid rgba(79, 110, 247, 0.2)' : '1px solid rgba(217, 119, 6, 0.22)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '10px'
         }}
       >
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 800, color: isStudent ? '#2563eb' : '#d97706' }}>
-              <ShieldCheck size={16} />
-              <span>
-                {isStudent
-                  ? `Chương Trình Đào Tạo: ${currentTrackName}`
-                  : 'Cổng Khảo Thí Giảng Viên • Toàn Bộ 6 Phân Hệ'}
-              </span>
-            </div>
-
-            {isStudent && currentUser?.studentCode && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.12)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
-                  Mã SV: {currentUser.studentCode}
-                </span>
-                <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                  {currentUser.schoolOrClass || 'Lớp Tin Học'}
-                </span>
-              </div>
-            )}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              {isStudent ? `Luyện Đề: ${currentUser?.name || 'Học viên'}` : 'Kho Đề Khảo Thí'}
+            </h2>
+            <span style={{
+              fontSize: '0.68rem',
+              background: 'var(--brand-light)',
+              color: 'var(--brand)',
+              padding: '2px 8px',
+              borderRadius: 'var(--radius-full)',
+              fontWeight: 700
+            }}>
+              {currentTrackName}
+            </span>
           </div>
-
-          <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '6px' }}>
-            {isStudent
-              ? `Xin chào, ${currentUser?.name || 'Học viên'}! 👋`
-              : 'Ngân Hàng Đề Thi & Khảo Thí 6 Phân Hệ'}
-          </h2>
-
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '780px', lineHeight: 1.5, margin: 0 }}>
-            {isStudent
-              ? `Chào mừng bạn đến với không gian học tập trực tuyến môn "${currentTrackName}". Lựa chọn bài trắc nghiệm bên dưới để bắt đầu ôn luyện và kiểm tra kiến thức nhé!`
-              : 'Nền tảng kiểm tra đánh giá kiến thức tin học chuẩn hóa theo từng phân hệ đào tạo.'}
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '3px 0 0' }}>
+            {filteredQuizzes.length} đề thi sẵn sàng • Lựa chọn bài trắc nghiệm bên dưới để bắt đầu
           </p>
         </div>
+
+        {isStudent && currentUser?.studentCode && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '0.7rem', background: 'rgba(79, 110, 247, 0.1)', color: 'var(--brand)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
+              {currentUser.studentCode}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Categories Filter Tabs (Only shown for Admin or multi-track accounts) */}
       {(!isStudent || visibleCategories.length > 2) && (
-        <div className="horizontal-scroll" style={{ marginBottom: '18px' }}>
+        <div className="horizontal-scroll" style={{ marginBottom: '14px' }}>
           {visibleCategories.map(cat => {
             const Icon = cat.icon;
             const isActive = selectedCategory === cat.id;
@@ -150,20 +145,20 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '9px 16px',
+                  gap: '6px',
+                  padding: '7px 13px',
                   borderRadius: 'var(--radius-md)',
                   background: isActive ? 'var(--bg-secondary)' : 'var(--bg-card)',
                   border: isActive ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
                   color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
                   fontWeight: isActive ? 700 : 500,
-                  fontSize: '0.85rem',
+                  fontSize: '0.8rem',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.18s ease'
+                  transition: 'all 0.15s ease'
                 }}
               >
-                <Icon size={16} />
+                <Icon size={14} />
                 <span>{cat.label}</span>
               </button>
             );
@@ -171,24 +166,20 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
         </div>
       )}
 
-      {/* Search & Difficulty Filter Bar */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '22px', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+      {/* Search & Difficulty Filter Bar (Compact 1-row) */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
-            placeholder="Tìm kiếm đề thi trắc nghiệm theo tên hoặc nội dung..."
+            placeholder="Tìm kiếm đề thi..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
-              width: '100%',
-              padding: '10px 14px 10px 40px',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)',
-              fontSize: '0.88rem',
-              outline: 'none'
+              paddingLeft: '36px',
+              paddingRight: '12px',
+              minHeight: '38px',
+              fontSize: '0.86rem'
             }}
           />
         </div>
@@ -197,19 +188,18 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
           value={selectedDifficulty}
           onChange={e => setSelectedDifficulty(e.target.value)}
           style={{
-            padding: '10px 14px',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)',
-            fontSize: '0.88rem',
-            outline: 'none'
+            width: 'auto',
+            minWidth: '110px',
+            minHeight: '38px',
+            fontSize: '0.82rem',
+            padding: '8px 28px 8px 10px',
+            flexShrink: 0
           }}
         >
-          <option value="all">Tất cả mức độ</option>
-          <option value="easy">Mức độ Dễ</option>
-          <option value="medium">Mức độ Vừa</option>
-          <option value="hard">Mức độ Khó</option>
+          <option value="all">Tất cả độ khó</option>
+          <option value="easy">Dễ</option>
+          <option value="medium">Vừa</option>
+          <option value="hard">Khó</option>
         </select>
       </div>
 

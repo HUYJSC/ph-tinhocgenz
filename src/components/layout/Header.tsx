@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell, LogOut } from 'lucide-react';
+import { Moon, Sun, Flame, Award, Shield, Bell, LogOut } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -19,134 +19,135 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   theme, toggleTheme, streak, totalPoints, studentName,
-  studentCode, programTrack, isAdmin = false,
+  programTrack, isAdmin = false,
   unreadNotificationCount = 0, onLogout, onOpenNotifications, onOpenAuthModal
 }) => {
-  const [isMuted, setIsMuted] = React.useState(soundFx.isMuted);
-
-  const handleToggleMute = () => {
-    const muted = soundFx.toggleMute();
-    setIsMuted(muted);
-    if (!muted) soundFx.playClick();
-  };
 
   const TRACK_MAP: Record<string,string> = {
-    'office-fast-3in1': 'Word, Excel, PPT(3b)',
+    'office-fast-3in1': 'Office 3b',
     'cc-cntt-basic':    'CC CNTT Cơ bản',
     'cc-cntt-advanced': 'CC CNTT Nâng cao',
-    'cntt-basic-we':    'CNTT Cơ bản (W+E)',
-    'cntt-adv-we':      'CNTT Nâng Cao (W+E)',
-    'ai-office':        'Ứng dụng AI VP',
+    'cntt-basic-we':    'CNTT CB (W+E)',
+    'cntt-adv-we':      'CNTT NC (W+E)',
+    'ai-office':        'AI Văn phòng',
     'excel-accounting': 'Excel Kế toán',
-    'word-6b':          'Word',
-    'excel-6b':         'Excel',
-    'ppt-6b':           'PowerPoint',
+    'word-6b':          'Word 6b',
+    'excel-6b':         'Excel 6b',
+    'ppt-6b':           'PPT 6b',
   };
 
   const initial = studentName ? studentName.charAt(0).toUpperCase() : 'H';
 
-  const iconBtn: React.CSSProperties = {
-    width: '34px', height: '34px', borderRadius: '9px', border: '1px solid var(--border-color)',
-    background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-    transition: 'all 0.15s ease', boxShadow: 'var(--shadow-xs)'
-  };
-
   return (
     <header className="app-header">
-
-      {/* LEFT: Logo + User profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+      {/* LEFT: Logo + Compact User Pill */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flexShrink: 1 }}>
         <div style={{
-          width: '36px', height: '36px', borderRadius: '9px',
+          width: '34px', height: '34px', borderRadius: '8px',
           background: '#fff', padding: '2px',
           border: '1px solid var(--border-color)',
-          boxShadow: 'var(--shadow-sm)', flexShrink: 0
+          boxShadow: 'var(--shadow-xs)', flexShrink: 0
         }}>
-          <img src="/logo.png" alt="PH" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '7px' }} />
+          <img src="/logo.png" alt="PH" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
         </div>
 
-        <div
+        <button
           onClick={onOpenAuthModal}
           style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '5px 10px 5px 5px',
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '4px 8px 4px 4px',
             borderRadius: 'var(--radius-full)',
-            background: isAdmin ? 'rgba(217,119,6,0.07)' : 'rgba(79,110,247,0.06)',
-            border: isAdmin ? '1px solid rgba(217,119,6,0.2)' : '1px solid rgba(79,110,247,0.15)',
-            cursor: 'pointer', minWidth: 0, flexShrink: 0
+            background: isAdmin ? 'rgba(217,119,6,0.08)' : 'rgba(79,110,247,0.07)',
+            border: isAdmin ? '1px solid rgba(217,119,6,0.22)' : '1px solid rgba(79,110,247,0.18)',
+            cursor: 'pointer', minWidth: 0, maxWidth: '170px',
+            textAlign: 'left'
           }}
+          title="Bấm để đổi môn / tài khoản"
         >
           <div style={{
-            width: '27px', height: '27px', borderRadius: '50%',
+            width: '24px', height: '24px', borderRadius: '50%',
             background: isAdmin ? 'linear-gradient(135deg,#d97706,#b45309)' : 'linear-gradient(135deg,#4f6ef7,#6384fb)',
             color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: '0.78rem', flexShrink: 0
+            fontWeight: 800, fontSize: '0.72rem', flexShrink: 0
           }}>
-            {isAdmin ? <Shield size={13} /> : initial}
+            {isAdmin ? <Shield size={12} /> : initial}
           </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '0.83rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
-                {studentName}
-              </span>
-              {studentCode && (
-                <span style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--accent-primary)', background: 'var(--brand-light)', padding: '1px 5px', borderRadius: '5px' }}>
-                  {studentCode}
-                </span>
-              )}
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <div style={{
+              fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2
+            }}>
+              {studentName}
             </div>
-            <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '1px' }}>
-              {isAdmin ? 'Quản Trị Viên' : (TRACK_MAP[programTrack || ''] || 'Đổi Môn ▾')}
+            <div style={{
+              fontSize: '0.62rem', color: 'var(--text-muted)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+            }}>
+              {isAdmin ? 'Quản Trị' : (TRACK_MAP[programTrack || ''] || 'Đổi Môn ▾')}
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
-      {/* RIGHT: Stats + Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-
-        {/* Streak */}
+      {/* RIGHT: Compact Controls (Never Overlaps) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+        {/* Streak Pill */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: '4px',
-          padding: '5px 9px', borderRadius: 'var(--radius-full)',
-          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
-          color: '#d97706', fontSize: '0.78rem', fontWeight: 700
+          display: 'flex', alignItems: 'center', gap: '3px',
+          padding: '4px 8px', borderRadius: 'var(--radius-full)',
+          background: 'rgba(245,158,11,0.09)', border: '1px solid rgba(245,158,11,0.22)',
+          color: '#d97706', fontSize: '0.74rem', fontWeight: 800,
+          whiteSpace: 'nowrap'
         }}>
-          <Flame size={13} fill="#f59e0b" color="#d97706" />
+          <Flame size={12} fill="#f59e0b" color="#d97706" />
           <span>{streak}d</span>
         </div>
 
-        {/* XP */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '4px',
-          padding: '5px 9px', borderRadius: 'var(--radius-full)',
+        {/* XP Points (Desktop & larger mobile only) */}
+        <div className="hide-sm" style={{
+          display: 'flex', alignItems: 'center', gap: '3px',
+          padding: '4px 8px', borderRadius: 'var(--radius-full)',
           background: 'rgba(79,110,247,0.07)', border: '1px solid rgba(79,110,247,0.18)',
-          color: 'var(--accent-primary)', fontSize: '0.78rem', fontWeight: 700
+          color: 'var(--accent-primary)', fontSize: '0.74rem', fontWeight: 800,
+          whiteSpace: 'nowrap'
         }}>
-          <Award size={13} />
+          <Award size={12} />
           <span>{totalPoints} XP</span>
         </div>
 
         {/* Notification Bell (Admin) */}
         {isAdmin && onOpenNotifications && (
-          <button onClick={onOpenNotifications} title="Thông báo" style={{ ...iconBtn, position: 'relative', color: unreadNotificationCount > 0 ? '#dc2626' : 'var(--text-secondary)' }}>
-            <Bell size={15} />
+          <button
+            onClick={onOpenNotifications}
+            title="Thông báo"
+            className="btn btn-icon"
+            style={{
+              width: '32px', height: '32px', minHeight: '32px',
+              position: 'relative',
+              color: unreadNotificationCount > 0 ? '#dc2626' : 'var(--text-secondary)'
+            }}
+          >
+            <Bell size={14} />
             {unreadNotificationCount > 0 && (
-              <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '15px', height: '15px', borderRadius: '50%', background: '#dc2626', color: '#fff', fontSize: '0.58rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--bg-glass)' }}>
+              <span style={{
+                position: 'absolute', top: '-2px', right: '-2px',
+                width: '14px', height: '14px', borderRadius: '50%',
+                background: '#dc2626', color: '#fff', fontSize: '0.55rem',
+                fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
                 {unreadNotificationCount}
               </span>
             )}
           </button>
         )}
 
-        {/* Sound */}
-        <button onClick={handleToggleMute} title={isMuted ? 'Bật âm' : 'Tắt âm'} style={iconBtn}>
-          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
-
-        {/* Theme */}
-        <button onClick={toggleTheme} title={theme === 'dark' ? 'Sáng' : 'Tối'} style={iconBtn}>
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Giao diện Sáng' : 'Giao diện Tối'}
+          className="btn btn-icon"
+          style={{ width: '32px', height: '32px', minHeight: '32px', color: 'var(--text-secondary)' }}
+        >
           {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
         </button>
 
@@ -155,17 +156,17 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={() => { soundFx.playClick(); onLogout(); }}
             title="Đăng xuất"
+            className="btn"
             style={{
-              ...iconBtn,
-              paddingInline: '10px', width: 'auto',
+              padding: '6px 8px', minHeight: '32px', height: '32px',
               color: 'var(--danger)',
               border: '1px solid rgba(220,38,38,0.2)',
               background: 'rgba(220,38,38,0.05)',
-              gap: '5px', display: 'flex', alignItems: 'center'
+              gap: '4px', display: 'flex', alignItems: 'center'
             }}
           >
             <LogOut size={13} />
-            <span className="desktop-inline" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Đăng Xuất</span>
+            <span className="desktop-inline" style={{ fontSize: '0.76rem', fontWeight: 700 }}>Đăng Xuất</span>
           </button>
         )}
       </div>
