@@ -1,4 +1,4 @@
-# 🎓 EduQuest - Nền Tảng Làm Bài Tập & Luyện Thi Thông Minh (Web & Mobile PWA)
+# 🎓 PH- TINHOCGENZ - Nền Tảng Làm Bài Tập & Luyện Thi Thông Minh (Web & Mobile PWA)
 
 > Ứng dụng ôn luyện kiến thức, thi trắc nghiệm tính giờ, thẻ ghi nhớ Flashcard và quản lý học tập đa nền tảng tối ưu cho cả **Máy tính (Web Desktop)** và **Điện thoại di động (Mobile App / PWA)**.
 
@@ -63,12 +63,12 @@ npm run build
    ```bash
    git init
    git add .
-   git commit -m "feat: Khoi tao du an EduQuest Web and Mobile Study App"
+   git commit -m "feat: Khoi tao du an PH- TINHOCGENZ Web and Mobile Study App"
    ```
 
 2. **Tạo Repository mới trên GitHub**:
    - Truy cập [github.com/new](https://github.com/new).
-   - Đặt tên repository (ví dụ: `eduquest-study-app`), chọn **Public** hoặc **Private**, sau đó bấm **Create repository**.
+   - Đặt tên repository (ví dụ: `ph-tinhocgenz`), chọn **Public** hoặc **Private**, sau đó bấm **Create repository**.
 
 3. **Liên kết và Đẩy (Push) lên GitHub**:
    ```bash
@@ -76,7 +76,7 @@ npm run build
    git branch -M main
 
    # Thêm remote origin (thay URL bằng link GitHub của bạn)
-   git remote add origin https://github.com/<USERNAME-CUA-BAN>/eduquest-study-app.git
+   git remote add origin https://github.com/<USERNAME-CUA-BAN>/ph-tinhocgenz.git
 
    # Đẩy code lên GitHub
    git push -u origin main
@@ -92,13 +92,13 @@ Dự án đã được cấu hình sẵn tệp `vercel.json` chuẩn hóa để 
 
 1. Truy cập [vercel.com](https://vercel.com/) và đăng nhập bằng tài khoản **GitHub**.
 2. Bấm vào nút **"Add New..."** ➔ chọn **"Project"**.
-3. Tìm và chọn repository `eduquest-study-app` bạn vừa đẩy lên GitHub ➔ bấm **"Import"**.
+3. Tìm và chọn repository `ph-tinhocgenz` bạn vừa đẩy lên GitHub ➔ bấm **"Import"**.
 4. Vercel sẽ tự động nhận diện cấu hình **Vite**:
    - **Framework Preset**: `Vite`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
 5. Bấm **"Deploy"**. Quá trình build sẽ hoàn tất sau khoảng 30 giây!
-6. Bạn sẽ nhận được đường link trực tiếp (ví dụ: `https://eduquest-study-app.vercel.app`) để gửi cho học viên trải nghiệm trên cả điện thoại và máy tính.
+6. Bạn sẽ nhận được đường link trực tiếp (ví dụ: `https://ph-tinhocgenz.vercel.app`) để gửi cho học viên trải nghiệm trên cả điện thoại và máy tính.
 
 ### Cách 2: Deploy bằng Vercel CLI
 
@@ -118,7 +118,7 @@ vercel --prod
 1. Truy cập đường link Vercel bằng trình duyệt **Safari**.
 2. Nhấn vào nút **Chia sẻ (Share icon 📤)** ở thanh công cụ dưới đáy màn hình.
 3. Chọn mục **"Thêm vào Màn hình chính" (Add to Home Screen)**.
-4. Nhấn **Thêm (Add)**. Biểu tượng EduQuest sẽ xuất hiện trên màn hình điện thoại như ứng dụng tải từ App Store.
+4. Nhấn **Thêm (Add)**. Biểu tượng PH- TINHOCGENZ sẽ xuất hiện trên màn hình điện thoại như ứng dụng tải từ App Store.
 
 ### Trên Điện thoại Android (Google Chrome):
 1. Mở đường link Vercel trên trình duyệt **Chrome**.
@@ -165,4 +165,4 @@ XULYNNTN/
 
 ---
 
-*Chúc bạn có những trải nghiệm học tập và giảng dạy tuyệt vời cùng **EduQuest**!*
+*Chúc bạn có những trải nghiệm học tập và giảng dạy tuyệt vời cùng **PH- TINHOCGENZ**!*

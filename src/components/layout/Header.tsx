@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         <div>
           <h1 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            EduQuest
+            PH- TINHOCGENZ
           </h1>
           <p
             onClick={onEditName}

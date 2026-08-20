@@ -3,9 +3,11 @@ import { Quiz, QuizAttempt, UserStats } from '../types/quiz';
 import { DEFAULT_QUIZZES } from '../data/defaultQuizzes';
 import { DEFAULT_BADGES } from '../data/badges';
 
-const STATS_KEY = 'eduquest_user_stats_v1';
-const CUSTOM_QUIZZES_KEY = 'eduquest_custom_quizzes_v1';
-const THEME_KEY = 'eduquest_theme_mode';
+const STATS_KEY = 'phtinhocgenz_user_stats_v1';
+const LEGACY_STATS_KEY = 'eduquest_user_stats_v1';
+const CUSTOM_QUIZZES_KEY = 'phtinhocgenz_custom_quizzes_v1';
+const LEGACY_CUSTOM_QUIZZES_KEY = 'eduquest_custom_quizzes_v1';
+const THEME_KEY = 'phtinhocgenz_theme_mode';
 
 function getTodayString(): string {
   const d = new Date();
@@ -21,13 +23,13 @@ const initialStats: UserStats = {
   history: [],
   bookmarkedQuestionIds: [],
   unlockedBadgeIds: ['first_quiz'],
-  studentName: 'Học viên EduQuest'
+  studentName: 'Học viên TINHOCGENZ'
 };
 
 export function useAppStorage() {
   const [stats, setStats] = useState<UserStats>(() => {
     try {
-      const saved = localStorage.getItem(STATS_KEY);
+      const saved = localStorage.getItem(STATS_KEY) || localStorage.getItem(LEGACY_STATS_KEY);
       if (saved) {
         return JSON.parse(saved);
       }
@@ -39,7 +41,7 @@ export function useAppStorage() {
 
   const [customQuizzes, setCustomQuizzes] = useState<Quiz[]>(() => {
     try {
-      const saved = localStorage.getItem(CUSTOM_QUIZZES_KEY);
+      const saved = localStorage.getItem(CUSTOM_QUIZZES_KEY) || localStorage.getItem(LEGACY_CUSTOM_QUIZZES_KEY);
       if (saved) {
         return JSON.parse(saved);
       }
@@ -51,7 +53,7 @@ export function useAppStorage() {
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     try {
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('eduquest_theme_mode');
       if (saved === 'light' || saved === 'dark') return saved;
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         return 'dark';

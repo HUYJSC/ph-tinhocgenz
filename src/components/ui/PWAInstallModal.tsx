@@ -35,7 +35,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
               <Smartphone size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Cài đặt EduQuest trên Điện thoại</h3>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Cài đặt PH- TINHOCGENZ trên Điện thoại</h3>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Sử dụng như ứng dụng di động mượt mà & offline</p>
             </div>
           </div>

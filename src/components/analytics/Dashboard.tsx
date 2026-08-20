@@ -14,7 +14,7 @@ export function getUserLevelInfo(points: number) {
   if (points < 300) return { level: 2, name: 'Học Viên Năng Động', min: 100, max: 300, color: '#38bdf8' };
   if (points < 600) return { level: 3, name: 'Học Giả Siêu Cấp', min: 300, max: 600, color: '#818cf8' };
   if (points < 1000) return { level: 4, name: 'Bậc Thầy Tri Thức', min: 600, max: 1000, color: '#f59e0b' };
-  return { level: 5, name: 'Huyền Thoại EduQuest', min: 1000, max: 2500, color: '#ec4899' };
+  return { level: 5, name: 'Huyền Thoại TINHOCGENZ', min: 1000, max: 2500, color: '#ec4899' };
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ stats, onResetProgress }) => {

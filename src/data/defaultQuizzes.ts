@@ -10,7 +10,7 @@ export const DEFAULT_QUIZZES: Quiz[] = [
     timeLimitMinutes: 10,
     icon: 'Code2',
     badgeColor: '#3b82f6',
-    author: 'EduQuest Tech Team',
+    author: 'PH- TINHOCGENZ Team',
     createdAt: '2026-08-15',
     questions: [
       {

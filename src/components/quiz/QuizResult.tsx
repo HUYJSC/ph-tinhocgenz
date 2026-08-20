@@ -59,7 +59,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
   };
 
   const handleShare = () => {
-    const text = `🎉 Tôi vừa đạt ${attempt.score}/${attempt.maxScore} điểm (${attempt.percentage}%) trong bài thi "${quiz.title}" trên EduQuest!`;
+    const text = `🎉 Tôi vừa đạt ${attempt.score}/${attempt.maxScore} điểm (${attempt.percentage}%) trong bài thi "${quiz.title}" trên PH- TINHOCGENZ!`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedLink(true);
@@ -358,7 +358,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
               GIẤY CHỨNG NHẬN HOÀN THÀNH
             </div>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '14px 0 6px', background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              EduQuest Certificate
+              PH- TINHOCGENZ Certificate
             </h2>
             <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Chứng nhận thành tích học tập trực tuyến</p>
 

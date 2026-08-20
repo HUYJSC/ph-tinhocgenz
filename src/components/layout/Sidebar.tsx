@@ -36,21 +36,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div
             style={{
-              width: '32px',
-              height: '32px',
+              width: '34px',
+              height: '34px',
               borderRadius: '8px',
               background: 'var(--accent-gradient)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
-              fontWeight: 800
+              fontWeight: 800,
+              fontSize: '0.85rem'
             }}
           >
-            EQ
+            PH
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>EduQuest Pro</div>
+            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>PH- TINHOCGENZ</div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>v1.0.0 • Web & Mobile</div>
           </div>
         </div>
