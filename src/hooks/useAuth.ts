@@ -162,11 +162,10 @@ export function useAuth() {
       // If student is trying to login to a track they are not enrolled in, BLOCK THEM!
       if (targetTrack && !studentAllowedTracks.includes(targetTrack)) {
         const studentPrimaryTrackName = found.programTrack ? TRACK_LABELS[found.programTrack] : 'Chương trình khác';
-        const targetTrackName = TRACK_LABELS[targetTrack];
 
         return {
           success: false,
-          message: `Tài khoản học viên "${found.name}" (Mã: ${found.studentCode}) hiện được phân bổ học tập chuyên biệt tại chương trình "${studentPrimaryTrackName}". Để đảm bảo tính chuẩn xác của lộ trình đào tạo và dữ liệu khảo thí, hệ thống không thể chuyển quyền sang "${targetTrackName}". Quý học viên vui lòng chọn đúng phân hệ đã đăng ký hoặc liên hệ Ban Giảng Huấn để được hỗ trợ mở rộng quyền truy cập.`
+          message: `Tài khoản "${found.name}" (${found.studentCode}) chỉ được cấp quyền học "${studentPrimaryTrackName}". Quý học viên vui lòng chọn đúng môn đã đăng ký hoặc liên hệ Giảng viên để được hỗ trợ.`
         };
       }
 
