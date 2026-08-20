@@ -292,37 +292,62 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     const now = Date.now();
     const cleanInput = rawPinOrToken.trim();
 
-    // 1. Parse PIN or Token from raw input or URL query params
+    // 1. Parse PIN, Token, Track using Regex + URL parser
     let searchPin = cleanInput;
     let searchToken = cleanInput;
     let targetTrack = optionalTrack;
 
-    if (cleanInput.includes('?') && (cleanInput.includes('pin=') || cleanInput.includes('token='))) {
-      try {
-        const parsedUrl = new URL(cleanInput);
-        searchPin = parsedUrl.searchParams.get('pin') || searchPin;
-        searchToken = parsedUrl.searchParams.get('token') || searchToken;
-        const urlTrack = parsedUrl.searchParams.get('track') as CurriculumTrack;
-        if (urlTrack) targetTrack = urlTrack;
-      } catch (e) {}
+    // Check for query parameters in any string or URL format
+    if (cleanInput.includes('pin=')) {
+      const pinMatch = cleanInput.match(/[?&]pin=([^&]+)/);
+      if (pinMatch && pinMatch[1]) searchPin = decodeURIComponent(pinMatch[1]).trim();
+    }
+    if (cleanInput.includes('token=')) {
+      const tokenMatch = cleanInput.match(/[?&]token=([^&]+)/);
+      if (tokenMatch && tokenMatch[1]) searchToken = decodeURIComponent(tokenMatch[1]).trim();
+    }
+    if (cleanInput.includes('track=')) {
+      const trackMatch = cleanInput.match(/[?&]track=([^&]+)/);
+      if (trackMatch && trackMatch[1]) targetTrack = decodeURIComponent(trackMatch[1]).trim() as CurriculumTrack;
     }
 
-    // 2. Find the exact matching session by PIN, Token, ID, or active track session
+    // Try URL parser as secondary check
+    try {
+      if (cleanInput.startsWith('http://') || cleanInput.startsWith('https://')) {
+        const parsedUrl = new URL(cleanInput);
+        const p = parsedUrl.searchParams.get('pin');
+        const t = parsedUrl.searchParams.get('token');
+        const tr = parsedUrl.searchParams.get('track') as CurriculumTrack;
+        if (p) searchPin = p.trim();
+        if (t) searchToken = t.trim();
+        if (tr) targetTrack = tr;
+      }
+    } catch (e) {}
+
+    // 2. Find the exact matching session by PIN, Token, ID, or track
     let matchedSession = sessions.find(s =>
-      (s.qrPinCode && s.qrPinCode === searchPin) ||
-      (s.qrToken && s.qrToken === searchToken) ||
+      (s.qrPinCode && (s.qrPinCode === searchPin || cleanInput.includes(s.qrPinCode))) ||
+      (s.qrToken && (s.qrToken === searchToken || cleanInput.includes(s.qrToken))) ||
       s.id === cleanInput
     );
 
-    // Fallback: If not found by PIN/token, check if user provided track and session matches
+    // Fallback: If not found by PIN/token, check by targetTrack
     if (!matchedSession && targetTrack) {
       matchedSession = sessions.find(s => s.track === targetTrack && s.isOpen !== false);
+    }
+
+    // Fallback 2: If only 1 open session in whole app, match it
+    if (!matchedSession) {
+      const openSessions = sessions.filter(s => s.isOpen !== false);
+      if (openSessions.length === 1) {
+        matchedSession = openSessions[0];
+      }
     }
 
     if (!matchedSession) {
       return {
         success: false,
-        message: 'Mã PIN hoặc Token điểm danh không hợp lệ, hoặc lớp học chưa mở phiên điểm danh!'
+        message: 'Mã PIN hoặc Token điểm danh không khớp với bất kỳ lớp học nào đang mở!'
       };
     }
 
@@ -342,22 +367,45 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       };
     }
 
-    // 5. STRICT ENROLLMENT CHECK: Check if this student is enrolled in matchedSession.track
-    const matchedStudentAccount = studentAccounts.find(
+    // 5. SMART STUDENT RESOLVER
+    // Match student by studentCode OR by studentId OR by studentName
+    let matchedStudent = studentAccounts.find(
       s => s.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase() ||
-           s.name.trim().toLowerCase() === studentName.trim().toLowerCase()
+           s.name.trim().toLowerCase() === studentName.trim().toLowerCase() ||
+           s.id === studentCode.trim()
     );
 
-    const isEnrolledInTrack = matchedStudentAccount && (
-      matchedStudentAccount.programTrack === matchedSession.track ||
-      (matchedStudentAccount.enrolledTracks && matchedStudentAccount.enrolledTracks.includes(matchedSession.track))
+    // If not found in studentAccounts, check if student is in session.records
+    const recordInSession = matchedSession.records.find(
+      r => r.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase() ||
+           r.studentName.trim().toLowerCase() === studentName.trim().toLowerCase()
+    );
+
+    if (!matchedStudent && recordInSession) {
+      matchedStudent = {
+        id: recordInSession.studentId,
+        name: recordInSession.studentName,
+        studentCode: recordInSession.studentCode,
+        schoolOrClass: recordInSession.schoolOrClass || '',
+        programTrack: matchedSession.track,
+        enrolledTracks: [matchedSession.track],
+        role: 'student',
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+    }
+
+    // Check enrollment in this track
+    const isEnrolledInTrack = matchedStudent && (
+      matchedStudent.programTrack === matchedSession.track ||
+      (matchedStudent.enrolledTracks && matchedStudent.enrolledTracks.includes(matchedSession.track)) ||
+      !!recordInSession
     );
 
     // If student is NOT enrolled in this specific course track
-    if (!matchedStudentAccount || !isEnrolledInTrack) {
-      const studentTrackLabel = matchedStudentAccount
-        ? (TRACK_LABELS[matchedStudentAccount.programTrack] || matchedStudentAccount.programTrack)
-        : 'Khác';
+    if (!matchedStudent || !isEnrolledInTrack) {
+      const studentTrackLabel = matchedStudent
+        ? (TRACK_LABELS[matchedStudent.programTrack] || matchedStudent.programTrack)
+        : 'Chưa đăng ký môn';
 
       return {
         success: false,
@@ -367,10 +415,10 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     // 6. Check teacher assignment if student is tied to a specific teacher
     if (
-      matchedStudentAccount.assignedTeacherId &&
+      matchedStudent.assignedTeacherId &&
       matchedSession.teacherId &&
       matchedSession.teacherId !== 'admin-01' &&
-      matchedStudentAccount.assignedTeacherId !== matchedSession.teacherId
+      matchedStudent.assignedTeacherId !== matchedSession.teacherId
     ) {
       return {
         success: false,
@@ -387,7 +435,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     let isFoundInRecords = false;
 
     const updatedRecords = matchedSession.records.map(rec => {
-      if (rec.studentCode.trim().toLowerCase() === matchedStudentAccount.studentCode.trim().toLowerCase()) {
+      if (rec.studentCode.trim().toLowerCase() === matchedStudent!.studentCode.trim().toLowerCase()) {
         isFoundInRecords = true;
         return {
           ...rec,
@@ -401,10 +449,10 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     if (!isFoundInRecords) {
       updatedRecords.push({
-        studentId: matchedStudentAccount.id,
-        studentCode: matchedStudentAccount.studentCode,
-        studentName: matchedStudentAccount.name,
-        schoolOrClass: matchedStudentAccount.schoolOrClass,
+        studentId: matchedStudent.id,
+        studentCode: matchedStudent.studentCode,
+        studentName: matchedStudent.name,
+        schoolOrClass: matchedStudent.schoolOrClass,
         status: 'present',
         checkInTime: nowTime,
         checkInMethod,
@@ -418,7 +466,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     return {
       success: true,
-      message: `✓ Điểm danh thành công cho ${matchedStudentAccount.name} (${matchedStudentAccount.studentCode}) môn "${matchedSession.className}"!`,
+      message: `✓ Điểm danh thành công cho ${matchedStudent.name} (${matchedStudent.studentCode}) môn "${matchedSession.className}"!`,
       session: matchedSession
     };
   }, [sessions, studentAccounts]);

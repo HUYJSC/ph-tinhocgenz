@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CurriculumTrack, TRACK_LABELS } from '../../types/auth';
-import { QrCode, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { QrCode, X, CheckCircle2, AlertCircle, User, KeyRound } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface StudentCheckInModalProps {
@@ -9,7 +9,7 @@ interface StudentCheckInModalProps {
   studentName: string;
   studentCode: string;
   programTrack?: CurriculumTrack;
-  onCheckIn: (studentCode: string, studentName: string, pinOrToken: string, track: CurriculumTrack) => { success: boolean; message: string };
+  onCheckIn: (studentCode: string, studentName: string, pinOrToken: string, track?: CurriculumTrack) => { success: boolean; message: string };
 }
 
 export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
@@ -20,19 +20,30 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
   programTrack = 'office-fast-3in1',
   onCheckIn
 }) => {
+  const [inputCode, setInputCode] = useState(studentCode || 'THGZ01');
   const [pinInput, setPinInput] = useState('');
   const [resultMessage, setResultMessage] = useState<{ success: boolean; text: string } | null>(null);
+
+  useEffect(() => {
+    if (studentCode) {
+      setInputCode(studentCode);
+    }
+  }, [studentCode]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputCode.trim()) {
+      alert('Vui lòng nhập Mã Học Viên!');
+      return;
+    }
     if (!pinInput.trim()) {
       alert('Vui lòng nhập mã PIN hoặc Token điểm danh!');
       return;
     }
 
-    const res = onCheckIn(studentCode, studentName, pinInput.trim(), programTrack);
+    const res = onCheckIn(inputCode.trim(), studentName, pinInput.trim(), programTrack);
     setResultMessage({ success: res.success, text: res.message });
 
     if (res.success) {
@@ -95,7 +106,7 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
             Điểm Danh Buổi Học
           </h3>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            Học viên: <b>{studentName}</b> ({studentCode})
+            Học viên: <b>{studentName}</b>
           </p>
           <div style={{ fontSize: '0.72rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700, display: 'inline-block', marginTop: '6px' }}>
             {TRACK_LABELS[programTrack] || programTrack}
@@ -115,16 +126,37 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px'
+            gap: '8px',
+            lineHeight: 1.4
           }}>
-            {resultMessage.success ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+            {resultMessage.success ? <CheckCircle2 size={20} style={{ flexShrink: 0 }} /> : <AlertCircle size={20} style={{ flexShrink: 0 }} />}
             <span>{resultMessage.text}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>
-                Nhập Mã PIN 6 Số (Từ màn hình của giáo viên)
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>
+                <User size={14} color="var(--brand)" />
+                <span>Mã Học Viên (Student Code):</span>
+              </label>
+              <input
+                type="text"
+                placeholder="VD: THGZ01"
+                value={inputCode}
+                onChange={e => setInputCode(e.target.value.toUpperCase())}
+                required
+                style={{
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-mono)'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>
+                <KeyRound size={14} color="var(--brand)" />
+                <span>Mã PIN 6 Số (Từ Màn Hình Giáo Viên):</span>
               </label>
               <input
                 type="text"
@@ -133,6 +165,7 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
                 onChange={e => setPinInput(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
                 maxLength={12}
                 autoFocus
+                required
                 style={{
                   textAlign: 'center',
                   fontSize: '1.4rem',
@@ -142,7 +175,7 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
                 }}
               />
               <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '6px 0 0', textAlign: 'center' }}>
-                Mã QR và PIN có hiệu lực 5 phút tự động xoay mã.
+                Nhập mã PIN hiển thị bên dưới mã QR trên bảng chiếu.
               </p>
             </div>
 
