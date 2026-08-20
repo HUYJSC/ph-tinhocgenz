@@ -77,6 +77,7 @@ export function App() {
     sessions: attendanceSessions,
     createSession: createAttendanceSession,
     rotateSessionQR: rotateAttendanceQR,
+    toggleSessionOpen: toggleAttendanceSessionOpen,
     updateStudentStatus: updateAttendanceStatus,
     markAllPresent: markAllAttendancePresent,
     studentCheckIn: studentAttendanceCheckIn,
@@ -308,6 +309,7 @@ export function App() {
                     currentUser={user}
                     onCreateSession={createAttendanceSession}
                     onRotateQR={rotateAttendanceQR}
+                    onToggleSessionOpen={toggleAttendanceSessionOpen}
                     onUpdateStatus={updateAttendanceStatus}
                     onMarkAllPresent={markAllAttendancePresent}
                     onSaveSession={saveAttendanceSession}

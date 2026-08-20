@@ -4,7 +4,7 @@ import { UserProfile, CurriculumTrack, TRACK_LABELS, StudentAccount } from '../.
 import {
   QrCode, CheckCircle2, Clock, RefreshCw,
   FileSpreadsheet, Trash2, Save, Users, Calendar, Sparkles,
-  ShieldCheck, CheckCheck, Play
+  ShieldCheck, CheckCheck, Play, Lock, Unlock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -14,6 +14,7 @@ interface AttendanceManagerProps {
   currentUser: UserProfile;
   onCreateSession: (track: CurriculumTrack, className: string, teacherId: string, teacherName: string) => AttendanceSession;
   onRotateQR: (sessionId: string, intervalSeconds?: number) => { token: string; pinCode: string; expiresAt: number };
+  onToggleSessionOpen: (sessionId: string) => void;
   onUpdateStatus: (sessionId: string, studentId: string, status: AttendanceStatus, note?: string, method?: 'manual' | 'qr_scan' | 'pin_code') => void;
   onMarkAllPresent: (sessionId: string) => void;
   onSaveSession: (session: AttendanceSession) => void;
@@ -38,6 +39,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   currentUser,
   onCreateSession,
   onRotateQR,
+  onToggleSessionOpen,
   onUpdateStatus,
   onMarkAllPresent,
   onSaveSession,
@@ -234,6 +236,31 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {activeSession && (
+            <button
+              onClick={() => {
+                onToggleSessionOpen(activeSession.id);
+                soundFx.playClick();
+              }}
+              className="btn"
+              style={{
+                padding: '8px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: activeSession.isOpen !== false ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.12)',
+                border: activeSession.isOpen !== false ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.35)',
+                color: activeSession.isOpen !== false ? '#ef4444' : '#10b981'
+              }}
+              title={activeSession.isOpen !== false ? 'Bấm để tắt/khóa mã điểm danh' : 'Bấm để mở lại mã điểm danh'}
+            >
+              {activeSession.isOpen !== false ? <Lock size={15} /> : <Unlock size={15} />}
+              <span>{activeSession.isOpen !== false ? 'Tắt / Khóa Mã Điểm Danh' : 'Bật / Mở Lại Điểm Danh'}</span>
+            </button>
+          )}
+
           <button
             onClick={() => exportAttendanceExcel()}
             className="btn btn-secondary"
@@ -344,54 +371,119 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               <span>{TRACK_LABELS[selectedTrack] || selectedTrack}</span>
             </div>
 
-            {/* Countdown Badge */}
+            {/* Countdown / Locked Status Badge */}
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
               padding: '6px 14px',
               borderRadius: 'var(--radius-full)',
-              background: timeLeftSeconds > 60 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-              color: timeLeftSeconds > 60 ? '#10b981' : '#ef4444',
+              background: activeSession?.isOpen === false
+                ? 'rgba(239, 68, 68, 0.12)'
+                : timeLeftSeconds > 60
+                  ? 'rgba(16, 185, 129, 0.1)'
+                  : 'rgba(239, 68, 68, 0.1)',
+              color: activeSession?.isOpen === false
+                ? '#ef4444'
+                : timeLeftSeconds > 60
+                  ? '#10b981'
+                  : '#ef4444',
               fontSize: '0.92rem',
               fontWeight: 900,
               marginBottom: '16px',
-              border: timeLeftSeconds > 60 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)'
+              border: activeSession?.isOpen === false
+                ? '1px solid rgba(239, 68, 68, 0.35)'
+                : timeLeftSeconds > 60
+                  ? '1px solid rgba(16, 185, 129, 0.3)'
+                  : '1px solid rgba(239, 68, 68, 0.3)'
             }}>
-              <Clock size={16} />
-              <span>Hết hạn sau: {formatCountdown(timeLeftSeconds)}</span>
+              {activeSession?.isOpen === false ? (
+                <>
+                  <Lock size={16} />
+                  <span>ĐÃ KHÓA / TẮT ĐIỂM DANH</span>
+                </>
+              ) : (
+                <>
+                  <Clock size={16} />
+                  <span>Hết hạn sau: {formatCountdown(timeLeftSeconds)}</span>
+                </>
+              )}
             </div>
 
-            {/* QR Code Container */}
+            {/* QR Code Container (Shows locked overlay if toggled off) */}
             <div style={{
+              position: 'relative',
               padding: '14px',
               background: '#ffffff',
               borderRadius: '16px',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
               border: '1.5px solid var(--border-color)',
-              marginBottom: '14px'
+              marginBottom: '14px',
+              overflow: 'hidden'
             }}>
               <img
                 src={qrImageUrl}
                 alt="QR Code Điểm Danh"
-                style={{ width: '220px', height: '220px', display: 'block', borderRadius: '8px' }}
+                style={{
+                  width: '220px', height: '220px', display: 'block', borderRadius: '8px',
+                  filter: activeSession?.isOpen === false ? 'blur(8px) grayscale(100%)' : 'none',
+                  opacity: activeSession?.isOpen === false ? 0.3 : 1,
+                  transition: 'all 0.3s ease'
+                }}
               />
+
+              {activeSession?.isOpen === false && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(15, 23, 42, 0.75)',
+                  backdropFilter: 'blur(4px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '16px',
+                  color: '#fff',
+                  textAlign: 'center'
+                }}>
+                  <Lock size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
+                  <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff' }}>
+                    MÃ ĐIỂM DANH ĐANG TẮT
+                  </div>
+                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)', margin: '4px 0 10px' }}>
+                    Học sinh không thể quét hoặc nhập PIN lúc này
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (activeSession) {
+                        onToggleSessionOpen(activeSession.id);
+                        soundFx.playVictory();
+                      }
+                    }}
+                    className="btn btn-success"
+                    style={{ padding: '6px 12px', fontSize: '0.76rem', fontWeight: 800, gap: '4px' }}
+                  >
+                    <Unlock size={13} />
+                    <span>Mở Lại Mã QR</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* 6-Digit PIN Code */}
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '16px', opacity: activeSession?.isOpen === false ? 0.4 : 1 }}>
               <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 MÃ PIN ĐIỂM DANH THAY THẾ (NẾU KHÔNG QUÉT ĐƯỢC)
               </div>
               <div style={{
                 fontSize: '1.8rem',
                 fontWeight: 900,
-                color: 'var(--brand)',
+                color: activeSession?.isOpen === false ? 'var(--text-muted)' : 'var(--brand)',
                 letterSpacing: '0.2em',
                 fontFamily: 'var(--font-mono)',
                 marginTop: '4px'
               }}>
-                {activeSession?.qrPinCode || '------'}
+                {activeSession?.isOpen === false ? 'LOCKED' : (activeSession?.qrPinCode || '------')}
               </div>
             </div>
 

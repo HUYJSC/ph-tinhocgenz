@@ -25,6 +25,7 @@ export interface AttendanceSession {
   qrToken?: string;
   qrExpiresAt?: number; // timestamp in ms
   qrPinCode?: string;   // 6-digit code e.g. "492-108"
+  isOpen?: boolean;     // true = active, false = closed/locked
   records: AttendanceRecord[];
   createdAt: string;
   updatedAt: string;

@@ -74,6 +74,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       qrToken: generateToken(),
       qrExpiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes countdown
       qrPinCode: generatePin(),
+      isOpen: true,
       records: initialRecords,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString()
@@ -97,6 +98,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
             qrToken: newToken,
             qrPinCode: newPin,
             qrExpiresAt: newExpiresAt,
+            isOpen: true, // re-open when rotating
             updatedAt: new Date().toISOString()
           };
         }
@@ -105,6 +107,23 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     );
 
     return { token: newToken, pinCode: newPin, expiresAt: newExpiresAt };
+  }, []);
+
+  // Toggle Session Open / Locked (Bật / Tắt Điểm Danh)
+  const toggleSessionOpen = useCallback((sessionId: string) => {
+    setSessions(prev =>
+      prev.map(s => {
+        if (s.id === sessionId) {
+          const nextState = s.isOpen === false ? true : false;
+          return {
+            ...s,
+            isOpen: nextState,
+            updatedAt: new Date().toISOString()
+          };
+        }
+        return s;
+      })
+    );
   }, []);
 
   // Update a student's attendance status in a session
@@ -186,8 +205,12 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       return { success: false, message: 'Mã điểm danh không hợp lệ hoặc lớp học chưa mở phiên điểm danh!' };
     }
 
+    if (session.isOpen === false) {
+      return { success: false, message: '🔒 Giáo viên đã ĐÓNG / KHÓA phiên điểm danh của lớp này!' };
+    }
+
     if (session.qrExpiresAt && now > session.qrExpiresAt) {
-      return { success: false, message: 'Mã QR / PIN điểm danh đã hết hạn (quá 5 phút). Vui lòng yêu cầu giáo viên làm mới mã!' };
+      return { success: false, message: 'Mã QR / PIN điểm danh đã hết hạn. Vui lòng yêu cầu giáo viên làm mới mã!' };
     }
 
     const nowTime = new Date().toTimeString().slice(0, 8);
@@ -246,6 +269,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     sessions,
     createSession,
     rotateSessionQR,
+    toggleSessionOpen,
     updateStudentStatus,
     markAllPresent,
     studentCheckIn,
