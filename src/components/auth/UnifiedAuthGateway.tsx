@@ -77,7 +77,18 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   const [adminError, setAdminError] = useState('');
 
   // Filter starter student accounts matching the chosen track
-  const matchingStudents = studentAccounts.filter(s => s.programTrack === selectedTrack);
+  const matchingStudents = studentAccounts.filter(s => s.programTrack === selectedTrack || s.enrolledTracks?.includes(selectedTrack));
+
+  const handleSelectTrack = (trackId: CurriculumTrack) => {
+    setSelectedTrack(trackId);
+    setStudentError('');
+    const match = studentAccounts.find(s => s.programTrack === trackId || s.enrolledTracks?.includes(trackId));
+    if (match) {
+      setStudentCode(match.studentCode);
+      setStudentPassword(match.password || '123');
+    }
+    soundFx.playClick();
+  };
 
   const handleStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,9 +125,13 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     setStudentCode(acc.studentCode);
     setStudentPassword(acc.password || '123');
     setSelectedTrack(acc.programTrack);
+    setStudentError('');
     const res = onStudentLogin(acc.studentCode, acc.password || '123', acc.programTrack);
     if (res.success) {
       soundFx.playVictory();
+    } else {
+      soundFx.playIncorrect();
+      setStudentError(res.message || 'Mã học viên không chính xác!');
     }
   };
 
@@ -254,10 +269,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     return (
                       <div
                         key={track.id}
-                        onClick={() => {
-                          setSelectedTrack(track.id);
-                          soundFx.playClick();
-                        }}
+                        onClick={() => handleSelectTrack(track.id)}
                         style={{
                           padding: '12px 14px',
                           borderRadius: 'var(--radius-md)',

@@ -86,10 +86,9 @@ export function App() {
 
   // Unified Student Login (Choose track + login code + locked inside that track!)
   const handleStudentUnifiedLogin = (studentCode: string, password: string, selectedTrack: CurriculumTrack) => {
-    const res = loginWithStudentCode(studentCode, password);
+    const res = loginWithStudentCode(studentCode, password, selectedTrack);
     if (res.success && res.user) {
       updateStudentName(res.user.name);
-      switchStudentTrack(selectedTrack);
       setIsSessionActive(true);
       setActiveTab('quizzes');
       try {

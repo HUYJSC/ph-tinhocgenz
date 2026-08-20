@@ -117,40 +117,42 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
         </div>
       </div>
 
-      {/* Categories Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px' }}>
-        {visibleCategories.map(cat => {
-          const Icon = cat.icon;
-          const isActive = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategory(cat.id);
-                soundFx.playClick();
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '9px 16px',
-                borderRadius: 'var(--radius-md)',
-                background: isActive ? 'var(--bg-secondary)' : 'var(--bg-card)',
-                border: isActive ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.18s ease'
-              }}
-            >
-              <Icon size={16} />
-              <span>{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Categories Filter Tabs (Only shown for Admin or multi-track accounts) */}
+      {(!isStudent || visibleCategories.length > 2) && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {visibleCategories.map(cat => {
+            const Icon = cat.icon;
+            const isActive = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  soundFx.playClick();
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '9px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  background: isActive ? 'var(--bg-secondary)' : 'var(--bg-card)',
+                  border: isActive ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.18s ease'
+                }}
+              >
+                <Icon size={16} />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Search & Difficulty Filter Bar */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '22px', flexWrap: 'wrap' }}>
