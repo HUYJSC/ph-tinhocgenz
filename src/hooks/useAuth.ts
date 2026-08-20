@@ -261,6 +261,28 @@ export function useAuth() {
     return { success: true, account: newAccount };
   };
 
+  // Teacher updates an existing student account and their permissions
+  const updateStudentAccount = (updatedAccount: StudentAccount) => {
+    setStudentAccounts(prev => prev.map(s => s.id === updatedAccount.id ? updatedAccount : s));
+
+    // If currently logged-in user matches this student account, update active user session
+    setUser(prev => {
+      if (prev.id === updatedAccount.id || prev.studentCode === updatedAccount.studentCode) {
+        return {
+          ...prev,
+          name: updatedAccount.name,
+          studentCode: updatedAccount.studentCode,
+          schoolOrClass: updatedAccount.schoolOrClass,
+          programTrack: updatedAccount.programTrack,
+          enrolledTracks: updatedAccount.enrolledTracks
+        };
+      }
+      return prev;
+    });
+
+    return { success: true };
+  };
+
   // Teacher deletes a student account
   const deleteStudentAccount = (accountId: string) => {
     setStudentAccounts(prev => prev.filter(s => s.id !== accountId));
@@ -284,7 +306,9 @@ export function useAuth() {
     loginWithStudentCode,
     loginAsAdmin,
     createStudentAccount,
+    updateStudentAccount,
     deleteStudentAccount,
     switchStudentTrack
   };
 }
+

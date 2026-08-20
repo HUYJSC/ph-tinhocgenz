@@ -44,6 +44,7 @@ export function App() {
     loginWithStudentCode,
     loginAsAdmin,
     createStudentAccount,
+    updateStudentAccount,
     deleteStudentAccount,
     switchStudentTrack
   } = useAuth();
@@ -239,6 +240,7 @@ export function App() {
                   onDeleteCustomQuiz={deleteCustomQuiz}
                   onNavigateToCreator={() => setActiveTab('creator')}
                   onCreateStudentAccount={createStudentAccount}
+                  onUpdateStudentAccount={updateStudentAccount}
                   onDeleteStudentAccount={deleteStudentAccount}
                   currentUser={user}
                 />
