@@ -31,7 +31,7 @@
   --brand:       #4f6ef7;
   --brand-dark:  #3b55d9;
   --brand-light: #eef2ff;
-  --brand-glow:  rgba(79, 110, 247, 0.2);
+  --brand-glow:  rgba(79, 110, 247, 0.18);
 
   --accent-primary:       #4f6ef7;
   --accent-primary-hover: #3b55d9;
@@ -107,7 +107,7 @@
   --shadow-brand: 0 4px 20px rgba(99, 132, 251, 0.32);
 }
 
-/* Base Reset */
+/* Base Reset & Global Overflow Control */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -118,9 +118,9 @@
 html {
   scroll-behavior: smooth;
   font-size: 15px;
-  /* Prevent horizontal scroll globally */
   overflow-x: hidden;
   width: 100%;
+  max-width: 100vw;
 }
 
 body {
@@ -131,6 +131,7 @@ body {
   min-height: -webkit-fill-available;
   overflow-x: hidden;
   width: 100%;
+  max-width: 100vw;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -138,11 +139,87 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Custom Scrollbar */
+/* ─── UNIFIED TEXTBOX & INPUT SYSTEM (ALL PROJECT) ─── */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="datetime-local"],
+input[type="search"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: all 0.18s ease;
+  box-shadow: var(--shadow-xs);
+}
+
+/* Prevent auto-zoom on iOS Safari by ensuring 16px on mobile viewports */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  input[type="datetime-local"],
+  input[type="search"],
+  input[type="email"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-glow);
+  background-color: var(--bg-card);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+select {
+  cursor: pointer;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* Custom Smooth Scrollbar */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: var(--radius-full); }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Horizontal Scroll Container (Smooth touch swipe for tabs & filters) */
+.horizontal-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 6px;
+  max-width: 100%;
+}
 
 /* Responsive Layout */
 .app-container {
@@ -151,6 +228,7 @@ body {
   width: 100%;
   background: var(--bg-base);
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Desktop Sidebar */
@@ -173,10 +251,10 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  /* Safe spacing for mobile bottom navigation */
   padding-bottom: calc(72px + var(--safe-bottom));
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
+  overflow-x: hidden;
 }
 
 @media (min-width: 769px) {
@@ -185,7 +263,7 @@ body {
   }
 }
 
-/* Mobile Bottom Navigation (iPhone 375-390 & Android 360-412 standards) */
+/* Mobile Bottom Navigation */
 .mobile-nav {
   display: none;
   position: fixed;
@@ -247,7 +325,6 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* Standard Mobile Card Padding (16px on mobile, 24px on desktop) */
 @media (max-width: 480px) {
   .card {
     border-radius: var(--radius-md);
