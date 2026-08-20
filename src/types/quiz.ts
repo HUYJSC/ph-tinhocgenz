@@ -4,12 +4,12 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type SubjectCategory =
   | 'all'
-  | 'mos-excel'
-  | 'mos-word'
-  | 'mos-powerpoint'
+  | 'cntt-basic'
+  | 'mos-office'
   | 'ic3-gs'
+  | 'cntt-advanced'
   | 'programming'
-  | 'general-it';
+  | 'cyber-security';
 
 export interface MatchingPair {
   id: string;

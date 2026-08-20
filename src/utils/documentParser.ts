@@ -194,7 +194,7 @@ export const SAMPLE_INFORMATICS_EXAMS: Partial<Assignment>[] = [
   {
     title: 'Đề Thi Thực Hành MOS Excel Specialist - K12 & Đại Cương',
     description: 'Bài kiểm tra kỹ năng xử lý dữ liệu, hàm VLOOKUP, SUMIFS, PivotTable và định dạng bảng tính có điều kiện.',
-    category: 'mos-excel',
+    category: 'mos-office',
     targetClass: 'Lớp Luyện Thi MOS K12',
     sourceFileName: 'De_Thi_MOS_Excel_Chuyen_Sau.docx',
     sourceFileType: 'docx',

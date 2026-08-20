@@ -37,8 +37,11 @@ export function App() {
   const {
     user,
     isAdmin,
-    loginAsStudent,
-    loginAsAdmin
+    studentAccounts,
+    loginWithStudentCode,
+    loginAsAdmin,
+    createStudentAccount,
+    deleteStudentAccount
   } = useAuth();
 
   const {
@@ -69,12 +72,15 @@ export function App() {
   }, [user.name]);
 
   // Handle Login Handlers
-  const handleStudentLogin = (name: string, studentCode?: string, schoolOrClass?: string) => {
-    loginAsStudent(name, studentCode, schoolOrClass);
-    updateStudentName(name);
-    if (activeTab === 'admin') {
-      setActiveTab('quizzes');
+  const handleStudentLogin = (studentCode: string, password?: string) => {
+    const res = loginWithStudentCode(studentCode, password);
+    if (res.success && res.user) {
+      updateStudentName(res.user.name);
+      if (activeTab === 'admin' || activeTab === 'creator') {
+        setActiveTab('quizzes');
+      }
     }
+    return res;
   };
 
   const handleAdminLogin = (pin: string, name?: string) => {
@@ -178,9 +184,12 @@ export function App() {
                 <AdminPortal
                   quizzes={allQuizzes}
                   attempts={stats.history}
+                  studentAccounts={studentAccounts}
                   onAddQuiz={addCustomQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
                   onNavigateToCreator={() => setActiveTab('creator')}
+                  onCreateStudentAccount={createStudentAccount}
+                  onDeleteStudentAccount={deleteStudentAccount}
                   currentUser={user}
                 />
               )}
@@ -228,10 +237,10 @@ export function App() {
                 />
               )}
 
-              {activeTab === 'creator' && (
+              {activeTab === 'creator' && isAdmin && (
                 <QuizCreator
                   onAddQuiz={addCustomQuiz}
-                  onSuccessNavigate={() => setActiveTab(isAdmin ? 'admin' : 'quizzes')}
+                  onSuccessNavigate={() => setActiveTab('admin')}
                 />
               )}
 
@@ -268,6 +277,7 @@ export function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         currentUser={user}
+        studentAccounts={studentAccounts}
         onLoginStudent={handleStudentLogin}
         onLoginAdmin={handleAdminLogin}
       />

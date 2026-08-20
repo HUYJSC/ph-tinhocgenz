@@ -11,13 +11,13 @@ interface QuizCatalogProps {
 }
 
 const CATEGORIES: { id: SubjectCategory; label: string; icon: any }[] = [
-  { id: 'all', label: 'Tất cả', icon: BookOpen },
-  { id: 'mos-excel', label: 'MOS Excel', icon: FileSpreadsheet },
-  { id: 'mos-word', label: 'MOS Word', icon: FileText },
-  { id: 'mos-powerpoint', label: 'MOS PowerPoint', icon: Presentation },
-  { id: 'ic3-gs', label: 'Chuẩn Quốc Tế IC3', icon: Cpu },
-  { id: 'programming', label: 'Lập Trình Python', icon: Code2 },
-  { id: 'general-it', label: 'Mạng & Bảo Mật IT', icon: Network }
+  { id: 'all', label: 'Tất cả phân hệ', icon: BookOpen },
+  { id: 'cntt-basic', label: '1. CNTT Cơ Bản', icon: Cpu },
+  { id: 'mos-office', label: '2. MOS Quốc Tế', icon: FileSpreadsheet },
+  { id: 'ic3-gs', label: '3. IC3 GS6', icon: FileText },
+  { id: 'cntt-advanced', label: '4. CNTT Nâng Cao', icon: Presentation },
+  { id: 'programming', label: '5. Lập Trình Python', icon: Code2 },
+  { id: 'cyber-security', label: '6. Mạng & Bảo Mật', icon: Network }
 ];
 
 export const QuizCatalog: React.FC<QuizCatalogProps> = ({

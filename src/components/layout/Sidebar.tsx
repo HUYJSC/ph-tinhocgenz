@@ -33,11 +33,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   studentName
 }) => {
   const studentNavItems: NavItem[] = [
-    { id: 'quizzes', label: 'Kho Trắc Nghiệm Tin Học', icon: BookOpen },
-    { id: 'assignments', label: 'Đề Thi Tài Liệu (Bảo Mật)', icon: FileText },
-    { id: 'flashcards', label: 'Thẻ Ghi Nhớ (MOS/IC3)', icon: Layers },
-    { id: 'analytics', label: 'Tiến Độ & Thành Tích', icon: BarChart2 },
-    { id: 'creator', label: 'Soạn Đề Thi Tự Do', icon: PlusCircle },
+    { id: 'quizzes', label: 'Kho Trắc Nghiệm (6 Phân Hệ)', icon: BookOpen },
+    { id: 'assignments', label: 'Đề Thi & Bài Tập Lớp Học', icon: FileText },
+    { id: 'flashcards', label: 'Thẻ Ghi Nhớ Kiến Thức', icon: Layers },
+    { id: 'analytics', label: 'Tiến Độ & Điểm Số', icon: BarChart2 },
     { id: 'bookmarks', label: 'Câu Hỏi Đã Lưu', icon: BookmarkCheck, count: bookmarkCount }
   ];
 

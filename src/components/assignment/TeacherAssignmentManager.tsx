@@ -72,7 +72,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<SubjectCategory>('mos-excel');
+  const [category, setCategory] = useState<SubjectCategory>('mos-office');
   const [targetClass, setTargetClass] = useState('Lớp Luyện Thi MOS & IC3');
   const [durationMinutes, setDurationMinutes] = useState(45);
   
@@ -429,12 +429,12 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                 onChange={e => setCategory(e.target.value as SubjectCategory)}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
               >
-                <option value="mos-excel">MOS Excel (Bảng tính & Hàm)</option>
-                <option value="mos-word">MOS Word (Văn bản & Trộn thư)</option>
-                <option value="mos-powerpoint">MOS PowerPoint (Trình chiếu)</option>
-                <option value="ic3-gs">Chuẩn Quốc Tế IC3 GS6</option>
-                <option value="programming">Lập Trình Python</option>
-                <option value="general-it">Mạng Máy Tính & An Toàn IT</option>
+                <option value="cntt-basic">1. CNTT & Tin Học Cơ Bản</option>
+                <option value="mos-office">2. Tin Học Văn Phòng MOS</option>
+                <option value="ic3-gs">3. Chuẩn Quốc Tế IC3 GS6</option>
+                <option value="cntt-advanced">4. CNTT Nâng Cao & Xử Lý Dữ Liệu</option>
+                <option value="programming">5. Lập Trình Python & Thuật Toán</option>
+                <option value="cyber-security">6. Mạng Máy Tính & An Toàn IT</option>
               </select>
             </div>
 

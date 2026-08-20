@@ -3,7 +3,7 @@ import { Assignment, AssignmentSubmission } from '../../types/assignment';
 import { UserProfile } from '../../types/auth';
 import { SecureDocViewer } from './SecureDocViewer';
 import {
-  Clock, CheckCircle2, Play, UploadCloud, ArrowRight
+  Clock, CheckCircle2, Play, UploadCloud, Send
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import confetti from 'canvas-confetti';
@@ -31,7 +31,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
   onSubmitAssignment
 }) => {
   const [activeAssignment, setActiveAssignment] = useState<Assignment | null>(null);
-  const [answers, setAnswers] = useState<{ [questionId: string]: string }>({});
+  const [unifiedAnswer, setUnifiedAnswer] = useState('');
   const [attachedFile, setAttachedFile] = useState<{ name: string; size: string; content?: string } | null>(null);
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(0);
   const [timeSpentSeconds, setTimeSpentSeconds] = useState<number>(0);
@@ -46,7 +46,6 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
       setTimeLeftSeconds(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          // Auto submit when time expires!
           handleAutoSubmit();
           return 0;
         }
@@ -60,7 +59,6 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
   }, [activeAssignment, submittedSuccess]);
 
   const handleStartExam = (assign: Assignment) => {
-    // Check if open
     const now = new Date().getTime();
     const start = new Date(assign.startTime).getTime();
     const end = new Date(assign.endTime).getTime();
@@ -73,7 +71,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
     setActiveAssignment(assign);
     setTimeLeftSeconds(assign.durationMinutes * 60);
     setTimeSpentSeconds(0);
-    setAnswers({});
+    setUnifiedAnswer('');
     setAttachedFile(null);
     setSubmittedSuccess(null);
     soundFx.playClick();
@@ -95,13 +93,18 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
   const handleConfirmSubmit = () => {
     if (!activeAssignment) return;
 
+    if (!unifiedAnswer.trim() && !attachedFile) {
+      alert('Vui lòng nhập nội dung bài làm hoặc đính kèm tệp bài làm thực hành trước khi nộp!');
+      return;
+    }
+
     const sub = onSubmitAssignment(
       activeAssignment.id,
       currentUser.id,
       currentUser.name,
-      currentUser.studentCode || 'THGZ-2026',
+      currentUser.studentCode || 'THGZ01',
       currentUser.schoolOrClass,
-      answers,
+      { 'bai_lam_tong_hop': unifiedAnswer },
       timeSpentSeconds,
       attachedFile || undefined
     ) as any;
@@ -126,9 +129,9 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
       activeAssignment.id,
       currentUser.id,
       currentUser.name,
-      currentUser.studentCode || 'THGZ-2026',
+      currentUser.studentCode || 'THGZ01',
       currentUser.schoolOrClass,
-      answers,
+      { 'bai_lam_tong_hop': unifiedAnswer || 'Học sinh hết giờ tự động thu bài.' },
       timeSpentSeconds,
       attachedFile || undefined
     );
@@ -138,8 +141,8 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
       assignmentTitle: activeAssignment.title,
       studentId: currentUser.id,
       studentName: currentUser.name,
-      studentCode: currentUser.studentCode || 'THGZ-2026',
-      answers,
+      studentCode: currentUser.studentCode || 'THGZ01',
+      answers: { 'bai_lam_tong_hop': unifiedAnswer },
       timeSpentSeconds,
       submittedAt: new Date().toLocaleString('vi-VN'),
       status: 'submitted'
@@ -156,13 +159,13 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
-      {/* 1. Exam Result / Success Modal */}
+      {/* 1. Exam Result / Success View */}
       {submittedSuccess && (
-        <div className="card animate-slide-up" style={{ padding: '32px 24px', textAlign: 'center', maxWidth: '600px', margin: '20px auto' }}>
+        <div className="card animate-slide-up" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '580px', margin: '20px auto' }}>
           <div
             style={{
-              width: '64px',
-              height: '64px',
+              width: '68px',
+              height: '68px',
               borderRadius: '50%',
               background: 'rgba(16, 185, 129, 0.12)',
               color: '#10b981',
@@ -172,13 +175,13 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               marginBottom: '16px'
             }}
           >
-            <CheckCircle2 size={36} />
+            <CheckCircle2 size={40} />
           </div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             Nộp Bài Thi Thành Công!
           </h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '6px' }}>
-            Hệ thống đã ghi nhận bài làm của bạn và <b>bắn thông báo trực tiếp đến Giáo viên đứng lớp</b>.
+            Hệ thống đã chuyển bài làm của bạn đến <b>Giáo viên đứng lớp</b> để chấm điểm.
           </p>
 
           <div style={{ padding: '16px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', margin: '20px 0', textAlign: 'left', fontSize: '0.85rem' }}>
@@ -194,7 +197,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               setSubmittedSuccess(null);
             }}
             className="btn btn-primary"
-            style={{ padding: '12px 28px' }}
+            style={{ padding: '12px 28px', fontWeight: 800 }}
           >
             Quay Về Danh Sách Đề Thi
           </button>
@@ -222,10 +225,10 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
             }}
           >
             <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
                 Đang Làm Bài Thi • {activeAssignment.category}
               </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 {activeAssignment.title}
               </h3>
             </div>
@@ -242,7 +245,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   background: timeLeftSeconds <= 300 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(37, 99, 235, 0.1)',
                   color: timeLeftSeconds <= 300 ? '#ef4444' : 'var(--accent-primary)',
                   fontWeight: 800,
-                  fontSize: '1rem',
+                  fontSize: '1.05rem',
                   border: timeLeftSeconds <= 300 ? '1px solid #ef4444' : '1px solid rgba(37, 99, 235, 0.25)'
                 }}
               >
@@ -253,15 +256,15 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               <button
                 onClick={() => setShowSubmitModal(true)}
                 className="btn btn-primary"
-                style={{ padding: '10px 20px', fontWeight: 800 }}
+                style={{ padding: '10px 22px', fontWeight: 800 }}
               >
+                <Send size={16} />
                 <span>Nộp Bài Thi</span>
-                <ArrowRight size={16} />
               </button>
             </div>
           </div>
 
-          {/* Exam Grid: Left Protected Viewer | Right Answer Form */}
+          {/* Exam Grid: Left Protected Viewer | Right Simplified Submission Sheet */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
             {/* Left: Secure Protected DRM Document Viewer */}
             <div>
@@ -273,48 +276,48 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                 sourceFileType={activeAssignment.sourceFileType}
                 sourceFileName={activeAssignment.sourceFileName}
                 studentName={currentUser.name}
-                studentCode={currentUser.studentCode || 'THGZ-2026'}
+                studentCode={currentUser.studentCode || 'THGZ01'}
                 title={activeAssignment.title}
               />
             </div>
 
-            {/* Right: Answer Sheet & Practice Work File Attachment */}
+            {/* Right: Simplified Student Submission Sheet */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                2. Phiếu Làm Bài & Trả Lời:
+                2. Phiếu Làm Bài & Nộp Bài Trực Tiếp:
               </div>
 
-              <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {activeAssignment.parsedQuestions.map((q, idx) => (
-                  <div key={q.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      Câu {idx + 1} ({q.points} điểm): <span style={{ fontWeight: 400 }}>{q.prompt}</span>
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="Nhập câu trả lời, công thức hàm hoặc các bước giải của bạn..."
-                      value={answers[q.id] || ''}
-                      onChange={e => setAnswers({ ...answers, [q.id]: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--bg-primary)',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.88rem',
-                        fontFamily: 'inherit',
-                        outline: 'none',
-                        resize: 'vertical'
-                      }}
-                    />
-                  </div>
-                ))}
+              <div className="card" style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                {/* Text Area for Answers / Explanations */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                    Nhập câu trả lời, công thức hàm hoặc ghi chú bài làm của bạn:
+                  </label>
+                  <textarea
+                    rows={8}
+                    placeholder="Nhập phần trả lời bài làm của bạn tại đây (ví dụ: Câu 1: =VLOOKUP(...), Câu 2: ...)..."
+                    value={unifiedAnswer}
+                    onChange={e => setUnifiedAnswer(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--bg-primary)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem',
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      resize: 'vertical',
+                      lineHeight: '1.6'
+                    }}
+                  />
+                </div>
 
                 {/* Upload Homework / Practical Work File */}
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
-                    Đính kèm tệp bài làm thực hành (nếu có .xlsx, .docx, .py):
+                  <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                    Đính kèm tệp bài làm thực hành (Excel .xlsx, Word .docx, Python .py, ZIP, PDF...):
                   </label>
                   <label
                     style={{
@@ -323,20 +326,24 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      padding: '20px',
+                      padding: '24px',
                       borderRadius: 'var(--radius-md)',
                       background: 'var(--bg-primary)',
-                      border: '2px dashed var(--border-color)',
+                      border: attachedFile ? '2px solid #10b981' : '2px dashed var(--border-color)',
                       cursor: 'pointer',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease'
                     }}
                   >
-                    <UploadCloud size={24} color="var(--accent-primary)" />
-                    <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                    <UploadCloud size={28} color={attachedFile ? '#10b981' : 'var(--accent-primary)'} />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                       {attachedFile ? (
-                        <b style={{ color: '#10b981' }}>✓ Đã chọn: {attachedFile.name} ({attachedFile.size})</b>
+                        <b style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <CheckCircle2 size={16} />
+                          <span>Đã chọn: {attachedFile.name} ({attachedFile.size})</span>
+                        </b>
                       ) : (
-                        'Bấm để tải tệp bài làm Excel/Word/Code từ máy của bạn'
+                        'Nhấp để chọn tệp bài làm thực hành từ máy tính của bạn'
                       )}
                     </span>
                     <input
@@ -346,13 +353,34 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                     />
                   </label>
                 </div>
+
+                {/* Big Action Submit Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowSubmitModal(true)}
+                  className="btn btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginTop: '6px'
+                  }}
+                >
+                  <Send size={18} />
+                  <span>Xác Nhận & Nộp Bài Thi Lên Giáo Viên</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3. Normal View: Assignment List */}
+      {/* 3. Normal View: Classroom Assignment List */}
       {!activeAssignment && !submittedSuccess && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Banner */}
@@ -372,7 +400,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
           >
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
-                <span>Lớp Học & Khảo Thí Tin Học</span>
+                <span>Cổng Học Viên • Khảo Thí Lớp Học</span>
               </div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
                 Đề Thi & Bài Tập Do Giáo Viên Giao
@@ -382,7 +410,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               </p>
             </div>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              Học viên: <b>{currentUser.name}</b> • Lớp: <b>{currentUser.schoolOrClass || 'MOS / IC3'}</b>
+              Học viên: <b>{currentUser.name}</b> ({currentUser.studentCode}) • Lớp: <b>{currentUser.schoolOrClass || 'Tin Học Chuẩn'}</b>
             </div>
           </div>
 
@@ -501,7 +529,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               Xác Nhận Nộp Bài Thi?
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '10px 0 20px' }}>
-              Sau khi nộp, hệ thống sẽ khóa bài làm và <b>bắn thông báo ngay cho Giáo viên {activeAssignment?.teacherName}</b> để chấm điểm.
+              Sau khi nộp, hệ thống sẽ gửi bài làm và <b>bắn thông báo ngay cho Giáo viên {activeAssignment?.teacherName}</b> để chấm điểm.
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
