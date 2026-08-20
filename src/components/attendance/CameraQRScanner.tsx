@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { Camera, RefreshCw, X, CheckCircle2, AlertCircle, Zap, ZapOff, ShieldCheck } from 'lucide-react';
+import { Camera, RefreshCw, X, CheckCircle2, AlertCircle, Zap, ZapOff, UserCheck } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface CameraQRScannerProps {
   isOpen: boolean;
   onClose: () => void;
-  onScanResult: (scannedText: string) => { success: boolean; message: string };
+  onScanResult: (scannedText: string) => { success: boolean; message: string; isMakeup?: boolean };
   studentName: string;
   studentCode: string;
 }
@@ -21,6 +21,7 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
   const [scannerError, setScannerError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [scanSuccessResult, setScanSuccessResult] = useState<string | null>(null);
+  const [isMakeupNotice, setIsMakeupNotice] = useState<boolean>(false);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [hasTorch, setHasTorch] = useState<boolean>(false);
   const [isTorchOn, setIsTorchOn] = useState<boolean>(false);
@@ -37,6 +38,7 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
       try {
         setScannerError(null);
         setScanSuccessResult(null);
+        setIsMakeupNotice(false);
 
         // Clean up previous instance
         if (scannerRef.current) {
@@ -53,9 +55,10 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
 
         scannerRef.current = html5QrCode;
 
+        // Large camera box for seamless scanning from distance
         const config = {
-          fps: 15,
-          qrbox: { width: 240, height: 240 },
+          fps: 20,
+          qrbox: { width: 280, height: 280 },
           aspectRatio: 1.0
         };
 
@@ -66,14 +69,11 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
             if (isCancelled) return;
             handleDecodedText(decodedText);
           },
-          () => {
-            // Scanning in progress, ignore frame errors
-          }
+          () => {}
         );
 
         if (!isCancelled) {
           setIsScanning(true);
-          // Check torch capability
           try {
             const capabilities = html5QrCode.getRunningTrackCameraCapabilities();
             if (capabilities && (capabilities as any).torchFeature && (capabilities as any).torchFeature().isSupported()) {
@@ -85,14 +85,13 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
         console.error('QR Scanner init error:', err);
         if (!isCancelled) {
           setScannerError(
-            err?.message || 'Không thể truy cập camera. Vui lòng cấp quyền camera trong trình duyệt của bạn.'
+            err?.message || 'Không thể truy cập camera. Vui lòng cấp quyền Camera trong cài đặt trình duyệt của bạn.'
           );
           setIsScanning(false);
         }
       }
     };
 
-    // Small delay to ensure DOM element is mounted
     const timeout = setTimeout(startScanner, 200);
 
     return () => {
@@ -109,7 +108,6 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
   }, [isOpen, facingMode]);
 
   const handleDecodedText = (text: string) => {
-    // Parse PIN or token from URL params if full URL
     let tokenOrPin = text.trim();
     try {
       if (text.includes('?') && text.includes('pin=')) {
@@ -123,21 +121,22 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
     if (result.success) {
       soundFx.playVictory();
       setScanSuccessResult(result.message);
+      setIsMakeupNotice(!!result.isMakeup);
       setIsScanning(false);
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         navigator.vibrate([100, 50, 100]);
       }
 
-      // Auto close after 2.5s
+      // Auto close after 3 seconds
       setTimeout(() => {
         onClose();
-      }, 2500);
+      }, 3000);
     } else {
       soundFx.playIncorrect();
       setScannerError(result.message);
       setTimeout(() => {
         setScannerError(null);
-      }, 3500);
+      }, 4000);
     }
   };
 
@@ -167,10 +166,10 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        zIndex: 1100,
+        backgroundColor: 'rgba(10, 15, 30, 0.88)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        zIndex: 1200,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -179,92 +178,123 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
       onClick={onClose}
     >
       <div
-        className="card animate-slide-up"
+        className="animate-slide-up"
         style={{
           width: '100%',
-          maxWidth: '440px',
-          padding: '20px',
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-xl)',
+          maxWidth: '480px',
+          background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
+          borderRadius: '24px',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-          border: '1px solid var(--border-color)'
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+          color: '#f8fafc',
+          padding: '22px'
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Close Button */}
+        {/* Top Floating Close Button */}
         <button
           onClick={onClose}
-          className="btn btn-ghost"
           style={{
-            position: 'absolute', top: '14px', right: '14px',
-            padding: '6px', zIndex: 10,
-            background: 'var(--bg-glass)', borderRadius: '50%'
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 30,
+            transition: 'all 0.2s ease'
           }}
         >
           <X size={18} />
         </button>
 
-        {/* Title Header */}
-        <div style={{ textAlign: 'center', marginBottom: '14px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--brand)', background: 'var(--brand-light)', padding: '2px 10px', borderRadius: 'var(--radius-full)', fontWeight: 800, marginBottom: '6px' }}>
-            <ShieldCheck size={13} />
-            <span>QUÉT CAMERA TRỰC TIẾP CHỐNG GIAN LẬN</span>
+        {/* HUD Scanner Header */}
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.72rem',
+            color: '#38bdf8',
+            background: 'rgba(56, 189, 248, 0.12)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            padding: '3px 12px',
+            borderRadius: '999px',
+            fontWeight: 800,
+            letterSpacing: '0.05em',
+            marginBottom: '8px'
+          }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', animation: 'pulse 1.5s infinite' }} />
+            <span>CAMERA LIVE SCANNER</span>
           </div>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
             Quét Mã QR Điểm Danh
           </h3>
-          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '3px 0 0' }}>
-            Hướng camera về phía mã QR trên màn hình chiếu của giáo viên
+          <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '4px 0 0' }}>
+            Đưa khung camera về phía mã QR xoay 3 giây trên màn hình
           </p>
         </div>
 
-        {/* Camera Scanner Viewport Container */}
+        {/* High-Tech Viewport Window */}
         <div style={{
           position: 'relative',
           width: '100%',
           aspectRatio: '1',
-          maxHeight: '300px',
-          background: '#000000',
-          borderRadius: '16px',
+          maxWidth: '360px',
+          margin: '0 auto',
+          background: '#020617',
+          borderRadius: '20px',
           overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)'
+          border: '2px solid rgba(56, 189, 248, 0.25)',
+          boxShadow: '0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.9)'
         }}>
-          {/* HTML5 QR Container */}
+          {/* HTML5 QR Video Element */}
           <div
             id={scannerContainerId}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
 
-          {/* Scanner Overlay Laser & Corner Frame */}
+          {/* Cyber Viewfinder HUD Frame Overlay */}
           {isScanning && !scanSuccessResult && (
-            <div style={{
-              position: 'absolute',
-              inset: '20px',
-              border: '2px dashed rgba(79, 110, 247, 0.6)',
-              borderRadius: '16px',
-              pointerEvents: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {/* Laser Animation Bar */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              {/* Corner Reticles */}
+              <div style={{ position: 'absolute', top: '24px', left: '24px', width: '32px', height: '32px', borderTop: '3.5px solid #38bdf8', borderLeft: '3.5px solid #38bdf8', borderTopLeftRadius: '8px' }} />
+              <div style={{ position: 'absolute', top: '24px', right: '24px', width: '32px', height: '32px', borderTop: '3.5px solid #38bdf8', borderRight: '3.5px solid #38bdf8', borderTopRightRadius: '8px' }} />
+              <div style={{ position: 'absolute', bottom: '24px', left: '24px', width: '32px', height: '32px', borderBottom: '3.5px solid #38bdf8', borderLeft: '3.5px solid #38bdf8', borderBottomLeftRadius: '8px' }} />
+              <div style={{ position: 'absolute', bottom: '24px', right: '24px', width: '32px', height: '32px', borderBottom: '3.5px solid #38bdf8', borderRight: '3.5px solid #38bdf8', borderBottomRightRadius: '8px' }} />
+
+              {/* Glowing Laser Scan Bar */}
               <div style={{
                 position: 'absolute',
-                width: '100%',
-                height: '2.5px',
-                background: 'linear-gradient(90deg, transparent 0%, #10b981 50%, transparent 100%)',
-                boxShadow: '0 0 12px #10b981',
-                animation: 'scanLaser 2s infinite ease-in-out',
+                left: '15px',
+                right: '15px',
+                height: '3px',
+                background: 'linear-gradient(90deg, transparent 0%, #38bdf8 20%, #10b981 50%, #38bdf8 80%, transparent 100%)',
+                boxShadow: '0 0 16px #38bdf8, 0 0 8px #10b981',
+                animation: 'cyberLaser 2.2s infinite ease-in-out',
                 top: 0
               }} />
 
-              {/* Viewfinder Target Icon */}
-              <Camera size={36} color="rgba(255,255,255,0.4)" />
+              {/* Center Target Icon */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0.3
+              }}>
+                <Camera size={44} color="#38bdf8" />
+              </div>
             </div>
           )}
 
@@ -273,61 +303,99 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
             <div style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(16, 185, 129, 0.95)',
+              background: isMakeupNotice
+                ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.96) 0%, rgba(180, 83, 9, 0.96) 100%)'
+                : 'linear-gradient(135deg, rgba(16, 185, 129, 0.96) 0%, rgba(5, 150, 105, 0.96) 100%)',
+              backdropFilter: 'blur(8px)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '20px',
+              padding: '24px',
               textAlign: 'center',
               color: '#ffffff',
-              zIndex: 20
-            }}>
-              <CheckCircle2 size={54} color="#ffffff" style={{ marginBottom: '10px' }} />
-              <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>ĐIỂM DANH THÀNH CÔNG!</div>
-              <div style={{ fontSize: '0.82rem', marginTop: '6px', opacity: 0.95 }}>{scanSuccessResult}</div>
+              zIndex: 40
+            }} className="animate-fade-in">
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px',
+                boxShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
+              }}>
+                <CheckCircle2 size={38} color="#ffffff" />
+              </div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 900, letterSpacing: '-0.01em' }}>
+                {isMakeupNotice ? 'ĐÃ GHI NHẬN HỌC BÙ!' : 'ĐIỂM DANH THÀNH CÔNG!'}
+              </div>
+              <div style={{ fontSize: '0.82rem', marginTop: '8px', opacity: 0.95, lineHeight: 1.5 }}>
+                {scanSuccessResult}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Error Notification */}
+        {/* Error Alert Bar */}
         {scannerError && (
           <div style={{
-            marginTop: '12px',
+            marginTop: '14px',
             padding: '10px 14px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            color: '#ef4444',
-            fontSize: '0.78rem',
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            borderRadius: '12px',
+            color: '#f87171',
+            fontSize: '0.8rem',
             fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
-          }}>
+          }} className="animate-fade-in">
             <AlertCircle size={16} style={{ flexShrink: 0 }} />
             <span>{scannerError}</span>
           </div>
         )}
 
-        {/* Camera Control Toolbar */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '14px' }}>
+        {/* Controls Toolbar */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '16px' }}>
           <button
             onClick={toggleCamera}
-            className="btn btn-secondary"
-            style={{ padding: '8px 14px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '999px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#e2e8f0',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer'
+            }}
           >
             <RefreshCw size={14} />
-            <span>Đổi Camera ({facingMode === 'environment' ? 'Sau' : 'Trước'})</span>
+            <span>Camera {facingMode === 'environment' ? 'Sau' : 'Trước'}</span>
           </button>
 
           {hasTorch && (
             <button
               onClick={toggleTorch}
-              className="btn btn-secondary"
               style={{
-                padding: '8px 14px', fontSize: '0.78rem', fontWeight: 700, gap: '6px',
-                color: isTorchOn ? '#f59e0b' : 'var(--text-secondary)'
+                padding: '8px 16px',
+                borderRadius: '999px',
+                background: isTorchOn ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                border: isTorchOn ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.15)',
+                color: isTorchOn ? '#fbbf24' : '#e2e8f0',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer'
               }}
             >
               {isTorchOn ? <Zap size={14} fill="#f59e0b" /> : <ZapOff size={14} />}
@@ -336,17 +404,40 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
           )}
         </div>
 
-        {/* Student info badge */}
-        <div style={{ marginTop: '14px', textAlign: 'center', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-          Tài khoản điểm danh: <b>{studentName}</b> ({studentCode})
+        {/* Student Active Info Badge */}
+        <div style={{
+          marginTop: '14px',
+          padding: '8px 12px',
+          background: 'rgba(255, 255, 255, 0.04)',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.75rem',
+          color: '#94a3b8'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <UserCheck size={14} color="#38bdf8" />
+            <span>Học viên: <b style={{ color: '#f8fafc' }}>{studentName}</b></span>
+          </div>
+          <span style={{
+            fontFamily: 'monospace',
+            fontWeight: 800,
+            background: 'rgba(56, 189, 248, 0.15)',
+            color: '#38bdf8',
+            padding: '2px 8px',
+            borderRadius: '6px'
+          }}>
+            {studentCode}
+          </span>
         </div>
       </div>
 
       <style>{`
-        @keyframes scanLaser {
-          0% { top: 5%; opacity: 0.8; }
-          50% { top: 95%; opacity: 1; }
-          100% { top: 5%; opacity: 0.8; }
+        @keyframes cyberLaser {
+          0% { top: 8%; opacity: 0.6; }
+          50% { top: 90%; opacity: 1; }
+          100% { top: 8%; opacity: 0.6; }
         }
       `}</style>
     </div>

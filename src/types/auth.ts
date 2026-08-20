@@ -29,6 +29,8 @@ export interface StudentAccount {
   id: string;
   name: string;
   studentCode: string;
+  classCode?: string;      // e.g. "K26-WE01", "K26-CC02", "K26-AI01"
+  phone?: string;
   password?: string;
   schoolOrClass: string;
   programTrack: CurriculumTrack;

@@ -75,14 +75,16 @@ export function App() {
 
   const {
     sessions: attendanceSessions,
+    makeupReports,
     createSession: createAttendanceSession,
-    rotateSessionQR: rotateAttendanceQR,
+    rotateQRCode: rotateAttendanceQR,
     toggleSessionOpen: toggleAttendanceSessionOpen,
     updateStudentStatus: updateAttendanceStatus,
     markAllPresent: markAllAttendancePresent,
     studentCheckIn: studentAttendanceCheckIn,
     saveSession: saveAttendanceSession,
-    deleteSession: deleteAttendanceSession
+    deleteSession: deleteAttendanceSession,
+    clearMakeupReport: clearAttendanceMakeupReport
   } = useAttendanceStorage(studentAccounts);
 
   // Active Session state (Enforces Unified Auth Gateway upfront!)
@@ -306,6 +308,7 @@ export function App() {
                   <AttendanceManager
                     sessions={attendanceSessions}
                     studentAccounts={studentAccounts}
+                    makeupReports={makeupReports}
                     currentUser={user}
                     onCreateSession={createAttendanceSession}
                     onRotateQR={rotateAttendanceQR}
@@ -314,6 +317,7 @@ export function App() {
                     onMarkAllPresent={markAllAttendancePresent}
                     onSaveSession={saveAttendanceSession}
                     onDeleteSession={deleteAttendanceSession}
+                    onClearMakeupReport={clearAttendanceMakeupReport}
                   />
                 ) : (
                   <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }} className="animate-slide-up">
