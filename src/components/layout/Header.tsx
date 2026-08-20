@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Moon, Sun, Volume2, VolumeX, Flame, Award } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Flame, Award } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -35,15 +35,21 @@ export const Header: React.FC<HeaderProps> = ({
             width: '38px',
             height: '38px',
             borderRadius: '10px',
-            background: 'var(--accent-gradient)',
+            background: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
+            padding: '2px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            flexShrink: 0
           }}
         >
-          <Sparkles size={22} />
+          <img
+            src="/logo.png"
+            alt="PH Digital Education"
+            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }}
+          />
         </div>
         <div>
           <h1 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>

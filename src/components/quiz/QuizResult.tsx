@@ -354,13 +354,35 @@ export const QuizResult: React.FC<QuizResultProps> = ({
             }}
             onClick={e => e.stopPropagation()}
           >
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px' }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '16px',
+                  background: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '6px',
+                  boxShadow: '0 6px 18px rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #fbbf24'
+                }}
+              >
+                <img
+                  src="/logo.png"
+                  alt="PH Digital Education"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px' }}
+                />
+              </div>
+            </div>
             <div style={{ textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '0.85rem', color: '#f59e0b', fontWeight: 800 }}>
               GIẤY CHỨNG NHẬN HOÀN THÀNH
             </div>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '14px 0 6px', background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              PH- TINHOCGENZ Certificate
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '10px 0 4px', background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              PH DIGITAL EDUCATION
             </h2>
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Chứng nhận thành tích học tập trực tuyến</p>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', letterSpacing: '0.04em' }}>PH- TINHOCGENZ • Certificate of Achievement</p>
 
             <div style={{ margin: '28px 0', borderTop: '1px dashed rgba(255, 255, 255, 0.2)', borderBottom: '1px dashed rgba(255, 255, 255, 0.2)', padding: '20px 0' }}>
               <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Trao tặng cho học viên:</div>

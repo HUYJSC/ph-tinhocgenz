@@ -32,27 +32,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className="sidebar">
-      <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border-color)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '8px',
-              background: 'var(--accent-gradient)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: '0.85rem'
+              padding: '3px',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              flexShrink: 0
             }}
           >
-            PH
+            <img
+              src="/logo.png"
+              alt="PH Digital Education Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }}
+            />
           </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>PH- TINHOCGENZ</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>v1.0.0 • Web & Mobile</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              PH- TINHOCGENZ
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
+              Digital Education • MOS / IC3
+            </div>
           </div>
         </div>
       </div>

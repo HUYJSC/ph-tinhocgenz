@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Apple, CheckCircle2, X } from 'lucide-react';
+import { Apple, CheckCircle2, X } from 'lucide-react';
 
 interface PWAInstallModalProps {
   isOpen: boolean;
@@ -31,8 +31,8 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              <Smartphone size={20} />
+            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', flexShrink: 0 }}>
+              <img src="/logo.png" alt="PH Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
             </div>
             <div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Cài đặt PH- TINHOCGENZ trên Điện thoại</h3>
