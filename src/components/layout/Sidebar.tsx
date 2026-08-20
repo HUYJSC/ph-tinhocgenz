@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck,
   Smartphone, Shield, FileText, LogOut, ChevronRight
@@ -55,18 +55,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const initial = studentName ? studentName.charAt(0).toUpperCase() : 'H';
 
   return (
-    <aside style={{
-      width: 'var(--sidebar-width)',
-      background: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border-color)',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      position: 'sticky',
-      top: 0,
-      flexShrink: 0,
-      zIndex: 40
-    }}>
+    <aside
+      className="sidebar"
+      style={{
+        width: 'var(--sidebar-width)',
+        background: 'var(--bg-secondary)',
+        borderRight: '1px solid var(--border-color)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        flexShrink: 0,
+        zIndex: 40
+      }}
+    >
 
       {/* Logo */}
       <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid var(--border-muted)' }}>

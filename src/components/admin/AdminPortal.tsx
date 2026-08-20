@@ -447,7 +447,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       </div>
 
       {/* Sub Tabs Navigation */}
-      <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', marginBottom: '20px', overflowX: 'auto' }}>
+      <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '20px' }}>
         {[
           { id: 'overview', label: 'Tổng Quan Hệ Thống', icon: BarChart3 },
           { id: 'student_directory', label: `Học Viên (${studentAccounts.length})`, icon: Users },

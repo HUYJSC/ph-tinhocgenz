@@ -136,7 +136,7 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
 
       {/* Categories Filter Tabs (Only shown for Admin or multi-track accounts) */}
       {(!isStudent || visibleCategories.length > 2) && (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div className="horizontal-scroll" style={{ marginBottom: '18px' }}>
           {visibleCategories.map(cat => {
             const Icon = cat.icon;
             const isActive = selectedCategory === cat.id;
