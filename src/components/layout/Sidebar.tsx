@@ -198,54 +198,113 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* 2. USER PROFILE BADGE CARD */}
-      <div style={{ padding: '12px 12px 6px' }}>
+      {/* 2. USER PROFILE BADGE CARD & ACTION BUTTONS */}
+      <div style={{ padding: '10px 12px 6px' }}>
         <div
-          onClick={onOpenAuthModal}
-          title="Bấm để xem thông tin tài khoản"
           style={{
-            padding: '10px 12px',
+            padding: '12px',
             borderRadius: '14px',
             background: isAdmin
               ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(245, 158, 11, 0.04) 100%)'
               : 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(16, 185, 129, 0.04) 100%)',
-            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(37, 99, 235, 0.2)',
+            border: isAdmin ? '1.5px solid rgba(217, 119, 6, 0.25)' : '1.5px solid rgba(37, 99, 235, 0.2)',
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: 'column',
             gap: '10px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)'
           }}
         >
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: isAdmin
-                ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
-                : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '0.92rem',
-              flexShrink: 0,
-              boxShadow: '0 3px 10px rgba(0, 0, 0, 0.15)'
-            }}
-          >
-            {isAdmin ? <Shield size={18} /> : (studentName ? studentName.charAt(0).toUpperCase() : 'H')}
+          {/* User Info Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                background: isAdmin
+                  ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                  : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '0.95rem',
+                flexShrink: 0,
+                boxShadow: '0 3px 10px rgba(0, 0, 0, 0.15)'
+              }}
+            >
+              {isAdmin ? <Shield size={19} /> : (studentName ? studentName.charAt(0).toUpperCase() : 'H')}
+            </div>
+
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {studentName}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: isAdmin ? '#d97706' : '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isAdmin ? '#d97706' : '#10b981', display: 'inline-block' }}></span>
+                <span>{isAdmin ? 'Giảng Viên / Admin' : 'Học Viên Đang Học'}</span>
+              </div>
+            </div>
           </div>
 
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {studentName}
-            </div>
-            <div style={{ fontSize: '0.72rem', color: isAdmin ? '#d97706' : '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isAdmin ? '#d97706' : '#10b981', display: 'inline-block' }}></span>
-              <span>{isAdmin ? 'Giảng Viên Quản Trị' : 'Học Viên Chính Thức'}</span>
-            </div>
+          {/* Quick Action Buttons on Profile Card */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playClick();
+                onOpenAuthModal();
+              }}
+              style={{
+                padding: '6px 8px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease'
+              }}
+              title="Đổi tài khoản hoặc phân hệ môn học"
+            >
+              <Sparkles size={12} color="var(--accent-primary)" />
+              <span>Đổi Môn</span>
+            </button>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playClick();
+                  onLogout();
+                }}
+                style={{
+                  padding: '6px 8px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  color: '#ef4444',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Đăng xuất khỏi phiên học"
+              >
+                <LogOut size={12} />
+                <span>Đăng Xuất</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell, LogOut } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Flame, Award, Shield, Bell, LogOut, ChevronDown } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
@@ -92,27 +92,37 @@ export const Header: React.FC<HeaderProps> = ({
           />
         </div>
 
-        {/* Student / Admin Highlight Capsule */}
+        {/* Student / Admin Highlight Capsule & Switch Button */}
         <div
           onClick={onOpenAuthModal}
-          title="Tài khoản đang đăng nhập"
+          title="Bấm để đổi môn học hoặc quản lý tài khoản"
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '5px 12px 5px 6px',
+            padding: '4px 10px 4px 6px',
             borderRadius: 'var(--radius-full)',
             background: isAdmin ? 'rgba(217, 119, 6, 0.08)' : 'rgba(37, 99, 235, 0.07)',
-            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(37, 99, 235, 0.2)',
+            border: isAdmin ? '1.5px solid rgba(217, 119, 6, 0.3)' : '1.5px solid rgba(37, 99, 235, 0.25)',
             minWidth: 0,
-            cursor: 'default'
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.15)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.04)';
           }}
         >
           {/* Avatar Initial Circle */}
           <div
             style={{
-              width: '28px',
-              height: '28px',
+              width: '30px',
+              height: '30px',
               borderRadius: '50%',
               background: isAdmin
                 ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
@@ -122,12 +132,12 @@ export const Header: React.FC<HeaderProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 800,
-              fontSize: '0.8rem',
+              fontSize: '0.82rem',
               flexShrink: 0,
               boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
             }}
           >
-            {isAdmin ? <Shield size={14} /> : (studentName ? studentName.charAt(0).toUpperCase() : 'H')}
+            {isAdmin ? <Shield size={15} /> : (studentName ? studentName.charAt(0).toUpperCase() : 'H')}
           </div>
 
           {/* Name & Track Meta */}
@@ -135,13 +145,13 @@ export const Header: React.FC<HeaderProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span
                 style={{
-                  fontSize: '0.88rem',
+                  fontSize: '0.86rem',
                   fontWeight: 800,
                   color: 'var(--text-primary)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  maxWidth: '160px'
+                  maxWidth: '140px'
                 }}
               >
                 {studentName}
@@ -149,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
               {studentCode && (
                 <span
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.68rem',
                     fontWeight: 800,
                     color: 'var(--accent-primary)',
                     background: 'rgba(37, 99, 235, 0.12)',
@@ -162,10 +172,29 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
               <span>{isAdmin ? 'Quản Trị Viên' : getTrackShortName(programTrack)}</span>
             </div>
+          </div>
+
+          {/* Quick Switch Button Badge */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '2px',
+              padding: '3px 8px',
+              borderRadius: 'var(--radius-full)',
+              background: isAdmin ? 'rgba(217, 119, 6, 0.15)' : 'rgba(37, 99, 235, 0.12)',
+              color: isAdmin ? '#d97706' : 'var(--accent-primary)',
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              marginLeft: '2px'
+            }}
+          >
+            <span>Đổi Môn</span>
+            <ChevronDown size={12} />
           </div>
         </div>
       </div>
@@ -272,23 +301,33 @@ export const Header: React.FC<HeaderProps> = ({
               soundFx.playClick();
               onLogout();
             }}
-            title="Đăng xuất khỏi hệ thống"
+            title="Đăng xuất / Đổi tài khoản"
             style={{
-              padding: '6px 10px',
+              padding: '6px 12px',
               fontSize: '0.78rem',
-              fontWeight: 700,
+              fontWeight: 800,
               display: 'flex',
               alignItems: 'center',
-              gap: '5px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid rgba(239, 68, 68, 0.25)',
-              background: 'rgba(239, 68, 68, 0.08)',
+              gap: '6px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.06) 100%)',
               color: '#ef4444',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(239, 68, 68, 0.08)',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#ef4444';
+              e.currentTarget.style.color = '#ffffff';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.06) 100%)';
+              e.currentTarget.style.color = '#ef4444';
             }}
           >
             <LogOut size={13} />
-            <span style={{ display: 'none' }} className="desktop-inline">Đăng Xuất</span>
+            <span>Đăng Xuất</span>
           </button>
         )}
       </div>
