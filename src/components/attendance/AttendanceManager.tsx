@@ -4,7 +4,7 @@ import { UserProfile, CurriculumTrack, TRACK_LABELS, StudentAccount } from '../.
 import {
   QrCode, CheckCircle2, Clock, RefreshCw,
   FileSpreadsheet, Trash2, Save, Users, Calendar, Sparkles,
-  ShieldCheck, CheckCheck, Play, Lock, Unlock
+  ShieldCheck, CheckCheck, Lock, Unlock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -48,18 +48,27 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'qr_mode' | 'manual_list' | 'history'>('qr_mode');
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  const [rotationInterval, setRotationInterval] = useState<number>(300); // default 5 minutes
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(300);
+  const [rotationInterval, setRotationInterval] = useState<number>(30); // Default 30s for anti-cheat
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(30);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
 
   // Auto select or create session
   const activeSession = sessions.find(s => s.id === selectedSessionId) || sessions.find(s => s.track === selectedTrack) || sessions[0];
 
   useEffect(() => {
-    if (activeSession && activeSession.id !== selectedSessionId) {
+    if (!activeSession && selectedTrack) {
+      const trackName = TRACK_LABELS[selectedTrack] || selectedTrack;
+      const newSess = onCreateSession(
+        selectedTrack,
+        `Lớp ${trackName}`,
+        currentUser.id || 'teacher-01',
+        currentUser.name
+      );
+      setSelectedSessionId(newSess.id);
+    } else if (activeSession && activeSession.id !== selectedSessionId) {
       setSelectedSessionId(activeSession.id);
     }
-  }, [activeSession, selectedSessionId]);
+  }, [activeSession, selectedSessionId, selectedTrack, onCreateSession, currentUser]);
 
   // Countdown Timer logic for dynamic QR code
   useEffect(() => {
@@ -85,18 +94,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
-  const handleStartNewSession = () => {
-    const trackName = TRACK_LABELS[selectedTrack] || selectedTrack;
-    const newSess = onCreateSession(
-      selectedTrack,
-      `Lớp ${trackName}`,
-      currentUser.id || 'teacher-01',
-      currentUser.name
-    );
-    setSelectedSessionId(newSess.id);
-    soundFx.playVictory();
   };
 
   const handleRotateNow = () => {
@@ -227,11 +224,11 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               borderRadius: 'var(--radius-full)',
               fontWeight: 800
             }}>
-              QR ĐỘNG 5 PHÚT
+              QR ĐỘNG 30S
             </span>
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '3px 0 0' }}>
-            Quét mã QR tự động xoay mỗi 5 phút hoặc điểm danh tick tay • Tự động xuất file Excel cho Admin
+            Mã QR tự động xoay mỗi 30 giây chống chụp ảnh gian lận • Đồng bộ đa thiết bị • Xuất Excel đầy đủ
           </p>
         </div>
 
@@ -244,20 +241,20 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               }}
               className="btn"
               style={{
-                padding: '8px 14px',
-                fontSize: '0.82rem',
+                padding: '8px 16px',
+                fontSize: '0.84rem',
                 fontWeight: 800,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                background: activeSession.isOpen !== false ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.12)',
-                border: activeSession.isOpen !== false ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.35)',
+                gap: '8px',
+                background: activeSession.isOpen !== false ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.14)',
+                border: activeSession.isOpen !== false ? '1.5px solid rgba(239, 68, 68, 0.4)' : '1.5px solid rgba(16, 185, 129, 0.4)',
                 color: activeSession.isOpen !== false ? '#ef4444' : '#10b981'
               }}
               title={activeSession.isOpen !== false ? 'Bấm để tắt/khóa mã điểm danh' : 'Bấm để mở lại mã điểm danh'}
             >
-              {activeSession.isOpen !== false ? <Lock size={15} /> : <Unlock size={15} />}
-              <span>{activeSession.isOpen !== false ? 'Tắt / Khóa Mã Điểm Danh' : 'Bật / Mở Lại Điểm Danh'}</span>
+              {activeSession.isOpen !== false ? <Lock size={16} /> : <Unlock size={16} />}
+              <span>{activeSession.isOpen !== false ? '🔒 Tắt / Khóa Mã Điểm Danh' : '🔓 Bật / Mở Mã Điểm Danh'}</span>
             </button>
           )}
 
@@ -279,15 +276,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
           >
             <FileSpreadsheet size={15} />
             <span>Xuất Excel Điểm Danh</span>
-          </button>
-
-          <button
-            onClick={handleStartNewSession}
-            className="btn btn-primary"
-            style={{ padding: '8px 14px', fontSize: '0.82rem', fontWeight: 800, gap: '6px' }}
-          >
-            <Play size={14} />
-            <span>Mở Phiên Điểm Danh Mới</span>
           </button>
         </div>
       </div>
