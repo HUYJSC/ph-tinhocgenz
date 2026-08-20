@@ -7,7 +7,7 @@ import { GOOGLE_APPS_SCRIPT_CODE } from '../../utils/googleDriveService';
 import {
   PlusCircle, Trash2,
   Bell, Lock, Unlock, Eye, X, Clock, FileText,
-  FolderOpen, Cloud, Copy, Check, ExternalLink, Link2
+  FolderOpen, Cloud, Copy, Check, ExternalLink, Link2, FileSpreadsheet
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -207,6 +207,63 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
     setActiveTab('manage');
   };
 
+  const exportSubmissionsExcel = () => {
+    if (submissions.length === 0) {
+      alert('Chưa có bài nộp nào của học viên để xuất Excel!');
+      return;
+    }
+
+    const headers = [
+      'STT',
+      'Mã Học Viên',
+      'Họ Và Tên Học Viên',
+      'Lớp / Phân Hệ Đào Tạo',
+      'Tên Đề Thi / Bài Tập',
+      'Thời Gian Nộp Bài',
+      'Điểm Chấm',
+      'Điểm Tối Đa',
+      'Trạng Thái Chấm Điểm',
+      'Nhận Xét Của Giáo Viên',
+      'Link File Google Drive'
+    ];
+
+    const escapeCsv = (val: any) => {
+      const str = String(val ?? '').replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = submissions.map((sub, index) => {
+      const isGraded = sub.score !== undefined && sub.score !== null;
+      const status = isGraded ? 'Đã Chấm Điểm' : 'Chờ Giáo Viên Chấm';
+
+      return [
+        index + 1,
+        escapeCsv(sub.studentCode),
+        escapeCsv(sub.studentName),
+        escapeCsv(sub.schoolOrClass),
+        escapeCsv(sub.assignmentTitle),
+        escapeCsv(sub.submittedAt),
+        isGraded ? sub.score : '',
+        sub.maxScore || 100,
+        escapeCsv(status),
+        escapeCsv(sub.teacherFeedback || ''),
+        escapeCsv(sub.driveFileUrl || 'Nộp nội bộ')
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `DanhSach_BaiNop_HocVien_PH_TINHOCGENZ_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    soundFx.playVictory();
+  };
+
   const handleGradeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSubmission) return;
@@ -378,19 +435,41 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               Tổng số bài nộp: <b>{submissions.length} bài</b>
             </div>
 
-            {googleDriveConfig?.driveFolderUrl && (
-              <a
-                href={googleDriveConfig.driveFolderUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                onClick={exportSubmissionsExcel}
                 className="btn btn-secondary"
-                style={{ padding: '7px 14px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  color: '#059669'
+                }}
+                title="Xuất toàn bộ danh sách điểm và bài nộp sang file Excel"
               >
-                <FolderOpen size={15} color="var(--accent-primary)" />
-                <span>Mở Thư Mục Tổng Trên Google Drive</span>
-                <ExternalLink size={12} />
-              </a>
-            )}
+                <FileSpreadsheet size={15} />
+                <span>Xuất Excel Danh Sách Bài Nộp</span>
+              </button>
+
+              {googleDriveConfig?.driveFolderUrl && (
+                <a
+                  href={googleDriveConfig.driveFolderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                  style={{ padding: '7px 14px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <FolderOpen size={15} color="var(--accent-primary)" />
+                  <span>Mở Thư Mục Tổng Trên Google Drive</span>
+                  <ExternalLink size={12} />
+                </a>
+              )}
+            </div>
           </div>
 
           <div className="card" style={{ overflow: 'hidden' }}>

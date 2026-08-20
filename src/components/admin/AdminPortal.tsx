@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import {
-  Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2, Download,
+  Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2
 } from 'lucide-react';
@@ -284,15 +284,67 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     soundFx.playClick();
   };
 
-  const exportGradebookJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(attempts, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `BangDiem_HocVien_PH_TINHOCGENZ_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    soundFx.playCorrect();
+  const exportGradebookExcel = () => {
+    if (attempts.length === 0) {
+      alert('Chưa có dữ liệu bài thi nào để xuất bảng điểm!');
+      return;
+    }
+
+    const headers = [
+      'STT',
+      'Tên Đề Thi / Khảo Thí',
+      'Phân Hệ Khóa Học',
+      'Chế Độ Làm Bài',
+      'Số Câu Đúng',
+      'Tổng Số Câu',
+      'Điểm Đạt Được',
+      'Điểm Tối Đa',
+      'Tỷ Lệ Đạt (%)',
+      'Xếp Loại Kết Quả',
+      'Thời Gian Làm Bài',
+      'Thời Điểm Hoàn Thành'
+    ];
+
+    const escapeCsv = (val: any) => {
+      const str = String(val ?? '').replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = attempts.map((a, index) => {
+      const trackName = TRACK_LABELS[a.category as CurriculumTrack] || a.category;
+      const modeName = a.mode === 'exam' ? 'Thi Tính Giờ' : a.mode === 'practice' ? 'Luyện Tập Tự Do' : 'Thẻ Ghi Nhớ';
+      const rank = a.percentage >= 90 ? 'Xuất Sắc' : a.percentage >= 75 ? 'Giỏi' : a.percentage >= 60 ? 'Khá' : a.percentage >= 50 ? 'Đạt' : 'Chưa Đạt';
+      const minutes = Math.floor((a.timeSpentSeconds || 0) / 60);
+      const seconds = (a.timeSpentSeconds || 0) % 60;
+      const durationStr = `${minutes}p ${seconds < 10 ? '0' : ''}${seconds}s`;
+
+      return [
+        index + 1,
+        escapeCsv(a.quizTitle),
+        escapeCsv(trackName),
+        escapeCsv(modeName),
+        a.correctCount,
+        a.totalQuestions,
+        a.score,
+        a.maxScore,
+        `${a.percentage}%`,
+        escapeCsv(rank),
+        escapeCsv(durationStr),
+        escapeCsv(a.completedAt)
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `BangDiem_HocVien_PH_TINHOCGENZ_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    soundFx.playVictory();
   };
 
   return (
@@ -356,7 +408,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
               {isSuperAdmin
-                ? `Quản trị viên: ${currentUser.name} • Toàn quyền 6 phân hệ`
+                ? `Quản trị viên: ${currentUser.name} • Toàn quyền 10 phân hệ khóa học`
                 : `Giảng viên: ${currentUser.name} • Quản lý các phân hệ được phân công`}
             </p>
           </div>
@@ -364,12 +416,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
-            onClick={exportGradebookJSON}
+            onClick={exportGradebookExcel}
             className="btn btn-secondary"
-            style={{ padding: '8px 14px', fontSize: '0.82rem', fontWeight: 700 }}
+            style={{
+              padding: '8px 14px',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              background: 'rgba(16, 185, 129, 0.08)',
+              color: '#059669'
+            }}
+            title="Xuất bảng điểm toàn bộ học viên sang file Excel (.CSV UTF-8 chuẩn)"
           >
-            <Download size={15} />
-            <span>Xuất Bảng Điểm JSON</span>
+            <FileSpreadsheet size={16} />
+            <span>Xuất Bảng Điểm Excel</span>
           </button>
 
           <button
