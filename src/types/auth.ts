@@ -33,6 +33,7 @@ export interface StudentAccount {
   schoolOrClass: string;
   programTrack: CurriculumTrack;
   enrolledTracks: CurriculumTrack[];
+  assignedTeacherId?: string;
   role: 'student';
   createdAt: string;
 }

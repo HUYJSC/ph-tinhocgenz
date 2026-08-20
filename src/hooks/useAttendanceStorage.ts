@@ -186,7 +186,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     );
   }, []);
 
-  // Student check-in via PIN or QR Token
+  // Student check-in via PIN or QR Token with Strict Enrollment Validation
   const studentCheckIn = useCallback((
     studentCode: string,
     studentName: string,
@@ -195,25 +195,68 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
   ): { success: boolean; message: string; session?: AttendanceSession } => {
     const now = Date.now();
 
-    // Find active session with matching PIN or Token
+    // 1. Find active session with matching PIN or Token
     const session = sessions.find(s =>
       s.track === track &&
       (s.qrPinCode === pinOrToken.trim() || s.qrToken === pinOrToken.trim())
     );
 
     if (!session) {
-      return { success: false, message: 'Mã điểm danh không hợp lệ hoặc lớp học chưa mở phiên điểm danh!' };
+      return {
+        success: false,
+        message: 'Mã điểm danh không hợp lệ hoặc lớp học chưa mở phiên điểm danh!'
+      };
     }
 
+    // 2. Check if session is closed/locked by teacher
     if (session.isOpen === false) {
-      return { success: false, message: '🔒 Giáo viên đã ĐÓNG / KHÓA phiên điểm danh của lớp này!' };
+      return {
+        success: false,
+        message: '🔒 Giáo viên đã ĐÓNG / KHÓA phiên điểm danh của lớp này!'
+      };
     }
 
+    // 3. Check expiration
     if (session.qrExpiresAt && now > session.qrExpiresAt) {
-      return { success: false, message: 'Mã QR / PIN điểm danh đã hết hạn. Vui lòng yêu cầu giáo viên làm mới mã!' };
+      return {
+        success: false,
+        message: 'Mã QR / PIN điểm danh đã hết hạn. Vui lòng yêu cầu giáo viên làm mới mã!'
+      };
+    }
+
+    // 4. Strict Enrollment Validation (Chỉ học viên đúng môn, đúng lớp của giáo viên mới quét được)
+    const matchedStudentAccount = studentAccounts.find(
+      s => s.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase()
+    );
+
+    const isEnrolledInTrack = matchedStudentAccount && (
+      matchedStudentAccount.programTrack === track ||
+      (matchedStudentAccount.enrolledTracks && matchedStudentAccount.enrolledTracks.includes(track))
+    );
+
+    // If student is not registered in this track / class
+    if (!matchedStudentAccount || !isEnrolledInTrack) {
+      return {
+        success: false,
+        message: `❌ BỊ TỪ CHỐI: Học viên ${studentName} (${studentCode}) KHÔNG THUỘC danh sách lớp "${session.className}" do ${session.teacherName} giảng dạy!`
+      };
+    }
+
+    // Check teacher assignment if student is tied to a specific teacher
+    if (
+      matchedStudentAccount.assignedTeacherId &&
+      session.teacherId &&
+      session.teacherId !== 'admin-01' &&
+      matchedStudentAccount.assignedTeacherId !== session.teacherId
+    ) {
+      return {
+        success: false,
+        message: `❌ BỊ TỪ CHỐI: Học viên ${studentName} thuộc phân công của giáo viên khác, không thể điểm danh trong lớp của ${session.teacherName}!`
+      };
     }
 
     const nowTime = new Date().toTimeString().slice(0, 8);
+    const method = pinOrToken === session.qrToken ? 'qr_scan' as const : 'pin_code' as const;
     let isFound = false;
 
     const updatedRecords = session.records.map(rec => {
@@ -223,21 +266,22 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
           ...rec,
           status: 'present' as AttendanceStatus,
           checkInTime: nowTime,
-          checkInMethod: 'qr_scan' as const
+          checkInMethod: method
         };
       }
       return rec;
     });
 
-    // If student was not already in the record list, add them dynamically
+    // If student was verified but missing from initial records, add them
     if (!isFound) {
       updatedRecords.push({
-        studentId: `student-${studentCode}`,
-        studentCode,
-        studentName,
+        studentId: matchedStudentAccount.id || `student-${studentCode}`,
+        studentCode: matchedStudentAccount.studentCode,
+        studentName: matchedStudentAccount.name,
+        schoolOrClass: matchedStudentAccount.schoolOrClass,
         status: 'present',
         checkInTime: nowTime,
-        checkInMethod: 'qr_scan',
+        checkInMethod: method,
         note: 'Điểm danh qua QR'
       });
     }
@@ -248,10 +292,10 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     return {
       success: true,
-      message: `Điểm danh thành công cho học viên ${studentName} lúc ${nowTime}!`,
+      message: `✓ Điểm danh thành công cho ${matchedStudentAccount.name} (${matchedStudentAccount.studentCode}) lớp "${session.className}"!`,
       session
     };
-  }, [sessions]);
+  }, [sessions, studentAccounts]);
 
   // Save session (complete it)
   const saveSession = useCallback((sessionToSave: AttendanceSession) => {
