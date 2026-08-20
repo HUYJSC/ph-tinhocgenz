@@ -1,31 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AttendanceSession, AttendanceRecord, AttendanceStatus } from '../types/attendance';
-import { StudentAccount, CurriculumTrack } from '../types/auth';
+import { StudentAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 
-const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v1';
+const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v2';
+
+const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
+  'office-fast-3in1',
+  'cc-cntt-basic',
+  'cc-cntt-advanced',
+  'cntt-basic-we',
+  'cntt-adv-we',
+  'ai-office',
+  'excel-accounting',
+  'word-6b',
+  'excel-6b',
+  'ppt-6b'
+];
 
 export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
-  const [sessions, setSessions] = useState<AttendanceSession[]>(() => {
-    try {
-      const saved = localStorage.getItem(ATTENDANCE_SESSIONS_KEY);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Failed to load attendance sessions', e);
-    }
-    return [];
-  });
-
-  // Save to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(ATTENDANCE_SESSIONS_KEY, JSON.stringify(sessions));
-    } catch (e) {
-      console.error('Failed to save attendance sessions', e);
-    }
-  }, [sessions]);
-
   // Generate 6-digit PIN (e.g. "839102")
   const generatePin = () => {
     return String(Math.floor(100000 + Math.random() * 900000));
@@ -35,6 +27,110 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
   const generateToken = () => {
     return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
   };
+
+  // Build initial default sessions for all tracks if empty
+  const createDefaultSessions = (students: StudentAccount[]): AttendanceSession[] => {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().slice(0, 5);
+
+    return ALL_10_TRACK_KEYS.map((trackKey, idx) => {
+      const trackTitle = TRACK_LABELS[trackKey] || trackKey;
+      const enrolled = students.filter(s =>
+        s.programTrack === trackKey || (s.enrolledTracks && s.enrolledTracks.includes(trackKey))
+      );
+
+      const records: AttendanceRecord[] = enrolled.map(student => ({
+        studentId: student.id,
+        studentCode: student.studentCode,
+        studentName: student.name,
+        schoolOrClass: student.schoolOrClass,
+        status: 'absent' as AttendanceStatus,
+        checkInMethod: 'manual',
+        note: ''
+      }));
+
+      return {
+        id: `sess-init-${idx + 1}-${trackKey}`,
+        date: dateStr,
+        startTime: timeStr,
+        endTime: '',
+        track: trackKey,
+        className: `Lớp ${trackTitle}`,
+        teacherId: 'admin-01',
+        teacherName: 'Thầy Huy (Giảng Viên Trưởng)',
+        qrToken: generateToken(),
+        qrExpiresAt: Date.now() + 5 * 60 * 1000,
+        qrPinCode: generatePin(),
+        isOpen: true,
+        records,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString()
+      };
+    });
+  };
+
+  const [sessions, setSessions] = useState<AttendanceSession[]>(() => {
+    try {
+      const saved = localStorage.getItem(ATTENDANCE_SESSIONS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load attendance sessions', e);
+    }
+    return createDefaultSessions(studentAccounts);
+  });
+
+  // Keep sessions in sync with localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(ATTENDANCE_SESSIONS_KEY, JSON.stringify(sessions));
+    } catch (e) {
+      console.error('Failed to save attendance sessions', e);
+    }
+  }, [sessions]);
+
+  // Synchronize student records in active sessions if student accounts change
+  useEffect(() => {
+    if (!studentAccounts || studentAccounts.length === 0) return;
+
+    setSessions(prev => {
+      let hasChanges = false;
+      const next = prev.map(session => {
+        const enrolled = studentAccounts.filter(s =>
+          s.programTrack === session.track || (s.enrolledTracks && s.enrolledTracks.includes(session.track))
+        );
+
+        // Check if any student is missing from session records
+        const currentCodes = new Set(session.records.map(r => r.studentCode.toLowerCase()));
+        const missingStudents = enrolled.filter(s => !currentCodes.has(s.studentCode.toLowerCase()));
+
+        if (missingStudents.length > 0) {
+          hasChanges = true;
+          const newRecords: AttendanceRecord[] = [
+            ...session.records,
+            ...missingStudents.map(student => ({
+              studentId: student.id,
+              studentCode: student.studentCode,
+              studentName: student.name,
+              schoolOrClass: student.schoolOrClass,
+              status: 'absent' as AttendanceStatus,
+              checkInMethod: 'manual' as const,
+              note: ''
+            }))
+          ];
+          return { ...session, records: newRecords };
+        }
+        return session;
+      });
+
+      return hasChanges ? next : prev;
+    });
+  }, [studentAccounts]);
 
   // Create a new attendance session for a class track
   const createSession = useCallback((
@@ -72,7 +168,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       teacherId,
       teacherName,
       qrToken: generateToken(),
-      qrExpiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes countdown
+      qrExpiresAt: Date.now() + 5 * 60 * 1000,
       qrPinCode: generatePin(),
       isOpen: true,
       records: initialRecords,
@@ -98,7 +194,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
             qrToken: newToken,
             qrPinCode: newPin,
             qrExpiresAt: newExpiresAt,
-            isOpen: true, // re-open when rotating
+            isOpen: true,
             updatedAt: new Date().toISOString()
           };
         }
@@ -186,118 +282,148 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     );
   }, []);
 
-  // Student check-in via PIN or QR Token with Strict Enrollment Validation
+  // Universal Smart Student Check-In with Strict Class & Enrollment Validation
   const studentCheckIn = useCallback((
     studentCode: string,
     studentName: string,
-    pinOrToken: string,
-    track: CurriculumTrack
+    rawPinOrToken: string,
+    optionalTrack?: CurriculumTrack
   ): { success: boolean; message: string; session?: AttendanceSession } => {
     const now = Date.now();
+    const cleanInput = rawPinOrToken.trim();
 
-    // 1. Find active session with matching PIN or Token
-    const session = sessions.find(s =>
-      s.track === track &&
-      (s.qrPinCode === pinOrToken.trim() || s.qrToken === pinOrToken.trim())
+    // 1. Parse PIN or Token from raw input or URL query params
+    let searchPin = cleanInput;
+    let searchToken = cleanInput;
+    let targetTrack = optionalTrack;
+
+    if (cleanInput.includes('?') && (cleanInput.includes('pin=') || cleanInput.includes('token='))) {
+      try {
+        const parsedUrl = new URL(cleanInput);
+        searchPin = parsedUrl.searchParams.get('pin') || searchPin;
+        searchToken = parsedUrl.searchParams.get('token') || searchToken;
+        const urlTrack = parsedUrl.searchParams.get('track') as CurriculumTrack;
+        if (urlTrack) targetTrack = urlTrack;
+      } catch (e) {}
+    }
+
+    // 2. Find the exact matching session by PIN, Token, ID, or active track session
+    let matchedSession = sessions.find(s =>
+      (s.qrPinCode && s.qrPinCode === searchPin) ||
+      (s.qrToken && s.qrToken === searchToken) ||
+      s.id === cleanInput
     );
 
-    if (!session) {
+    // Fallback: If not found by PIN/token, check if user provided track and session matches
+    if (!matchedSession && targetTrack) {
+      matchedSession = sessions.find(s => s.track === targetTrack && s.isOpen !== false);
+    }
+
+    if (!matchedSession) {
       return {
         success: false,
-        message: 'Mã điểm danh không hợp lệ hoặc lớp học chưa mở phiên điểm danh!'
+        message: 'Mã PIN hoặc Token điểm danh không hợp lệ, hoặc lớp học chưa mở phiên điểm danh!'
       };
     }
 
-    // 2. Check if session is closed/locked by teacher
-    if (session.isOpen === false) {
+    // 3. Check if session is closed/locked by teacher
+    if (matchedSession.isOpen === false) {
       return {
         success: false,
-        message: '🔒 Giáo viên đã ĐÓNG / KHÓA phiên điểm danh của lớp này!'
+        message: `🔒 Giáo viên đã ĐÓNG / KHÓA phiên điểm danh của môn "${matchedSession.className}"!`
       };
     }
 
-    // 3. Check expiration
-    if (session.qrExpiresAt && now > session.qrExpiresAt) {
+    // 4. Check if QR code / PIN has expired
+    if (matchedSession.qrExpiresAt && now > matchedSession.qrExpiresAt) {
       return {
         success: false,
-        message: 'Mã QR / PIN điểm danh đã hết hạn. Vui lòng yêu cầu giáo viên làm mới mã!'
+        message: 'Mã QR / PIN điểm danh đã hết hạn. Vui lòng nhìn màn hình giáo viên để lấy mã mới nhất!'
       };
     }
 
-    // 4. Strict Enrollment Validation (Chỉ học viên đúng môn, đúng lớp của giáo viên mới quét được)
+    // 5. STRICT ENROLLMENT CHECK: Check if this student is enrolled in matchedSession.track
     const matchedStudentAccount = studentAccounts.find(
-      s => s.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase()
+      s => s.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase() ||
+           s.name.trim().toLowerCase() === studentName.trim().toLowerCase()
     );
 
     const isEnrolledInTrack = matchedStudentAccount && (
-      matchedStudentAccount.programTrack === track ||
-      (matchedStudentAccount.enrolledTracks && matchedStudentAccount.enrolledTracks.includes(track))
+      matchedStudentAccount.programTrack === matchedSession.track ||
+      (matchedStudentAccount.enrolledTracks && matchedStudentAccount.enrolledTracks.includes(matchedSession.track))
     );
 
-    // If student is not registered in this track / class
+    // If student is NOT enrolled in this specific course track
     if (!matchedStudentAccount || !isEnrolledInTrack) {
+      const studentTrackLabel = matchedStudentAccount
+        ? (TRACK_LABELS[matchedStudentAccount.programTrack] || matchedStudentAccount.programTrack)
+        : 'Khác';
+
       return {
         success: false,
-        message: `❌ BỊ TỪ CHỐI: Học viên ${studentName} (${studentCode}) KHÔNG THUỘC danh sách lớp "${session.className}" do ${session.teacherName} giảng dạy!`
+        message: `❌ BỊ TỪ CHỐI: Học viên ${studentName} (${studentCode}) thuộc môn "${studentTrackLabel}", KHÔNG CÓ TÊN trong danh sách lớp "${matchedSession.className}" do ${matchedSession.teacherName} phụ trách!`
       };
     }
 
-    // Check teacher assignment if student is tied to a specific teacher
+    // 6. Check teacher assignment if student is tied to a specific teacher
     if (
       matchedStudentAccount.assignedTeacherId &&
-      session.teacherId &&
-      session.teacherId !== 'admin-01' &&
-      matchedStudentAccount.assignedTeacherId !== session.teacherId
+      matchedSession.teacherId &&
+      matchedSession.teacherId !== 'admin-01' &&
+      matchedStudentAccount.assignedTeacherId !== matchedSession.teacherId
     ) {
       return {
         success: false,
-        message: `❌ BỊ TỪ CHỐI: Học viên ${studentName} thuộc phân công của giáo viên khác, không thể điểm danh trong lớp của ${session.teacherName}!`
+        message: `❌ BỊ TỪ CHỐI: Học viên ${studentName} thuộc phân công của giáo viên khác, không thể điểm danh trong lớp của ${matchedSession.teacherName}!`
       };
     }
 
+    // 7. Mark as PRESENT
     const nowTime = new Date().toTimeString().slice(0, 8);
-    const method = pinOrToken === session.qrToken ? 'qr_scan' as const : 'pin_code' as const;
-    let isFound = false;
+    const checkInMethod = (searchToken === matchedSession.qrToken || cleanInput.includes('token='))
+      ? 'qr_scan' as const
+      : 'pin_code' as const;
 
-    const updatedRecords = session.records.map(rec => {
-      if (rec.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase()) {
-        isFound = true;
+    let isFoundInRecords = false;
+
+    const updatedRecords = matchedSession.records.map(rec => {
+      if (rec.studentCode.trim().toLowerCase() === matchedStudentAccount.studentCode.trim().toLowerCase()) {
+        isFoundInRecords = true;
         return {
           ...rec,
           status: 'present' as AttendanceStatus,
           checkInTime: nowTime,
-          checkInMethod: method
+          checkInMethod
         };
       }
       return rec;
     });
 
-    // If student was verified but missing from initial records, add them
-    if (!isFound) {
+    if (!isFoundInRecords) {
       updatedRecords.push({
-        studentId: matchedStudentAccount.id || `student-${studentCode}`,
+        studentId: matchedStudentAccount.id,
         studentCode: matchedStudentAccount.studentCode,
         studentName: matchedStudentAccount.name,
         schoolOrClass: matchedStudentAccount.schoolOrClass,
         status: 'present',
         checkInTime: nowTime,
-        checkInMethod: method,
+        checkInMethod,
         note: 'Điểm danh qua QR'
       });
     }
 
     setSessions(prev =>
-      prev.map(s => (s.id === session.id ? { ...s, records: updatedRecords, updatedAt: new Date().toISOString() } : s))
+      prev.map(s => (s.id === matchedSession!.id ? { ...s, records: updatedRecords, updatedAt: new Date().toISOString() } : s))
     );
 
     return {
       success: true,
-      message: `✓ Điểm danh thành công cho ${matchedStudentAccount.name} (${matchedStudentAccount.studentCode}) lớp "${session.className}"!`,
-      session
+      message: `✓ Điểm danh thành công cho ${matchedStudentAccount.name} (${matchedStudentAccount.studentCode}) môn "${matchedSession.className}"!`,
+      session: matchedSession
     };
   }, [sessions, studentAccounts]);
 
-  // Save session (complete it)
+  // Save session
   const saveSession = useCallback((sessionToSave: AttendanceSession) => {
     setSessions(prev =>
       prev.map(s => (s.id === sessionToSave.id ? { ...sessionToSave, updatedAt: new Date().toISOString() } : s))
