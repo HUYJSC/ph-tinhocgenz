@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { Camera, RefreshCw, X, CheckCircle2, AlertCircle, Zap, ZapOff, UserCheck } from 'lucide-react';
+import { RefreshCw, X, CheckCircle2, AlertCircle, Zap, ZapOff, UserCheck } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { getCurrentCoordinates } from '../../utils/securityUtils';
 
@@ -56,10 +56,9 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
 
         scannerRef.current = html5QrCode;
 
-        // Large camera box for seamless scanning from distance
+        // Config without hardcoded qrbox size to let full camera view scan smoothly
         const config = {
-          fps: 20,
-          qrbox: { width: 280, height: 280 },
+          fps: 24,
           aspectRatio: 1.0
         };
 
@@ -93,7 +92,7 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
       }
     };
 
-    const timeout = setTimeout(startScanner, 200);
+    const timeout = setTimeout(startScanner, 150);
 
     return () => {
       isCancelled = true;
@@ -194,7 +193,7 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
         className="animate-slide-up"
         style={{
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: '460px',
           background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
           borderRadius: '24px',
           position: 'relative',
@@ -253,21 +252,21 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
             Quét Mã QR Điểm Danh
           </h3>
           <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '4px 0 0' }}>
-            Đưa khung camera về phía mã QR đổi mỗi 2 phút trên màn hình
+            Đưa khung camera về phía mã QR trên màn hình chiếu lớp học
           </p>
         </div>
 
-        {/* High-Tech Viewport Window */}
+        {/* High-Tech Viewport Window - Clean Single Frame (No white overlapping box) */}
         <div style={{
           position: 'relative',
           width: '100%',
           aspectRatio: '1',
-          maxWidth: '360px',
+          maxWidth: '340px',
           margin: '0 auto',
           background: '#020617',
           borderRadius: '20px',
           overflow: 'hidden',
-          border: '2px solid rgba(56, 189, 248, 0.25)',
+          border: '2px solid rgba(56, 189, 248, 0.35)',
           boxShadow: '0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.9)'
         }}>
           {/* HTML5 QR Video Element */}
@@ -276,38 +275,26 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
 
-          {/* Cyber Viewfinder HUD Frame Overlay */}
+          {/* Clean Single Cyan Reticle Frame */}
           {isScanning && !scanSuccessResult && (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-              {/* Corner Reticles */}
-              <div style={{ position: 'absolute', top: '24px', left: '24px', width: '32px', height: '32px', borderTop: '3.5px solid #38bdf8', borderLeft: '3.5px solid #38bdf8', borderTopLeftRadius: '8px' }} />
-              <div style={{ position: 'absolute', top: '24px', right: '24px', width: '32px', height: '32px', borderTop: '3.5px solid #38bdf8', borderRight: '3.5px solid #38bdf8', borderTopRightRadius: '8px' }} />
-              <div style={{ position: 'absolute', bottom: '24px', left: '24px', width: '32px', height: '32px', borderBottom: '3.5px solid #38bdf8', borderLeft: '3.5px solid #38bdf8', borderBottomLeftRadius: '8px' }} />
-              <div style={{ position: 'absolute', bottom: '24px', right: '24px', width: '32px', height: '32px', borderBottom: '3.5px solid #38bdf8', borderRight: '3.5px solid #38bdf8', borderBottomRightRadius: '8px' }} />
+              {/* 4 Corner Reticles */}
+              <div style={{ position: 'absolute', top: '16px', left: '16px', width: '36px', height: '36px', borderTop: '4px solid #38bdf8', borderLeft: '4px solid #38bdf8', borderTopLeftRadius: '10px' }} />
+              <div style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderTop: '4px solid #38bdf8', borderRight: '4px solid #38bdf8', borderTopRightRadius: '10px' }} />
+              <div style={{ position: 'absolute', bottom: '16px', left: '16px', width: '36px', height: '36px', borderBottom: '4px solid #38bdf8', borderLeft: '4px solid #38bdf8', borderBottomLeftRadius: '10px' }} />
+              <div style={{ position: 'absolute', bottom: '16px', right: '16px', width: '36px', height: '36px', borderBottom: '4px solid #38bdf8', borderRight: '4px solid #38bdf8', borderBottomRightRadius: '10px' }} />
 
               {/* Glowing Laser Scan Bar */}
               <div style={{
                 position: 'absolute',
-                left: '15px',
-                right: '15px',
+                left: '16px',
+                right: '16px',
                 height: '3px',
                 background: 'linear-gradient(90deg, transparent 0%, #38bdf8 20%, #10b981 50%, #38bdf8 80%, transparent 100%)',
                 boxShadow: '0 0 16px #38bdf8, 0 0 8px #10b981',
                 animation: 'cyberLaser 2.2s infinite ease-in-out',
                 top: 0
               }} />
-
-              {/* Center Target Icon */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: 0.3
-              }}>
-                <Camera size={44} color="#38bdf8" />
-              </div>
             </div>
           )}
 
@@ -447,6 +434,26 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
       </div>
 
       <style>{`
+        /* Remove internal html5-qrcode white box & shaded borders */
+        #attendance-qr-reader-viewport {
+          border: none !important;
+        }
+        #attendance-qr-reader-viewport__scan_region {
+          border: none !important;
+          box-shadow: none !important;
+        }
+        #attendance-qr-reader-viewport__scan_region svg,
+        #attendance-qr-reader-viewport svg,
+        #attendance-qr-reader-viewport img {
+          display: none !important;
+        }
+        #attendance-qr-reader-viewport video {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          border-radius: 18px !important;
+        }
+
         @keyframes cyberLaser {
           0% { top: 8%; opacity: 0.6; }
           50% { top: 90%; opacity: 1; }

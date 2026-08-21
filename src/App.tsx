@@ -17,6 +17,7 @@ import { AdminPortal } from './components/admin/AdminPortal';
 import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
 import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
 import { AttendanceManager } from './components/attendance/AttendanceManager';
+import { StudentAttendanceDashboard } from './components/attendance/StudentAttendanceDashboard';
 import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
 import { CameraQRScanner } from './components/attendance/CameraQRScanner';
 import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
@@ -24,7 +25,6 @@ import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
-import { QrCode, Camera } from 'lucide-react';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
@@ -322,44 +322,12 @@ export function App() {
                     onClearMakeupReport={clearAttendanceMakeupReport}
                   />
                 ) : (
-                  <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }} className="animate-slide-up">
-                    <div className="card" style={{ padding: '28px 20px', textAlign: 'center' }}>
-                      <div style={{
-                        width: '56px', height: '56px', borderRadius: '16px',
-                        background: 'rgba(6, 182, 212, 0.1)', color: '#0891b2',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 14px'
-                      }}>
-                        <Camera size={30} />
-                      </div>
-                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                        Điểm Danh Học Viên
-                      </h2>
-                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.5 }}>
-                        Quét mã QR trực tiếp qua Camera trên màn hình chiếu của giáo viên hoặc nhập mã PIN 6 số để xác nhận có mặt.
-                      </p>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '340px', margin: '0 auto' }}>
-                        <button
-                          onClick={() => setShowCameraScanner(true)}
-                          className="btn btn-primary"
-                          style={{ padding: '12px 20px', fontSize: '0.92rem', fontWeight: 800, gap: '8px' }}
-                        >
-                          <Camera size={18} />
-                          <span>Mở Camera Quét Mã QR</span>
-                        </button>
-
-                        <button
-                          onClick={() => setShowCheckInModal(true)}
-                          className="btn btn-secondary"
-                          style={{ padding: '10px 18px', fontSize: '0.84rem', fontWeight: 700, gap: '6px' }}
-                        >
-                          <QrCode size={15} />
-                          <span>Nhập Mã PIN 6 Số Thủ Công</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <StudentAttendanceDashboard
+                    currentUser={user}
+                    sessions={attendanceSessions}
+                    onOpenQRScanner={() => setShowCameraScanner(true)}
+                    onOpenPinModal={() => setShowCheckInModal(true)}
+                  />
                 )
               )}
 
