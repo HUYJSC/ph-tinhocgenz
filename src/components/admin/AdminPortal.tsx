@@ -26,16 +26,16 @@ interface AdminPortalProps {
 }
 
 export const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string; short: string }[] = [
-  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3Buổi 1 môn)', short: 'Office 3b' },
-  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6 buổi)', short: 'CC CNTT Cơ bản' },
-  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', short: 'CC CNTT Nâng cao' },
-  { id: 'cntt-basic-we', label: '4. CNTT Cơ bản: Word + Excel (10-12b)', short: 'CNTT CB (W+E)' },
-  { id: 'cntt-adv-we', label: '5. CNTT Nâng Cao: Word + Excel (10-12b)', short: 'CNTT NC (W+E)' },
-  { id: 'ai-office', label: '6. Ứng dụng AI vào công việc Văn phòng (5b)', short: 'Ứng dụng AI VP' },
-  { id: 'excel-accounting', label: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)', short: 'Excel Kế toán' },
-  { id: 'word-6b', label: '8. Word (6 buổi)', short: 'Word 6b' },
-  { id: 'excel-6b', label: '9. Excel (6 buổi)', short: 'Excel 6b' },
-  { id: 'ppt-6b', label: '10. PPT (6 buổi)', short: 'PPT 6b' }
+  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3 Buổi 1 môn)', short: 'Office 3b' },
+  { id: 'cc-cntt-basic',    label: '2. CC CNTT Cơ bản (6 buổi)', short: 'CC Cơ bản' },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', short: 'CC Nâng cao' },
+  { id: 'cntt-basic-we',    label: '4. CNTT Cơ bản: Word + Excel (10-12 buổi)', short: 'CNTT CB' },
+  { id: 'cntt-adv-we',      label: '5. CNTT Nâng Cao: Word + Excel (10-12 buổi)', short: 'CNTT NC' },
+  { id: 'ai-office',        label: '6. Ứng dụng AI vào công việc Văn phòng (5 buổi)', short: 'AI Văn phòng' },
+  { id: 'excel-accounting', label: '7. Excel cho Kế toán', short: 'Excel Kế toán' },
+  { id: 'word-6b',          label: '8. Kỹ năng soạn thảo Word (6 buổi)', short: 'Word 6b' },
+  { id: 'excel-6b',         label: '9. Xử lý bảng tính Excel (6 buổi)', short: 'Excel 6b' },
+  { id: 'ppt-6b',           label: '10. Thiết kế PowerPoint (6 buổi)', short: 'PPT 6b' }
 ];
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({

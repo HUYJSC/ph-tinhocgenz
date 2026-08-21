@@ -1,7 +1,6 @@
 import React from 'react';
 import { BookOpen, Layers, BarChart2, Shield, FileText, QrCode } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
-import { soundFx } from '../../utils/audio';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
@@ -45,9 +44,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   const handleSelect = (tab: ActiveTab) => {
     setActiveTab(tab);
-    soundFx.playClick();
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try { navigator.vibrate(10); } catch (e) {}
+      try { navigator.vibrate(8); } catch (e) {}
     }
   };
 
@@ -98,7 +96,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               padding: '4px 2px',
               transition: 'all 0.15s ease',
               outline: 'none',
-              minHeight: '44px' // Standard touch target
+              minHeight: '44px'
             }}
           >
             {/* Top Indicator Glow Bar */}

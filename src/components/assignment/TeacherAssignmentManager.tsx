@@ -10,18 +10,17 @@ import {
   FolderOpen, Cloud, Copy, Check, ExternalLink, Link2, FileSpreadsheet
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-
-const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string; icon: string }[] = [
-  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3Buổi 1 môn)', icon: '⚡' },
-  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6 buổi)', icon: '💻' },
-  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', icon: '⚙️' },
-  { id: 'cntt-basic-we', label: '4. CNTT Cơ bản: Word + Excel (10-12b)', icon: '📄' },
-  { id: 'cntt-adv-we', label: '5. CNTT Nâng Cao: Word + Excel (10-12b)', icon: '📊' },
-  { id: 'ai-office', label: '6. Ứng dụng AI vào công việc Văn phòng (5b)', icon: '🤖' },
-  { id: 'excel-accounting', label: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)', icon: '📈' },
-  { id: 'word-6b', label: '8. Word (6 buổi)', icon: '📝' },
-  { id: 'excel-6b', label: '9. Excel (6 buổi)', icon: '📊' },
-  { id: 'ppt-6b', label: '10. PPT (6 buổi)', icon: '📽️' }
+const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string }[] = [
+  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3 Buổi 1 môn)' },
+  { id: 'cc-cntt-basic',    label: '2. CC CNTT Cơ bản (6 buổi)' },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)' },
+  { id: 'cntt-basic-we',    label: '4. CNTT Cơ bản: Word + Excel (10-12 buổi)' },
+  { id: 'cntt-adv-we',      label: '5. CNTT Nâng Cao: Word + Excel (10-12 buổi)' },
+  { id: 'ai-office',        label: '6. Ứng dụng AI vào công việc Văn phòng (5 buổi)' },
+  { id: 'excel-accounting', label: '7. Excel cho Kế toán' },
+  { id: 'word-6b',          label: '8. Kỹ năng soạn thảo Word (6 buổi)' },
+  { id: 'excel-6b',         label: '9. Xử lý bảng tính Excel (6 buổi)' },
+  { id: 'ppt-6b',           label: '10. Thiết kế PowerPoint (6 buổi)' }
 ];
 
 interface TeacherAssignmentManagerProps {
@@ -727,7 +726,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               >
                 {ALL_TRACK_OPTIONS.map(trk => (
                   <option key={trk.id} value={trk.id}>
-                    {trk.icon} {trk.label}
+                    {trk.label}
                   </option>
                 ))}
               </select>

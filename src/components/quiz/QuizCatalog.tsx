@@ -3,7 +3,6 @@ import { Quiz, SubjectCategory, Difficulty } from '../../types/quiz';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import { QuizMode } from '../../hooks/useQuizEngine';
 import { Search, Timer, HelpCircle, Play, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu } from 'lucide-react';
-import { soundFx } from '../../utils/audio';
 
 interface QuizCatalogProps {
   quizzes: Quiz[];
@@ -62,16 +61,15 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
   const getDifficultyBadge = (diff: Difficulty) => {
     switch (diff) {
       case 'easy':
-        return <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>Dễ</span>;
+        return <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.25)' }}>Dễ</span>;
       case 'medium':
-        return <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}>Vừa</span>;
+        return <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.25)' }}>Vừa</span>;
       case 'hard':
-        return <span className="badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}>Khó</span>;
+        return <span className="badge" style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.25)' }}>Khó</span>;
     }
   };
 
   const handleStart = (quiz: Quiz, mode: QuizMode) => {
-    soundFx.playClick();
     onStartQuiz(quiz, mode);
   };
 
@@ -89,9 +87,9 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
           background: isStudent
             ? 'linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)'
             : 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
-          borderRadius: 'var(--radius-md)',
+          borderRadius: '16px',
           marginBottom: '14px',
-          border: isStudent ? '1px solid rgba(79, 110, 247, 0.2)' : '1px solid rgba(217, 119, 6, 0.22)',
+          border: isStudent ? '1px solid rgba(79, 110, 247, 0.18)' : '1px solid rgba(217, 119, 6, 0.2)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -100,61 +98,57 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
         }}
       >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
               {isStudent ? `Luyện Đề: ${currentUser?.name || 'Học viên'}` : 'Kho Đề Khảo Thí'}
             </h2>
             <span style={{
-              fontSize: '0.68rem',
-              background: 'var(--brand-light)',
+              fontSize: '0.72rem',
+              background: 'rgba(79, 110, 247, 0.1)',
               color: 'var(--brand)',
-              padding: '2px 8px',
-              borderRadius: 'var(--radius-full)',
+              padding: '2px 10px',
+              borderRadius: '999px',
               fontWeight: 700
             }}>
               {currentTrackName}
             </span>
           </div>
-          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '3px 0 0' }}>
-            {filteredQuizzes.length} đề thi sẵn sàng • Lựa chọn bài trắc nghiệm bên dưới để bắt đầu
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+            {filteredQuizzes.length} đề thi sẵn sàng • Chọn bài trắc nghiệm bên dưới để bắt đầu
           </p>
         </div>
 
         {isStudent && currentUser?.studentCode && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.7rem', background: 'rgba(79, 110, 247, 0.1)', color: 'var(--brand)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-              {currentUser.studentCode}
-            </span>
-          </div>
+          <span style={{ fontSize: '0.74rem', background: 'var(--bg-primary)', color: 'var(--brand)', padding: '4px 10px', borderRadius: '8px', fontWeight: 700, border: '1px solid var(--border-color)', fontFamily: 'monospace' }}>
+            {currentUser.studentCode}
+          </span>
         )}
       </div>
 
-      {/* Categories Filter Tabs (Only shown for Admin or multi-track accounts) */}
+      {/* Categories Filter Tabs with Smooth Horizontal Scroll */}
       {(!isStudent || visibleCategories.length > 2) && (
-        <div className="horizontal-scroll" style={{ marginBottom: '14px' }}>
+        <div className="horizontal-scroll" style={{ marginBottom: '14px', paddingBottom: '4px' }}>
           {visibleCategories.map(cat => {
             const Icon = cat.icon;
             const isActive = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                  soundFx.playClick();
-                }}
+                onClick={() => setSelectedCategory(cat.id)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '7px 13px',
-                  borderRadius: 'var(--radius-md)',
-                  background: isActive ? 'var(--bg-secondary)' : 'var(--bg-card)',
+                  padding: '7px 14px',
+                  borderRadius: '10px',
+                  background: isActive ? 'var(--bg-card)' : 'transparent',
                   border: isActive ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
                   color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
                   fontWeight: isActive ? 700 : 500,
                   fontSize: '0.8rem',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
+                  boxShadow: isActive ? '0 2px 8px rgba(0, 0, 0, 0.05)' : 'none',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -166,20 +160,21 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
         </div>
       )}
 
-      {/* Search & Difficulty Filter Bar (Compact 1-row) */}
+      {/* Search & Difficulty Filter Bar */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
-            placeholder="Tìm kiếm đề thi..."
+            placeholder="Tìm kiếm đề thi theo tên hoặc chủ đề..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
               paddingLeft: '36px',
               paddingRight: '12px',
               minHeight: '38px',
-              fontSize: '0.86rem'
+              fontSize: '0.86rem',
+              borderRadius: '10px'
             }}
           />
         </div>
@@ -189,14 +184,15 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
           onChange={e => setSelectedDifficulty(e.target.value)}
           style={{
             width: 'auto',
-            minWidth: '110px',
+            minWidth: '120px',
             minHeight: '38px',
             fontSize: '0.82rem',
             padding: '8px 28px 8px 10px',
+            borderRadius: '10px',
             flexShrink: 0
           }}
         >
-          <option value="all">Tất cả độ khó</option>
+          <option value="all">Mọi độ khó</option>
           <option value="easy">Dễ</option>
           <option value="medium">Vừa</option>
           <option value="hard">Khó</option>
@@ -206,16 +202,17 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
       {/* Quizzes Grid */}
       {filteredQuizzes.length === 0 ? (
         <div className="card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          <p style={{ fontSize: '1rem', fontWeight: 600 }}>Không tìm thấy đề thi phù hợp với bộ lọc.</p>
+          <p style={{ fontSize: '0.92rem', fontWeight: 600 }}>Không tìm thấy đề thi phù hợp với từ khóa.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
           {filteredQuizzes.map(quiz => (
             <div
               key={quiz.id}
               className="card card-interactive"
               style={{
-                padding: '22px',
+                padding: '20px',
+                borderRadius: '16px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -227,7 +224,7 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
                   <span
                     className="badge"
                     style={{
-                      background: 'rgba(37, 99, 235, 0.1)',
+                      background: 'rgba(37, 99, 235, 0.08)',
                       color: 'var(--accent-primary)',
                       fontWeight: 700,
                       fontSize: '0.72rem'
@@ -238,18 +235,18 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
                   {getDifficultyBadge(quiz.difficulty)}
                 </div>
 
-                <h3 style={{ fontSize: '1.08rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', lineHeight: 1.4 }}>
+                <h3 style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', lineHeight: 1.4 }}>
                   {quiz.title}
                 </h3>
 
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>
                   {quiz.description}
                 </p>
 
-                <div style={{ display: 'flex', gap: '14px', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '18px' }}>
+                <div style={{ display: 'flex', gap: '14px', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <HelpCircle size={14} />
-                    <span>{quiz.questions.length} câu hỏi</span>
+                    <span>{quiz.questions.length} câu</span>
                   </span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Timer size={14} />
@@ -259,11 +256,11 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
+              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
                 <button
                   onClick={() => handleStart(quiz, 'practice')}
                   className="btn btn-secondary"
-                  style={{ flex: 1, padding: '9px 12px', fontSize: '0.82rem', justifyContent: 'center' }}
+                  style={{ flex: 1, padding: '8px 10px', fontSize: '0.8rem', justifyContent: 'center', borderRadius: '8px' }}
                 >
                   <BookOpen size={14} />
                   <span>Luyện Tập</span>
@@ -272,7 +269,7 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
                 <button
                   onClick={() => handleStart(quiz, 'exam')}
                   className="btn btn-primary"
-                  style={{ flex: 1, padding: '9px 12px', fontSize: '0.82rem', justifyContent: 'center', fontWeight: 700 }}
+                  style={{ flex: 1, padding: '8px 10px', fontSize: '0.8rem', justifyContent: 'center', fontWeight: 700, borderRadius: '8px' }}
                 >
                   <Play size={14} />
                   <span>Thi Tính Giờ</span>

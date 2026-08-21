@@ -1,6 +1,5 @@
 import React from 'react';
 import { Moon, Sun, Flame, Award, Shield, Bell, LogOut } from 'lucide-react';
-import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -154,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Logout */}
         {onLogout && (
           <button
-            onClick={() => { soundFx.playClick(); onLogout(); }}
+            onClick={onLogout}
             title="Đăng xuất"
             className="btn"
             style={{
