@@ -3,10 +3,10 @@ import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfi
 import { SAMPLE_INFORMATICS_EXAMS } from '../utils/documentParser';
 import { uploadFileToGoogleDrive } from '../utils/googleDriveService';
 
-const ASSIGNMENTS_KEY = 'phtinhocgenz_assignments_v2';
-const SUBMISSIONS_KEY = 'phtinhocgenz_submissions_v2';
-const NOTIFICATIONS_KEY = 'phtinhocgenz_notifications_v2';
-const DRIVE_CONFIG_KEY = 'phtinhocgenz_drive_config_v2';
+const ASSIGNMENTS_KEY = 'phtinhocgenz_assignments_v3';
+const SUBMISSIONS_KEY = 'phtinhocgenz_submissions_v3';
+const NOTIFICATIONS_KEY = 'phtinhocgenz_notifications_v3';
+const DRIVE_CONFIG_KEY = 'phtinhocgenz_drive_config_v3';
 
 export const DEFAULT_DRIVE_CONFIG: GoogleDriveConfig = {
   driveFolderUrl: 'https://drive.google.com/drive/my-drive',

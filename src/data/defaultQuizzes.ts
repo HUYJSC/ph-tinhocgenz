@@ -277,37 +277,97 @@ export const DEFAULT_QUIZZES: Quiz[] = [
     ]
   },
 
-  // 8. Word (6 buổi)
+  // 8. Word (6 buổi) - Chuẩn Khảo Thí Quốc Tế MOS MO-100
   {
     id: 'quiz-word-6b',
-    title: 'Soạn Thảo & Trình Bày Văn Bản Chuẩn',
-    description: 'Trọn bộ kỹ năng soạn thảo 6 buổi: Căn lề chuẩn, Tab Stop, Header & Footer, Table chuyên nghiệp và xuất file PDF in ấn sắc nét.',
+    title: 'Khảo Thí Quốc Tế: MOS Word Associate (Exam MO-100)',
+    description: 'Bộ đề thi thử chuẩn Microsoft Office Specialist Word 2019 / Microsoft 365: Kỹ năng quản lý tài liệu, định dạng Styles, Find & Replace ký tự đặc biệt, chia cột báo, Section Breaks và quản lý đối tượng đồ họa.',
     category: 'word-6b',
-    difficulty: 'easy',
-    timeLimitMinutes: 15,
+    difficulty: 'medium',
+    timeLimitMinutes: 20,
     icon: 'FileText',
     badgeColor: '#2563eb',
-    author: 'PH - TINHOCGENZ Word Team',
+    author: 'PH - TINHOCGENZ MOS Center (Joan Lambert)',
     createdAt: '2026-08-20',
     questions: [
       {
-        id: 'w6-q1',
+        id: 'mos-w-q1',
         type: 'single',
-        prompt: 'Để tạo dấu chấm chấm (...) tự động khi soạn hợp đồng trong Word, ta sử dụng công cụ nào trên thanh thước kẻ (Ruler)?',
-        options: ['Tab Stop với Leader', 'Dấu chấm bàn phím', 'Dấu gạch dưới', 'Bullet Point'],
+        prompt: 'Trong Word (Exam MO-100), cú pháp ký tự đại diện nào được nhập vào ô "Find what" để tìm hai dấu ngắt đoạn liên tiếp nhằm xóa dòng trống thừa bằng Find and Replace (Ctrl+H)?',
+        options: ['^p^p', '^d^d', '^b^b', '^s^s'],
         correctAnswer: 0,
-        explanation: 'Sử dụng điểm dừng Tab (Tab Stop) kết hợp tùy chọn Leader dấu chấm trong hộp thoại Tabs để đường chấm thẳng hàng tuyệt đối.',
-        hint: 'Tính năng Tab Leader.',
+        explanation: 'Ký tự `^p` trong mục Special của Find and Replace đại diện cho dấu ngắt đoạn (Paragraph mark). Thay thế `^p^p` thành `^p` sẽ xóa các dòng trống liên tiếp.',
+        hint: 'Ký tự mũ ^ kết hợp với chữ p (Paragraph).',
         points: 10
       },
       {
-        id: 'w6-q2',
+        id: 'mos-w-q2',
         type: 'single',
-        prompt: 'Phím tắt để tăng/giảm cỡ chữ nhanh từng bước trong Word là:',
-        options: ['Ctrl + ] hoặc Ctrl + [', 'Ctrl + Shift + >', 'Alt + H + F + S', 'Tất cả đều đúng'],
-        correctAnswer: 3,
-        explanation: 'Cả `Ctrl + ]/[`, `Ctrl + Shift + >/<` và phím tắt Ribbon đều hỗ trợ điều chỉnh cỡ chữ nhanh.',
-        hint: 'Tất cả các phương án đều đúng.',
+        prompt: 'Tổ hợp phím tắt chuẩn để chèn biểu tượng Nhãn hiệu đã đăng ký (Registered Trademark ®) ngay tại vị trí con trỏ là:',
+        options: ['Alt + Ctrl + R', 'Ctrl + Shift + R', 'Alt + Shift + R', 'Ctrl + R'],
+        correctAnswer: 0,
+        explanation: 'Trong Word, `Alt + Ctrl + R` chèn ký tự ®, `Alt + Ctrl + C` chèn ©, và `Alt + Ctrl + T` chèn ™.',
+        hint: 'Tổ hợp phím Alt + Ctrl kết hợp với chữ cái đầu của từ.',
+        points: 10
+      },
+      {
+        id: 'mos-w-q3',
+        type: 'single',
+        prompt: 'Để sao chép định dạng bằng công cụ Format Painter và áp dụng liên tục cho NHIỀU đoạn văn bản khác nhau, bạn phải thao tác như thế nào?',
+        options: ['Nhấp đúp chuột (Double-click) vào nút Format Painter', 'Nhấp chuột 1 lần vào nút Format Painter', 'Giữ phím Ctrl khi nhấp chuột', 'Giữ phím Shift khi nhấp chuột'],
+        correctAnswer: 0,
+        explanation: 'Nhấp đúp chuột (Double-click) vào biểu tượng Format Painter sẽ kích hoạt chế độ sao chép định dạng ghim cho đến khi nhấn phím Esc.',
+        hint: 'Thao tác click 2 lần liên tiếp.',
+        points: 10
+      },
+      {
+        id: 'mos-w-q4',
+        type: 'single',
+        prompt: 'Trong văn bản có 2 cột (Columns), muốn đẩy toàn bộ nội dung từ vị trí con trỏ sang bắt đầu ngay ở đầu cột tiếp theo, bạn sử dụng phím tắt nào?',
+        options: ['Ctrl + Shift + Enter (Column Break)', 'Ctrl + Enter (Page Break)', 'Shift + Enter (Line Break)', 'Alt + Enter'],
+        correctAnswer: 0,
+        explanation: 'Tổ hợp phím `Ctrl + Shift + Enter` chèn ngắt cột (Column Break), đưa nội dung sang đầu cột kế tiếp.',
+        hint: 'Thêm phím Shift vào tổ hợp ngắt trang Ctrl + Enter.',
+        points: 10
+      },
+      {
+        id: 'mos-w-q5',
+        type: 'single',
+        prompt: 'Để một bảng biểu hoặc một trang ở giữa tài liệu có hướng giấy Nằm Ngang (Landscape) trong khi các trang khác Nằm Đứng (Portrait), bạn phải chèn loại ngắt nào?',
+        options: ['Section Break (Next Page)', 'Page Break (Ngắt trang đơn)', 'Column Break (Ngắt cột)', 'Text Wrapping Break'],
+        correctAnswer: 0,
+        explanation: 'Section Break (Next Page) phân chia tài liệu thành các phân vùng độc lập, cho phép thiết lập lề, hướng giấy Landscape và Header/Footer riêng biệt.',
+        hint: 'Ngắt phân vùng Section.',
+        points: 10
+      },
+      {
+        id: 'mos-w-q6',
+        type: 'single',
+        prompt: 'Trong hộp thoại Paragraph (tab Line and Page Breaks), tùy chọn nào đảm bảo một đoạn tiêu đề luôn đi liền với đoạn văn nội dung kế sau (tránh bị ngắt trang mồ côi)?',
+        options: ['Keep with next', 'Keep lines together', 'Page break before', 'Widow/Orphan control'],
+        correctAnswer: 0,
+        explanation: 'Tùy chọn `Keep with next` khóa đoạn văn hiện tại luôn nằm cùng 1 trang với đoạn văn tiếp sau nó.',
+        hint: 'Giữ cùng với đoạn kế tiếp (next).',
+        points: 10
+      },
+      {
+        id: 'mos-w-q7',
+        type: 'single',
+        prompt: 'Tổ hợp phím tắt nào dùng để xóa nhanh toàn bộ định dạng ký tự thủ công (Font chữ, màu sắc, in đậm/nghiêng) và trả về định dạng mặc định của Style?',
+        options: ['Ctrl + Spacebar', 'Ctrl + Backspace', 'Ctrl + Delete', 'Ctrl + Shift + C'],
+        correctAnswer: 0,
+        explanation: 'Nhấn `Ctrl + Spacebar` sẽ xóa toàn bộ Character Formatting thủ công, khôi phục văn bản về thiết lập gốc của Style.',
+        hint: 'Ctrl kết hợp phím cách dài nhất bàn phím.',
+        points: 10
+      },
+      {
+        id: 'mos-w-q8',
+        type: 'single',
+        prompt: 'Khi cần tạo danh mục tài liệu tham khảo hoặc trích dẫn tự động theo chuẩn APA / IEEE trong Word, bạn sử dụng nhóm công cụ nào trên thanh Ribbon?',
+        options: ['Tab References > Citations & Bibliography', 'Tab Insert > Links', 'Tab Review > Language', 'Tab Layout > Page Setup'],
+        correctAnswer: 0,
+        explanation: 'Tab `References > nhóm Citations & Bibliography` quản lý nguồn trích dẫn, tác giả và tự động tạo trang tài liệu tham khảo theo chuẩn quốc tế.',
+        hint: 'Tab tham chiếu References.',
         points: 10
       }
     ]

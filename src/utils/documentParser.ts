@@ -191,6 +191,186 @@ export async function parseUploadedDocument(file: File): Promise<ParsedDocumentR
  * Pre-defined default Informatics Exam Templates for 1-Click loading
  */
 export const SAMPLE_INFORMATICS_EXAMS: Partial<Assignment>[] = [
+  // 1. MOS Word MO-100 Objective 2.1: Chèn & Tìm Kiếm Văn Bản, Ký Tự Đặc Biệt
+  {
+    title: 'MOS Word MO-100: Objective 2.1 - Chèn Ký Tự Đặc Biệt & Tìm Kiếm Thay Thế',
+    description: 'Thực hành đề thi chuẩn MOS: Chèn Registered Trademark (®), Trademark (™) và sử dụng Find & Replace nâng cao (Word_2-1).',
+    category: 'word-6b',
+    targetClass: 'Lớp Kỹ Năng Soạn Thảo Word (6 buổi)',
+    sourceFileName: 'MOS_Word_MO100_Task_2.1_Symbols_Replace.docx',
+    sourceFileType: 'docx',
+    rawContent: `MICROSOFT OFFICE SPECIALIST: EXAM MO-100 (WORD 2019 / MICROSOFT 365)
+CHUYÊN ĐỀ 2.1: CHÈN VĂN BẢN, ĐOẠN VĂN & KÝ TỰ ĐẶC BIỆT (SYMBOLS & SPECIAL CHARACTERS)
+Tài liệu thực hành: Word_2-1.docx • Đối chiếu kết quả: Word_2-1_results.docx
+
+YÊU CẦU 1 (30 điểm):
+Tại đoạn văn đầu tiên của tài liệu Word_2-1, chèn ký tự biểu tượng nhãn hiệu đã đăng ký (Registered Trademark symbol ®) ngay phía sau từ "Microsoft". (Sử dụng tổ hợp phím Alt+Ctrl+R hoặc tab Insert > Symbols).
+
+YÊU CẦU 2 (40 điểm):
+Sử dụng tính năng Find and Replace (Ctrl+H) để thay thế tất cả các từ "(trademark)" xuất hiện trong văn bản bằng biểu tượng thương hiệu (™). Đảm bảo chỉ thay thế chính xác các trường hợp từ trademark nằm trong dấu ngoặc đơn.
+(Mẹo: Gõ ký tự ™ vào văn bản, cắt vào Clipboard và chọn Clipboard Contents trong mục Special của Find and Replace).
+
+YÊU CẦU 3 (30 điểm):
+Sử dụng tính năng tìm kiếm ký tự đặc biệt để loại bỏ các dấu ngắt đoạn trống thừa trong văn bản (thay thế hai dấu ngắt đoạn liên tiếp ^p^p thành một dấu ngắt đoạn ^p). Lưu tài liệu và kiểm tra kết quả.`,
+    parsedQuestions: [
+      {
+        id: 'mos-w-21-q1',
+        number: 1,
+        prompt: 'Trình bày các bước chèn biểu tượng Registered Trademark (®) sau từ "Microsoft" (nêu rõ tab/nút bấm hoặc phím tắt thực hiện):',
+        points: 30
+      },
+      {
+        id: 'mos-w-21-q2',
+        number: 2,
+        prompt: 'Trình bày thao tác mở hộp thoại Find and Replace để thay thế toàn bộ cụm "(trademark)" thành ký tự ™ chính xác theo yêu cầu đề thi:',
+        points: 40
+      },
+      {
+        id: 'mos-w-21-q3',
+        number: 3,
+        prompt: 'Mô tả cú pháp ký tự đại diện (Special code) dùng trong ô "Find what" và "Replace with" để xóa các dòng ngắt đoạn trống thừa (^p):',
+        points: 30
+      }
+    ],
+    durationMinutes: 30,
+    isOpen: true,
+    allowLateSubmission: false,
+    securityOptions: {
+      disableCopy: true,
+      disableDownload: true,
+      watermarkStudent: true
+    }
+  },
+
+  // 2. MOS Word MO-100 Objective 2.2: Định Dạng Styles, Hiệu Ứng Chữ & Paragraph Spacing
+  {
+    title: 'MOS Word MO-100: Objective 2.2 - Quản Lý Styles, Text Effects & Khoảng Cách Đoạn',
+    description: 'Thực hành chuẩn MOS: Sắp xếp Styles Gallery, áp dụng Heading 1, 2, Format Painter, hiệu ứng Sharp Bevel và Paragraph Spacing Relaxed (Word_2-2).',
+    category: 'word-6b',
+    targetClass: 'Lớp Kỹ Năng Soạn Thảo Word (6 buổi)',
+    sourceFileName: 'MOS_Word_MO100_Task_2.2_Styles_TextEffects.docx',
+    sourceFileType: 'docx',
+    rawContent: `MICROSOFT OFFICE SPECIALIST: EXAM MO-100 (WORD 2019 / MICROSOFT 365)
+CHUYÊN ĐỀ 2.2: ĐỊNH DẠNG VĂN BẢN, STYLES & KHOẢNG CÁCH DÒNG ĐOẠN
+Tài liệu thực hành: Word_2-2.docx • Đối chiếu kết quả: Word_2-2_results.docx
+
+YÊU CẦU 1 (25 điểm):
+Mở bảng Styles Pane (Ctrl+Alt+Shift+S hoặc nút mở rộng trên Home tab). Thiết lập hiển thị toàn bộ Styles theo thứ tự bảng chữ cái (Alphabetical order). Chọn tất cả các đoạn văn đang có định dạng Heading 3 và chuyển đổi hàng loạt sang Style Heading 2.
+
+YÊU CẦU 2 (25 điểm):
+Tại đầu tài liệu, áp dụng Style Heading 1 cho tiêu đề "Financial Summary". Sử dụng công cụ chổi định dạng Format Painter để sao chép Style này sang hai tiêu đề "Financial Statements" và "Statement Notes".
+
+YÊU CẦU 3 (25 điểm):
+Tại tab Design > nhóm Document Formatting, thiết lập khoảng cách dòng đoạn (Paragraph Spacing) cho toàn bộ tài liệu thành "Relaxed".
+
+YÊU CẦU 4 (25 điểm):
+Ngay sau tiêu đề chính, chọn đoạn văn "A Brief Review of Our Finances":
+- Áp dụng hiệu ứng chữ Text Effect: "Fill: Green, Accent color 3; Sharp Bevel".
+- Căn giữa (Center) đoạn văn theo chiều ngang trang.
+- Đổi khoảng cách phía trước (Space Before) của tiêu đề "Financial Summary" từ 20 pt thành 12 pt.`,
+    parsedQuestions: [
+      {
+        id: 'mos-w-22-q1',
+        number: 1,
+        prompt: 'Trình bày cách mở Styles Pane, tùy chọn hiển thị Alphabetical và thao tác chọn tất cả các đoạn Heading 3 để đổi sang Heading 2:',
+        points: 25
+      },
+      {
+        id: 'mos-w-22-q2',
+        number: 2,
+        prompt: 'Nêu cách áp dụng Heading 1 cho "Financial Summary" và kỹ thuật sử dụng Format Painter để dán định dạng sang 2 tiêu đề tiếp theo:',
+        points: 25
+      },
+      {
+        id: 'mos-w-22-q3',
+        number: 3,
+        prompt: 'Chỉ ra vị trí thiết lập Paragraph Spacing dạng "Relaxed" cho toàn văn bản trên thanh Ribbon:',
+        points: 25
+      },
+      {
+        id: 'mos-w-22-q4',
+        number: 4,
+        prompt: 'Trình bày các bước áp dụng Text Effect "Fill: Green, Accent color 3; Sharp Bevel" và chỉnh Space Before thành 12 pt:',
+        points: 25
+      }
+    ],
+    durationMinutes: 35,
+    isOpen: true,
+    allowLateSubmission: false,
+    securityOptions: {
+      disableCopy: true,
+      disableDownload: true,
+      watermarkStudent: true
+    }
+  },
+
+  // 3. MOS Word MO-100 Objective 2.3: Chia Cột Báo, Section Break & Định Dạng Trang Khác Nhau
+  {
+    title: 'MOS Word MO-100: Objective 2.3 - Chia Cột Báo Columns & Ngắt Phân Đoạn Section Breaks',
+    description: 'Thực hành nâng cao chuẩn MOS: Chia 2 cột có đường kẻ giữa, Column Break, phân trang chống ngắt dòng và tạo Section nằm ngang Landscape (Word_2-3).',
+    category: 'office-fast-3in1',
+    targetClass: 'Lớp Word, Excel, PowerPoint (3 Buổi 1 môn)',
+    sourceFileName: 'MOS_Word_MO100_Task_2.3_Columns_SectionBreaks.docx',
+    sourceFileType: 'docx',
+    rawContent: `MICROSOFT OFFICE SPECIALIST: EXAM MO-100 (WORD 2019 / MICROSOFT 365)
+CHUYÊN ĐỀ 2.3: TẠO VÀ CẤU HÌNH CÁC PHÂN ĐOẠN TÀI LIỆU (SECTIONS & COLUMNS)
+Tài liệu thực hành: Word_2-3.docx • Đối chiếu kết quả: Word_2-3_results.docx
+
+YÊU CẦU 1 (25 điểm):
+Ngay trước tiêu đề "Process", chèn một dấu ngắt trang thủ công (Page Break - Ctrl+Enter).
+
+YÊU CẦU 2 (25 điểm):
+Chọn các tiêu đề "Questions for Team Leaders", "Questions for Department Reps" và danh sách đi kèm:
+- Định dạng thành 2 cột (Two Columns) có độ rộng bằng nhau.
+- Đặt khoảng cách giữa hai cột (Spacing) là 0.3" (7.62 mm) và bật tùy chọn đường kẻ dọc phân cách (Line Between).
+- Chèn một ngắt cột (Column Break - Ctrl+Shift+Enter) ngay trước tiêu đề "Questions for Department Reps" để đưa danh sách sang đầu cột thứ hai.
+
+YÊU CẦU 3 (25 điểm):
+Tại phần "Pre-Plan Project", chọn tiêu đề, đoạn văn và các mục danh sách:
+- Mở hộp thoại Paragraph > tab Line and Page Breaks.
+- Thiết lập tùy chọn "Keep with next" và "Keep lines together" để giữ trọn vẹn nội dung trên cùng một trang.
+
+YÊU CẦU 4 (25 điểm):
+Ở cuối tài liệu, xác định phần "Carry out project":
+- Tạo một Section Break (Next Page) riêng biệt để đưa nội dung này sang một trang độc lập.
+- Chỉ riêng Section này: thiết lập hướng giấy sang Nằm Ngang (Orientation: Landscape) và đặt cả 4 lề trang (Top, Bottom, Left, Right) là 2" (5.08 cm).`,
+    parsedQuestions: [
+      {
+        id: 'mos-w-23-q1',
+        number: 1,
+        prompt: 'Trình bày cách chèn ngắt trang Page Break trước tiêu đề "Process":',
+        points: 25
+      },
+      {
+        id: 'mos-w-23-q2',
+        number: 2,
+        prompt: 'Trình bày các bước chia 2 cột có khoảng cách Spacing 0.3", đường kẻ giữa Line Between và chèn ngắt cột Column Break:',
+        points: 25
+      },
+      {
+        id: 'mos-w-23-q3',
+        number: 3,
+        prompt: 'Giải thích ý nghĩa và cách bật 2 tùy chọn "Keep with next" và "Keep lines together" trong hộp thoại Paragraph:',
+        points: 25
+      },
+      {
+        id: 'mos-w-23-q4',
+        number: 4,
+        prompt: 'Trình bày cách tạo Section Break Next Page và cấu hình hướng trang Landscape cùng lề 2" độc lập cho một phần văn bản:',
+        points: 25
+      }
+    ],
+    durationMinutes: 40,
+    isOpen: true,
+    allowLateSubmission: false,
+    securityOptions: {
+      disableCopy: true,
+      disableDownload: true,
+      watermarkStudent: true
+    }
+  },
+
+  // 4. Excel Specialist
   {
     title: 'Đề Thi Thực Hành MOS Excel Specialist - K12 & Đại Cương',
     description: 'Bài kiểm tra kỹ năng xử lý dữ liệu, hàm VLOOKUP, SUMIFS, PivotTable và định dạng bảng tính có điều kiện.',
