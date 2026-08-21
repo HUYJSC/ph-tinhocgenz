@@ -273,34 +273,34 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
-      {/* Header Banner */}
+    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
+      {/* Sleek Compact Header */}
       <div
         className="card"
         style={{
-          padding: '20px 24px',
+          padding: '14px 18px',
           background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: '20px',
-          border: '1.5px solid rgba(217, 119, 6, 0.25)',
+          borderRadius: '16px',
+          marginBottom: '14px',
+          border: '1px solid rgba(217, 119, 6, 0.2)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '14px'
+          gap: '10px'
         }}
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-              Quản Lý Đề Thi & Lưu Trữ Bài Nộp
+            <h2 style={{ fontSize: '1.08rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              Quản Lý Đề Thi & Chấm Bài Nộp
             </h2>
-            <span style={{ fontSize: '0.72rem', background: '#d97706', color: '#fff', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
+            <span style={{ fontSize: '0.68rem', background: '#d97706', color: '#fff', padding: '2px 8px', borderRadius: '999px', fontWeight: 800 }}>
               Giảng Viên
             </span>
           </div>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-            Phát hành đề thi bảo mật, tự động đồng bộ bài nộp về Google Drive của giáo viên.
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '3px 0 0' }}>
+            Đề thi bảo mật • Tự động đồng bộ bài nộp Google Drive
           </p>
         </div>
 
@@ -308,30 +308,30 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
           <button
             onClick={() => setActiveTab('drive_cloud')}
             className="btn btn-secondary"
-            style={{ padding: '8px 14px', fontSize: '0.82rem', fontWeight: 700, border: '1px solid rgba(37, 99, 235, 0.3)', color: 'var(--accent-primary)' }}
+            style={{ padding: '6px 12px', minHeight: '32px', height: '32px', fontSize: '0.78rem', fontWeight: 700, borderRadius: '8px', color: 'var(--brand)' }}
           >
-            <Cloud size={15} />
-            <span>Kết Nối Google Drive</span>
+            <Cloud size={14} />
+            <span>Google Drive</span>
           </button>
 
           <button
             onClick={() => setActiveTab('create')}
             className="btn btn-primary"
-            style={{ padding: '8px 16px', fontSize: '0.82rem', fontWeight: 800, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
+            style={{ padding: '6px 14px', minHeight: '32px', height: '32px', fontSize: '0.78rem', fontWeight: 800, borderRadius: '8px', background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
           >
-            <PlusCircle size={16} />
+            <PlusCircle size={14} />
             <span>Tạo Đề Thi Mới</span>
           </button>
         </div>
       </div>
 
-      {/* Tabs Bar */}
-      <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', marginBottom: '20px', overflowX: 'auto' }}>
+      {/* Segmented Tabs Bar */}
+      <div className="horizontal-scroll" style={{ marginBottom: '16px', paddingBottom: '4px' }}>
         {[
-          { id: 'manage', label: `Danh Sách Đề Thi (${assignments.length})`, icon: FileText },
-          { id: 'submissions', label: `Bài Nộp Của Học Viên (${submissions.length})`, icon: FolderOpen },
-          { id: 'drive_cloud', label: 'Lưu Trữ Google Drive ☁️', icon: Cloud },
-          { id: 'create', label: 'Phát Hành Đề Mới', icon: PlusCircle },
+          { id: 'manage', label: `Đề Thi (${assignments.length})`, icon: FileText },
+          { id: 'submissions', label: `Bài Nộp (${submissions.length})`, icon: FolderOpen },
+          { id: 'drive_cloud', label: 'Google Drive Cloud', icon: Cloud },
+          { id: 'create', label: 'Soạn Đề Mới', icon: PlusCircle },
           { id: 'notifications', label: `Thông Báo (${notifications.filter(n => !n.isRead).length})`, icon: Bell }
         ].map(tab => {
           const Icon = tab.icon;
@@ -341,25 +341,25 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id as any);
-                soundFx.playClick();
               }}
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                border: 'none',
-                background: 'transparent',
-                borderBottom: isActive ? '2.5px solid #d97706' : '2.5px solid transparent',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '10px',
+                border: isActive ? '1.5px solid #d97706' : '1px solid var(--border-color)',
+                background: isActive ? 'var(--bg-card)' : 'transparent',
                 color: isActive ? '#d97706' : 'var(--text-secondary)',
-                fontWeight: isActive ? 800 : 600,
-                fontSize: '0.86rem',
+                fontWeight: isActive ? 800 : 500,
+                fontSize: '0.8rem',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                boxShadow: isActive ? '0 2px 8px rgba(217, 119, 6, 0.12)' : 'none',
                 transition: 'all 0.15s ease'
               }}
             >
-              <Icon size={16} />
+              <Icon size={14} />
               <span>{tab.label}</span>
             </button>
           );

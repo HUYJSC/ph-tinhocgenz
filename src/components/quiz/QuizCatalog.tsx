@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Quiz, SubjectCategory, Difficulty } from '../../types/quiz';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import { QuizMode } from '../../hooks/useQuizEngine';
-import { Search, Timer, HelpCircle, Play, BookOpen, Trash2, Code2, FileSpreadsheet, FileText, Presentation, Cpu } from 'lucide-react';
+import {
+  Search, Timer, HelpCircle, Play, BookOpen, Trash2,
+  Code2, FileSpreadsheet, FileText, Presentation, Cpu,
+  ChevronDown, ChevronUp, SlidersHorizontal, CheckCircle2, RotateCcw
+} from 'lucide-react';
 
 interface QuizCatalogProps {
   quizzes: Quiz[];
@@ -12,17 +16,17 @@ interface QuizCatalogProps {
 }
 
 const ALL_CATEGORIES: { id: SubjectCategory; label: string; icon: any }[] = [
-  { id: 'all', label: 'Tất cả (10 môn)', icon: BookOpen },
-  { id: 'office-fast-3in1', label: 'Office Cấp Tốc', icon: FileSpreadsheet },
-  { id: 'cc-cntt-basic', label: 'CC CNTT Cơ bản', icon: Cpu },
-  { id: 'cc-cntt-advanced', label: 'CC CNTT Nâng cao', icon: Presentation },
+  { id: 'all', label: 'Tất cả (10 phân hệ)', icon: BookOpen },
+  { id: 'office-fast-3in1', label: 'Office Cấp Tốc (3b)', icon: FileSpreadsheet },
+  { id: 'cc-cntt-basic', label: 'CC CNTT Cơ bản (6b)', icon: Cpu },
+  { id: 'cc-cntt-advanced', label: 'CC CNTT Nâng cao (6b)', icon: Presentation },
   { id: 'cntt-basic-we', label: 'CNTT Cơ bản (W+E)', icon: FileText },
   { id: 'cntt-adv-we', label: 'CNTT Nâng Cao (W+E)', icon: Presentation },
-  { id: 'ai-office', label: 'Ứng dụng AI VP', icon: Code2 },
+  { id: 'ai-office', label: 'Ứng dụng AI Văn Phòng', icon: Code2 },
   { id: 'excel-accounting', label: 'Excel Kế toán', icon: FileSpreadsheet },
-  { id: 'word-6b', label: 'Word', icon: FileText },
-  { id: 'excel-6b', label: 'Excel', icon: FileSpreadsheet },
-  { id: 'ppt-6b', label: 'PowerPoint', icon: Presentation }
+  { id: 'word-6b', label: 'MOS Word (6b)', icon: FileText },
+  { id: 'excel-6b', label: 'MOS Excel (6b)', icon: FileSpreadsheet },
+  { id: 'ppt-6b', label: 'PowerPoint (6b)', icon: Presentation }
 ];
 
 export const QuizCatalog: React.FC<QuizCatalogProps> = ({
@@ -43,6 +47,7 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const [isFilterBoxOpen, setIsFilterBoxOpen] = useState(false);
 
   // Enforce access control
   const accessibleQuizzes = isStudent
@@ -73,136 +78,207 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
     onStartQuiz(quiz, mode);
   };
 
-  const currentTrackName = currentUser?.programTrack
-    ? TRACK_LABELS[currentUser.programTrack]
-    : 'Tin Học Văn Phòng MOS (Word, Excel, PowerPoint)';
+  const currentCategoryLabel = ALL_CATEGORIES.find(c => c.id === selectedCategory)?.label || 'Tất cả';
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
-      {/* Sleek Compact Header */}
+      
+      {/* ── UNIFIED SLEEK COLLAPSIBLE FILTER BOX ── */}
       <div
         className="card"
         style={{
-          padding: '14px 18px',
-          background: isStudent
-            ? 'linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)'
-            : 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
           borderRadius: '16px',
-          marginBottom: '14px',
-          border: isStudent ? '1px solid rgba(79, 110, 247, 0.18)' : '1px solid rgba(217, 119, 6, 0.2)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '10px'
+          marginBottom: '16px',
+          overflow: 'hidden',
+          border: '1px solid var(--border-color)',
+          background: 'var(--bg-card)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)'
         }}
       >
-        <div>
+        {/* Box Top Header Bar */}
+        <div
+          style={{
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px',
+            background: isStudent ? 'rgba(79, 110, 247, 0.04)' : 'rgba(217, 119, 6, 0.04)',
+            borderBottom: isFilterBoxOpen ? '1px solid var(--border-color)' : 'none'
+          }}
+        >
+          {/* Title & Subject Pill */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-              {isStudent ? `Luyện Đề: ${currentUser?.name || 'Học viên'}` : 'Kho Đề Khảo Thí'}
+            <h2 style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              {isStudent ? `Khảo Thí: ${currentUser?.name || 'Học viên'}` : 'Kho Đề Khảo Thí & Luyện Thi'}
             </h2>
             <span style={{
               fontSize: '0.72rem',
-              background: 'rgba(79, 110, 247, 0.1)',
+              fontWeight: 700,
               color: 'var(--brand)',
+              background: 'var(--brand-light)',
               padding: '2px 10px',
               borderRadius: '999px',
-              fontWeight: 700
+              border: '1px solid rgba(79, 110, 247, 0.2)'
             }}>
-              {currentTrackName}
+              {currentCategoryLabel}
+            </span>
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              • {filteredQuizzes.length} đề thi
             </span>
           </div>
-          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            {filteredQuizzes.length} đề thi sẵn sàng • Chọn bài trắc nghiệm bên dưới để bắt đầu
-          </p>
-        </div>
 
-        {isStudent && currentUser?.studentCode && (
-          <span style={{ fontSize: '0.74rem', background: 'var(--bg-primary)', color: 'var(--brand)', padding: '4px 10px', borderRadius: '8px', fontWeight: 700, border: '1px solid var(--border-color)', fontFamily: 'monospace' }}>
-            {currentUser.studentCode}
-          </span>
-        )}
-      </div>
-
-      {/* Categories Filter Tabs with Smooth Horizontal Scroll */}
-      {(!isStudent || visibleCategories.length > 2) && (
-        <div className="horizontal-scroll" style={{ marginBottom: '14px', paddingBottom: '4px' }}>
-          {visibleCategories.map(cat => {
-            const Icon = cat.icon;
-            const isActive = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '7px 14px',
-                  borderRadius: '10px',
-                  background: isActive ? 'var(--bg-card)' : 'transparent',
-                  border: isActive ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  fontWeight: isActive ? 700 : 500,
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  boxShadow: isActive ? '0 2px 8px rgba(0, 0, 0, 0.05)' : 'none',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <Icon size={14} />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Search & Difficulty Filter Bar */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder="Tìm kiếm đề thi theo tên hoặc chủ đề..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+          {/* Toggle Collapsible Box Button */}
+          <button
+            onClick={() => setIsFilterBoxOpen(!isFilterBoxOpen)}
+            className="btn btn-secondary"
             style={{
-              paddingLeft: '36px',
-              paddingRight: '12px',
-              minHeight: '38px',
-              fontSize: '0.86rem',
-              borderRadius: '10px'
+              padding: '6px 12px',
+              height: '32px',
+              minHeight: '32px',
+              borderRadius: '999px',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              gap: '6px',
+              background: isFilterBoxOpen ? 'var(--brand-light)' : 'var(--bg-secondary)',
+              color: isFilterBoxOpen ? 'var(--brand)' : 'var(--text-secondary)',
+              border: isFilterBoxOpen ? '1px solid var(--brand)' : '1px solid var(--border-color)'
             }}
-          />
+          >
+            <SlidersHorizontal size={13} />
+            <span>{isFilterBoxOpen ? 'Thu Gọn Bộ Lọc' : 'Mở Rộng Phân Hệ'}</span>
+            {isFilterBoxOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
         </div>
 
-        <select
-          value={selectedDifficulty}
-          onChange={e => setSelectedDifficulty(e.target.value)}
-          style={{
-            width: 'auto',
-            minWidth: '120px',
-            minHeight: '38px',
-            fontSize: '0.82rem',
-            padding: '8px 28px 8px 10px',
-            borderRadius: '10px',
-            flexShrink: 0
-          }}
-        >
-          <option value="all">Mọi độ khó</option>
-          <option value="easy">Dễ</option>
-          <option value="medium">Vừa</option>
-          <option value="hard">Khó</option>
-        </select>
+        {/* Search & Difficulty 1-Row Toolbar */}
+        <div style={{ padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm nhanh tên đề thi hoặc kỹ năng..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                paddingLeft: '34px',
+                paddingRight: '12px',
+                minHeight: '36px',
+                fontSize: '0.84rem',
+                borderRadius: '10px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)'
+              }}
+            />
+          </div>
+
+          <select
+            value={selectedDifficulty}
+            onChange={e => setSelectedDifficulty(e.target.value)}
+            style={{
+              width: 'auto',
+              minWidth: '115px',
+              minHeight: '36px',
+              fontSize: '0.8rem',
+              padding: '6px 26px 6px 10px',
+              borderRadius: '10px',
+              flexShrink: 0,
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border-color)'
+            }}
+          >
+            <option value="all">Mọi độ khó</option>
+            <option value="easy">Dễ</option>
+            <option value="medium">Vừa</option>
+            <option value="hard">Khó</option>
+          </select>
+
+          {(searchQuery || selectedCategory !== 'all' || selectedDifficulty !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('all');
+                setSelectedDifficulty('all');
+              }}
+              title="Đặt lại bộ lọc"
+              className="btn btn-icon"
+              style={{ width: '36px', height: '36px', minHeight: '36px', borderRadius: '10px', color: 'var(--text-muted)' }}
+            >
+              <RotateCcw size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Collapsible Category Drawer (Smooth Accordion Expand/Collapse) */}
+        {isFilterBoxOpen && (
+          <div
+            className="animate-slide-up"
+            style={{
+              padding: '12px 14px 14px',
+              background: 'var(--bg-secondary)',
+              borderTop: '1px solid var(--border-color)'
+            }}
+          >
+            <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '8px' }}>
+              Chọn Phân Hệ Đào Tạo Cần Luyện Tập:
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+              {visibleCategories.map(cat => {
+                const Icon = cat.icon;
+                const isActive = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      background: isActive ? 'var(--bg-card)' : 'var(--bg-primary)',
+                      border: isActive ? '1.5px solid var(--brand)' : '1px solid var(--border-color)',
+                      color: isActive ? 'var(--brand)' : 'var(--text-secondary)',
+                      fontWeight: isActive ? 800 : 500,
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      boxShadow: isActive ? '0 2px 8px rgba(79, 110, 247, 0.12)' : 'none',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Icon size={14} color={isActive ? 'var(--brand)' : 'var(--text-muted)'} />
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {cat.label}
+                    </span>
+                    {isActive && <CheckCircle2 size={13} color="var(--brand)" style={{ flexShrink: 0 }} />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quizzes Grid */}
       {filteredQuizzes.length === 0 ? (
-        <div className="card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          <p style={{ fontSize: '0.92rem', fontWeight: 600 }}>Không tìm thấy đề thi phù hợp với từ khóa.</p>
+        <div className="card" style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', borderRadius: '16px' }}>
+          <p style={{ fontSize: '0.92rem', fontWeight: 600 }}>Không tìm thấy đề thi phù hợp với từ khóa tìm kiếm.</p>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory('all');
+              setSelectedDifficulty('all');
+            }}
+            className="btn btn-secondary"
+            style={{ marginTop: '8px', fontSize: '0.78rem', borderRadius: '8px' }}
+          >
+            Hiển thị lại tất cả đề thi
+          </button>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
