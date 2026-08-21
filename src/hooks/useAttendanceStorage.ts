@@ -3,8 +3,8 @@ import { AttendanceSession, AttendanceRecord, AttendanceStatus, MakeupAttendance
 import { StudentAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 import { getClientIp, getDeviceFingerprint, calculateDistanceMeters } from '../utils/securityUtils';
 
-// Storage key updated for 5-minute rotation & GPS Anti-cheat v7
-const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v7_5min_gps';
+// Storage key updated for 5-minute rotation & GPS Anti-cheat v8 (Official Meet links)
+const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v8_official_meet';
 const MAKEUP_REPORTS_KEY = 'phtinhocgenz_makeup_reports_v3';
 
 const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
@@ -22,16 +22,16 @@ const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
 
 // Teacher-to-Class mappings
 export const TRACK_CLASS_CODES: Record<CurriculumTrack, { classCode: string; defaultTeacherId: string; defaultTeacherName: string; room: string; meetUrl: string }> = {
-  'office-fast-3in1': { classCode: 'K26-WE01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01' },
-  'cc-cntt-basic':    { classCode: 'K26-CC01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01' },
-  'cc-cntt-advanced': { classCode: 'K26-CCN01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab03' },
-  'cntt-basic-we':    { classCode: 'K26-WE-CB', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab02' },
-  'cntt-adv-we':      { classCode: 'K26-WENC01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab03' },
-  'ai-office':        { classCode: 'K26-AI01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/ph-tinhocgenz-ai01' },
-  'excel-accounting': { classCode: 'K26-KT01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab03' },
-  'word-6b':          { classCode: 'K26-W01', defaultTeacherId: 'tch-04', defaultTeacherName: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab02' },
-  'excel-6b':         { classCode: 'K26-EX01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab02' },
-  'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01' }
+  'office-fast-3in1': { classCode: 'K26-WE01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'cc-cntt-basic':    { classCode: 'K26-CC01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'cc-cntt-advanced': { classCode: 'K26-CCN01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'cntt-basic-we':    { classCode: 'K26-WE-CB', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'cntt-adv-we':      { classCode: 'K26-WENC01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'ai-office':        { classCode: 'K26-AI01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'excel-accounting': { classCode: 'K26-KT01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'word-6b':          { classCode: 'K26-W01', defaultTeacherId: 'tch-04', defaultTeacherName: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'excel-6b':         { classCode: 'K26-EX01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
+  'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' }
 };
 
 // Deterministic 6-digit rolling PIN generator (Default: 300 seconds / 5 minutes)

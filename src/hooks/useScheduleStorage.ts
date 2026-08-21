@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ClassScheduleItem } from '../types/schedule';
 
-const SCHEDULE_STORAGE_KEY = 'phtinhocgenz_schedules_v1';
+const SCHEDULE_STORAGE_KEY = 'phtinhocgenz_schedules_v2';
 
 export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
   // ── 1. Office Cấp Tốc (K26-WE01) - Thầy Quang Huy ──
@@ -18,7 +18,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '20:30',
     shift: 'evening',
     room: 'Phòng LAB 01 (Tầng 2)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab01',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 1,
     totalLessons: 3,
     notes: 'Mang theo tài liệu Word mẫu và chuẩn bị câu hỏi thực hành.',
@@ -38,7 +38,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '20:30',
     shift: 'evening',
     room: 'Phòng LAB 01 (Tầng 2)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab01',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 2,
     totalLessons: 3,
     notes: 'Thực hành các hàm VLOOKUP, IF lồng, SUMIFS, PivotTable.',
@@ -58,7 +58,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '20:30',
     shift: 'evening',
     room: 'Phòng LAB 01 (Tầng 2)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab01',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 3,
     totalLessons: 3,
     notes: 'Kiểm tra cuối khóa và trao chứng chỉ hoàn thành.',
@@ -80,7 +80,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '16:00',
     shift: 'afternoon',
     room: 'Phòng LAB 02 (Tầng 3)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab02',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 1,
     totalLessons: 6,
     notes: 'Theo chuẩn đề thi Certiport MO-100 Objective 2.1.',
@@ -100,7 +100,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '16:00',
     shift: 'afternoon',
     room: 'Phòng LAB 02 (Tầng 3)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab02',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 2,
     totalLessons: 6,
     notes: 'Thực hành Word_2-2 và Format Painter.',
@@ -120,7 +120,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '16:00',
     shift: 'afternoon',
     room: 'Phòng LAB 02 (Tầng 3)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab02',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 3,
     totalLessons: 6,
     notes: 'Thiết lập trang ngang Landscape độc lập.',
@@ -142,7 +142,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '10:00',
     shift: 'morning',
     room: 'Phòng LAB 03 (Tầng 4)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab03',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 1,
     totalLessons: 6,
     notes: 'Chuẩn bị dữ liệu bảng tra cứu lớn.',
@@ -162,7 +162,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '10:00',
     shift: 'morning',
     room: 'Phòng LAB 03 (Tầng 4)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-lab03',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 1,
     totalLessons: 6,
     notes: 'Thiết lập bảng cân đối số phát sinh.',
@@ -184,7 +184,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '10:00',
     shift: 'morning',
     room: 'Trực Tuyến (Google Meet Toàn Khóa)',
-    onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-ai01',
+    onlineMeetingUrl: 'https://meet.google.com/sja-vcpy-rsu',
     lessonNumber: 1,
     totalLessons: 5,
     notes: 'Thực hành tạo macro tự động hóa bằng AI.',
