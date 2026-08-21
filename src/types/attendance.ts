@@ -29,6 +29,8 @@ export interface AttendanceSession {
   className: string;
   teacherId: string;
   teacherName: string;
+  room?: string;               // e.g. "Phòng LAB 01 (Tầng 2)"
+  onlineMeetingUrl?: string;   // e.g. "https://meet.google.com/ph-tinhocgenz-lab01"
   qrToken?: string;
   qrExpiresAt?: number;    // timestamp in ms
   qrPinCode?: string;      // 6-digit code e.g. "492108"

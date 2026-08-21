@@ -4,7 +4,7 @@ import { UserProfile, TRACK_LABELS } from '../../types/auth';
 import {
   QrCode, Camera, CheckCircle2, AlertCircle, Clock,
   Calendar, ShieldCheck, UserCheck, CheckCheck,
-  Award
+  Award, Video, ExternalLink, MapPin, Copy, Check
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -22,6 +22,7 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
   onOpenPinModal
 }) => {
   const [selectedTrackFilter, setSelectedTrackFilter] = useState<string>('all');
+  const [copiedMeet, setCopiedMeet] = useState(false);
 
   const studentCode = currentUser.studentCode?.trim().toLowerCase() || '';
   const studentName = currentUser.name?.trim().toLowerCase() || '';
@@ -44,6 +45,16 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
 
     return hasRecord || isTrackEnrolled;
   });
+
+  // Active or most relevant session meet URL
+  const currentSessionWithMeet = studentSessions.find(s => s.onlineMeetingUrl) || sessions.find(s => s.onlineMeetingUrl);
+  const activeMeetUrl = currentSessionWithMeet?.onlineMeetingUrl || 'https://meet.google.com/ph-tinhocgenz-lab01';
+
+  const handleCopyMeet = () => {
+    navigator.clipboard.writeText(activeMeetUrl);
+    setCopiedMeet(true);
+    setTimeout(() => setCopiedMeet(false), 2000);
+  };
 
   // Calculate student statistics
   let totalClasses = studentSessions.length;
@@ -116,7 +127,53 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
           </p>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '340px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '360px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <a
+                href={activeMeetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-secondary"
+                style={{
+                  flex: 1,
+                  padding: '11px 14px',
+                  fontSize: '0.86rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  textDecoration: 'none',
+                  background: 'var(--bg-card)',
+                  color: 'var(--brand)',
+                  border: '1.5px solid var(--brand)',
+                  boxShadow: '0 4px 12px rgba(79, 110, 247, 0.12)'
+                }}
+              >
+                <Video size={17} />
+                <span>Vào Google Meet 🎥</span>
+                <ExternalLink size={13} />
+              </a>
+
+              <button
+                onClick={handleCopyMeet}
+                className="btn btn-secondary"
+                title="Sao chép link Google Meet"
+                style={{
+                  width: '44px',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: copiedMeet ? '#10b981' : 'var(--bg-card)',
+                  color: copiedMeet ? '#fff' : 'var(--text-secondary)',
+                  border: copiedMeet ? '1.5px solid #10b981' : '1.5px solid var(--border-color)'
+                }}
+              >
+                {copiedMeet ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            </div>
+
             <button
               onClick={() => {
                 onOpenQRScanner();
@@ -145,8 +202,8 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
               }}
               className="btn btn-secondary"
               style={{
-                padding: '11px 18px',
-                fontSize: '0.86rem',
+                padding: '10px 18px',
+                fontSize: '0.84rem',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
@@ -311,7 +368,40 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
                         <span>📅 {session.date}</span>
                         <span>⏰ {session.startTime || '08:00'}</span>
                         <span>👨‍🏫 GV: {session.teacherName}</span>
+                        {session.room && (
+                          <span style={{ color: 'var(--brand)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                            <MapPin size={11} />
+                            <span>{session.room}</span>
+                          </span>
+                        )}
                       </div>
+
+                      {session.onlineMeetingUrl && (
+                        <div style={{ marginTop: '6px' }}>
+                          <a
+                            href={session.onlineMeetingUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              background: 'var(--brand-light)',
+                              color: 'var(--brand)',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                              border: '1px solid rgba(79, 110, 247, 0.2)'
+                            }}
+                          >
+                            <Video size={12} />
+                            <span>Vào Phòng Học Google Meet</span>
+                            <ExternalLink size={10} />
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
 

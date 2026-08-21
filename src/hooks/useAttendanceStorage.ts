@@ -21,17 +21,17 @@ const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
 ];
 
 // Teacher-to-Class mappings
-export const TRACK_CLASS_CODES: Record<CurriculumTrack, { classCode: string; defaultTeacherId: string; defaultTeacherName: string }> = {
-  'office-fast-3in1': { classCode: 'K26-WE01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy' },
-  'cc-cntt-basic':    { classCode: 'K26-CC01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy' },
-  'cc-cntt-advanced': { classCode: 'K26-CCN01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam' },
-  'cntt-basic-we':    { classCode: 'K26-WE-CB', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai' },
-  'cntt-adv-we':      { classCode: 'K26-WENC01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam' },
-  'ai-office':        { classCode: 'K26-AI01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy' },
-  'excel-accounting': { classCode: 'K26-KT01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam' },
-  'word-6b':          { classCode: 'K26-W01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai' },
-  'excel-6b':         { classCode: 'K26-EX01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai' },
-  'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai' }
+export const TRACK_CLASS_CODES: Record<CurriculumTrack, { classCode: string; defaultTeacherId: string; defaultTeacherName: string; room: string; meetUrl: string }> = {
+  'office-fast-3in1': { classCode: 'K26-WE01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01' },
+  'cc-cntt-basic':    { classCode: 'K26-CC01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01' },
+  'cc-cntt-advanced': { classCode: 'K26-CCN01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab03' },
+  'cntt-basic-we':    { classCode: 'K26-WE-CB', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab02' },
+  'cntt-adv-we':      { classCode: 'K26-WENC01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab03' },
+  'ai-office':        { classCode: 'K26-AI01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/ph-tinhocgenz-ai01' },
+  'excel-accounting': { classCode: 'K26-KT01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab03' },
+  'word-6b':          { classCode: 'K26-W01', defaultTeacherId: 'tch-04', defaultTeacherName: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab02' },
+  'excel-6b':         { classCode: 'K26-EX01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab02' },
+  'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01' }
 };
 
 // Deterministic 6-digit rolling PIN generator (Default: 300 seconds / 5 minutes)
@@ -63,7 +63,13 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     return ALL_10_TRACK_KEYS.map((trackKey, idx) => {
       const trackTitle = TRACK_LABELS[trackKey] || trackKey;
-      const classMeta = TRACK_CLASS_CODES[trackKey] || { classCode: `K26-${trackKey.toUpperCase().slice(0, 4)}`, defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy' };
+      const classMeta = TRACK_CLASS_CODES[trackKey] || {
+        classCode: `K26-${trackKey.toUpperCase().slice(0, 4)}`,
+        defaultTeacherId: 'tch-03',
+        defaultTeacherName: 'Thầy Quang Huy',
+        room: 'Phòng LAB 01',
+        meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01'
+      };
 
       // Filter students strictly enrolled in this track/class
       const enrolled = students.filter(s =>
@@ -91,6 +97,8 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
         className: `Lớp ${classMeta.classCode} - ${trackTitle}`,
         teacherId: classMeta.defaultTeacherId,
         teacherName: classMeta.defaultTeacherName,
+        room: classMeta.room,
+        onlineMeetingUrl: classMeta.meetUrl,
         qrToken: getRollingTrackToken(trackKey, 300),
         qrExpiresAt: Date.now() + 300 * 1000,
         qrPinCode: getRollingTrackPin(trackKey, 300),

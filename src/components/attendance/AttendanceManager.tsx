@@ -6,7 +6,7 @@ import {
   QrCode, CheckCircle2, Clock, RefreshCw,
   FileSpreadsheet, Trash2, Save, Users, Calendar,
   CheckCheck, Lock, Unlock, UserCheck, AlertTriangle,
-  MapPin
+  MapPin, Video, ExternalLink
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { getCurrentCoordinates } from '../../utils/securityUtils';
@@ -500,6 +500,40 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 </button>
               )}
             </div>
+
+            {/* Google Meet Online Room Link */}
+            {activeSession?.onlineMeetingUrl && (
+              <div style={{
+                marginTop: '12px',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                background: 'var(--brand-light)',
+                border: '1px solid rgba(79, 110, 247, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                width: '100%',
+                maxWidth: '280px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', color: 'var(--brand)', fontWeight: 800, overflow: 'hidden' }}>
+                  <Video size={15} />
+                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {activeSession.room || 'Google Meet Trực Tuyến'}
+                  </span>
+                </div>
+                <a
+                  href={activeSession.onlineMeetingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary"
+                  style={{ padding: '4px 10px', fontSize: '0.72rem', fontWeight: 800, textDecoration: 'none', borderRadius: '8px', flexShrink: 0 }}
+                >
+                  <span>Mở Meet</span>
+                  <ExternalLink size={11} />
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Right: Live Student Attendance Board */}
