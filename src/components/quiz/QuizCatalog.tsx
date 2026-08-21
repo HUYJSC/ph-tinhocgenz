@@ -5,8 +5,10 @@ import { QuizMode } from '../../hooks/useQuizEngine';
 import {
   Search, Timer, HelpCircle, Play, BookOpen, Trash2,
   Code2, FileSpreadsheet, FileText, Presentation, Cpu,
-  ChevronDown, ChevronUp, SlidersHorizontal, CheckCircle2, RotateCcw
+  ChevronDown, ChevronUp, SlidersHorizontal, CheckCircle2, RotateCcw,
+  Eye, BookOpenCheck, Printer, Check, X
 } from 'lucide-react';
+import { soundFx } from '../../utils/audio';
 
 interface QuizCatalogProps {
   quizzes: Quiz[];
@@ -48,6 +50,9 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [isFilterBoxOpen, setIsFilterBoxOpen] = useState(false);
+  const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
+
+  const isTeacherOrAdmin = currentUser?.role === 'teacher' || currentUser?.role === 'admin';
 
   // Enforce access control
   const accessibleQuizzes = isStudent
@@ -332,7 +337,36 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', flexWrap: 'wrap' }}>
+                {isTeacherOrAdmin && (
+                  <button
+                    onClick={() => {
+                      setReadingQuiz(quiz);
+                      soundFx.playClick();
+                    }}
+                    className="btn btn-secondary"
+                    style={{
+                      width: '100%',
+                      padding: '7px 10px',
+                      fontSize: '0.78rem',
+                      fontWeight: 800,
+                      background: 'rgba(217, 119, 6, 0.1)',
+                      color: '#d97706',
+                      border: '1.5px solid rgba(217, 119, 6, 0.25)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      marginBottom: '4px'
+                    }}
+                    title="Đọc toàn bộ câu hỏi, đáp án đúng và giải thích chi tiết của đề thi này"
+                  >
+                    <Eye size={14} />
+                    <span>Đọc Đề & Xem Đáp Án Chuẩn 📖</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => handleStart(quiz, 'practice')}
                   className="btn btn-secondary"
@@ -363,6 +397,177 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── MODAL: ĐỌC ĐỀ THI & XEM ĐÁP ÁN DÀNH CHO GIẢNG VIÊN ── */}
+      {readingQuiz && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          className="animate-fade-in"
+        >
+          <div
+            className="card animate-slide-up"
+            style={{
+              width: '100%',
+              maxWidth: '820px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              borderRadius: '20px',
+              padding: '24px',
+              background: 'var(--bg-card)',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.35)',
+              border: '1px solid var(--border-color)'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px', marginBottom: '14px' }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(217, 119, 6, 0.12)', color: '#d97706', fontSize: '0.74rem', fontWeight: 800, marginBottom: '6px' }}>
+                  <BookOpenCheck size={14} />
+                  <span>CHẾ ĐỘ ĐỌC ĐỀ THI & ĐÁP ÁN DÀNH CHO GIẢNG VIÊN</span>
+                </div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                  {readingQuiz.title}
+                </h3>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '0.78rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                  <span>📚 Phân hệ: <strong>{TRACK_LABELS[readingQuiz.category as CurriculumTrack] || readingQuiz.category}</strong></span>
+                  <span>•</span>
+                  <span>⏱️ Thời gian: <strong>{readingQuiz.timeLimitMinutes} phút</strong></span>
+                  <span>•</span>
+                  <span>📝 Tổng số: <strong>{readingQuiz.questions.length} câu hỏi</strong></span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => window.print()}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: '0.76rem', gap: '4px' }}
+                  title="In hoặc xuất PDF đề thi"
+                >
+                  <Printer size={14} />
+                  <span>In Đề</span>
+                </button>
+
+                <button
+                  onClick={() => setReadingQuiz(null)}
+                  className="btn btn-icon"
+                  style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Questions List */}
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '6px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {readingQuiz.questions.map((q, idx) => (
+                <div
+                  key={q.id || idx}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '14px',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}
+                >
+                  {/* Question Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--brand)', background: 'var(--brand-light)', padding: '2px 10px', borderRadius: '6px' }}>
+                      Câu {idx + 1}/{readingQuiz.questions.length}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      {q.points || 10} điểm
+                    </span>
+                  </div>
+
+                  {/* Question Prompt */}
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                    {q.prompt}
+                  </div>
+
+                  {/* Options */}
+                  {q.options && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px' }}>
+                      {q.options.map((opt, oidx) => {
+                        const isCorrect = Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oidx) : q.correctAnswer === oidx;
+                        return (
+                          <div
+                            key={oidx}
+                            style={{
+                              padding: '10px 12px',
+                              borderRadius: '10px',
+                              background: isCorrect ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-card)',
+                              border: isCorrect ? '1.5px solid #10b981' : '1px solid var(--border-color)',
+                              color: isCorrect ? '#065f46' : 'var(--text-primary)',
+                              fontWeight: isCorrect ? 800 : 500,
+                              fontSize: '0.84rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '6px'
+                            }}
+                          >
+                            <span><strong>{String.fromCharCode(65 + oidx)}.</strong> {opt}</span>
+                            {isCorrect && (
+                              <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.74rem', fontWeight: 900 }}>
+                                <Check size={14} />
+                                <span>ĐÁP ÁN ĐÚNG</span>
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Explanation Box */}
+                  {q.explanation && (
+                    <div
+                      style={{
+                        marginTop: '4px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        background: 'rgba(79, 110, 247, 0.08)',
+                        borderLeft: '4px solid var(--brand)',
+                        fontSize: '0.8rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.5
+                      }}
+                    >
+                      <strong style={{ color: 'var(--brand)' }}>💡 Giải thích & Hướng dẫn thao tác chuẩn:</strong> {q.explanation}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '14px', borderTop: '1px solid var(--border-color)', marginTop: '10px' }}>
+              <button
+                onClick={() => setReadingQuiz(null)}
+                className="btn btn-primary"
+                style={{ padding: '8px 24px', fontWeight: 800, borderRadius: '10px' }}
+              >
+                Đóng Đề Thi
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
