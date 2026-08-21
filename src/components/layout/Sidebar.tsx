@@ -1,10 +1,10 @@
 import React from 'react';
 import {
   BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck,
-  Smartphone, Shield, FileText, LogOut, QrCode, ChevronDown
+  Smartphone, Shield, FileText, LogOut, QrCode, ChevronDown, Calendar
 } from 'lucide-react';
 
-export type ActiveTab = 'quizzes' | 'assignments' | 'attendance' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
+export type ActiveTab = 'quizzes' | 'assignments' | 'attendance' | 'schedule' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -34,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   // Student structured sections
   const studentMainSection: NavItem[] = [
+    { id: 'schedule',    label: 'Thời Khóa Biểu',    icon: Calendar,      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
     { id: 'quizzes',     label: 'Luyện Đề Thi',      icon: BookOpen,      color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
     { id: 'assignments', label: 'Đề Thi & Nộp Bài',  icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
     { id: 'flashcards',  label: 'Thẻ Ghi Nhớ',        icon: Layers,        color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
@@ -47,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Admin / Teacher structured sections
   const adminMainSection: NavItem[] = [
+    { id: 'schedule',    label: 'Thời Khóa Biểu Lớp',icon: Calendar,      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
     { id: 'admin',       label: 'Quản Lý Học Viên',  icon: Shield,        color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
     { id: 'attendance',  label: 'Điểm Danh Lớp (5m)',icon: QrCode,        color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
     { id: 'assignments', label: 'Quản Lý & Chấm Bài',icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)', count: unreadNotificationCount }

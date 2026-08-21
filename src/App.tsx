@@ -3,6 +3,7 @@ import { useAppStorage } from './hooks/useLocalStorage';
 import { useAuth } from './hooks/useAuth';
 import { useAssignmentStorage } from './hooks/useAssignmentStorage';
 import { useAttendanceStorage } from './hooks/useAttendanceStorage';
+import { useScheduleStorage } from './hooks/useScheduleStorage';
 import { Header } from './components/layout/Header';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
@@ -18,6 +19,7 @@ import { StudentAssignmentView } from './components/assignment/StudentAssignment
 import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
 import { AttendanceManager } from './components/attendance/AttendanceManager';
 import { StudentAttendanceDashboard } from './components/attendance/StudentAttendanceDashboard';
+import { ScheduleCalendar } from './components/schedule/ScheduleCalendar';
 import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
 import { CameraQRScanner } from './components/attendance/CameraQRScanner';
 import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
@@ -91,6 +93,13 @@ export function App() {
     deleteSession: deleteAttendanceSession,
     clearMakeupReport: clearAttendanceMakeupReport
   } = useAttendanceStorage(studentAccounts);
+
+  const {
+    schedules,
+    createSchedule,
+    updateSchedule,
+    deleteSchedule
+  } = useScheduleStorage();
 
   // Active Session state (Enforces Unified Auth Gateway upfront!)
   const [isSessionActive, setIsSessionActive] = useState<boolean>(() => {
@@ -338,6 +347,17 @@ export function App() {
                     onOpenPinModal={() => setShowCheckInModal(true)}
                   />
                 )
+              )}
+
+              {activeTab === 'schedule' && (
+                <ScheduleCalendar
+                  currentUser={user}
+                  schedules={schedules}
+                  onCreateSchedule={createSchedule}
+                  onUpdateSchedule={updateSchedule}
+                  onDeleteSchedule={deleteSchedule}
+                  onNavigateToAttendance={() => setActiveTab('attendance')}
+                />
               )}
 
               {activeTab === 'quizzes' && (
