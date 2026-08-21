@@ -7,7 +7,8 @@ import { GOOGLE_APPS_SCRIPT_CODE } from '../../utils/googleDriveService';
 import {
   PlusCircle, Trash2,
   Bell, Lock, Unlock, Eye, X, Clock, FileText,
-  FolderOpen, Cloud, Copy, Check, ExternalLink, Link2, FileSpreadsheet
+  FolderOpen, Cloud, Copy, Check, ExternalLink, Link2, FileSpreadsheet,
+  Search, RotateCcw
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string }[] = [
@@ -70,6 +71,8 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   onMarkNotificationAsRead
 }) => {
   const [activeTab, setActiveTab] = useState<'manage' | 'create' | 'submissions' | 'drive_cloud' | 'notifications'>('manage');
+  const [selectedFamily, setSelectedFamily] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Form State
   const [title, setTitle] = useState('');
@@ -368,8 +371,104 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
 
       {/* 1. MANAGE ASSIGNMENTS TAB */}
       {activeTab === 'manage' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
-          {assignments.map(a => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Subject Family Taskbar */}
+          <div className="card" style={{ padding: '10px 14px', borderRadius: '14px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <div className="horizontal-scroll" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              {[
+                { id: 'all', label: '🌟 Tất Cả', color: 'var(--brand)', bg: 'rgba(79, 110, 247, 0.12)' },
+                { id: 'word', label: '📘 Word', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)' },
+                { id: 'excel', label: '📗 Excel', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+                { id: 'powerpoint', label: '📙 PowerPoint', color: '#f97316', bg: 'rgba(249, 115, 22, 0.12)' },
+                { id: 'ai_cntt', label: '🤖 AI & CNTT', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' }
+              ].map(tab => {
+                const isSelected = selectedFamily === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setSelectedFamily(tab.id as any);
+                      soundFx.playClick();
+                    }}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '999px',
+                      border: isSelected ? `2px solid ${tab.color}` : '1px solid var(--border-color)',
+                      background: isSelected ? tab.bg : 'var(--bg-primary)',
+                      color: isSelected ? tab.color : 'var(--text-secondary)',
+                      fontWeight: isSelected ? 850 : 600,
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ position: 'relative', width: '200px', minWidth: '160px' }}>
+                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="text"
+                  placeholder="Tìm đề bài tập..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 10px 6px 30px',
+                    borderRadius: '8px',
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    fontSize: '0.78rem'
+                  }}
+                />
+              </div>
+
+              {(searchQuery || selectedFamily !== 'all') && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedFamily('all');
+                  }}
+                  title="Đặt lại bộ lọc"
+                  className="btn btn-icon"
+                  style={{ width: '30px', height: '30px', minHeight: '30px', borderRadius: '8px', color: 'var(--text-muted)' }}
+                >
+                  <RotateCcw size={13} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+            {assignments
+              .filter(a => {
+                if (selectedFamily === 'word') {
+                  const isWord = a.title.toLowerCase().includes('word') || a.category.includes('word') || a.category === 'cntt-basic-we' || a.category === 'cntt-adv-we' || a.category === 'office-fast-3in1';
+                  if (!isWord) return false;
+                }
+                if (selectedFamily === 'excel') {
+                  const isExcel = a.title.toLowerCase().includes('excel') || a.category.includes('excel') || a.category === 'cntt-basic-we' || a.category === 'cntt-adv-we' || a.category === 'office-fast-3in1';
+                  if (!isExcel) return false;
+                }
+                if (selectedFamily === 'powerpoint') {
+                  const isPpt = a.title.toLowerCase().includes('powerpoint') || a.title.toLowerCase().includes('ppt') || a.category.includes('ppt') || a.category === 'office-fast-3in1';
+                  if (!isPpt) return false;
+                }
+                if (selectedFamily === 'ai_cntt') {
+                  const isAi = a.category === 'ai-office' || a.category === 'cc-cntt-basic' || a.category === 'cc-cntt-advanced' || a.title.toLowerCase().includes('ai') || a.title.toLowerCase().includes('cntt');
+                  if (!isAi) return false;
+                }
+                if (searchQuery) {
+                  const match = a.title.toLowerCase().includes(searchQuery.toLowerCase()) || (a.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+                  if (!match) return false;
+                }
+                return true;
+              })
+              .map(a => (
             <div key={a.id} className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '14px' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
@@ -423,6 +522,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 

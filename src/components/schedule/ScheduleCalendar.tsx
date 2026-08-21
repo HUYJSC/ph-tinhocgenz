@@ -44,6 +44,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const isStudent = currentUser.role === 'student';
 
   const [viewMode, setViewMode] = useState<'week' | 'list'>('week');
+  const [selectedFamily, setSelectedFamily] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
   const [selectedTrack, setSelectedTrack] = useState<string>('all');
   const [selectedDay, setSelectedDay] = useState<number | 'all'>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -78,6 +79,23 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       const matchName = sch.teacherName.toLowerCase().includes(currentUser.name.toLowerCase()) ||
         currentUser.name.toLowerCase().includes(sch.teacherName.toLowerCase());
       if (!matchName && !userEnrolledTracks.includes(sch.track)) return false;
+    }
+    // Subject Family Filter
+    if (selectedFamily === 'word') {
+      const isWord = sch.title.toLowerCase().includes('word') || sch.track.includes('word') || sch.track === 'cntt-basic-we' || sch.track === 'cntt-adv-we' || sch.track === 'office-fast-3in1';
+      if (!isWord) return false;
+    }
+    if (selectedFamily === 'excel') {
+      const isExcel = sch.title.toLowerCase().includes('excel') || sch.track.includes('excel') || sch.track === 'cntt-basic-we' || sch.track === 'cntt-adv-we' || sch.track === 'office-fast-3in1';
+      if (!isExcel) return false;
+    }
+    if (selectedFamily === 'powerpoint') {
+      const isPpt = sch.title.toLowerCase().includes('powerpoint') || sch.title.toLowerCase().includes('ppt') || sch.track.includes('ppt') || sch.track === 'office-fast-3in1';
+      if (!isPpt) return false;
+    }
+    if (selectedFamily === 'ai_cntt') {
+      const isAi = sch.track === 'ai-office' || sch.track === 'cc-cntt-basic' || sch.track === 'cc-cntt-advanced' || sch.title.toLowerCase().includes('ai') || sch.title.toLowerCase().includes('cntt');
+      if (!isAi) return false;
     }
     // User filters
     if (selectedTrack !== 'all' && sch.track !== selectedTrack) return false;
@@ -290,7 +308,46 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         </div>
       </div>
 
-      {/* ── DAY & TRACK FILTER BAR ── */}
+      {/* ── 1. SUBJECT FAMILY PILL TASKBAR (Word / Excel / PPT / AI & CNTT / All) ── */}
+      <div className="horizontal-scroll" style={{ marginBottom: '12px', paddingBottom: '2px', display: 'flex', gap: '8px' }}>
+        {[
+          { id: 'all', label: '🌟 Tất Cả (10 Phân Hệ)', color: 'var(--brand)', bg: 'rgba(79, 110, 247, 0.12)' },
+          { id: 'word', label: '📘 Word', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)' },
+          { id: 'excel', label: '📗 Excel', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+          { id: 'powerpoint', label: '📙 PowerPoint', color: '#f97316', bg: 'rgba(249, 115, 22, 0.12)' },
+          { id: 'ai_cntt', label: '🤖 AI & CNTT', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' }
+        ].map(tab => {
+          const isSelected = selectedFamily === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setSelectedFamily(tab.id as any);
+                if (tab.id !== 'all') setSelectedTrack('all');
+                soundFx.playClick();
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                border: isSelected ? `2px solid ${tab.color}` : '1px solid var(--border-color)',
+                background: isSelected ? tab.bg : 'var(--bg-card)',
+                color: isSelected ? tab.color : 'var(--text-secondary)',
+                fontWeight: isSelected ? 850 : 600,
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── 2. DAY & SPECIFIC TRACK FILTER BAR ── */}
       <div className="horizontal-scroll" style={{ marginBottom: '16px', paddingBottom: '4px' }}>
         <select
           value={selectedTrack}
@@ -307,7 +364,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
             flexShrink: 0
           }}
         >
-          <option value="all">Tất cả môn học</option>
+          <option value="all">Chi tiết phân hệ (10 môn)</option>
           {Object.entries(TRACK_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}

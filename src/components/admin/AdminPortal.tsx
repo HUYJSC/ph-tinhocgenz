@@ -58,6 +58,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'student_directory' | 'teachers' | 'exams' | 'question_bank' | 'seo_center' | 'meet_hub'>('overview');
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [examFamilyFilter, setExamFamilyFilter] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
 
   // Master Google Meet Hub State (Admin Only)
@@ -173,6 +174,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const matchSearch = q.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
       q.description.toLowerCase().includes(searchFilter.toLowerCase());
     const matchCat = categoryFilter === 'all' || q.category === categoryFilter;
+    if (examFamilyFilter === 'word') {
+      const isWord = q.title.toLowerCase().includes('word') || q.category.includes('word') || q.category === 'cntt-basic-we' || q.category === 'cntt-adv-we' || q.category === 'office-fast-3in1';
+      if (!isWord) return false;
+    }
+    if (examFamilyFilter === 'excel') {
+      const isExcel = q.title.toLowerCase().includes('excel') || q.category.includes('excel') || q.category === 'cntt-basic-we' || q.category === 'cntt-adv-we' || q.category === 'office-fast-3in1';
+      if (!isExcel) return false;
+    }
+    if (examFamilyFilter === 'powerpoint') {
+      const isPpt = q.title.toLowerCase().includes('powerpoint') || q.title.toLowerCase().includes('ppt') || q.category.includes('ppt') || q.category === 'office-fast-3in1';
+      if (!isPpt) return false;
+    }
+    if (examFamilyFilter === 'ai_cntt') {
+      const isAi = q.category === 'ai-office' || q.category === 'cc-cntt-basic' || q.category === 'cc-cntt-advanced' || q.title.toLowerCase().includes('ai') || q.title.toLowerCase().includes('cntt');
+      if (!isAi) return false;
+    }
     return matchSearch && matchCat;
   });
 
@@ -1409,6 +1426,45 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {/* 4. EXAMS TAB */}
       {activeSubTab === 'exams' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Subject Family Taskbar */}
+          <div className="horizontal-scroll" style={{ display: 'flex', gap: '8px', paddingBottom: '2px' }}>
+            {[
+              { id: 'all', label: '🌟 Tất Cả (10 Phân Hệ)', color: 'var(--brand)', bg: 'rgba(79, 110, 247, 0.12)' },
+              { id: 'word', label: '📘 Word', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)' },
+              { id: 'excel', label: '📗 Excel', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+              { id: 'powerpoint', label: '📙 PowerPoint', color: '#f97316', bg: 'rgba(249, 115, 22, 0.12)' },
+              { id: 'ai_cntt', label: '🤖 AI & CNTT', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' }
+            ].map(tab => {
+              const isSelected = examFamilyFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setExamFamilyFilter(tab.id as any);
+                    if (tab.id !== 'all') setCategoryFilter('all');
+                    soundFx.playClick();
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    borderRadius: '999px',
+                    border: isSelected ? `2px solid ${tab.color}` : '1px solid var(--border-color)',
+                    background: isSelected ? tab.bg : 'var(--bg-card)',
+                    color: isSelected ? tab.color : 'var(--text-secondary)',
+                    fontWeight: isSelected ? 850 : 600,
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -1426,7 +1482,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               onChange={e => setCategoryFilter(e.target.value)}
               style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
             >
-              <option value="all">Tất cả phân hệ đào tạo (10 khóa)</option>
+              <option value="all">Chi tiết 10 phân hệ đào tạo</option>
               {ALL_TRACK_OPTIONS.map(trk => (
                 <option key={trk.id} value={trk.id}>
                   {trk.label}

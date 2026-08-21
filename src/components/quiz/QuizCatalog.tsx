@@ -17,6 +17,58 @@ interface QuizCatalogProps {
   onDeleteCustomQuiz?: (quizId: string) => void;
 }
 
+export type SubjectFamily = 'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt';
+
+export const SUBJECT_FAMILY_TABS: {
+  id: SubjectFamily;
+  label: string;
+  shortLabel: string;
+  badgeColor: string;
+  iconBg: string;
+  tracks: CurriculumTrack[];
+}[] = [
+  {
+    id: 'all',
+    label: 'Tất Cả Phân Hệ (10 Khóa)',
+    shortLabel: '🌟 Tất Cả (10)',
+    badgeColor: 'var(--brand)',
+    iconBg: 'rgba(79, 110, 247, 0.12)',
+    tracks: []
+  },
+  {
+    id: 'word',
+    label: 'Microsoft Word (Soạn Thảo Chuẩn)',
+    shortLabel: '📘 Word',
+    badgeColor: '#2563eb',
+    iconBg: 'rgba(37, 99, 235, 0.12)',
+    tracks: ['word-6b', 'cntt-basic-we', 'cntt-adv-we', 'office-fast-3in1']
+  },
+  {
+    id: 'excel',
+    label: 'Microsoft Excel (Bảng Tính & Kế Toán)',
+    shortLabel: '📗 Excel',
+    badgeColor: '#10b981',
+    iconBg: 'rgba(16, 185, 129, 0.12)',
+    tracks: ['excel-6b', 'excel-accounting', 'cntt-basic-we', 'cntt-adv-we', 'office-fast-3in1']
+  },
+  {
+    id: 'powerpoint',
+    label: 'PowerPoint (Thiết Kế Thuyết Trình)',
+    shortLabel: '📙 PowerPoint',
+    badgeColor: '#f97316',
+    iconBg: 'rgba(249, 115, 22, 0.12)',
+    tracks: ['ppt-6b', 'office-fast-3in1', 'cc-cntt-basic']
+  },
+  {
+    id: 'ai_cntt',
+    label: 'AI Văn Phòng & CC CNTT',
+    shortLabel: '🤖 AI & CNTT',
+    badgeColor: '#8b5cf6',
+    iconBg: 'rgba(139, 92, 246, 0.12)',
+    tracks: ['ai-office', 'cc-cntt-basic', 'cc-cntt-advanced']
+  }
+];
+
 const ALL_CATEGORIES: { id: SubjectCategory; label: string; icon: any }[] = [
   { id: 'all', label: 'Tất cả (10 phân hệ)', icon: BookOpen },
   { id: 'office-fast-3in1', label: 'Office Cấp Tốc (3b)', icon: FileSpreadsheet },
@@ -46,9 +98,11 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
     ? ALL_CATEGORIES.filter(c => c.id === 'all' || allowedTracks.includes(c.id as CurriculumTrack))
     : ALL_CATEGORIES;
 
+  const [selectedFamily, setSelectedFamily] = useState<SubjectFamily>('all');
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'default' | 'time_asc' | 'time_desc' | 'questions_desc' | 'name_asc'>('default');
   const [isFilterBoxOpen, setIsFilterBoxOpen] = useState(false);
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
 
@@ -59,14 +113,42 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
     ? quizzes.filter(q => allowedTracks.includes(q.category as CurriculumTrack))
     : quizzes;
 
-  const filteredQuizzes = accessibleQuizzes.filter(q => {
-    const matchCat = selectedCategory === 'all' || q.category === selectedCategory;
-    const matchDiff = selectedDifficulty === 'all' || q.difficulty === selectedDifficulty;
-    const matchSearch =
-      q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      q.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchDiff && matchSearch;
-  });
+  const filteredQuizzes = accessibleQuizzes
+    .filter(q => {
+      // 1. Family filter (Word / Excel / PPT / AI & CNTT)
+      if (selectedFamily !== 'all') {
+        const familyMeta = SUBJECT_FAMILY_TABS.find(f => f.id === selectedFamily);
+        if (familyMeta && familyMeta.tracks.length > 0) {
+          const inFamilyTracks = familyMeta.tracks.includes(q.category as CurriculumTrack);
+          const inFamilyText =
+            (selectedFamily === 'word' && (q.title.toLowerCase().includes('word') || q.category.includes('word') || q.category === 'cntt-basic-we' || q.category === 'cntt-adv-we' || q.category === 'office-fast-3in1')) ||
+            (selectedFamily === 'excel' && (q.title.toLowerCase().includes('excel') || q.category.includes('excel') || q.category === 'cntt-basic-we' || q.category === 'cntt-adv-we' || q.category === 'office-fast-3in1')) ||
+            (selectedFamily === 'powerpoint' && (q.title.toLowerCase().includes('powerpoint') || q.title.toLowerCase().includes('ppt') || q.category.includes('ppt') || q.category === 'office-fast-3in1')) ||
+            (selectedFamily === 'ai_cntt' && (q.category === 'ai-office' || q.category === 'cc-cntt-basic' || q.category === 'cc-cntt-advanced' || q.title.toLowerCase().includes('ai') || q.title.toLowerCase().includes('cntt')));
+          if (!inFamilyTracks && !inFamilyText) return false;
+        }
+      }
+
+      // 2. Specific category filter
+      const matchCat = selectedCategory === 'all' || q.category === selectedCategory;
+
+      // 3. Difficulty filter
+      const matchDiff = selectedDifficulty === 'all' || q.difficulty === selectedDifficulty;
+
+      // 4. Search query filter
+      const matchSearch =
+        q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchCat && matchDiff && matchSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'time_asc') return a.timeLimitMinutes - b.timeLimitMinutes;
+      if (sortBy === 'time_desc') return b.timeLimitMinutes - a.timeLimitMinutes;
+      if (sortBy === 'questions_desc') return b.questions.length - a.questions.length;
+      if (sortBy === 'name_asc') return a.title.localeCompare(b.title);
+      return 0;
+    });
 
   const getDifficultyBadge = (diff: Difficulty) => {
     switch (diff) {
@@ -157,13 +239,50 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
           </button>
         </div>
 
-        {/* Search & Difficulty 1-Row Toolbar */}
-        <div style={{ padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
+        {/* ── 1. FAST APP-FAMILY PILL TASKBAR (Word / Excel / PPT / AI & CNTT / All) ── */}
+        <div className="horizontal-scroll" style={{ padding: '10px 14px 8px', display: 'flex', gap: '8px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+          {SUBJECT_FAMILY_TABS.map(tab => {
+            const isSelected = selectedFamily === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setSelectedFamily(tab.id);
+                  if (tab.id !== 'all') {
+                    setSelectedCategory('all');
+                  }
+                  soundFx.playClick();
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '999px',
+                  border: isSelected ? `2px solid ${tab.badgeColor}` : '1px solid var(--border-color)',
+                  background: isSelected ? tab.iconBg : 'var(--bg-primary)',
+                  color: isSelected ? tab.badgeColor : 'var(--text-secondary)',
+                  fontWeight: isSelected ? 850 : 600,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>{tab.shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── 2. SEARCH, DIFFICULTY & SORT 1-ROW TOOLBAR ── */}
+        <div style={{ padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
             <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
               type="text"
-              placeholder="Tìm kiếm nhanh tên đề thi hoặc kỹ năng..."
+              placeholder="Tìm nhanh đề thi, kỹ năng, hàm Excel, thao tác Word..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -173,7 +292,8 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
                 fontSize: '0.84rem',
                 borderRadius: '10px',
                 background: 'var(--bg-primary)',
-                border: '1px solid var(--border-color)'
+                border: '1px solid var(--border-color)',
+                width: '100%'
               }}
             />
           </div>
@@ -183,10 +303,10 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
             onChange={e => setSelectedDifficulty(e.target.value)}
             style={{
               width: 'auto',
-              minWidth: '115px',
+              minWidth: '110px',
               minHeight: '36px',
               fontSize: '0.8rem',
-              padding: '6px 26px 6px 10px',
+              padding: '6px 24px 6px 10px',
               borderRadius: '10px',
               flexShrink: 0,
               background: 'var(--bg-primary)',
@@ -199,14 +319,38 @@ export const QuizCatalog: React.FC<QuizCatalogProps> = ({
             <option value="hard">Khó</option>
           </select>
 
-          {(searchQuery || selectedCategory !== 'all' || selectedDifficulty !== 'all') && (
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+            style={{
+              width: 'auto',
+              minWidth: '135px',
+              minHeight: '36px',
+              fontSize: '0.8rem',
+              padding: '6px 24px 6px 10px',
+              borderRadius: '10px',
+              flexShrink: 0,
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border-color)'
+            }}
+          >
+            <option value="default">Sắp xếp: Mặc định</option>
+            <option value="time_asc">Thời gian: Ngắn ➔ Dài</option>
+            <option value="time_desc">Thời gian: Dài ➔ Ngắn</option>
+            <option value="questions_desc">Số câu: Nhiều ➔ Ít</option>
+            <option value="name_asc">Tên đề: A ➔ Z</option>
+          </select>
+
+          {(searchQuery || selectedCategory !== 'all' || selectedDifficulty !== 'all' || selectedFamily !== 'all' || sortBy !== 'default') && (
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedCategory('all');
                 setSelectedDifficulty('all');
+                setSelectedFamily('all');
+                setSortBy('default');
               }}
-              title="Đặt lại bộ lọc"
+              title="Đặt lại toàn bộ bộ lọc"
               className="btn btn-icon"
               style={{ width: '36px', height: '36px', minHeight: '36px', borderRadius: '10px', color: 'var(--text-muted)' }}
             >
