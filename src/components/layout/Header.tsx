@@ -41,14 +41,14 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="app-header">
       {/* LEFT: Logo + Compact User Pill */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flexShrink: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flexShrink: 1 }}>
         <div style={{
-          width: '34px', height: '34px', borderRadius: '8px',
-          background: '#fff', padding: '2px',
+          width: '38px', height: '38px', borderRadius: '10px',
+          background: '#fff', padding: '3px',
           border: '1px solid var(--border-color)',
-          boxShadow: 'var(--shadow-xs)', flexShrink: 0
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)', flexShrink: 0
         }}>
-          <img src="/logo.png" alt="PH" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
+          <img src="/logo.png" alt="PH - Tin Học GenZ" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
 
         <button

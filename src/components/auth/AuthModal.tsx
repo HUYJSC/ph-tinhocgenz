@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { UserProfile, StudentAccount } from '../../types/auth';
-import { User, Shield, KeyRound, X, CheckCircle, ArrowRight, UserCheck } from 'lucide-react';
+import { User, Shield, KeyRound, X, ArrowRight, Lock } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: UserProfile;
-  studentAccounts: StudentAccount[];
+  studentAccounts?: StudentAccount[];
   onLoginStudent: (studentCode: string, password?: string) => { success: boolean; message?: string };
   onLoginAdmin: (pin: string, name?: string) => { success: boolean; message?: string };
 }
@@ -16,20 +16,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   currentUser,
-  studentAccounts,
   onLoginStudent,
   onLoginAdmin
 }) => {
   const [activeTab, setActiveTab] = useState<'student' | 'admin'>(currentUser.role === 'student' ? 'student' : 'admin');
   
   // Student form state
-  const [studentCode, setStudentCode] = useState(currentUser.studentCode || 'THGZ01');
-  const [studentPassword, setStudentPassword] = useState('123');
+  const [studentCode, setStudentCode] = useState(currentUser.studentCode || '');
+  const [studentPassword, setStudentPassword] = useState('');
   const [studentError, setStudentError] = useState('');
 
   // Admin form state
   const [adminPin, setAdminPin] = useState('');
-  const [adminName, setAdminName] = useState('Thầy Huy (Giảng Viên Trưởng)');
+  const [adminName, setAdminName] = useState(currentUser.role === 'admin' ? currentUser.name : '');
   const [adminError, setAdminError] = useState('');
 
   if (!isOpen) return null;
@@ -42,45 +41,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    const res = onLoginStudent(studentCode, studentPassword);
+    const res = onLoginStudent(studentCode.trim(), studentPassword.trim() || '123');
     if (res.success) {
-      soundFx.playCorrect();
+      soundFx.playVictory();
       onClose();
     } else {
       soundFx.playIncorrect();
-      setStudentError(res.message || 'Mã học viên hoặc mật khẩu không đúng!');
-    }
-  };
-
-  const handleQuickStudentSelect = (account: StudentAccount) => {
-    setStudentCode(account.studentCode);
-    setStudentPassword(account.password || '123');
-    const res = onLoginStudent(account.studentCode, account.password || '123');
-    if (res.success) {
-      soundFx.playCorrect();
-      onClose();
+      setStudentError(res.message || 'Mã học viên hoặc mật khẩu không chính xác!');
     }
   };
 
   const handleAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAdminError('');
-    const result = onLoginAdmin(adminPin, adminName);
+    if (!adminName.trim()) {
+      setAdminError('Vui lòng nhập họ tên giảng viên!');
+      return;
+    }
+
+    const result = onLoginAdmin(adminPin.trim(), adminName.trim());
     if (result.success) {
-      soundFx.playCorrect();
+      soundFx.playVictory();
       onClose();
     } else {
       soundFx.playIncorrect();
-      setAdminError(result.message || 'Mã PIN quản trị không đúng!');
-    }
-  };
-
-  const handleQuickDemoAdmin = () => {
-    setAdminPin('admin123');
-    const result = onLoginAdmin('admin123', 'Thầy Huy (Giảng Viên Trưởng)');
-    if (result.success) {
-      soundFx.playCorrect();
-      onClose();
+      setAdminError(result.message || 'Mã PIN quản trị không chính xác!');
     }
   };
 
@@ -88,13 +73,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <div
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(15, 23, 42, 0.75)',
+        inset: 0,
+        backgroundColor: 'var(--bg-overlay)',
         backdropFilter: 'blur(8px)',
-        zIndex: 100,
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -106,67 +89,66 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         className="card animate-slide-up"
         style={{
           width: '100%',
-          maxWidth: '500px',
-          background: 'var(--bg-secondary)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '28px 24px',
-          boxShadow: 'var(--shadow-lg)',
-          position: 'relative',
-          maxHeight: '92vh',
-          overflowY: 'auto'
+          maxWidth: '440px',
+          background: 'var(--bg-card)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.15)',
+          border: '1px solid var(--border-color)',
+          position: 'relative'
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
+          className="btn btn-ghost"
           style={{
             position: 'absolute',
             top: '16px',
             right: '16px',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer'
+            padding: '6px',
+            borderRadius: '50%'
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Header Branding */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div
             style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
+              width: '64px',
+              height: '64px',
+              borderRadius: '16px',
               background: '#ffffff',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '4px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+              padding: '6px',
+              boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
               marginBottom: '10px'
             }}
           >
             <img src="/logo.png" alt="PH Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Hệ Thống Đăng Nhập Phân Quyền
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
+            Đổi Tài Khoản Đăng Nhập
           </h3>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-            PH DIGITAL EDUCATION • TIN HỌC GENZ
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+            PH - TIN HỌC GENZ
           </p>
         </div>
 
-        {/* Dual Tab Role Selector */}
+        {/* Symmetrical Segmented Tabs */}
         <div
           style={{
-            display: 'flex',
-            background: 'var(--bg-primary)',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            background: 'var(--bg-secondary)',
             padding: '4px',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: '20px',
+            borderRadius: '10px',
+            marginBottom: '18px',
             border: '1px solid var(--border-color)'
           }}
         >
@@ -174,253 +156,209 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             type="button"
             onClick={() => {
               setActiveTab('student');
+              setStudentError('');
               soundFx.playClick();
             }}
             style={{
-              flex: 1,
-              padding: '10px 12px',
-              borderRadius: 'var(--radius-sm)',
+              padding: '9px 12px',
+              borderRadius: '8px',
               border: 'none',
-              background: activeTab === 'student' ? 'var(--bg-secondary)' : 'transparent',
-              color: activeTab === 'student' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-              fontWeight: activeTab === 'student' ? 700 : 500,
-              fontSize: '0.88rem',
+              background: activeTab === 'student' ? 'var(--bg-card)' : 'transparent',
+              color: activeTab === 'student' ? 'var(--accent-primary)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'student' ? 800 : 600,
+              fontSize: '0.86rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
               cursor: 'pointer',
-              boxShadow: activeTab === 'student' ? 'var(--shadow-sm)' : 'none',
-              transition: 'all 0.18s ease'
+              boxShadow: activeTab === 'student' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           >
-            <User size={16} />
-            <span>Cổng Học Viên</span>
+            <User size={15} />
+            <span>Học Viên</span>
           </button>
 
           <button
             type="button"
             onClick={() => {
               setActiveTab('admin');
+              setAdminError('');
               soundFx.playClick();
             }}
             style={{
-              flex: 1,
-              padding: '10px 12px',
-              borderRadius: 'var(--radius-sm)',
+              padding: '9px 12px',
+              borderRadius: '8px',
               border: 'none',
-              background: activeTab === 'admin' ? 'var(--bg-secondary)' : 'transparent',
-              color: activeTab === 'admin' ? '#f59e0b' : 'var(--text-secondary)',
-              fontWeight: activeTab === 'admin' ? 700 : 500,
-              fontSize: '0.88rem',
+              background: activeTab === 'admin' ? 'var(--bg-card)' : 'transparent',
+              color: activeTab === 'admin' ? '#d97706' : 'var(--text-muted)',
+              fontWeight: activeTab === 'admin' ? 800 : 600,
+              fontSize: '0.86rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
               cursor: 'pointer',
-              boxShadow: activeTab === 'admin' ? 'var(--shadow-sm)' : 'none',
-              transition: 'all 0.18s ease'
+              boxShadow: activeTab === 'admin' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           >
-            <Shield size={16} />
-            <span>Giảng Viên / Admin</span>
+            <Shield size={15} />
+            <span>Giảng Viên</span>
           </button>
         </div>
 
         {/* 1. Student Login Form */}
         {activeTab === 'student' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Mã Học Viên (Do Giáo Viên Cấp) <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nhập mã học viên (Ví dụ: THGZ01, THGZ02)"
-                    value={studentCode}
-                    onChange={e => setStudentCode(e.target.value.toUpperCase())}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px 10px 38px',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'var(--bg-primary)',
-                      border: studentError ? '1px solid #ef4444' : '1px solid var(--border-color)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.92rem',
-                      fontWeight: 700,
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Mật Khẩu Học Viên (Mặc định: 123)
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <KeyRound size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input
-                    type="password"
-                    placeholder="Mặc định: 123"
-                    value={studentPassword}
-                    onChange={e => setStudentPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px 10px 38px',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.9rem',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-                {studentError && (
-                  <p style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '4px' }}>{studentError}</p>
-                )}
-              </div>
-
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '4px', padding: '12px', fontWeight: 800 }}>
-                <span>Đăng Nhập Cổng Học Viên</span>
-                <ArrowRight size={16} />
-              </button>
-            </form>
-
-            {/* Quick Student Switcher for Easy Trial */}
-            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <UserCheck size={14} />
-                <span>Chọn nhanh tài khoản học viên mẫu trong lớp:</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {studentAccounts.slice(0, 3).map(acc => (
-                  <div
-                    key={acc.id}
-                    onClick={() => handleQuickStudentSelect(acc)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      fontSize: '0.82rem'
-                    }}
-                  >
-                    <div>
-                      <b>{acc.name}</b> <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>({acc.studentCode})</span>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{acc.schoolOrClass}</div>
-                    </div>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 700 }}>Đăng nhập ➔</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 2. Admin Form */}
-        {activeTab === 'admin' && (
-          <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '0.8rem', color: '#b45309' }}>
-              🔒 <b>Cổng dành riêng cho Giảng Viên & Quản Trị Viên</b>: Tạo tài khoản học sinh, quản lý đề thi và theo dõi bảng điểm.
-            </div>
-
+          <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Họ và Tên Giảng Viên
-              </label>
-              <input
-                type="text"
-                placeholder="Thầy Huy (Giảng Viên Trưởng)"
-                value={adminName}
-                onChange={e => setAdminName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.9rem',
-                  outline: 'none'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Mật Khẩu Quản Trị / Mã PIN <span style={{ color: '#ef4444' }}>*</span>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                Mã Học Viên / Họ Tên
               </label>
               <div style={{ position: 'relative' }}>
-                <KeyRound size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
-                  type="password"
+                  type="text"
                   required
-                  placeholder="Nhập mã PIN (mặc định: admin123 hoặc 123)"
-                  value={adminPin}
-                  onChange={e => setAdminPin(e.target.value)}
+                  placeholder="VD: THGZ01 hoặc Nguyễn Văn An"
+                  value={studentCode}
+                  onChange={e => setStudentCode(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 12px 10px 38px',
-                    borderRadius: 'var(--radius-md)',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
                     background: 'var(--bg-primary)',
-                    border: adminError ? '1px solid #ef4444' : '1px solid var(--border-color)',
+                    border: '1px solid var(--border-color)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.9rem',
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
                     outline: 'none'
                   }}
                 />
               </div>
-              {adminError && (
-                <p style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '4px' }}>{adminError}</p>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                Mật Khẩu
+              </label>
+              <div style={{ position: 'relative' }}>
+                <KeyRound size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="password"
+                  placeholder="Mật khẩu tài khoản (Mặc định: 123)"
+                  value={studentPassword}
+                  onChange={e => setStudentPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.86rem',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              {studentError && (
+                <p style={{ fontSize: '0.76rem', color: '#ef4444', marginTop: '4px' }}>{studentError}</p>
               )}
             </div>
 
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                width: '100%',
-                marginTop: '8px',
-                padding: '12px',
-                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-                boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)',
-                fontWeight: 800
-              }}
+              style={{ width: '100%', marginTop: '4px', padding: '11px', fontWeight: 800, fontSize: '0.88rem' }}
             >
-              <Shield size={16} />
-              <span>Xác Thực Vào Quản Trị Giảng Viên</span>
+              <span>Xác Nhận Đăng Nhập</span>
+              <ArrowRight size={15} />
             </button>
+          </form>
+        )}
+
+        {/* 2. Admin Form */}
+        {activeTab === 'admin' && (
+          <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                Họ Tên Giảng Viên
+              </label>
+              <div style={{ position: 'relative' }}>
+                <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="text"
+                  required
+                  placeholder="VD: Thầy Quang Huy / Thầy Đức Nam"
+                  value={adminName}
+                  onChange={e => setAdminName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                Mật Khẩu Quản Trị
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="password"
+                  required
+                  placeholder="Nhập mã PIN hoặc mật khẩu quản trị"
+                  value={adminPin}
+                  onChange={e => setAdminPin(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    background: 'var(--bg-primary)',
+                    border: adminError ? '1px solid #ef4444' : '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.86rem',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              {adminError && (
+                <p style={{ fontSize: '0.76rem', color: '#ef4444', marginTop: '4px' }}>{adminError}</p>
+              )}
+            </div>
 
             <button
-              type="button"
-              onClick={handleQuickDemoAdmin}
+              type="submit"
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#d97706',
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                textAlign: 'center',
+                width: '100%',
                 marginTop: '4px',
+                padding: '11px',
+                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 800,
+                fontSize: '0.88rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '4px',
-                fontWeight: 700
+                gap: '6px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
               }}
             >
-              <CheckCircle size={14} />
-              <span>1-Click Trải nghiệm ngay quyền Quản Trị Viên</span>
+              <Shield size={15} />
+              <span>Đăng Nhập Cổng Giảng Viên</span>
             </button>
           </form>
         )}

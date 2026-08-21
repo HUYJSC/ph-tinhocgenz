@@ -1,31 +1,30 @@
 import React, { useState } from 'react';
 import { CurriculumTrack, StudentAccount, UserProfile } from '../../types/auth';
 import {
-  User, Shield, KeyRound, ArrowRight, ShieldAlert, Sparkles, BookOpen
+  User, Shield, KeyRound, ArrowRight, ShieldAlert, BookOpen, Lock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface UnifiedAuthGatewayProps {
-  studentAccounts: StudentAccount[];
+  studentAccounts?: StudentAccount[];
   onStudentLogin: (studentCode: string, password: string, selectedTrack: CurriculumTrack) => { success: boolean; user?: UserProfile; message?: string };
   onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string };
 }
 
-const TRACK_LIST: { id: CurriculumTrack; label: string; icon: string }[] = [
-  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3Buổi 1 môn)', icon: '⚡' },
-  { id: 'cc-cntt-basic', label: '2. CC CNTT Cơ bản (6 buổi)', icon: '💻' },
-  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)', icon: '⚙️' },
-  { id: 'cntt-basic-we', label: '4. CNTT Cơ bản: Word + Excel (10-12b)', icon: '📄' },
-  { id: 'cntt-adv-we', label: '5. CNTT Nâng Cao: Word + Excel (10-12b)', icon: '📊' },
-  { id: 'ai-office', label: '6. Ứng dụng AI vào công việc Văn phòng (5b)', icon: '🤖' },
-  { id: 'excel-accounting', label: '7. Excel cho Kế toán (Custom tuỳ nhu cầu)', icon: '📈' },
-  { id: 'word-6b', label: '8. Word (6 buổi)', icon: '📝' },
-  { id: 'excel-6b', label: '9. Excel (6 buổi)', icon: '📊' },
-  { id: 'ppt-6b', label: '10. PPT (6 buổi)', icon: '📽️' }
+const TRACK_LIST: { id: CurriculumTrack; label: string }[] = [
+  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3 Buổi 1 môn)' },
+  { id: 'cc-cntt-basic',    label: '2. CC CNTT Cơ bản (6 buổi)' },
+  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)' },
+  { id: 'cntt-basic-we',    label: '4. CNTT Cơ bản: Word + Excel (10-12 buổi)' },
+  { id: 'cntt-adv-we',      label: '5. CNTT Nâng Cao: Word + Excel (10-12 buổi)' },
+  { id: 'ai-office',        label: '6. Ứng dụng AI vào công việc Văn phòng (5 buổi)' },
+  { id: 'excel-accounting', label: '7. Excel cho Kế toán' },
+  { id: 'word-6b',          label: '8. Kỹ năng soạn thảo Word (6 buổi)' },
+  { id: 'excel-6b',         label: '9. Xử lý bảng tính Excel (6 buổi)' },
+  { id: 'ppt-6b',           label: '10. Thiết kế thuyết trình PowerPoint (6 buổi)' }
 ];
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
-  studentAccounts,
   onStudentLogin,
   onAdminLogin
 }) => {
@@ -34,28 +33,18 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   const [adminTrackChoice, setAdminTrackChoice] = useState<CurriculumTrack | 'all'>('all');
 
   // Student Form
-  const [studentCode, setStudentCode] = useState('THGZ01');
-  const [studentPassword, setStudentPassword] = useState('123');
+  const [studentCode, setStudentCode] = useState('');
+  const [studentPassword, setStudentPassword] = useState('');
   const [studentError, setStudentError] = useState('');
 
   // Admin Form
-  const [adminName, setAdminName] = useState('Thầy Huy (Giảng Viên Trưởng)');
-  const [adminPin, setAdminPin] = useState('admin123');
+  const [adminName, setAdminName] = useState('');
+  const [adminPin, setAdminPin] = useState('');
   const [adminError, setAdminError] = useState('');
-
-  // Filter sample student matching the selected track
-  const sampleStudent = studentAccounts.find(
-    s => s.programTrack === selectedTrack || s.enrolledTracks?.includes(selectedTrack)
-  );
 
   const handleTrackChange = (trackId: CurriculumTrack) => {
     setSelectedTrack(trackId);
     setStudentError('');
-    const match = studentAccounts.find(s => s.programTrack === trackId || s.enrolledTracks?.includes(trackId));
-    if (match) {
-      setStudentCode(match.studentCode);
-      setStudentPassword(match.password || '123');
-    }
     soundFx.playClick();
   };
 
@@ -68,7 +57,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
       return;
     }
 
-    const res = onStudentLogin(studentCode, studentPassword, selectedTrack);
+    const res = onStudentLogin(studentCode.trim(), studentPassword.trim() || '123', selectedTrack);
     if (res.success) {
       soundFx.playVictory();
     } else {
@@ -81,20 +70,18 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     e.preventDefault();
     setAdminError('');
 
-    const res = onAdminLogin(adminPin, adminName, adminTrackChoice);
+    if (!adminName.trim()) {
+      setAdminError('Vui lòng nhập họ tên giảng viên!');
+      return;
+    }
+
+    const res = onAdminLogin(adminPin.trim(), adminName.trim(), adminTrackChoice);
     if (res.success) {
       soundFx.playVictory();
     } else {
       soundFx.playIncorrect();
-      setAdminError(res.message || 'Mã PIN quản trị không chính xác (mặc định: admin123 hoặc 123)!');
+      setAdminError(res.message || 'Mã PIN quản trị không chính xác (Mặc định: admin123 hoặc 123)!');
     }
-  };
-
-  const handleQuickFill = (acc: StudentAccount) => {
-    setStudentCode(acc.studentCode);
-    setStudentPassword(acc.password || '123');
-    setStudentError('');
-    soundFx.playClick();
   };
 
   return (
@@ -105,77 +92,80 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '16px',
-        background: 'radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.08) 0%, var(--bg-primary) 75%)'
+        padding: '24px 16px',
+        background: 'radial-gradient(ellipse at 50% 15%, rgba(79, 110, 247, 0.08) 0%, var(--bg-primary) 70%)'
       }}
       className="animate-fade-in"
     >
       <div
         style={{
           width: '100%',
-          maxWidth: '430px',
+          maxWidth: '440px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
         }}
       >
-        {/* Compact Logo & Brand */}
-        <div style={{ textAlign: 'center', marginBottom: '18px' }}>
+        {/* Balanced & High-Class Brand Header */}
+        <div style={{ textAlign: 'center', marginBottom: '22px' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
+              width: '80px',
+              height: '80px',
+              borderRadius: '20px',
               background: '#ffffff',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '4px',
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
-              marginBottom: '8px'
+              padding: '8px',
+              boxShadow: '0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+              marginBottom: '14px',
+              transition: 'transform 0.2s ease'
             }}
           >
-            <img src="/logo.png" alt="PH Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img
+              src="/logo.png"
+              alt="PH - Tin Học GenZ"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
+
           <h1
             style={{
-              fontSize: '1.35rem',
+              fontSize: '1.45rem',
               fontWeight: 900,
               letterSpacing: '-0.02em',
-              background: 'var(--accent-gradient)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              margin: '0 0 2px'
+              color: 'var(--text-primary)',
+              margin: '0 0 4px'
             }}
           >
-            PH - TINHOCGENZ
+            PH - TIN HỌC GENZ
           </h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, fontWeight: 600 }}>
-            Cổng Đăng Nhập Học & Khảo Thí Trực Tuyến
+          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>
+            Hệ Thống Đào Tạo & Khảo Thí Tin Học Chuẩn
           </p>
         </div>
 
-        {/* Main Clean Card */}
+        {/* Main Authentication Card */}
         <div
           className="card"
           style={{
             width: '100%',
-            padding: '22px 20px',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
-            border: '1px solid var(--border-color)',
+            padding: '26px 24px',
+            borderRadius: '20px',
+            boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px var(--border-color)',
             background: 'var(--bg-card)'
           }}
         >
-          {/* Segmented Role Tabs */}
+          {/* Segmented Symmetrical Role Tabs */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              background: 'var(--bg-primary)',
+              background: 'var(--bg-secondary)',
               padding: '4px',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: '18px',
+              borderRadius: '12px',
+              marginBottom: '22px',
               border: '1px solid var(--border-color)'
             }}
           >
@@ -187,20 +177,20 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 soundFx.playClick();
               }}
               style={{
-                padding: '9px',
-                borderRadius: 'var(--radius-sm)',
+                padding: '10px',
+                borderRadius: '8px',
                 border: 'none',
                 background: role === 'student' ? 'var(--bg-card)' : 'transparent',
                 color: role === 'student' ? 'var(--accent-primary)' : 'var(--text-muted)',
                 fontWeight: role === 'student' ? 800 : 600,
-                fontSize: '0.86rem',
+                fontSize: '0.88rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
+                gap: '8px',
                 cursor: 'pointer',
-                boxShadow: role === 'student' ? 'var(--shadow-sm)' : 'none',
-                transition: 'all 0.15s ease'
+                boxShadow: role === 'student' ? '0 2px 8px rgba(0, 0, 0, 0.06)' : 'none',
+                transition: 'all 0.2s ease'
               }}
             >
               <User size={16} />
@@ -215,20 +205,20 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 soundFx.playClick();
               }}
               style={{
-                padding: '9px',
-                borderRadius: 'var(--radius-sm)',
+                padding: '10px',
+                borderRadius: '8px',
                 border: 'none',
                 background: role === 'admin' ? 'var(--bg-card)' : 'transparent',
                 color: role === 'admin' ? '#d97706' : 'var(--text-muted)',
                 fontWeight: role === 'admin' ? 800 : 600,
-                fontSize: '0.86rem',
+                fontSize: '0.88rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
+                gap: '8px',
                 cursor: 'pointer',
-                boxShadow: role === 'admin' ? 'var(--shadow-sm)' : 'none',
-                transition: 'all 0.15s ease'
+                boxShadow: role === 'admin' ? '0 2px 8px rgba(0, 0, 0, 0.06)' : 'none',
+                transition: 'all 0.2s ease'
               }}
             >
               <Shield size={16} />
@@ -238,81 +228,81 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
 
           {/* 1. STUDENT FORM */}
           {role === 'student' && (
-            <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* Track Selector Dropdown */}
+            <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Program Track Selector */}
               <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                   <BookOpen size={14} color="var(--accent-primary)" />
-                  <span>Chương Trình Đang Học *</span>
+                  <span>Chương Trình Đào Tạo</span>
                 </label>
                 <select
                   value={selectedTrack}
                   onChange={e => handleTrackChange(e.target.value as CurriculumTrack)}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: 'var(--radius-md)',
+                    padding: '11px 14px',
+                    borderRadius: '10px',
                     background: 'var(--bg-primary)',
-                    border: '1.5px solid var(--accent-primary)',
+                    border: '1px solid var(--border-color)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.88rem',
-                    fontWeight: 700,
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
                     outline: 'none',
                     cursor: 'pointer'
                   }}
                 >
                   {TRACK_LIST.map(t => (
                     <option key={t.id} value={t.id}>
-                      {t.icon} {t.label}
+                      {t.label}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Student Code / Name */}
+              {/* Student Code / Name Input */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-                  Mã Học Viên Hoặc Họ Tên *
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Mã Học Viên Hoặc Họ Tên
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <User size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="text"
                     required
-                    placeholder="Ví dụ: THGZ02 hoặc Trần Thị Mai"
+                    placeholder="VD: THGZ01 hoặc Nguyễn Văn An"
                     value={studentCode}
                     onChange={e => setStudentCode(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 12px 10px 36px',
-                      borderRadius: 'var(--radius-md)',
+                      padding: '11px 14px 11px 40px',
+                      borderRadius: '10px',
                       background: 'var(--bg-primary)',
                       border: '1px solid var(--border-color)',
                       color: 'var(--text-primary)',
                       fontSize: '0.88rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       outline: 'none'
                     }}
                   />
                 </div>
               </div>
 
-              {/* Password */}
+              {/* Password Input */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-                  Mật Khẩu (Mặc định: 123)
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Mật Khẩu
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <KeyRound size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <KeyRound size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="password"
-                    placeholder="123"
+                    placeholder="Mật khẩu tài khoản (Mặc định: 123)"
                     value={studentPassword}
                     onChange={e => setStudentPassword(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 12px 10px 36px',
-                      borderRadius: 'var(--radius-md)',
+                      padding: '11px 14px 11px 40px',
+                      borderRadius: '10px',
                       background: 'var(--bg-primary)',
                       border: '1px solid var(--border-color)',
                       color: 'var(--text-primary)',
@@ -323,66 +313,25 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 </div>
               </div>
 
-              {/* Concise Error Alert */}
+              {/* Error Message */}
               {studentError && (
                 <div
                   style={{
-                    padding: '12px 14px',
-                    borderRadius: 'var(--radius-md)',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
                     background: 'rgba(239, 68, 68, 0.08)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.82rem',
-                    lineHeight: 1.5,
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#ef4444',
+                    fontSize: '0.8rem',
+                    lineHeight: 1.4,
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     gap: '8px'
                   }}
                   className="animate-fade-in"
                 >
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                    <ShieldAlert size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <div style={{ color: 'var(--text-secondary)' }}>
-                      <b style={{ color: '#ef4444' }}>Chưa khớp môn học: </b>
-                      {studentError}
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const match = studentAccounts.find(
-                      s => s.studentCode.toUpperCase() === studentCode.trim().toUpperCase() || s.name.toLowerCase() === studentCode.trim().toLowerCase()
-                    );
-                    if (match?.programTrack && match.programTrack !== selectedTrack) {
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedTrack(match.programTrack!);
-                            setStudentError('');
-                            soundFx.playClick();
-                          }}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: 'var(--radius-sm)',
-                            background: 'rgba(37, 99, 235, 0.12)',
-                            border: '1px solid var(--accent-primary)',
-                            color: 'var(--accent-primary)',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            marginTop: '2px'
-                          }}
-                        >
-                          <span>👉 Bấm vào đây để chọn đúng môn của bạn</span>
-                        </button>
-                      );
-                    }
-                    return null;
-                  })()}
+                  <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+                  <span>{studentError}</span>
                 </div>
               )}
 
@@ -392,7 +341,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 className="btn btn-primary"
                 style={{
                   width: '100%',
-                  padding: '11px',
+                  padding: '12px',
                   fontWeight: 800,
                   fontSize: '0.92rem',
                   display: 'flex',
@@ -400,84 +349,63 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   justifyContent: 'center',
                   gap: '8px',
                   marginTop: '4px',
-                  boxShadow: 'var(--shadow-md)'
+                  borderRadius: '10px'
                 }}
               >
-                <span>Vào Lớp Học Ngay</span>
+                <span>Vào Cổng Học Tập</span>
                 <ArrowRight size={16} />
               </button>
-
-              {/* Quick Sample Student Link */}
-              {sampleStudent && (
-                <div style={{ textAlign: 'center', marginTop: '2px' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill(sampleStudent)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--accent-primary)',
-                      fontSize: '0.76rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Sparkles size={12} />
-                    <span>Mẫu môn này: <b>{sampleStudent.name} ({sampleStudent.studentCode})</b></span>
-                  </button>
-                </div>
-              )}
             </form>
           )}
 
           {/* 2. ADMIN / TEACHER FORM */}
           {role === 'admin' && (
-            <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Teacher Name */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                   Họ Tên Giảng Viên
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <User size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="text"
                     required
+                    placeholder="VD: Thầy Quang Huy / Thầy Đức Nam"
                     value={adminName}
                     onChange={e => setAdminName(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 12px 10px 36px',
-                      borderRadius: 'var(--radius-md)',
+                      padding: '11px 14px 11px 40px',
+                      borderRadius: '10px',
                       background: 'var(--bg-primary)',
                       border: '1px solid var(--border-color)',
                       color: 'var(--text-primary)',
                       fontSize: '0.88rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       outline: 'none'
                     }}
                   />
                 </div>
               </div>
 
+              {/* Password / Admin PIN */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-                  Mật Khẩu Quản Trị (Mặc định: admin123)
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Mật Khẩu Quản Trị
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <KeyRound size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="password"
                     required
-                    placeholder="admin123"
+                    placeholder="Nhập mã PIN hoặc mật khẩu quản trị"
                     value={adminPin}
                     onChange={e => setAdminPin(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 12px 10px 36px',
-                      borderRadius: 'var(--radius-md)',
+                      padding: '11px 14px 11px 40px',
+                      borderRadius: '10px',
                       background: 'var(--bg-primary)',
                       border: '1px solid var(--border-color)',
                       color: 'var(--text-primary)',
@@ -488,8 +416,9 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 </div>
               </div>
 
+              {/* Training Track Choice */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                   Phân Hệ Quản Lý Giảng Dạy
                 </label>
                 <select
@@ -497,56 +426,54 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   onChange={e => setAdminTrackChoice(e.target.value as any)}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: 'var(--radius-md)',
+                    padding: '11px 14px',
+                    borderRadius: '10px',
                     background: 'var(--bg-primary)',
                     border: '1px solid var(--border-color)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.88rem',
-                    fontWeight: 700,
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
                     outline: 'none',
                     cursor: 'pointer'
                   }}
                 >
-                  <option value="all">🌟 Toàn Bộ 10 Phân Hệ Đào Tạo</option>
+                  <option value="all">Toàn Bộ 10 Phân Hệ Đào Tạo</option>
                   {TRACK_LIST.map(t => (
                     <option key={t.id} value={t.id}>
-                      {t.icon} {t.label}
+                      {t.label}
                     </option>
                   ))}
                 </select>
               </div>
 
+              {/* Error Alert */}
               {adminError && (
                 <div
                   style={{
-                    padding: '12px 14px',
-                    borderRadius: 'var(--radius-md)',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
                     background: 'rgba(239, 68, 68, 0.08)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: 'var(--text-primary)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#ef4444',
                     fontSize: '0.8rem',
-                    lineHeight: 1.5,
+                    lineHeight: 1.4,
                     display: 'flex',
-                    gap: '10px',
-                    alignItems: 'flex-start'
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
                   className="animate-fade-in"
                 >
-                  <ShieldAlert size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <div style={{ color: 'var(--text-secondary)' }}>
-                    <b style={{ color: '#ef4444' }}>Thông báo: </b>
-                    {adminError}
-                  </div>
+                  <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+                  <span>{adminError}</span>
                 </div>
               )}
 
+              {/* Admin Submit Button */}
               <button
                 type="submit"
-                className="btn btn-primary"
                 style={{
                   width: '100%',
-                  padding: '11px',
+                  padding: '12px',
                   fontWeight: 800,
                   fontSize: '0.92rem',
                   display: 'flex',
@@ -554,135 +481,24 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   justifyContent: 'center',
                   gap: '8px',
                   marginTop: '4px',
+                  borderRadius: '10px',
+                  border: 'none',
                   background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-                  boxShadow: '0 4px 14px rgba(217, 119, 6, 0.25)'
+                  color: '#ffffff',
+                  boxShadow: '0 4px 14px rgba(217, 119, 6, 0.25)',
+                  cursor: 'pointer'
                 }}
               >
                 <Shield size={16} />
                 <span>Vào Cổng Giảng Dạy & Quản Trị</span>
               </button>
-
-              {/* Quick Staff Shortcuts */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '4px' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, margin: '2px 0' }}>
-                  TÀI KHOẢN GIẢNG VIÊN MẪU (BẤM ĐỂ CHỌN NHANH):
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminName('Thầy Huy (Giảng Viên Trưởng)');
-                    setAdminPin('admin123');
-                    setAdminTrackChoice('all');
-                    setAdminError('');
-                    soundFx.playClick();
-                  }}
-                  style={{
-                    background: 'rgba(217, 119, 6, 0.08)',
-                    border: '1px dashed rgba(217, 119, 6, 0.3)',
-                    color: '#d97706',
-                    padding: '5px 8px',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <span>👑 Admin: Thầy Huy</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Toàn quyền 10 môn</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminName('Cô Hoàng Mai');
-                    setAdminPin('123');
-                    setAdminTrackChoice('office-fast-3in1');
-                    setAdminError('');
-                    soundFx.playClick();
-                  }}
-                  style={{
-                    background: 'rgba(37, 99, 235, 0.06)',
-                    border: '1px dashed rgba(37, 99, 235, 0.25)',
-                    color: 'var(--accent-primary)',
-                    padding: '5px 8px',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <span>👩‍🏫 Cô Hoàng Mai (GV01)</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Office, CC Cơ bản, Word...</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminName('Thầy Đức Nam');
-                    setAdminPin('123');
-                    setAdminTrackChoice('cc-cntt-advanced');
-                    setAdminError('');
-                    soundFx.playClick();
-                  }}
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.06)',
-                    border: '1px dashed rgba(16, 185, 129, 0.25)',
-                    color: '#10b981',
-                    padding: '5px 8px',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <span>👨‍🏫 Thầy Đức Nam (GV02)</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>CC Nâng cao, AI, Kế toán...</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminName('Thầy Quang Huy');
-                    setAdminPin('123');
-                    setAdminTrackChoice('all');
-                    setAdminError('');
-                    soundFx.playClick();
-                  }}
-                  style={{
-                    background: 'rgba(139, 92, 246, 0.06)',
-                    border: '1px dashed rgba(139, 92, 246, 0.25)',
-                    color: '#8b5cf6',
-                    padding: '5px 8px',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <span>👨‍🏫 Thầy Quang Huy (GV03)</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>Toàn bộ các môn</span>
-                </button>
-              </div>
             </form>
           )}
         </div>
 
-        {/* Footer Support Note */}
-        <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          Hỗ trợ kỹ thuật đào tạo: <b>Ban Giảng Huấn PH-TINHOCGENZ</b>
+        {/* Clean Minimal Footer */}
+        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+          Hệ thống đào tạo nội bộ © <b>PH-TINHOCGENZ</b>
         </div>
       </div>
     </div>
