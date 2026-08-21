@@ -3,9 +3,9 @@ import { AttendanceSession, AttendanceRecord, AttendanceStatus, MakeupAttendance
 import { StudentAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 import { getClientIp, getDeviceFingerprint, calculateDistanceMeters } from '../utils/securityUtils';
 
-// Storage key updated for 2-minute rotation & IP Anti-cheat v6
-const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v6_2min_ip';
-const MAKEUP_REPORTS_KEY = 'phtinhocgenz_makeup_reports_v2';
+// Storage key updated for 5-minute rotation & GPS Anti-cheat v7
+const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v7_5min_gps';
+const MAKEUP_REPORTS_KEY = 'phtinhocgenz_makeup_reports_v3';
 
 const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
   'office-fast-3in1',
@@ -34,11 +34,11 @@ export const TRACK_CLASS_CODES: Record<CurriculumTrack, { classCode: string; def
   'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai' }
 };
 
-// Deterministic 6-digit rolling PIN generator (Default: 120 seconds / 2 minutes)
-export function getRollingTrackPin(track: string, intervalSeconds: number = 120, windowOffset: number = 0): string {
+// Deterministic 6-digit rolling PIN generator (Default: 300 seconds / 5 minutes)
+export function getRollingTrackPin(track: string, intervalSeconds: number = 300, windowOffset: number = 0): string {
   const timeStep = Math.floor(Date.now() / (intervalSeconds * 1000)) + windowOffset;
   let hash = 0;
-  const str = `PHTIN_${track}_ROTATING_2MIN_${timeStep}`;
+  const str = `PHTIN_${track}_ROTATING_5MIN_${timeStep}`;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
@@ -48,8 +48,8 @@ export function getRollingTrackPin(track: string, intervalSeconds: number = 120,
   return String(pin);
 }
 
-// Generate token based on time step (Default: 120 seconds / 2 minutes)
-export function getRollingTrackToken(track: string, intervalSeconds: number = 120, windowOffset: number = 0): string {
+// Generate token based on time step (Default: 300 seconds / 5 minutes)
+export function getRollingTrackToken(track: string, intervalSeconds: number = 300, windowOffset: number = 0): string {
   const timeStep = Math.floor(Date.now() / (intervalSeconds * 1000)) + windowOffset;
   return `tk_${track.slice(0, 4)}_${timeStep.toString(36)}`;
 }
@@ -91,12 +91,13 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
         className: `Lớp ${classMeta.classCode} - ${trackTitle}`,
         teacherId: classMeta.defaultTeacherId,
         teacherName: classMeta.defaultTeacherName,
-        qrToken: getRollingTrackToken(trackKey, 120),
-        qrExpiresAt: Date.now() + 120 * 1000,
-        qrPinCode: getRollingTrackPin(trackKey, 120),
-        intervalSeconds: 120,
+        qrToken: getRollingTrackToken(trackKey, 300),
+        qrExpiresAt: Date.now() + 300 * 1000,
+        qrPinCode: getRollingTrackPin(trackKey, 300),
+        intervalSeconds: 300,
         isOpen: true,
         requireSameIp: false,
+        requireLocation: false,
         preventMultiCheckIn: true,
         allowedRadiusMeters: 150,
         records,
@@ -227,10 +228,10 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       className: className || `Lớp ${assignedClassCode} - ${TRACK_LABELS[track]}`,
       teacherId,
       teacherName,
-      qrToken: getRollingTrackToken(track, 120),
-      qrExpiresAt: Date.now() + 120 * 1000,
-      qrPinCode: getRollingTrackPin(track, 120),
-      intervalSeconds: 120,
+      qrToken: getRollingTrackToken(track, 300),
+      qrExpiresAt: Date.now() + 300 * 1000,
+      qrPinCode: getRollingTrackPin(track, 300),
+      intervalSeconds: 300,
       isOpen: true,
       requireSameIp: false,
       preventMultiCheckIn: true,
@@ -244,11 +245,11 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     return newSession;
   }, [studentAccounts]);
 
-  // Rotate QR code (Default to 120-second rotation = 2 minutes)
-  const rotateQRCode = useCallback((sessionId: string, intervalSeconds: number = 120) => {
+  // Rotate QR code (Default to 300-second rotation = 5 minutes)
+  const rotateQRCode = useCallback((sessionId: string, intervalSeconds: number = 300) => {
     const session = sessions.find(s => s.id === sessionId);
     const targetTrack = session ? session.track : 'office-fast-3in1';
-    const effectiveInterval = intervalSeconds || session?.intervalSeconds || 120;
+    const effectiveInterval = intervalSeconds || session?.intervalSeconds || 300;
 
     const newToken = getRollingTrackToken(targetTrack, effectiveInterval);
     const newPin = getRollingTrackPin(targetTrack, effectiveInterval);
@@ -453,9 +454,9 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     if (!matchedSession && searchPin && searchPin.length === 6) {
       for (const trackKey of ALL_10_TRACK_KEYS) {
         const sessionForTrack = sessions.find(s => s.track === trackKey);
-        const interval = sessionForTrack?.intervalSeconds || 120;
+        const interval = sessionForTrack?.intervalSeconds || 300;
 
-        // Tolerant window: 0 (current), -1 (prev 2m), 1 (slight clock ahead)
+        // Tolerant window: 0 (current), -1 (prev 5m), 1 (slight clock ahead)
         const isMatch = searchPin === getRollingTrackPin(trackKey, interval, 0) ||
                         searchPin === getRollingTrackPin(trackKey, interval, -1) ||
                         searchPin === getRollingTrackPin(trackKey, interval, 1);
@@ -484,7 +485,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     if (!matchedSession) {
       return {
         success: false,
-        message: 'Mã QR hoặc PIN đã hết hạn (Mã tự động đổi mỗi 2 phút). Vui lòng quét lại mã mới trên màn hình lớp học!'
+        message: 'Mã QR hoặc PIN đã hết hạn (Mã tự động đổi mỗi 5 phút). Vui lòng quét lại mã mới trên màn hình lớp học!'
       };
     }
 

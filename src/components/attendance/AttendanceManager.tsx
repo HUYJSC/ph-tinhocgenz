@@ -5,11 +5,11 @@ import { TRACK_CLASS_CODES } from '../../hooks/useAttendanceStorage';
 import {
   QrCode, CheckCircle2, Clock, RefreshCw,
   FileSpreadsheet, Trash2, Save, Users, Calendar,
-  ShieldCheck, CheckCheck, Lock, Unlock, UserCheck, AlertTriangle,
-  Wifi, MapPin, Smartphone
+  CheckCheck, Lock, Unlock, UserCheck, AlertTriangle,
+  MapPin
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-import { getClientIp, getCurrentCoordinates } from '../../utils/securityUtils';
+import { getCurrentCoordinates } from '../../utils/securityUtils';
 
 interface AttendanceManagerProps {
   sessions: AttendanceSession[];
@@ -40,13 +40,6 @@ const ALL_TRACKS: { id: CurriculumTrack; label: string }[] = [
   { id: 'ppt-6b', label: '10. PPT (6 buổi)' }
 ];
 
-const INTERVAL_OPTIONS = [
-  { value: 120, label: '2 Phút (Chuẩn - Khuyến nghị)' },
-  { value: 60,  label: '1 Phút (Nhanh)' },
-  { value: 30,  label: '30 Giây (Siêu tốc)' },
-  { value: 300, label: '5 Phút (Thoải mái)' }
-];
-
 export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   sessions,
   studentAccounts = [],
@@ -65,10 +58,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'qr_mode' | 'manual_list' | 'makeup_reports' | 'history'>('qr_mode');
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>(currentUser.programTrack || 'office-fast-3in1');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  const [rotationInterval, setRotationInterval] = useState<number>(120); // 2 minutes default
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(120);
+  const [rotationInterval] = useState<number>(300); // 5 minutes default (300s)
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(300);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
-  const [isFetchingIp, setIsFetchingIp] = useState(false);
   const [isFetchingGps, setIsFetchingGps] = useState(false);
 
   // Auto select active session
@@ -87,13 +79,10 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       setSelectedSessionId(newSess.id);
     } else if (activeSession && activeSession.id !== selectedSessionId) {
       setSelectedSessionId(activeSession.id);
-      if (activeSession.intervalSeconds) {
-        setRotationInterval(activeSession.intervalSeconds);
-      }
     }
   }, [activeSession, selectedSessionId, selectedTrack, onCreateSession, currentUser]);
 
-  // Dynamic countdown timer (Default 2 minutes / 120s)
+  // Dynamic 5-minute countdown timer (repeats continuously)
   useEffect(() => {
     if (!activeSession || !activeSession.qrExpiresAt) return;
 
@@ -101,7 +90,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       const remaining = Math.max(0, Math.floor((activeSession.qrExpiresAt! - Date.now()) / 1000));
       setTimeLeftSeconds(remaining);
 
-      // Auto rotate when timer expires
+      // Auto rotate when 5 minutes expire
       if (remaining === 0) {
         onRotateQR(activeSession.id, rotationInterval);
       }
@@ -116,38 +105,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     if (!activeSession) return;
     onRotateQR(activeSession.id, rotationInterval);
     soundFx.playClick();
-  };
-
-  const handleIntervalChange = (newInterval: number) => {
-    setRotationInterval(newInterval);
-    if (activeSession) {
-      onRotateQR(activeSession.id, newInterval);
-      if (onUpdateSessionSecurity) {
-        onUpdateSessionSecurity(activeSession.id, { intervalSeconds: newInterval });
-      }
-    }
-    soundFx.playClick();
-  };
-
-  // Toggle IP Network Lock (Chỉ cho phép cùng mạng WiFi phòng học)
-  const handleToggleIpLock = async () => {
-    if (!activeSession || !onUpdateSessionSecurity) return;
-    setIsFetchingIp(true);
-    try {
-      if (activeSession.requireSameIp) {
-        onUpdateSessionSecurity(activeSession.id, { requireSameIp: false });
-        soundFx.playClick();
-      } else {
-        const ip = await getClientIp();
-        onUpdateSessionSecurity(activeSession.id, { requireSameIp: true, teacherIp: ip });
-        soundFx.playVictory();
-        alert(`🛡️ ĐÃ BẬT KHÓA IP PHÒNG HỌC!\nIP Giáo viên ghi nhận: ${ip}\nChỉ sinh viên kết nối cùng mạng WiFi phòng học mới có thể điểm danh!`);
-      }
-    } catch (e: any) {
-      alert('Không thể lấy IP mạng hiện tại: ' + (e?.message || 'Lỗi kết nối'));
-    } finally {
-      setIsFetchingIp(false);
-    }
   };
 
   // Toggle GPS Geolocation Lock (< 150m)
@@ -167,21 +124,12 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
           allowedRadiusMeters: 150
         });
         soundFx.playVictory();
-        alert(`📍 ĐÃ KHÓA VỊ TRÍ PHÒNG HỌC (GPS)!\nTọa độ: ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}\nBán kính hợp lệ: 150 mét xung quanh lớp học.`);
       }
     } catch (e: any) {
-      alert('Không thể lấy vị trí GPS: ' + (e?.message || 'Vui lòng cấp quyền vị trí trên trình duyệt.'));
+      alert('Lỗi lấy GPS: ' + (e?.message || 'Vui lòng cấp quyền vị trí trên trình duyệt.'));
     } finally {
       setIsFetchingGps(false);
     }
-  };
-
-  // Toggle Multi-device Anti-fraud Lock
-  const handleToggleMultiDevice = () => {
-    if (!activeSession || !onUpdateSessionSecurity) return;
-    const nextVal = activeSession.preventMultiCheckIn === false ? true : false;
-    onUpdateSessionSecurity(activeSession.id, { preventMultiCheckIn: nextVal });
-    soundFx.playClick();
   };
 
   const handleSaveCurrentSession = () => {
@@ -199,7 +147,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
-  // Export Attendance to Excel (.csv with UTF-8 BOM)
+  // Export Attendance to Excel
   const exportAttendanceExcel = (sessionToExport?: AttendanceSession) => {
     const targetSession = sessionToExport || activeSession;
     if (!targetSession || targetSession.records.length === 0) {
@@ -221,7 +169,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       'Học Bù / Vắng Bù',
       'Hình Thức',
       'Thời Điểm',
-      'Địa Chỉ IP',
       'Ghi Chú'
     ];
 
@@ -262,7 +209,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         escapeCsv(rec.isMakeup || rec.status === 'makeup' ? 'ĐÚNG (Học Bù)' : 'Không'),
         escapeCsv(methodMap[rec.checkInMethod] || 'Thủ công'),
         escapeCsv(rec.checkInTime || '--:--'),
-        escapeCsv(rec.clientIp || '--'),
         escapeCsv(rec.note || '')
       ].join(',');
     });
@@ -280,33 +226,30 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     soundFx.playVictory();
   };
 
-  // Compute live statistics
+  // Live stats
   const totalStudents = activeSession?.records.length || 0;
   const presentCount = activeSession?.records.filter(r => r.status === 'present').length || 0;
   const makeupCount = activeSession?.records.filter(r => r.status === 'makeup' || r.isMakeup).length || 0;
   const lateCount = activeSession?.records.filter(r => r.status === 'late').length || 0;
-  const absentCount = activeSession?.records.filter(r => r.status === 'absent').length || 0;
   const presentRate = totalStudents > 0 ? Math.round(((presentCount + makeupCount + lateCount) / totalStudents) * 100) : 0;
 
-  // QR Code Deep Link URL with dynamic 2-minute rolling code
+  // QR Code Deep Link URL
   const currentClassCode = activeSession?.classCode || TRACK_CLASS_CODES[selectedTrack]?.classCode || 'K26';
   const qrCheckInUrl = activeSession
     ? `https://hoctructuyen.tinhocgenz.io.vn/?action=checkin&track=${activeSession.track}&class=${currentClassCode}&pin=${activeSession.qrPinCode}&token=${activeSession.qrToken}`
     : 'https://hoctructuyen.tinhocgenz.io.vn';
 
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=10&data=${encodeURIComponent(qrCheckInUrl)}`;
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(qrCheckInUrl)}`;
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
-      {/* Header Bar */}
+    <div style={{ maxWidth: '980px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
+      {/* Top Selector Bar */}
       <div
         className="card"
         style={{
-          padding: '14px 18px',
-          background: 'linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)',
-          borderRadius: 'var(--radius-lg)',
+          padding: '12px 16px',
+          borderRadius: '16px',
           marginBottom: '14px',
-          border: '1px solid rgba(79, 110, 247, 0.2)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -314,93 +257,8 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
           gap: '10px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-            Điểm Danh QR Chống Gian Lận
-          </h2>
-          <span style={{
-            fontSize: '0.68rem',
-            background: activeSession?.isOpen !== false ? '#10b981' : '#ef4444',
-            color: '#fff',
-            padding: '2px 8px',
-            borderRadius: 'var(--radius-full)',
-            fontWeight: 800,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#fff' }} />
-            {activeSession?.isOpen !== false ? 'ĐANG MỞ' : 'ĐÃ KHÓA'}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {activeSession && (
-            <button
-              onClick={() => {
-                onToggleSessionOpen(activeSession.id);
-                soundFx.playClick();
-              }}
-              className="btn"
-              style={{
-                padding: '7px 14px',
-                fontSize: '0.82rem',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: activeSession.isOpen !== false ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.14)',
-                border: activeSession.isOpen !== false ? '1.5px solid rgba(239, 68, 68, 0.4)' : '1.5px solid rgba(16, 185, 129, 0.4)',
-                color: activeSession.isOpen !== false ? '#ef4444' : '#10b981'
-              }}
-              title={activeSession.isOpen !== false ? 'Bấm để khóa điểm danh' : 'Bấm để mở lại điểm danh'}
-            >
-              {activeSession.isOpen !== false ? <Lock size={15} /> : <Unlock size={15} />}
-              <span>{activeSession.isOpen !== false ? 'Khóa Điểm Danh' : 'Mở Điểm Danh'}</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => exportAttendanceExcel()}
-            className="btn btn-secondary"
-            style={{
-              padding: '7px 14px',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              background: 'rgba(16, 185, 129, 0.08)',
-              color: '#059669'
-            }}
-            title="Xuất bảng điểm danh sang file Excel (.CSV UTF-8)"
-          >
-            <FileSpreadsheet size={15} />
-            <span>Xuất Excel</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Class & Teacher Details Bar */}
-      <div style={{
-        display: 'flex',
-        gap: '12px',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '14px',
-        flexWrap: 'wrap',
-        background: 'var(--bg-card)',
-        padding: '10px 14px',
-        borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--border-color)'
-      }}>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '260px' }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Users size={16} color="var(--brand)" />
-            <span>Lớp Học:</span>
-          </div>
-
+          <Users size={16} color="var(--brand)" />
           <select
             value={selectedTrack}
             onChange={e => {
@@ -413,34 +271,40 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             style={{
               flex: 1,
               maxWidth: '380px',
-              padding: '7px 28px 7px 12px',
-              fontSize: '0.84rem',
-              minHeight: '36px'
+              padding: '6px 12px',
+              fontSize: '0.86rem',
+              fontWeight: 700,
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)'
             }}
           >
             {ALL_TRACKS.map(t => (
               <option key={t.id} value={t.id}>{t.label}</option>
             ))}
           </select>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--brand)', background: 'rgba(79,110,247,0.1)', padding: '3px 8px', borderRadius: '6px' }}>
+            {currentClassCode}
+          </span>
         </div>
 
-        {/* Teacher & Class Info Badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem' }}>
-          <span style={{ padding: '3px 8px', borderRadius: '6px', background: 'rgba(79, 110, 247, 0.1)', color: 'var(--brand)', fontWeight: 800, fontFamily: 'monospace' }}>
-            MÃ LỚP: {currentClassCode}
-          </span>
-          <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
-            👨‍🏫 {activeSession?.teacherName || 'Thầy Quang Huy'}
-          </span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => exportAttendanceExcel()}
+            className="btn btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+          >
+            <FileSpreadsheet size={14} />
+            <span>Xuất Excel</span>
+          </button>
         </div>
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '14px' }}>
+      <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
         {[
-          { id: 'qr_mode',        label: 'Mã QR Trực Tiếp (2 Phút)', icon: QrCode },
-          { id: 'manual_list',    label: `Danh Sách Lớp & IP (${totalStudents})`, icon: CheckCheck },
-          { id: 'makeup_reports', label: `Báo Cáo Học Bù (${makeupReports.length})`, icon: UserCheck },
+          { id: 'qr_mode',        label: 'Mã QR Điểm Danh', icon: QrCode },
+          { id: 'manual_list',    label: `Danh Sách Lớp (${presentCount + makeupCount + lateCount}/${totalStudents})`, icon: CheckCheck },
+          { id: 'makeup_reports', label: `Học Bù (${makeupReports.length})`, icon: UserCheck },
           { id: 'history',        label: `Lịch Sử (${sessions.length})`, icon: Calendar }
         ].map(tab => {
           const Icon = tab.icon;
@@ -456,13 +320,13 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '7px 14px',
+                padding: '8px 16px',
                 border: 'none',
                 background: 'transparent',
                 borderBottom: isActive ? '2.5px solid var(--brand)' : '2.5px solid transparent',
                 color: isActive ? 'var(--brand)' : 'var(--text-secondary)',
                 fontWeight: isActive ? 800 : 600,
-                fontSize: '0.84rem',
+                fontSize: '0.86rem',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap'
               }}
@@ -479,65 +343,72 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         })}
       </div>
 
-      {/* ─── TAB 1: DYNAMIC QR CODE DISPLAY ─── */}
+      {/* ─── TAB 1: PURE CLEAN QR CODE (Projector Ready, No extra wordy text) ─── */}
       {activeSubTab === 'qr_mode' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
-          {/* Left: QR Display Card */}
-          <div className="card" style={{ padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(79, 110, 247, 0.08)', color: 'var(--brand)', fontSize: '0.74rem', fontWeight: 800, marginBottom: '10px' }}>
-              <ShieldCheck size={14} />
-              <span>LỚP {currentClassCode} • {TRACK_LABELS[selectedTrack] || selectedTrack}</span>
-            </div>
-
-            {/* Countdown / Locked Status Badge */}
-            <div style={{
-              display: 'inline-flex',
+        <div style={{ maxWidth: '520px', margin: '0 auto', width: '100%' }}>
+          <div
+            className="card"
+            style={{
+              padding: '28px 24px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '6px',
-              padding: '6px 14px',
-              borderRadius: 'var(--radius-full)',
-              background: activeSession?.isOpen === false
-                ? 'rgba(239, 68, 68, 0.12)'
-                : 'rgba(16, 185, 129, 0.1)',
-              color: activeSession?.isOpen === false
-                ? '#ef4444'
-                : '#10b981',
-              fontSize: '0.92rem',
-              fontWeight: 900,
-              marginBottom: '12px',
-              border: activeSession?.isOpen === false
-                ? '1px solid rgba(239, 68, 68, 0.35)'
-                : '1px solid rgba(16, 185, 129, 0.3)'
+              borderRadius: '24px',
+              boxShadow: '0 20px 50px -15px rgba(0, 0, 0, 0.1)',
+              border: '1.5px solid var(--border-color)',
+              background: 'var(--bg-card)'
+            }}
+          >
+            {/* Header Status & Countdown */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              marginBottom: '16px',
+              padding: '0 8px'
             }}>
-              {activeSession?.isOpen === false ? (
-                <>
-                  <Lock size={16} />
-                  <span>ĐÃ KHÓA ĐIỂM DANH</span>
-                </>
-              ) : (
-                <>
-                  <Clock size={16} />
-                  <span>Đổi mã sau: {formatMMSS(timeLeftSeconds)}</span>
-                </>
-              )}
+              <div style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {activeSession?.className || `Lớp ${currentClassCode}`}
+              </div>
+
+              {/* 5-Minute Countdown Badge */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                background: activeSession?.isOpen === false ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                color: activeSession?.isOpen === false ? '#ef4444' : '#10b981',
+                fontSize: '0.86rem',
+                fontWeight: 900
+              }}>
+                <Clock size={15} />
+                <span>{activeSession?.isOpen === false ? 'ĐÃ KHÓA' : formatMMSS(timeLeftSeconds)}</span>
+              </div>
             </div>
 
-            {/* QR Code Container */}
+            {/* Giant QR Code Display */}
             <div style={{
               position: 'relative',
-              padding: '12px',
+              padding: '14px',
               background: '#ffffff',
-              borderRadius: '16px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-              border: '1.5px solid var(--border-color)',
-              marginBottom: '12px',
+              borderRadius: '20px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              marginBottom: '16px',
               overflow: 'hidden'
             }}>
               <img
                 src={qrImageUrl}
-                alt="QR Code Điểm Danh"
+                alt="QR Code"
                 style={{
-                  width: '220px', height: '220px', display: 'block', borderRadius: '8px',
+                  width: '280px',
+                  height: '280px',
+                  display: 'block',
+                  borderRadius: '10px',
                   filter: activeSession?.isOpen === false ? 'blur(8px) grayscale(100%)' : 'none',
                   opacity: activeSession?.isOpen === false ? 0.3 : 1,
                   transition: 'all 0.3s ease'
@@ -548,7 +419,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 <div style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'rgba(15, 23, 42, 0.75)',
+                  background: 'rgba(15, 23, 42, 0.78)',
                   backdropFilter: 'blur(4px)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -558,9 +429,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                   color: '#fff',
                   textAlign: 'center'
                 }}>
-                  <Lock size={32} color="#ef4444" style={{ marginBottom: '6px' }} />
-                  <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#fff' }}>
-                    ĐÃ TẮT ĐIỂM DANH
+                  <Lock size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
+                  <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                    ĐÃ KHÓA ĐIỂM DANH
                   </div>
                   <button
                     onClick={() => {
@@ -570,9 +441,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                       }
                     }}
                     className="btn btn-success"
-                    style={{ padding: '6px 12px', fontSize: '0.76rem', fontWeight: 800, gap: '4px', marginTop: '8px' }}
+                    style={{ padding: '6px 14px', fontSize: '0.78rem', fontWeight: 800, gap: '4px' }}
                   >
-                    <Unlock size={13} />
+                    <Unlock size={14} />
                     <span>Mở Lại QR</span>
                   </button>
                 </div>
@@ -580,193 +451,54 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             </div>
 
             {/* 6-Digit PIN Code */}
-            <div style={{ marginBottom: '12px', opacity: activeSession?.isOpen === false ? 0.4 : 1 }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                MÃ PIN 6 SỐ TRỰC TIẾP
-              </div>
+            <div style={{ marginBottom: '18px' }}>
               <div style={{
-                fontSize: '1.9rem',
+                fontSize: '2.2rem',
                 fontWeight: 900,
                 color: activeSession?.isOpen === false ? 'var(--text-muted)' : 'var(--brand)',
-                letterSpacing: '0.2em',
-                fontFamily: 'var(--font-mono)',
-                marginTop: '2px'
+                letterSpacing: '0.25em',
+                fontFamily: 'var(--font-mono)'
               }}>
                 {activeSession?.isOpen === false ? 'LOCKED' : (activeSession?.qrPinCode || '------')}
               </div>
             </div>
 
-            {/* Controls: Select Rotation Interval & Manual Refresh */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '280px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', color: 'var(--text-muted)', justifyContent: 'center' }}>
-                <span>Chu kỳ đổi mã:</span>
-                <select
-                  value={rotationInterval}
-                  onChange={e => handleIntervalChange(Number(e.target.value))}
-                  style={{ padding: '4px 8px', fontSize: '0.74rem', borderRadius: '6px', fontWeight: 700 }}
-                >
-                  {INTERVAL_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-
+            {/* Minimal Toolbar (GPS Toggle, Rotate Now, Lock/Unlock) */}
+            <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={handleRotateNow}
                 className="btn btn-secondary"
-                style={{ width: '100%', padding: '7px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
+                style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+                title="Đổi mã QR & PIN mới ngay lập tức"
               >
-                <RefreshCw size={13} />
-                <span>Đổi Mã Ngay Lập Tức</span>
+                <RefreshCw size={14} />
+                <span>Đổi Mã</span>
               </button>
-            </div>
-          </div>
 
-          {/* Right: Live Anti-Fraud Dashboard & Stats Card */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              <div className="card" style={{ padding: '12px', borderLeft: '4px solid #10b981' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>CÓ MẶT</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#10b981' }}>{presentCount}</div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{presentRate}% chuyên cần</div>
-              </div>
+              <button
+                onClick={handleToggleGpsLock}
+                disabled={isFetchingGps}
+                className={`btn ${activeSession?.requireLocation ? 'btn-warning' : 'btn-secondary'}`}
+                style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+                title="Giới hạn học viên điểm danh trong bán kính GPS 150m lớp học"
+              >
+                <MapPin size={14} />
+                <span>{isFetchingGps ? 'Đang lấy GPS...' : activeSession?.requireLocation ? 'GPS: ĐANG BẬT' : 'Bật GPS Lớp'}</span>
+              </button>
 
-              <div className="card" style={{ padding: '12px', borderLeft: '4px solid #f59e0b' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>HỌC BÙ</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f59e0b' }}>{makeupCount}</div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Vắng bù từ lớp khác</div>
-              </div>
-
-              <div className="card" style={{ padding: '12px', borderLeft: '4px solid #ef4444' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>VẮNG</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ef4444' }}>{absentCount}</div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Tổng {totalStudents} học viên</div>
-              </div>
-            </div>
-
-            {/* Anti-Fraud Security Control Center */}
-            <div className="card" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h4 style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <ShieldCheck size={16} color="var(--brand)" />
-                  <span>Bộ Lọc Chống Điểm Danh Hộ Từ Xa</span>
-                </h4>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>
-                  3 Lớp Bảo Mật
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* 1. IP / WiFi Lock */}
-                <div style={{
-                  padding: '10px',
-                  borderRadius: '10px',
-                  background: activeSession?.requireSameIp ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
-                  border: activeSession?.requireSameIp ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--border-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Wifi size={16} color={activeSession?.requireSameIp ? '#10b981' : 'var(--text-muted)'} />
-                    <div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        Khóa Mạng WiFi Phòng Học (IP)
-                      </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                        {activeSession?.requireSameIp ? `Đang khóa theo IP: ${activeSession.teacherIp}` : 'Bắt buộc SV phải kết nối cùng WiFi phòng học'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleToggleIpLock}
-                    disabled={isFetchingIp}
-                    className={`btn ${activeSession?.requireSameIp ? 'btn-success' : 'btn-secondary'}`}
-                    style={{ padding: '5px 10px', fontSize: '0.72rem', fontWeight: 700 }}
-                  >
-                    {isFetchingIp ? 'Đang lấy IP...' : activeSession?.requireSameIp ? 'ĐANG BẬT' : 'BẬT KHÓA IP'}
-                  </button>
-                </div>
-
-                {/* 2. Device Lock */}
-                <div style={{
-                  padding: '10px',
-                  borderRadius: '10px',
-                  background: activeSession?.preventMultiCheckIn !== false ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-secondary)',
-                  border: activeSession?.preventMultiCheckIn !== false ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid var(--border-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Smartphone size={16} color={activeSession?.preventMultiCheckIn !== false ? '#3b82f6' : 'var(--text-muted)'} />
-                    <div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        Chống 1 Máy Điểm Danh Nhiều Người
-                      </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                        Chặn sinh viên mượn máy hoặc log in hộ bạn bè
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleToggleMultiDevice}
-                    className={`btn ${activeSession?.preventMultiCheckIn !== false ? 'btn-primary' : 'btn-secondary'}`}
-                    style={{ padding: '5px 10px', fontSize: '0.72rem', fontWeight: 700 }}
-                  >
-                    {activeSession?.preventMultiCheckIn !== false ? 'ĐANG BẬT' : 'TẮT'}
-                  </button>
-                </div>
-
-                {/* 3. GPS Geofencing Lock */}
-                <div style={{
-                  padding: '10px',
-                  borderRadius: '10px',
-                  background: activeSession?.requireLocation ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-secondary)',
-                  border: activeSession?.requireLocation ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MapPin size={16} color={activeSession?.requireLocation ? '#f59e0b' : 'var(--text-muted)'} />
-                    <div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        Định Vị GPS Lớp Học (&le; 150m)
-                      </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                        {activeSession?.requireLocation ? 'Đã ghim tọa độ phòng học' : 'Chặn SV ở nhà hoặc ngoài bán kính'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleToggleGpsLock}
-                    disabled={isFetchingGps}
-                    className={`btn ${activeSession?.requireLocation ? 'btn-warning' : 'btn-secondary'}`}
-                    style={{ padding: '5px 10px', fontSize: '0.72rem', fontWeight: 700 }}
-                  >
-                    {isFetchingGps ? 'Đang lấy GPS...' : activeSession?.requireLocation ? 'ĐANG BẬT' : 'BẬT GPS'}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ marginTop: 'auto', display: 'flex', gap: '8px' }}>
+              {activeSession && (
                 <button
-                  onClick={() => setActiveSubTab('manual_list')}
-                  className="btn btn-secondary"
-                  style={{ flex: 1, padding: '7px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
+                  onClick={() => {
+                    onToggleSessionOpen(activeSession.id);
+                    soundFx.playClick();
+                  }}
+                  className={`btn ${activeSession.isOpen !== false ? 'btn-danger' : 'btn-success'}`}
+                  style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
                 >
-                  <CheckCheck size={14} />
-                  <span>Xem Chi Tiết IP & Chấm Tay</span>
+                  {activeSession.isOpen !== false ? <Lock size={14} /> : <Unlock size={14} />}
+                  <span>{activeSession.isOpen !== false ? 'Khóa QR' : 'Mở QR'}</span>
                 </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -775,7 +507,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       {/* ─── TAB 2: DETAILED STUDENT CLASS ROSTER ─── */}
       {activeSubTab === 'manual_list' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Action Toolbar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
@@ -807,7 +538,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             </div>
           </div>
 
-          {/* Detailed Student Roster Table */}
           <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
@@ -819,7 +549,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                     <th style={{ padding: '10px 12px', width: '90px' }}>Mã Lớp</th>
                     <th style={{ padding: '10px 12px', width: '100px' }}>SĐT</th>
                     <th style={{ padding: '10px 12px', minWidth: '260px' }}>Trạng Thái Điểm Danh</th>
-                    <th style={{ padding: '10px 12px', minWidth: '120px' }}>Thời Điểm & IP</th>
+                    <th style={{ padding: '10px 12px', minWidth: '120px' }}>Thời Điểm</th>
                     <th style={{ padding: '10px 12px', minWidth: '150px' }}>Ghi Chú</th>
                   </tr>
                 </thead>
@@ -898,16 +628,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                           </td>
                           <td style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '0.74rem' }}>
                             {rec.checkInTime ? (
-                              <div>
-                                <span style={{ color: '#10b981', fontWeight: 700 }}>
-                                  {rec.checkInTime} ({rec.checkInMethod === 'qr_scan' ? 'QR' : rec.checkInMethod === 'pin_code' ? 'PIN' : 'Tay'})
-                                </span>
-                                {rec.clientIp && (
-                                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                                    IP: {rec.clientIp}
-                                  </div>
-                                )}
-                              </div>
+                              <span style={{ color: '#10b981', fontWeight: 700 }}>
+                                {rec.checkInTime} ({rec.checkInMethod === 'qr_scan' ? 'QR' : rec.checkInMethod === 'pin_code' ? 'PIN' : 'Tay'})
+                              </span>
                             ) : (
                               '--:--'
                             )}
@@ -948,7 +671,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         </div>
       )}
 
-      {/* ─── TAB 3: MAKEUP ATTENDANCE REPORTS (Gửi Admin) ─── */}
+      {/* ─── TAB 3: MAKEUP ATTENDANCE REPORTS ─── */}
       {activeSubTab === 'makeup_reports' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{
@@ -962,7 +685,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
           }}>
             <AlertTriangle size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
             <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>
-              <b>Báo Cáo Tự Động Về Admin:</b> Khi sinh viên thuộc lớp khác quét QR hoặc được giáo viên đánh dấu <b>HỌC BÙ</b>, hệ thống sẽ tự động tổng hợp danh sách gửi về Ban Quản Trị để theo dõi chuyên cần và bảo lưu buổi học.
+              Danh sách học viên học bù từ lớp khác được ghi nhận tự động và gửi về Ban Quản Trị.
             </div>
           </div>
 
@@ -975,8 +698,8 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                     <th style={{ padding: '10px 12px', width: '90px' }}>Mã HV</th>
                     <th style={{ padding: '10px 12px' }}>Họ Và Tên</th>
                     <th style={{ padding: '10px 12px' }}>Lớp Gốc</th>
-                    <th style={{ padding: '10px 12px' }}>Lớp Đi Học Bù</th>
-                    <th style={{ padding: '10px 12px' }}>Giáo Viên Dạy Bù</th>
+                    <th style={{ padding: '10px 12px' }}>Lớp Học Bù</th>
+                    <th style={{ padding: '10px 12px' }}>Giáo Viên</th>
                     <th style={{ padding: '10px 12px' }}>Ngày / Giờ</th>
                     <th style={{ padding: '10px 12px' }}>Lý Do</th>
                     {onClearMakeupReport && <th style={{ padding: '10px 12px', width: '50px' }}>Xóa</th>}
@@ -1076,7 +799,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                         onClick={() => exportAttendanceExcel(sess)}
                         className="btn btn-secondary"
                         style={{ padding: '6px 10px', fontSize: '0.74rem', gap: '4px' }}
-                        title="Xuất Excel cho buổi học này"
                       >
                         <FileSpreadsheet size={13} />
                         <span>Excel</span>
@@ -1091,7 +813,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                         }}
                         className="btn btn-danger"
                         style={{ padding: '6px 8px', fontSize: '0.74rem' }}
-                        title="Xóa phiên"
                       >
                         <Trash2 size={13} />
                       </button>
