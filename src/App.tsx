@@ -78,6 +78,7 @@ export function App() {
     makeupReports,
     createSession: createAttendanceSession,
     rotateQRCode: rotateAttendanceQR,
+    updateSessionSecurity: updateAttendanceSessionSecurity,
     toggleSessionOpen: toggleAttendanceSessionOpen,
     updateStudentStatus: updateAttendanceStatus,
     markAllPresent: markAllAttendancePresent,
@@ -312,6 +313,7 @@ export function App() {
                     currentUser={user}
                     onCreateSession={createAttendanceSession}
                     onRotateQR={rotateAttendanceQR}
+                    onUpdateSessionSecurity={updateAttendanceSessionSecurity}
                     onToggleSessionOpen={toggleAttendanceSessionOpen}
                     onUpdateStatus={updateAttendanceStatus}
                     onMarkAllPresent={markAllAttendancePresent}
@@ -426,7 +428,7 @@ export function App() {
         studentName={user.name}
         studentCode={user.studentCode || 'THGZ01'}
         programTrack={user.programTrack}
-        onCheckIn={studentAttendanceCheckIn}
+        onCheckIn={(code, name, pin, track, coords) => studentAttendanceCheckIn(code, name, pin, track, coords)}
       />
 
       <CameraQRScanner
@@ -434,12 +436,13 @@ export function App() {
         onClose={() => setShowCameraScanner(false)}
         studentName={user.name}
         studentCode={user.studentCode || 'THGZ01'}
-        onScanResult={(scannedText) => {
+        onScanResult={(scannedText, coords) => {
           return studentAttendanceCheckIn(
             user.studentCode || 'THGZ01',
             user.name,
             scannedText,
-            user.programTrack || 'office-fast-3in1'
+            user.programTrack || 'office-fast-3in1',
+            coords
           );
         }}
       />

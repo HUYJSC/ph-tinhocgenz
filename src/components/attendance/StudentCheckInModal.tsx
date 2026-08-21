@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CurriculumTrack, TRACK_LABELS } from '../../types/auth';
-import { QrCode, X, CheckCircle2, AlertCircle, User, KeyRound } from 'lucide-react';
+import { QrCode, X, CheckCircle2, AlertCircle, User, KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { getCurrentCoordinates } from '../../utils/securityUtils';
 
 interface StudentCheckInModalProps {
   isOpen: boolean;
@@ -9,7 +10,7 @@ interface StudentCheckInModalProps {
   studentName: string;
   studentCode: string;
   programTrack?: CurriculumTrack;
-  onCheckIn: (studentCode: string, studentName: string, pinOrToken: string, track?: CurriculumTrack) => { success: boolean; message: string };
+  onCheckIn: (studentCode: string, studentName: string, pinOrToken: string, track?: CurriculumTrack, coords?: { latitude: number; longitude: number }) => Promise<{ success: boolean; message: string }> | { success: boolean; message: string };
 }
 
 export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
@@ -22,6 +23,7 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
 }) => {
   const [inputCode, setInputCode] = useState(studentCode || 'THGZ01');
   const [pinInput, setPinInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState<{ success: boolean; text: string } | null>(null);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCode.trim()) {
       alert('Vui lòng nhập Mã Học Viên!');
@@ -43,18 +45,36 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
       return;
     }
 
-    const res = onCheckIn(inputCode.trim(), studentName, pinInput.trim(), programTrack);
-    setResultMessage({ success: res.success, text: res.message });
+    setIsSubmitting(true);
+    setResultMessage(null);
 
-    if (res.success) {
-      soundFx.playVictory();
-      setTimeout(() => {
-        setResultMessage(null);
-        setPinInput('');
-        onClose();
-      }, 2500);
-    } else {
+    // Optional GPS fetch if available
+    let coords: { latitude: number; longitude: number } | undefined = undefined;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        coords = await getCurrentCoordinates().catch(() => undefined);
+      }
+    } catch (e) {}
+
+    try {
+      const res = await onCheckIn(inputCode.trim(), studentName, pinInput.trim(), programTrack, coords);
+      setResultMessage({ success: res.success, text: res.message });
+
+      if (res.success) {
+        soundFx.playVictory();
+        setTimeout(() => {
+          setResultMessage(null);
+          setPinInput('');
+          onClose();
+        }, 3000);
+      } else {
+        soundFx.playIncorrect();
+      }
+    } catch (err: any) {
+      setResultMessage({ success: false, text: err?.message || 'Có lỗi xảy ra khi xác thực điểm danh.' });
       soundFx.playIncorrect();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -175,17 +195,42 @@ export const StudentCheckInModal: React.FC<StudentCheckInModalProps> = ({
                 }}
               />
               <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '6px 0 0', textAlign: 'center' }}>
-                Nhập mã PIN hiển thị bên dưới mã QR trên bảng chiếu.
+                Nhập mã PIN 6 số hiển thị trên màn hình máy chiếu (Đổi mỗi 2 phút).
               </p>
+            </div>
+
+            <div style={{
+              padding: '8px 10px',
+              borderRadius: '8px',
+              background: 'rgba(79, 110, 247, 0.05)',
+              border: '1px solid rgba(79, 110, 247, 0.15)',
+              fontSize: '0.72rem',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <ShieldCheck size={14} color="var(--brand)" />
+              <span>Hệ thống tự động xác thực IP mạng phòng học & chống điểm danh hộ từ xa.</span>
             </div>
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '12px', fontSize: '0.9rem', fontWeight: 800 }}
+              style={{ width: '100%', padding: '12px', fontSize: '0.9rem', fontWeight: 800, display: 'flex', justifyContent: 'center', gap: '8px' }}
             >
-              <CheckCircle2 size={16} />
-              <span>Xác Nhận Điểm Danh</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Đang xác thực IP & Điểm danh...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={16} />
+                  <span>Xác Nhận Điểm Danh</span>
+                </>
+              )}
             </button>
           </form>
         )}

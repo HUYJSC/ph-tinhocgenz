@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Camera, RefreshCw, X, CheckCircle2, AlertCircle, Zap, ZapOff, UserCheck } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { getCurrentCoordinates } from '../../utils/securityUtils';
 
 interface CameraQRScannerProps {
   isOpen: boolean;
   onClose: () => void;
-  onScanResult: (scannedText: string) => { success: boolean; message: string; isMakeup?: boolean };
+  onScanResult: (scannedText: string, coords?: { latitude: number; longitude: number }) => Promise<{ success: boolean; message: string; isMakeup?: boolean }> | { success: boolean; message: string; isMakeup?: boolean };
   studentName: string;
   studentCode: string;
 }
@@ -107,7 +108,7 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
     };
   }, [isOpen, facingMode]);
 
-  const handleDecodedText = (text: string) => {
+  const handleDecodedText = async (text: string) => {
     let tokenOrPin = text.trim();
     try {
       if (text.includes('?') && text.includes('pin=')) {
@@ -116,27 +117,39 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
       }
     } catch (e) {}
 
-    const result = onScanResult(tokenOrPin);
-
-    if (result.success) {
-      soundFx.playVictory();
-      setScanSuccessResult(result.message);
-      setIsMakeupNotice(!!result.isMakeup);
-      setIsScanning(false);
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([100, 50, 100]);
+    let coords: { latitude: number; longitude: number } | undefined = undefined;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        coords = await getCurrentCoordinates().catch(() => undefined);
       }
+    } catch (e) {}
 
-      // Auto close after 3 seconds
-      setTimeout(() => {
-        onClose();
-      }, 3000);
-    } else {
+    try {
+      const result = await onScanResult(tokenOrPin, coords);
+
+      if (result.success) {
+        soundFx.playVictory();
+        setScanSuccessResult(result.message);
+        setIsMakeupNotice(!!result.isMakeup);
+        setIsScanning(false);
+        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+          navigator.vibrate([100, 50, 100]);
+        }
+
+        // Auto close after 3 seconds
+        setTimeout(() => {
+          onClose();
+        }, 3200);
+      } else {
+        soundFx.playIncorrect();
+        setScannerError(result.message);
+        setTimeout(() => {
+          setScannerError(null);
+        }, 4500);
+      }
+    } catch (err: any) {
       soundFx.playIncorrect();
-      setScannerError(result.message);
-      setTimeout(() => {
-        setScannerError(null);
-      }, 4000);
+      setScannerError(err?.message || 'Lỗi xác thực quét QR.');
     }
   };
 
@@ -240,7 +253,7 @@ export const CameraQRScanner: React.FC<CameraQRScannerProps> = ({
             Quét Mã QR Điểm Danh
           </h3>
           <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '4px 0 0' }}>
-            Đưa khung camera về phía mã QR xoay 3 giây trên màn hình
+            Đưa khung camera về phía mã QR đổi mỗi 2 phút trên màn hình
           </p>
         </div>
 

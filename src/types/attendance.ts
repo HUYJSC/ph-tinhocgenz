@@ -13,6 +13,9 @@ export interface AttendanceRecord {
   originalAbsentDate?: string; // Date of original absence if makeup
   checkInTime?: string;    // e.g. "08:15:30"
   checkInMethod: 'qr_scan' | 'manual' | 'pin_code';
+  clientIp?: string;       // IP address recorded during check-in
+  deviceFp?: string;       // Device fingerprint to prevent proxy check-in
+  distanceMeters?: number; // Distance to classroom if GPS enabled
   note?: string;
 }
 
@@ -29,7 +32,18 @@ export interface AttendanceSession {
   qrToken?: string;
   qrExpiresAt?: number;    // timestamp in ms
   qrPinCode?: string;      // 6-digit code e.g. "492108"
+  intervalSeconds?: number; // Rotation interval (default 120s = 2 minutes)
   isOpen?: boolean;        // true = active, false = closed/locked
+  
+  // Anti-fraud security settings
+  requireSameIp?: boolean;      // Only allow check-in if student is on same WiFi / public IP
+  teacherIp?: string;           // Teacher/Classroom IP address
+  requireLocation?: boolean;    // Only allow check-in within classroom GPS radius
+  classroomLat?: number;        // Classroom Latitude
+  classroomLng?: number;        // Classroom Longitude
+  allowedRadiusMeters?: number; // Allowed distance in meters (e.g. 150m)
+  preventMultiCheckIn?: boolean;// Prevent 1 device from checking in multiple students
+
   records: AttendanceRecord[];
   createdAt: string;
   updatedAt: string;

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AttendanceSession, AttendanceRecord, AttendanceStatus, MakeupAttendanceReport } from '../types/attendance';
 import { StudentAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
+import { getClientIp, getDeviceFingerprint, calculateDistanceMeters } from '../utils/securityUtils';
 
-// Storage key bumped to wipe old cached sessions cleanly
-const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v5_pro3s';
-const MAKEUP_REPORTS_KEY = 'phtinhocgenz_makeup_reports_v1';
+// Storage key updated for 2-minute rotation & IP Anti-cheat v6
+const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v6_2min_ip';
+const MAKEUP_REPORTS_KEY = 'phtinhocgenz_makeup_reports_v2';
 
 const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
   'office-fast-3in1',
@@ -33,11 +34,11 @@ export const TRACK_CLASS_CODES: Record<CurriculumTrack, { classCode: string; def
   'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai' }
 };
 
-// Deterministic 6-digit rolling PIN generator with 3-second intervals
-export function getRollingTrackPin(track: string, intervalSeconds: number = 3, windowOffset: number = 0): string {
+// Deterministic 6-digit rolling PIN generator (Default: 120 seconds / 2 minutes)
+export function getRollingTrackPin(track: string, intervalSeconds: number = 120, windowOffset: number = 0): string {
   const timeStep = Math.floor(Date.now() / (intervalSeconds * 1000)) + windowOffset;
   let hash = 0;
-  const str = `PHTIN_${track}_ROTATING_3S_${timeStep}`;
+  const str = `PHTIN_${track}_ROTATING_2MIN_${timeStep}`;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
@@ -47,8 +48,8 @@ export function getRollingTrackPin(track: string, intervalSeconds: number = 3, w
   return String(pin);
 }
 
-// Generate token based on 3-second time step
-export function getRollingTrackToken(track: string, intervalSeconds: number = 3, windowOffset: number = 0): string {
+// Generate token based on time step (Default: 120 seconds / 2 minutes)
+export function getRollingTrackToken(track: string, intervalSeconds: number = 120, windowOffset: number = 0): string {
   const timeStep = Math.floor(Date.now() / (intervalSeconds * 1000)) + windowOffset;
   return `tk_${track.slice(0, 4)}_${timeStep.toString(36)}`;
 }
@@ -90,10 +91,14 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
         className: `Lớp ${classMeta.classCode} - ${trackTitle}`,
         teacherId: classMeta.defaultTeacherId,
         teacherName: classMeta.defaultTeacherName,
-        qrToken: getRollingTrackToken(trackKey, 3),
-        qrExpiresAt: Date.now() + 3 * 1000,
-        qrPinCode: getRollingTrackPin(trackKey, 3),
+        qrToken: getRollingTrackToken(trackKey, 120),
+        qrExpiresAt: Date.now() + 120 * 1000,
+        qrPinCode: getRollingTrackPin(trackKey, 120),
+        intervalSeconds: 120,
         isOpen: true,
+        requireSameIp: false,
+        preventMultiCheckIn: true,
+        allowedRadiusMeters: 150,
         records,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString()
@@ -183,7 +188,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     });
   }, [studentAccounts]);
 
-  // Create a new attendance session for a class
+  // Create a new attendance session for a class (default 120s rotation)
   const createSession = useCallback((
     track: CurriculumTrack,
     className: string,
@@ -222,10 +227,14 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       className: className || `Lớp ${assignedClassCode} - ${TRACK_LABELS[track]}`,
       teacherId,
       teacherName,
-      qrToken: getRollingTrackToken(track, 3),
-      qrExpiresAt: Date.now() + 3 * 1000,
-      qrPinCode: getRollingTrackPin(track, 3),
+      qrToken: getRollingTrackToken(track, 120),
+      qrExpiresAt: Date.now() + 120 * 1000,
+      qrPinCode: getRollingTrackPin(track, 120),
+      intervalSeconds: 120,
       isOpen: true,
+      requireSameIp: false,
+      preventMultiCheckIn: true,
+      allowedRadiusMeters: 150,
       records,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString()
@@ -235,14 +244,15 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     return newSession;
   }, [studentAccounts]);
 
-  // Rotate QR code (Defaults to 3-second rapid rotation)
-  const rotateQRCode = useCallback((sessionId: string, intervalSeconds: number = 3) => {
+  // Rotate QR code (Default to 120-second rotation = 2 minutes)
+  const rotateQRCode = useCallback((sessionId: string, intervalSeconds: number = 120) => {
     const session = sessions.find(s => s.id === sessionId);
     const targetTrack = session ? session.track : 'office-fast-3in1';
+    const effectiveInterval = intervalSeconds || session?.intervalSeconds || 120;
 
-    const newToken = getRollingTrackToken(targetTrack, intervalSeconds);
-    const newPin = getRollingTrackPin(targetTrack, intervalSeconds);
-    const newExpiresAt = Date.now() + intervalSeconds * 1000;
+    const newToken = getRollingTrackToken(targetTrack, effectiveInterval);
+    const newPin = getRollingTrackPin(targetTrack, effectiveInterval);
+    const newExpiresAt = Date.now() + effectiveInterval * 1000;
 
     setSessions(prev =>
       prev.map(s => {
@@ -252,6 +262,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
             qrToken: newToken,
             qrPinCode: newPin,
             qrExpiresAt: newExpiresAt,
+            intervalSeconds: effectiveInterval,
             isOpen: true,
             updatedAt: new Date().toISOString()
           };
@@ -262,6 +273,25 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     return { token: newToken, pinCode: newPin, expiresAt: newExpiresAt };
   }, [sessions]);
+
+  // Update session security (IP lock, Geolocation, Interval, etc.)
+  const updateSessionSecurity = useCallback((
+    sessionId: string,
+    updates: Partial<AttendanceSession>
+  ) => {
+    setSessions(prev =>
+      prev.map(s => {
+        if (s.id === sessionId) {
+          return {
+            ...s,
+            ...updates,
+            updatedAt: new Date().toISOString()
+          };
+        }
+        return s;
+      })
+    );
+  }, []);
 
   // Toggle Session Open / Locked
   const toggleSessionOpen = useCallback((sessionId: string) => {
@@ -364,13 +394,14 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     );
   }, []);
 
-  // Strict Universal Student Check-In with 3-Second TOTP & Make-Up Handling
-  const studentCheckIn = useCallback((
+  // Strict Universal Student Check-In with 2-Minute TOTP, IP Check & Anti-Proxy Security
+  const studentCheckIn = useCallback(async (
     studentCode: string,
     studentName: string,
     rawPinOrToken: string,
-    optionalTrack?: CurriculumTrack
-  ): { success: boolean; message: string; session?: AttendanceSession; isMakeup?: boolean } => {
+    optionalTrack?: CurriculumTrack,
+    studentCoords?: { latitude: number; longitude: number }
+  ): Promise<{ success: boolean; message: string; session?: AttendanceSession; isMakeup?: boolean }> => {
     const cleanInput = rawPinOrToken.trim();
 
     // 1. Extract PIN, Token, Track, Class
@@ -418,16 +449,18 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       s.id === cleanInput
     );
 
-    // B) 3-Second TOTP Rolling PIN Match (Checked across current + previous grace windows)
+    // B) 2-Minute (or custom interval) TOTP Rolling PIN Match (Checked across current + previous grace windows)
     if (!matchedSession && searchPin && searchPin.length === 6) {
       for (const trackKey of ALL_10_TRACK_KEYS) {
-        // Tolerant window: 0 (current), -1 (prev 3s), -2 (prev 6s)
-        const isMatch3s = searchPin === getRollingTrackPin(trackKey, 3, 0) ||
-                          searchPin === getRollingTrackPin(trackKey, 3, -1) ||
-                          searchPin === getRollingTrackPin(trackKey, 3, -2) ||
-                          searchPin === getRollingTrackPin(trackKey, 3, 1);
+        const sessionForTrack = sessions.find(s => s.track === trackKey);
+        const interval = sessionForTrack?.intervalSeconds || 120;
 
-        if (isMatch3s) {
+        // Tolerant window: 0 (current), -1 (prev 2m), 1 (slight clock ahead)
+        const isMatch = searchPin === getRollingTrackPin(trackKey, interval, 0) ||
+                        searchPin === getRollingTrackPin(trackKey, interval, -1) ||
+                        searchPin === getRollingTrackPin(trackKey, interval, 1);
+
+        if (isMatch) {
           matchedSession = sessions.find(s => s.track === trackKey && s.isOpen !== false) || sessions.find(s => s.track === trackKey);
           break;
         }
@@ -451,7 +484,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     if (!matchedSession) {
       return {
         success: false,
-        message: 'Mã QR hoặc PIN đã hết hạn (Mã tự động đổi mỗi 3 giây). Vui lòng quét lại trên màn hình!'
+        message: 'Mã QR hoặc PIN đã hết hạn (Mã tự động đổi mỗi 2 phút). Vui lòng quét lại mã mới trên màn hình lớp học!'
       };
     }
 
@@ -463,7 +496,63 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
       };
     }
 
-    // 3. Strict Student Matching
+    // ─── 3. ANTI-FRAUD / CHỐNG ĐIỂM DANH HỘ ───
+    const clientIp = await getClientIp().catch(() => '127.0.0.1');
+    const deviceFp = getDeviceFingerprint();
+
+    // A) Check IP Lock (Bắt buộc cùng mạng WiFi / IP với Giảng viên)
+    if (matchedSession.requireSameIp && matchedSession.teacherIp) {
+      if (clientIp !== matchedSession.teacherIp && clientIp !== '127.0.0.1') {
+        return {
+          success: false,
+          message: `🚫 TỪ CHỐI ĐIỂM DANH TỪ XA: Thiết bị của bạn không cùng mạng WiFi/IP với phòng học (${clientIp} ≠ ${matchedSession.teacherIp}). Vui lòng kết nối vào đúng mạng WiFi của lớp học để điểm danh!`
+        };
+      }
+    }
+
+    // B) Check Single-Device Lock (Chống 1 máy điểm danh hộ nhiều sinh viên vắng mặt)
+    if (matchedSession.preventMultiCheckIn !== false) {
+      const otherStudentWithSameDevice = matchedSession.records.find(
+        r => r.deviceFp === deviceFp &&
+             r.studentCode.trim().toLowerCase() !== studentCode.trim().toLowerCase() &&
+             (r.status === 'present' || r.status === 'makeup' || r.status === 'late')
+      );
+
+      if (otherStudentWithSameDevice) {
+        return {
+          success: false,
+          message: `⚠️ PHÁT HIỆN GIAN LẬN: Thiết bị này vừa mới được dùng để điểm danh cho học viên ${otherStudentWithSameDevice.studentName} (${otherStudentWithSameDevice.studentCode}). Mỗi thiết bị chỉ được điểm danh cho 1 học viên duy nhất!`
+        };
+      }
+    }
+
+    // C) Check GPS Geofencing (Nếu lớp học bật giới hạn khoảng cách)
+    let calculatedDistance: number | undefined = undefined;
+    if (matchedSession.requireLocation && matchedSession.classroomLat && matchedSession.classroomLng) {
+      if (!studentCoords) {
+        return {
+          success: false,
+          message: '📍 Vui lòng bật định vị GPS trên thiết bị để xác thực bạn đang có mặt tại phòng học!'
+        };
+      }
+
+      calculatedDistance = calculateDistanceMeters(
+        matchedSession.classroomLat,
+        matchedSession.classroomLng,
+        studentCoords.latitude,
+        studentCoords.longitude
+      );
+
+      const maxAllowed = matchedSession.allowedRadiusMeters || 150;
+      if (calculatedDistance > maxAllowed) {
+        return {
+          success: false,
+          message: `🚫 BỊ TỪ CHỐI: Bạn đang ở cách phòng học ${calculatedDistance} mét (Vượt quá bán kính cho phép ${maxAllowed}m). Không thể điểm danh từ xa!`
+        };
+      }
+    }
+
+    // ─── 4. STRICT STUDENT MATCHING ───
     let matchedStudent = studentAccounts.find(
       s => s.studentCode.trim().toLowerCase() === studentCode.trim().toLowerCase() ||
            s.name.trim().toLowerCase() === studentName.trim().toLowerCase() ||
@@ -475,29 +564,27 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
            r.studentName.trim().toLowerCase() === studentName.trim().toLowerCase()
     );
 
-    // 4. Strict Validation: Check Class & Subject
+    // 5. Check Enrollment & Handle Make-Up (Học Bù)
     const isEnrolledInTrack = matchedStudent && (
       matchedStudent.programTrack === matchedSession.track ||
       (matchedStudent.enrolledTracks && matchedStudent.enrolledTracks.includes(matchedSession.track)) ||
       !!recordInSession
     );
 
-    // If student is NOT enrolled in this class/track: Handle Vắng Bù (Make-up) or Reject
     let isMakeupAttendance = false;
 
     if (!isEnrolledInTrack) {
       if (matchedStudent) {
-        // Auto register as MAKE-UP attendance (Học Bù / Vắng Bù)
         isMakeupAttendance = true;
       } else {
         return {
           success: false,
-          message: `❌ BỊ TỪ CHỐI: Không tìm thấy học viên ${studentName} (${studentCode}) trong hệ thống đào tạo!`
+          message: `❌ BỊ TỪ CHỐI: Không tìm thấy học viên ${studentName} (${studentCode}) trong danh sách học viên!`
         };
       }
     }
 
-    // 5. Mark Attendance
+    // 6. Record Attendance
     const nowTime = new Date().toTimeString().slice(0, 8);
     const checkInMethod = (searchToken === matchedSession.qrToken || cleanInput.includes('token='))
       ? 'qr_scan' as const
@@ -509,7 +596,6 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     const studentClassToUse = matchedStudent?.classCode || matchedSession.classCode;
 
     let isFoundInRecords = false;
-
     const finalStatus: AttendanceStatus = isMakeupAttendance ? 'makeup' : 'present';
 
     const updatedRecords = matchedSession.records.map(rec => {
@@ -521,6 +607,9 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
           isMakeup: isMakeupAttendance,
           checkInTime: nowTime,
           checkInMethod,
+          clientIp,
+          deviceFp,
+          distanceMeters: calculatedDistance,
           note: isMakeupAttendance ? `Học Bù từ lớp ${matchedStudent?.classCode || 'Khác'}` : rec.note
         };
       }
@@ -538,6 +627,9 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
         isMakeup: isMakeupAttendance,
         checkInTime: nowTime,
         checkInMethod,
+        clientIp,
+        deviceFp,
+        distanceMeters: calculatedDistance,
         note: isMakeupAttendance ? `Học Bù từ lớp ${matchedStudent?.classCode || 'Khác'}` : ''
       });
     }
@@ -569,7 +661,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
       return {
         success: true,
-        message: `🎉 ĐÃ GHI NHẬN HỌC BÙ (VẮNG BÙ): Học viên ${studentNameToUse} (${studentCodeToUse}) điểm danh bù vào Lớp ${matchedSession.classCode} (${matchedSession.teacherName}) thành công! Hệ thống đã gửi báo cáo về Ban Quản Trị ADMIN.`,
+        message: `🎉 ĐÃ GHI NHẬN HỌC BÙ (VẮNG BÙ): Học viên ${studentNameToUse} (${studentCodeToUse}) điểm danh bù vào Lớp ${matchedSession.classCode} thành công! Hệ thống đã ghi nhận IP (${clientIp}) và gửi báo cáo về Ban Quản Trị.`,
         session: updatedSession,
         isMakeup: true
       };
@@ -577,7 +669,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
 
     return {
       success: true,
-      message: `✅ ĐIỂM DANH THÀNH CÔNG: Học viên ${studentNameToUse} (${studentCodeToUse}) • Lớp ${matchedSession.classCode} • Giảng viên: ${matchedSession.teacherName}`,
+      message: `✅ ĐIỂM DANH THÀNH CÔNG: Học viên ${studentNameToUse} (${studentCodeToUse}) • Lớp ${matchedSession.classCode} • Đã xác thực tại lớp (IP: ${clientIp})`,
       session: updatedSession,
       isMakeup: false
     };
@@ -609,6 +701,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     makeupReports,
     createSession,
     rotateQRCode,
+    updateSessionSecurity,
     toggleSessionOpen,
     updateStudentStatus,
     markAllPresent,
