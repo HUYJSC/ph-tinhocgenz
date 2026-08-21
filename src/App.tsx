@@ -26,6 +26,16 @@ import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { UserProfileModal } from './components/auth/UserProfileModal';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
+import { StudentDashboard2026 } from './components/dashboard/StudentDashboard2026';
+import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
+import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
+import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
+import { EarlyWarningDashboard } from './components/teacher/EarlyWarningDashboard';
+import { DiagnosticOnboardingModal } from './components/onboarding/DiagnosticOnboardingModal';
+import { CertificateVerificationModal } from './components/certificates/CertificateVerificationModal';
+import { DigitalCertificate, DiagnosticResult } from './types/edtech';
+import { CertificateService } from './services/certificateService';
+import { AnalyticsService } from './services/analyticsService';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
@@ -111,7 +121,7 @@ export function App() {
     }
   });
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>('quizzes');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
@@ -120,6 +130,11 @@ export function App() {
   const [showCameraScanner, setShowCameraScanner] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showAITutorDrawer, setShowAITutorDrawer] = useState(false);
+  const [aiTutorPrompt, setAiTutorPrompt] = useState('');
+  const [showSmartReviewModal, setShowSmartReviewModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState<DigitalCertificate | null>(null);
 
   // Sync auth name to storage stats
   useEffect(() => {
@@ -128,13 +143,23 @@ export function App() {
     }
   }, [user.name]);
 
+  // Check if first-time student needs diagnostic onboarding
+  useEffect(() => {
+    if (isSessionActive && !isStaff && user.role === 'student') {
+      const isDone = localStorage.getItem(`tgz_onboarding_done_${user.id}`);
+      if (!isDone) {
+        setShowOnboardingModal(true);
+      }
+    }
+  }, [isSessionActive, isStaff, user.id]);
+
   // Unified Student Login (Choose track + login code + locked inside that track!)
   const handleStudentUnifiedLogin = (studentCode: string, password: string, selectedTrack: CurriculumTrack) => {
     const res = loginWithStudentCode(studentCode, password, selectedTrack);
     if (res.success && res.user) {
       updateStudentName(res.user.name);
       setIsSessionActive(true);
-      setActiveTab('quizzes');
+      setActiveTab('dashboard');
       try {
         localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
       } catch (e) {}
@@ -150,7 +175,7 @@ export function App() {
         switchStudentTrack(selectedTrack);
       }
       setIsSessionActive(true);
-      setActiveTab('admin');
+      setActiveTab('early_warning');
       try {
         localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
       } catch (e) {}
@@ -168,17 +193,49 @@ export function App() {
     } catch (e) {}
   };
 
+  // Open AI Tutor with optional prompt
+  const handleOpenAITutor = (prompt?: string) => {
+    setAiTutorPrompt(prompt || '');
+    setShowAITutorDrawer(true);
+  };
+
+  // Complete diagnostic onboarding
+  const handleCompleteOnboarding = (result: DiagnosticResult) => {
+    try {
+      localStorage.setItem(`tgz_onboarding_done_${user.id}`, 'true');
+      localStorage.setItem(`tgz_diagnostic_${user.id}`, JSON.stringify(result));
+    } catch (e) {}
+    setShowOnboardingModal(false);
+    setActiveTab('learning_path');
+  };
+
   // Quiz runner controls
   const handleStartQuiz = (quiz: Quiz, mode: QuizMode) => {
     setActiveQuiz(quiz);
     setActiveMode(mode);
     setLatestAttempt(null);
+    AnalyticsService.trackEvent(user.id, mode === 'exam' ? 'exam_started' : 'quiz_started', {
+      track: user.programTrack,
+      metadata: { quizId: quiz.id, quizTitle: quiz.title }
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleFinishQuiz = (attempt: QuizAttempt) => {
     recordAttempt(attempt);
     setLatestAttempt(attempt);
+    AnalyticsService.trackEvent(user.id, attempt.mode === 'exam' ? 'exam_completed' : 'quiz_completed', {
+      track: user.programTrack,
+      metadata: { score: attempt.score, totalQuestions: attempt.totalQuestions, percentage: attempt.percentage }
+    });
+
+    // Automatically issue certificate if passing score >= 80%
+    if (attempt.percentage >= 80 && user.programTrack) {
+      const issuedCert = CertificateService.issueCertificate(user.name, user.studentCode || 'HV2026', user.programTrack, attempt.percentage);
+      setSelectedCertificate(issuedCert);
+      AnalyticsService.trackEvent(user.id, 'certificate_earned', { track: user.programTrack });
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -224,6 +281,7 @@ export function App() {
           onOpenInstallModal={() => setShowInstallModal(true)}
           onOpenAuthModal={handleLogout}
           onOpenProfileModal={() => setShowProfileModal(true)}
+          onOpenAITutor={() => handleOpenAITutor()}
           isAdmin={isStaff}
           studentName={user.name}
         />
@@ -276,6 +334,59 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
+              {/* Dashboard 2026 Tab (Student) */}
+              {activeTab === 'dashboard' && (
+                <StudentDashboard2026
+                  currentUser={user}
+                  onNavigateToCatalog={() => setActiveTab('quizzes')}
+                  onNavigateToSmartReview={() => setShowSmartReviewModal(true)}
+                  onNavigateToLearningPath={() => setActiveTab('learning_path')}
+                  onNavigateToAITutor={() => handleOpenAITutor()}
+                  onStartMiniTest={() => {
+                    if (allQuizzes.length > 0) {
+                      handleStartQuiz(allQuizzes[0], 'practice');
+                    } else {
+                      setActiveTab('quizzes');
+                    }
+                  }}
+                />
+              )}
+
+              {/* Learning Path Roadmap Tab */}
+              {activeTab === 'learning_path' && (
+                <LearningPathRoadmap
+                  currentUser={user}
+                  onStartNodePractice={(_node) => {
+                    const match = allQuizzes.find(q => q.category === user.programTrack) || allQuizzes[0];
+                    if (match) {
+                      handleStartQuiz(match, 'practice');
+                    } else {
+                      setActiveTab('quizzes');
+                    }
+                  }}
+                />
+              )}
+
+              {/* Early Warning Dashboard (Teacher & Admin) */}
+              {activeTab === 'early_warning' && isStaff && (
+                <EarlyWarningDashboard
+                  studentAccounts={studentAccounts}
+                />
+              )}
+
+              {/* Smart Review Direct Tab */}
+              {activeTab === 'smart_review' && (
+                <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '20px' }}>
+                  <button
+                    onClick={() => setShowSmartReviewModal(true)}
+                    className="btn btn-primary"
+                    style={{ padding: '12px 24px', fontWeight: 800, borderRadius: '12px' }}
+                  >
+                    BẮT ĐẦU ÔN TẬP CÂU LÀM SAI (SPACED REPETITION)
+                  </button>
+                </div>
+              )}
+
               {/* Admin Portal Tab */}
               {activeTab === 'admin' && (
                 <AdminPortal
@@ -410,6 +521,37 @@ export function App() {
           bookmarkCount={stats.bookmarkedQuestionIds.length}
           unreadNotificationCount={unreadNotificationCount}
           isAdmin={isStaff}
+        />
+      )}
+
+      {/* ── 2026 EDTECH FLOATING AI & MODALS ── */}
+      <AITutorDrawer
+        isOpen={showAITutorDrawer}
+        initialPrompt={aiTutorPrompt}
+        onClose={() => setShowAITutorDrawer(false)}
+        currentUser={user}
+      />
+
+      {showSmartReviewModal && (
+        <SmartReviewModal
+          currentUser={user}
+          onClose={() => setShowSmartReviewModal(false)}
+          onAskAITutor={handleOpenAITutor}
+        />
+      )}
+
+      {showOnboardingModal && (
+        <DiagnosticOnboardingModal
+          currentUser={user}
+          onClose={() => setShowOnboardingModal(false)}
+          onCompleteOnboarding={handleCompleteOnboarding}
+        />
+      )}
+
+      {selectedCertificate && (
+        <CertificateVerificationModal
+          certificate={selectedCertificate}
+          onClose={() => setSelectedCertificate(null)}
         />
       )}
 

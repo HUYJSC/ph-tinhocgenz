@@ -1,10 +1,23 @@
-import React from 'react';
 import {
   BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck,
-  Smartphone, Shield, FileText, LogOut, QrCode, ChevronDown, Calendar
+  Smartphone, Shield, FileText, QrCode, ChevronDown, Calendar,
+  LayoutDashboard, GitBranch, RotateCcw, Bot, ShieldAlert, LogOut
 } from 'lucide-react';
 
-export type ActiveTab = 'quizzes' | 'assignments' | 'attendance' | 'schedule' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
+export type ActiveTab =
+  | 'dashboard'
+  | 'learning_path'
+  | 'quizzes'
+  | 'smart_review'
+  | 'assignments'
+  | 'attendance'
+  | 'schedule'
+  | 'flashcards'
+  | 'early_warning'
+  | 'analytics'
+  | 'creator'
+  | 'bookmarks'
+  | 'admin';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -15,6 +28,7 @@ interface SidebarProps {
   onOpenInstallModal: () => void;
   onOpenAuthModal: () => void;
   onOpenProfileModal?: () => void;
+  onOpenAITutor?: () => void;
   isAdmin: boolean;
   studentName: string;
 }
@@ -30,28 +44,32 @@ interface NavItem {
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab, setActiveTab, bookmarkCount, unreadNotificationCount = 0,
-  onLogout, onOpenInstallModal, onOpenAuthModal, onOpenProfileModal, isAdmin, studentName
+  onLogout, onOpenInstallModal, onOpenAuthModal, onOpenProfileModal, onOpenAITutor, isAdmin, studentName
 }) => {
   // Student structured sections
   const studentMainSection: NavItem[] = [
-    { id: 'schedule',    label: 'Thời Khóa Biểu',    icon: Calendar,      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-    { id: 'quizzes',     label: 'Luyện Đề Thi',      icon: BookOpen,      color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
-    { id: 'assignments', label: 'Đề Thi & Nộp Bài',  icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-    { id: 'flashcards',  label: 'Thẻ Ghi Nhớ',        icon: Layers,        color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-    { id: 'bookmarks',   label: 'Câu Đã Lưu',         icon: BookmarkCheck, color: '#ec4899', bg: 'rgba(236,72,153,0.1)', count: bookmarkCount }
+    { id: 'dashboard',    label: 'Dashboard 2026',    icon: LayoutDashboard,color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
+    { id: 'learning_path',label: 'Lộ Trình Cá Nhân',  icon: GitBranch,      color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' },
+    { id: 'quizzes',      label: 'Luyện Đề Thi',      icon: BookOpen,       color: '#2563eb', bg: 'rgba(37,99,235,0.1)' },
+    { id: 'smart_review', label: 'Ôn Tập Câu Sai',    icon: RotateCcw,      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+    { id: 'schedule',     label: 'Thời Khóa Biểu',    icon: Calendar,       color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+    { id: 'assignments',  label: 'Đề Thi & Nộp Bài',  icon: FileText,       color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
+    { id: 'flashcards',   label: 'Thẻ Ghi Nhớ',        icon: Layers,         color: '#ec4899', bg: 'rgba(236,72,153,0.1)' },
+    { id: 'bookmarks',    label: 'Câu Đã Lưu',         icon: BookmarkCheck,  color: '#6366f1', bg: 'rgba(99,102,241,0.1)', count: bookmarkCount }
   ];
 
   const studentUtilitySection: NavItem[] = [
     { id: 'attendance',  label: 'Điểm Danh QR',      icon: QrCode,        color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
-    { id: 'analytics',   label: 'Tiến Độ Học Tập',    icon: BarChart2,     color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' }
+    { id: 'analytics',   label: 'Tiến Độ & Năng Lực',icon: BarChart2,     color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' }
   ];
 
   // Admin / Teacher structured sections
   const adminMainSection: NavItem[] = [
-    { id: 'schedule',    label: 'Thời Khóa Biểu Lớp',icon: Calendar,      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-    { id: 'admin',       label: 'Quản Lý Học Viên',  icon: Shield,        color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
-    { id: 'attendance',  label: 'Điểm Danh Lớp (5m)',icon: QrCode,        color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
-    { id: 'assignments', label: 'Quản Lý & Chấm Bài',icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)', count: unreadNotificationCount }
+    { id: 'early_warning',label: 'Cảnh Báo Sớm 🚨',   icon: ShieldAlert,   color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+    { id: 'schedule',     label: 'Thời Khóa Biểu Lớp',icon: Calendar,      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+    { id: 'admin',        label: 'Quản Lý Học Viên',  icon: Shield,        color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
+    { id: 'attendance',   label: 'Điểm Danh Lớp (5m)',icon: QrCode,        color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
+    { id: 'assignments',  label: 'Quản Lý & Chấm Bài',icon: FileText,      color: '#10b981', bg: 'rgba(16,185,129,0.1)', count: unreadNotificationCount }
   ];
 
   const adminBankSection: NavItem[] = [
@@ -227,6 +245,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Footer Utilities */}
       <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {onOpenAITutor && (
+          <button
+            onClick={onOpenAITutor}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 10px',
+              borderRadius: '8px',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              background: 'rgba(139, 92, 246, 0.08)',
+              color: '#8b5cf6',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              marginBottom: '2px'
+            }}
+          >
+            <Bot size={15} />
+            <span>Trợ Lý AI Tutor 2026</span>
+          </button>
+        )}
+
         <button
           onClick={onOpenInstallModal}
           style={{

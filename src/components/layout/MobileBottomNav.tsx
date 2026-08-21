@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, BarChart2, Shield, FileText, QrCode, Calendar } from 'lucide-react';
+import { BookOpen, Shield, FileText, Calendar, LayoutDashboard, GitBranch, RotateCcw, ShieldAlert } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
 
 interface MobileBottomNavProps {
@@ -25,19 +25,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   isAdmin = false
 }) => {
   const studentTabs: BottomNavItem[] = [
-    { id: 'schedule',    label: 'Lịch Học',   icon: Calendar,      accentColor: '#f59e0b' },
-    { id: 'quizzes',     label: 'Luyện Đề',   icon: BookOpen,      accentColor: '#4f6ef7' },
-    { id: 'assignments', label: 'Bài Thi',    icon: FileText,      accentColor: '#10b981' },
-    { id: 'attendance',  label: 'Điểm Danh',  icon: QrCode,        accentColor: '#06b6d4' },
-    { id: 'analytics',   label: 'Tiến Độ',    icon: BarChart2,     accentColor: '#8b5cf6' }
+    { id: 'dashboard',    label: 'Home',       icon: LayoutDashboard,accentColor: '#4f6ef7' },
+    { id: 'learning_path',label: 'Lộ Trình',   icon: GitBranch,      accentColor: '#8b5cf6' },
+    { id: 'quizzes',     label: 'Luyện Đề',   icon: BookOpen,       accentColor: '#2563eb' },
+    { id: 'smart_review', label: 'Ôn Lỗi Sai', icon: RotateCcw,      accentColor: '#f59e0b' },
+    { id: 'schedule',    label: 'Lịch Học',   icon: Calendar,       accentColor: '#10b981' }
   ];
 
   const adminTabs: BottomNavItem[] = [
-    { id: 'schedule',    label: 'Lịch Học',   icon: Calendar,      accentColor: '#f59e0b' },
-    { id: 'admin',       label: 'Quản Trị',   icon: Shield,        accentColor: '#d97706' },
-    { id: 'attendance',  label: 'Điểm Danh',  icon: QrCode,        accentColor: '#06b6d4' },
-    { id: 'assignments', label: 'Chấm Điểm',  icon: FileText,      accentColor: '#10b981', count: unreadNotificationCount },
-    { id: 'quizzes',     label: 'Kho Đề',     icon: BookOpen,      accentColor: '#4f6ef7' }
+    { id: 'early_warning',label: 'Cảnh Báo 🚨',icon: ShieldAlert,    accentColor: '#ef4444' },
+    { id: 'admin',       label: 'Quản Trị',   icon: Shield,         accentColor: '#d97706' },
+    { id: 'schedule',    label: 'Lịch Học',   icon: Calendar,       accentColor: '#f59e0b' },
+    { id: 'assignments', label: 'Chấm Điểm',  icon: FileText,       accentColor: '#10b981', count: unreadNotificationCount },
+    { id: 'quizzes',     label: 'Kho Đề',     icon: BookOpen,       accentColor: '#4f6ef7' }
   ];
 
   const tabs: BottomNavItem[] = isAdmin ? adminTabs : studentTabs;
