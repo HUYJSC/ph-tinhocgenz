@@ -343,20 +343,21 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         })}
       </div>
 
-      {/* ─── TAB 1: PURE CLEAN QR CODE (Projector Ready, No extra wordy text) ─── */}
+      {/* ─── TAB 1: DUAL VIEW (QR CODE + LIVE CHECK-IN ROSTER BOARD) ─── */}
       {activeSubTab === 'qr_mode' && (
-        <div style={{ maxWidth: '520px', margin: '0 auto', width: '100%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: '16px', alignItems: 'start' }}>
+          {/* Left: Projector QR Code Card */}
           <div
             className="card"
             style={{
-              padding: '28px 24px',
+              padding: '24px 20px',
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              borderRadius: '24px',
-              boxShadow: '0 20px 50px -15px rgba(0, 0, 0, 0.1)',
-              border: '1.5px solid var(--border-color)',
+              borderRadius: '20px',
+              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)',
+              border: '1px solid var(--border-color)',
               background: 'var(--bg-card)'
             }}
           >
@@ -366,8 +367,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               alignItems: 'center',
               justifyContent: 'space-between',
               width: '100%',
-              marginBottom: '16px',
-              padding: '0 8px'
+              marginBottom: '14px'
             }}>
               <div style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 {activeSession?.className || `Lớp ${currentClassCode}`}
@@ -377,15 +377,15 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '4px 12px',
+                gap: '5px',
+                padding: '3px 10px',
                 borderRadius: '999px',
                 background: activeSession?.isOpen === false ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
                 color: activeSession?.isOpen === false ? '#ef4444' : '#10b981',
-                fontSize: '0.86rem',
+                fontSize: '0.84rem',
                 fontWeight: 900
               }}>
-                <Clock size={15} />
+                <Clock size={14} />
                 <span>{activeSession?.isOpen === false ? 'ĐÃ KHÓA' : formatMMSS(timeLeftSeconds)}</span>
               </div>
             </div>
@@ -393,22 +393,22 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             {/* Giant QR Code Display */}
             <div style={{
               position: 'relative',
-              padding: '14px',
+              padding: '12px',
               background: '#ffffff',
-              borderRadius: '20px',
-              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
+              borderRadius: '16px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
               border: '1px solid rgba(0, 0, 0, 0.08)',
-              marginBottom: '16px',
+              marginBottom: '14px',
               overflow: 'hidden'
             }}>
               <img
                 src={qrImageUrl}
                 alt="QR Code"
                 style={{
-                  width: '280px',
-                  height: '280px',
+                  width: '240px',
+                  height: '240px',
                   display: 'block',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   filter: activeSession?.isOpen === false ? 'blur(8px) grayscale(100%)' : 'none',
                   opacity: activeSession?.isOpen === false ? 0.3 : 1,
                   transition: 'all 0.3s ease'
@@ -429,8 +429,8 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                   color: '#fff',
                   textAlign: 'center'
                 }}>
-                  <Lock size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
-                  <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                  <Lock size={32} color="#ef4444" style={{ marginBottom: '6px' }} />
+                  <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#fff', marginBottom: '6px' }}>
                     ĐÃ KHÓA ĐIỂM DANH
                   </div>
                   <button
@@ -441,9 +441,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                       }
                     }}
                     className="btn btn-success"
-                    style={{ padding: '6px 14px', fontSize: '0.78rem', fontWeight: 800, gap: '4px' }}
+                    style={{ padding: '5px 12px', fontSize: '0.76rem', fontWeight: 800, gap: '4px' }}
                   >
-                    <Unlock size={14} />
+                    <Unlock size={13} />
                     <span>Mở Lại QR</span>
                   </button>
                 </div>
@@ -451,12 +451,12 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             </div>
 
             {/* 6-Digit PIN Code */}
-            <div style={{ marginBottom: '18px' }}>
+            <div style={{ marginBottom: '14px' }}>
               <div style={{
-                fontSize: '2.2rem',
+                fontSize: '1.9rem',
                 fontWeight: 900,
                 color: activeSession?.isOpen === false ? 'var(--text-muted)' : 'var(--brand)',
-                letterSpacing: '0.25em',
+                letterSpacing: '0.2em',
                 fontFamily: 'var(--font-mono)'
               }}>
                 {activeSession?.isOpen === false ? 'LOCKED' : (activeSession?.qrPinCode || '------')}
@@ -464,14 +464,14 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             </div>
 
             {/* Minimal Toolbar (GPS Toggle, Rotate Now, Lock/Unlock) */}
-            <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={handleRotateNow}
                 className="btn btn-secondary"
-                style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+                style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '5px' }}
                 title="Đổi mã QR & PIN mới ngay lập tức"
               >
-                <RefreshCw size={14} />
+                <RefreshCw size={13} />
                 <span>Đổi Mã</span>
               </button>
 
@@ -479,11 +479,11 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 onClick={handleToggleGpsLock}
                 disabled={isFetchingGps}
                 className={`btn ${activeSession?.requireLocation ? 'btn-warning' : 'btn-secondary'}`}
-                style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+                style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '5px' }}
                 title="Giới hạn học viên điểm danh trong bán kính GPS 150m lớp học"
               >
-                <MapPin size={14} />
-                <span>{isFetchingGps ? 'Đang lấy GPS...' : activeSession?.requireLocation ? 'GPS: ĐANG BẬT' : 'Bật GPS Lớp'}</span>
+                <MapPin size={13} />
+                <span>{isFetchingGps ? 'Đang lấy GPS...' : activeSession?.requireLocation ? 'GPS: BẬT' : 'Bật GPS'}</span>
               </button>
 
               {activeSession && (
@@ -493,11 +493,122 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                     soundFx.playClick();
                   }}
                   className={`btn ${activeSession.isOpen !== false ? 'btn-danger' : 'btn-success'}`}
-                  style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+                  style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '5px' }}
                 >
-                  {activeSession.isOpen !== false ? <Lock size={14} /> : <Unlock size={14} />}
+                  {activeSession.isOpen !== false ? <Lock size={13} /> : <Unlock size={13} />}
                   <span>{activeSession.isOpen !== false ? 'Khóa QR' : 'Mở QR'}</span>
                 </button>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Live Student Attendance Board */}
+          <div
+            className="card"
+            style={{
+              padding: '18px 20px',
+              borderRadius: '20px',
+              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-card)',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '440px'
+            }}
+          >
+            {/* Header with Live Stats & Counter */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Học Viên Đã Điểm Danh
+                </h3>
+              </div>
+
+              <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '3px 9px', borderRadius: '999px' }}>
+                {presentCount + makeupCount + lateCount} / {totalStudents} Có Mặt ({presentRate}%)
+              </span>
+            </div>
+
+            {/* Scrollable Live List of Students */}
+            <div style={{ flex: 1, maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '4px' }}>
+              {activeSession && activeSession.records.length > 0 ? (
+                activeSession.records.map((rec, index) => {
+                  const isCheckedIn = rec.status === 'present' || rec.status === 'makeup' || rec.status === 'late' || rec.isMakeup;
+                  return (
+                    <div
+                      key={rec.studentId}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '8px',
+                        background: isCheckedIn ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
+                        border: isCheckedIn ? '1px solid rgba(16, 185, 129, 0.28)' : '1px solid var(--border-color)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', width: '18px', textAlign: 'center' }}>
+                          {index + 1}
+                        </span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {rec.studentName}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                            {rec.studentCode}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status indicator */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        {isCheckedIn ? (
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 800,
+                              color: rec.status === 'makeup' || rec.isMakeup ? '#f59e0b' : '#10b981',
+                              background: rec.status === 'makeup' || rec.isMakeup ? 'rgba(245, 158, 11, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              <CheckCircle2 size={12} />
+                              <span>{rec.status === 'makeup' || rec.isMakeup ? 'HỌC BÙ' : 'ĐÃ CÓ MẶT'}</span>
+                            </span>
+                            {rec.checkInTime && (
+                              <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                {rec.checkInTime} ({rec.checkInMethod === 'qr_scan' ? 'QR' : 'PIN'})
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            color: 'var(--text-muted)',
+                            background: 'var(--bg-primary)',
+                            padding: '2px 7px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)'
+                          }}>
+                            Chưa quét
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                  Chưa có học viên nào trong danh sách lớp.
+                </div>
               )}
             </div>
           </div>
