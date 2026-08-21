@@ -6,7 +6,7 @@ import {
   QrCode, CheckCircle2, Clock, RefreshCw,
   FileSpreadsheet, Trash2, Save, Users, Calendar,
   CheckCheck, Lock, Unlock, UserCheck, AlertTriangle,
-  MapPin, Video, ExternalLink
+  MapPin, Video, ExternalLink, Settings, X
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { getCurrentCoordinates } from '../../utils/securityUtils';
@@ -62,6 +62,9 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(300);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
   const [isFetchingGps, setIsFetchingGps] = useState(false);
+  const [isEditMeetModalOpen, setIsEditMeetModalOpen] = useState(false);
+  const [tempMeetUrl, setTempMeetUrl] = useState('');
+  const [tempRoom, setTempRoom] = useState('');
 
   // Auto select active session
   const activeSession = sessions.find(s => s.id === selectedSessionId) || sessions.find(s => s.track === selectedTrack) || sessions[0];
@@ -522,16 +525,31 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                     {activeSession.room || 'Google Meet Trực Tuyến'}
                   </span>
                 </div>
-                <a
-                  href={activeSession.onlineMeetingUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-primary"
-                  style={{ padding: '4px 10px', fontSize: '0.72rem', fontWeight: 800, textDecoration: 'none', borderRadius: '8px', flexShrink: 0 }}
-                >
-                  <span>Mở Meet</span>
-                  <ExternalLink size={11} />
-                </a>
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => {
+                      setTempMeetUrl(activeSession.onlineMeetingUrl || '');
+                      setTempRoom(activeSession.room || 'Phòng LAB 01 (Tầng 2)');
+                      setIsEditMeetModalOpen(true);
+                    }}
+                    title="Cài đặt link Meet & phòng học cho lớp này"
+                    className="btn btn-secondary"
+                    style={{ padding: '4px 6px', height: '26px', minHeight: '26px', borderRadius: '6px' }}
+                  >
+                    <Settings size={12} />
+                  </button>
+
+                  <a
+                    href={activeSession.onlineMeetingUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-primary"
+                    style={{ padding: '4px 10px', fontSize: '0.72rem', fontWeight: 800, textDecoration: 'none', borderRadius: '8px', flexShrink: 0 }}
+                  >
+                    <span>Mở Meet</span>
+                    <ExternalLink size={11} />
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -971,6 +989,115 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               Chưa có lịch sử buổi học nào.
             </div>
           )}
+        </div>
+      )}
+      {/* ── MODAL: CÀI ĐẶT LINK GOOGLE MEET & PHÒNG HỌC CHO LỚP ── */}
+      {isEditMeetModalOpen && activeSession && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+        >
+          <div
+            className="card animate-slide-up"
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              borderRadius: '20px',
+              padding: '22px',
+              background: 'var(--bg-card)',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Video size={18} color="var(--brand)" />
+                <h3 style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Cài Đặt Phòng Học & Link Meet
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsEditMeetModalOpen(false)}
+                className="btn btn-icon"
+                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
+              Thiết lập link Google Meet và địa điểm phòng học cho <strong>{activeSession.className || activeSession.classCode}</strong>.
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdateSessionSecurity) {
+                  onUpdateSessionSecurity(activeSession.id, {
+                    onlineMeetingUrl: tempMeetUrl.trim(),
+                    room: tempRoom.trim()
+                  });
+                }
+                setIsEditMeetModalOpen(false);
+                soundFx.playVictory();
+              }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Địa Điểm / Phòng Học:
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={tempRoom}
+                  onChange={(e) => setTempRoom(e.target.value)}
+                  placeholder="VD: Phòng LAB 01 (Tầng 2) hoặc Trực Tuyến"
+                  style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Đường Dẫn Google Meet / Zoom:
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={tempMeetUrl}
+                  onChange={(e) => setTempMeetUrl(e.target.value)}
+                  placeholder="https://meet.google.com/xyz-abcd-efg"
+                  style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditMeetModalOpen(false)}
+                  className="btn btn-secondary"
+                  style={{ padding: '7px 14px', fontSize: '0.8rem', borderRadius: '8px' }}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ padding: '7px 18px', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px' }}
+                >
+                  Lưu Cài Đặt
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

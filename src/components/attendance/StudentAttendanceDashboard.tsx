@@ -46,9 +46,15 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
     return hasRecord || isTrackEnrolled;
   });
 
-  // Active or most relevant session meet URL
-  const currentSessionWithMeet = studentSessions.find(s => s.onlineMeetingUrl) || sessions.find(s => s.onlineMeetingUrl);
-  const activeMeetUrl = currentSessionWithMeet?.onlineMeetingUrl || 'https://meet.google.com/ph-tinhocgenz-lab01';
+  // Match the student's exact enrolled class and session
+  const activeClassSession = studentSessions.find(s =>
+    selectedTrackFilter !== 'all' ? s.track === selectedTrackFilter : s.track === currentUser.programTrack
+  ) || studentSessions[0] || sessions.find(s => s.track === currentUser.programTrack) || sessions[0];
+
+  const activeMeetUrl = activeClassSession?.onlineMeetingUrl || 'https://meet.google.com/ph-tinhocgenz-lab01';
+  const activeClassTitle = activeClassSession?.className || `Lớp ${activeClassSession?.classCode || 'K26'}`;
+  const activeRoomName = activeClassSession?.room || 'Phòng LAB 01 (Tầng 2)';
+  const activeTeacher = activeClassSession?.teacherName || 'Giảng Viên';
 
   const handleCopyMeet = () => {
     navigator.clipboard.writeText(activeMeetUrl);
@@ -101,7 +107,7 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
           overflow: 'hidden'
         }}
       >
-        <div style={{ textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', maxWidth: '540px', margin: '0 auto' }}>
           {/* Badge */}
           <div style={{
             display: 'inline-flex',
@@ -119,11 +125,35 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
             <span>HỌC VIÊN: {currentUser.name} ({currentUser.studentCode || 'THGZ01'})</span>
           </div>
 
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-            Điểm Danh Buổi Học
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+            Phòng Học & Điểm Danh Trực Tuyến
           </h2>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: 1.5 }}>
-            Quét mã QR trực tiếp trên màn hình chiếu của Giảng viên hoặc nhập mã PIN 6 số để xác nhận có mặt tại lớp.
+
+          {/* Dedicated Classroom Info Pill */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 12px',
+            borderRadius: '10px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
+            fontSize: '0.76rem',
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            margin: '6px auto 14px',
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}>
+            <span style={{ color: 'var(--brand)' }}>🏫 {activeClassTitle}</span>
+            <span>•</span>
+            <span style={{ color: '#10b981' }}>👨‍🏫 {activeTeacher}</span>
+            <span>•</span>
+            <span style={{ color: 'var(--text-muted)' }}>📍 {activeRoomName}</span>
+          </div>
+
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>
+            Nhấp <strong>"Vào Lớp Học Google Meet"</strong> để kết nối trực tiếp phòng học của lớp, sau đó quét mã QR hoặc nhập mã PIN 5 phút để xác nhận chuyên cần.
           </p>
 
           {/* Action Buttons */}
