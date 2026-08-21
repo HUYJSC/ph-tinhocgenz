@@ -22,6 +22,8 @@ import { StudentCheckInModal } from './components/attendance/StudentCheckInModal
 import { CameraQRScanner } from './components/attendance/CameraQRScanner';
 import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
+import { UserProfileModal } from './components/auth/UserProfileModal';
+import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
@@ -49,6 +51,8 @@ export function App() {
     teacherAccounts,
     loginWithStudentCode,
     loginAsStaff,
+    changeUserPassword,
+    resetUserPassword,
     createStudentAccount,
     updateStudentAccount,
     deleteStudentAccount,
@@ -105,6 +109,8 @@ export function App() {
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showCameraScanner, setShowCameraScanner] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // Sync auth name to storage stats
   useEffect(() => {
@@ -189,6 +195,7 @@ export function App() {
           studentAccounts={studentAccounts}
           onStudentLogin={handleStudentUnifiedLogin}
           onAdminLogin={handleAdminUnifiedLogin}
+          onResetPassword={resetUserPassword}
         />
       </div>
     );
@@ -207,6 +214,7 @@ export function App() {
           onLogout={handleLogout}
           onOpenInstallModal={() => setShowInstallModal(true)}
           onOpenAuthModal={handleLogout}
+          onOpenProfileModal={() => setShowProfileModal(true)}
           isAdmin={isStaff}
           studentName={user.name}
         />
@@ -228,6 +236,7 @@ export function App() {
           onLogout={handleLogout}
           onOpenNotifications={() => setActiveTab('assignments')}
           onOpenAuthModal={handleLogout}
+          onOpenProfileModal={() => setShowProfileModal(true)}
         />
 
         {/* Content Router */}
@@ -413,6 +422,24 @@ export function App() {
             coords
           );
         }}
+      />
+
+      {/* User Profile Dropdown Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        currentUser={user}
+        onOpenChangePassword={() => setShowChangePasswordModal(true)}
+        onLogout={handleLogout}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal || Boolean(isSessionActive && user.mustChangePassword)}
+        isFirstTime={Boolean(isSessionActive && user.mustChangePassword)}
+        onClose={() => setShowChangePasswordModal(false)}
+        currentUser={user}
+        onChangePassword={changeUserPassword}
       />
     </div>
   );

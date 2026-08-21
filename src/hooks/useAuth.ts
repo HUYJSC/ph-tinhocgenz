@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 
-const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v10';
-const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v10';
-const TEACHER_ACCOUNTS_KEY = 'phtinhocgenz_teacher_accounts_v10';
+const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v11';
+const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v11';
+const TEACHER_ACCOUNTS_KEY = 'phtinhocgenz_teacher_accounts_v11';
 
 export const ALL_10_TRACKS: CurriculumTrack[] = [
   'office-fast-3in1',
@@ -200,7 +200,9 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     name: 'Cô Hoàng Mai',
     teacherCode: 'GV01',
     password: '123',
-    phoneOrEmail: 'hoangmai@tinhocgenz.io.vn',
+    phone: '0912345601',
+    email: 'hoangmai@tinhocgenz.io.vn',
+    phoneOrEmail: '0912 345 601 • hoangmai@tinhocgenz.io.vn',
     assignedTracks: ['office-fast-3in1', 'cc-cntt-basic', 'word-6b', 'excel-6b', 'ppt-6b'],
     role: 'teacher',
     createdAt: '2026-08-20'
@@ -210,7 +212,9 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     name: 'Thầy Đức Nam',
     teacherCode: 'GV02',
     password: '123',
-    phoneOrEmail: 'ducnam@tinhocgenz.io.vn',
+    phone: '0912345602',
+    email: 'ducnam@tinhocgenz.io.vn',
+    phoneOrEmail: '0912 345 602 • ducnam@tinhocgenz.io.vn',
     assignedTracks: ['cc-cntt-advanced', 'cntt-adv-we', 'ai-office', 'excel-accounting'],
     role: 'teacher',
     createdAt: '2026-08-20'
@@ -220,8 +224,22 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     name: 'Thầy Quang Huy',
     teacherCode: 'GV03',
     password: '123',
-    phoneOrEmail: 'quanghuy@tinhocgenz.io.vn',
+    phone: '0912345603',
+    email: 'quanghuy@tinhocgenz.io.vn',
+    phoneOrEmail: '0912 345 603 • quanghuy@tinhocgenz.io.vn',
     assignedTracks: ALL_10_TRACKS,
+    role: 'teacher',
+    createdAt: '2026-08-20'
+  },
+  {
+    id: 'tch-04',
+    name: 'Cô Thu Minh',
+    teacherCode: 'GV04',
+    password: '123',
+    phone: '0988776655',
+    email: 'thuminh@tinhocgenz.io.vn',
+    phoneOrEmail: '0988 776 655 • thuminh@tinhocgenz.io.vn',
+    assignedTracks: ['office-fast-3in1', 'word-6b', 'excel-6b', 'ppt-6b', 'cc-cntt-basic'],
     role: 'teacher',
     createdAt: '2026-08-20'
   }
@@ -331,13 +349,19 @@ export function useAuth() {
         };
       }
 
+      const isFirstDefault = cleanPass === '123' || !matched.password || matched.password === '123';
       const loggedUser: UserProfile = {
         id: matched.id,
         name: matched.name,
         studentCode: matched.studentCode,
+        classCode: matched.classCode,
+        phone: matched.phone || '0912 345 678',
+        email: matched.email || `${matched.studentCode.toLowerCase()}@tinhocgenz.io.vn`,
+        phoneOrEmail: `${matched.phone || '0912 345 678'} • ${matched.email || (matched.studentCode.toLowerCase() + '@tinhocgenz.io.vn')}`,
         schoolOrClass: matched.schoolOrClass,
         programTrack: chosenTrack,
         enrolledTracks: matched.enrolledTracks || [chosenTrack],
+        mustChangePassword: matched.mustChangePassword || isFirstDefault,
         role: 'student',
         createdAt: matched.createdAt
       };
@@ -352,9 +376,12 @@ export function useAuth() {
       name: studentCodeInput.trim(),
       studentCode: newCode,
       password: cleanPass || '123',
+      phone: '0912 345 678',
+      email: `${newCode.toLowerCase()}@tinhocgenz.io.vn`,
       schoolOrClass: `Lớp ${TRACK_LABELS[chosenTrack]}`,
       programTrack: chosenTrack,
       enrolledTracks: [chosenTrack],
+      mustChangePassword: true,
       role: 'student',
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -365,9 +392,13 @@ export function useAuth() {
       id: newStudent.id,
       name: newStudent.name,
       studentCode: newStudent.studentCode,
+      phone: newStudent.phone,
+      email: newStudent.email,
+      phoneOrEmail: `${newStudent.phone} • ${newStudent.email}`,
       schoolOrClass: newStudent.schoolOrClass,
       programTrack: chosenTrack,
       enrolledTracks: [chosenTrack],
+      mustChangePassword: true,
       role: 'student',
       createdAt: newStudent.createdAt
     };
@@ -388,8 +419,14 @@ export function useAuth() {
       const adminProfile: UserProfile = {
         ...DEFAULT_ADMIN_USER,
         name: cleanName || DEFAULT_ADMIN_USER.name,
+        teacherCode: 'ADMIN-01',
+        phone: '0988 999 888',
+        email: 'admin@tinhocgenz.io.vn',
+        phoneOrEmail: '0988 999 888 • admin@tinhocgenz.io.vn',
         programTrack: (selectedTrack && selectedTrack !== 'all') ? selectedTrack : 'office-fast-3in1',
-        enrolledTracks: ALL_10_TRACKS
+        enrolledTracks: ALL_10_TRACKS,
+        assignedTracks: ALL_10_TRACKS,
+        mustChangePassword: cleanPin === 'admin123' || cleanPin === '123'
       };
       setUser(adminProfile);
       return { success: true, user: adminProfile };
@@ -427,12 +464,17 @@ export function useAuth() {
       const teacherProfile: UserProfile = {
         id: matchedTeacher.id,
         name: matchedTeacher.name,
-        email: matchedTeacher.phoneOrEmail,
+        teacherCode: matchedTeacher.teacherCode,
         studentCode: matchedTeacher.teacherCode,
+        phone: matchedTeacher.phone || '0988 776 655',
+        email: matchedTeacher.email || `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
+        phoneOrEmail: matchedTeacher.phoneOrEmail || `${matchedTeacher.phone || '0988 776 655'} • ${matchedTeacher.email || 'giangvien@tinhocgenz.io.vn'}`,
         role: 'teacher',
         schoolOrClass: `Giảng Viên: ${assigned.map(t => TRACK_LABELS[t] || t).join(', ')}`,
         programTrack: effectiveTrack,
         enrolledTracks: assigned,
+        assignedTracks: assigned,
+        mustChangePassword: matchedTeacher.mustChangePassword || cleanPin === '123' || matchedTeacher.password === '123',
         createdAt: matchedTeacher.createdAt
       };
 
@@ -570,6 +612,91 @@ export function useAuth() {
     setTeacherAccounts(prev => prev.filter(t => t.id !== id));
   };
 
+  // User changes their own password
+  const changeUserPassword = (oldPassword: string, newPassword: string): { success: boolean; message?: string } => {
+    const cleanOld = (oldPassword || '').trim();
+    const cleanNew = (newPassword || '').trim();
+
+    if (!cleanNew || cleanNew.length < 3) {
+      return { success: false, message: 'Mật khẩu mới phải có ít nhất 3 ký tự!' };
+    }
+
+    if (user.role === 'student') {
+      const student = studentAccounts.find(s => s.id === user.id || s.studentCode === user.studentCode);
+      const currentPass = student?.password || '123';
+      if (cleanOld && cleanOld !== currentPass && cleanOld !== '123') {
+        return { success: false, message: 'Mật khẩu hiện tại không chính xác!' };
+      }
+
+      setStudentAccounts(prev =>
+        prev.map(s => (s.id === user.id || s.studentCode === user.studentCode)
+          ? { ...s, password: cleanNew, mustChangePassword: false }
+          : s
+        )
+      );
+      setUser(prev => ({ ...prev, mustChangePassword: false }));
+      return { success: true, message: 'Đổi mật khẩu thành công!' };
+    }
+
+    // Teacher or Admin
+    const teacher = teacherAccounts.find(t => t.id === user.id || t.teacherCode === user.teacherCode || t.teacherCode === user.studentCode);
+    const currentPass = teacher?.password || '123';
+    if (cleanOld && cleanOld !== currentPass && cleanOld !== '123' && cleanOld !== 'admin123') {
+      return { success: false, message: 'Mật khẩu hiện tại không chính xác!' };
+    }
+
+    setTeacherAccounts(prev =>
+      prev.map(t => (t.id === user.id || t.teacherCode === user.teacherCode || t.teacherCode === user.studentCode)
+        ? { ...t, password: cleanNew, mustChangePassword: false }
+        : t
+      )
+    );
+    setUser(prev => ({ ...prev, mustChangePassword: false }));
+    return { success: true, message: 'Đổi mật khẩu thành công!' };
+  };
+
+  // Forgot password reset
+  const resetUserPassword = (identifier: string, newPassword: string): { success: boolean; message?: string } => {
+    const cleanId = (identifier || '').trim().toLowerCase();
+    const cleanNew = (newPassword || '').trim();
+
+    if (!cleanId) return { success: false, message: 'Vui lòng nhập Mã số, Số điện thoại hoặc Email!' };
+    if (!cleanNew || cleanNew.length < 3) return { success: false, message: 'Mật khẩu mới phải có ít nhất 3 ký tự!' };
+
+    // Search in student accounts
+    const studentIndex = studentAccounts.findIndex(s =>
+      s.studentCode.toLowerCase() === cleanId ||
+      s.name.toLowerCase() === cleanId ||
+      (s.phone && s.phone.replace(/\s/g, '').includes(cleanId.replace(/\s/g, ''))) ||
+      (s.email && s.email.toLowerCase() === cleanId)
+    );
+
+    if (studentIndex !== -1) {
+      const updated = [...studentAccounts];
+      updated[studentIndex] = { ...updated[studentIndex], password: cleanNew, mustChangePassword: false };
+      setStudentAccounts(updated);
+      return { success: true, message: `Đã đặt lại mật khẩu cho học viên ${updated[studentIndex].name} (${updated[studentIndex].studentCode}) thành công!` };
+    }
+
+    // Search in teacher accounts
+    const teacherIndex = teacherAccounts.findIndex(t =>
+      t.teacherCode.toLowerCase() === cleanId ||
+      t.name.toLowerCase() === cleanId ||
+      (t.phone && t.phone.replace(/\s/g, '').includes(cleanId.replace(/\s/g, ''))) ||
+      (t.email && t.email.toLowerCase() === cleanId) ||
+      (t.phoneOrEmail && t.phoneOrEmail.toLowerCase().includes(cleanId))
+    );
+
+    if (teacherIndex !== -1) {
+      const updated = [...teacherAccounts];
+      updated[teacherIndex] = { ...updated[teacherIndex], password: cleanNew, mustChangePassword: false };
+      setTeacherAccounts(updated);
+      return { success: true, message: `Đã đặt lại mật khẩu cho giảng viên ${updated[teacherIndex].name} (${updated[teacherIndex].teacherCode}) thành công!` };
+    }
+
+    return { success: false, message: 'Không tìm thấy tài khoản tương ứng với thông tin đã nhập!' };
+  };
+
   const logout = () => {
     const defaultStudent = INITIAL_STUDENT_ACCOUNTS[0];
     const loggedOutUser: UserProfile = {
@@ -595,6 +722,8 @@ export function useAuth() {
     teacherAccounts,
     loginWithStudentCode,
     loginAsStaff,
+    changeUserPassword,
+    resetUserPassword,
     createStudentAccount,
     updateStudentAccount,
     deleteStudentAccount,

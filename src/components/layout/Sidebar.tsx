@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck,
-  Smartphone, Shield, FileText, LogOut, QrCode
+  Smartphone, Shield, FileText, LogOut, QrCode, ChevronDown
 } from 'lucide-react';
 
 export type ActiveTab = 'quizzes' | 'assignments' | 'attendance' | 'flashcards' | 'analytics' | 'creator' | 'bookmarks' | 'admin';
@@ -14,6 +14,7 @@ interface SidebarProps {
   onLogout?: () => void;
   onOpenInstallModal: () => void;
   onOpenAuthModal: () => void;
+  onOpenProfileModal?: () => void;
   isAdmin: boolean;
   studentName: string;
 }
@@ -29,7 +30,7 @@ interface NavItem {
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab, setActiveTab, bookmarkCount, unreadNotificationCount = 0,
-  onLogout, onOpenInstallModal, onOpenAuthModal, isAdmin, studentName
+  onLogout, onOpenInstallModal, onOpenAuthModal, onOpenProfileModal, isAdmin, studentName
 }) => {
   // Student structured sections
   const studentMainSection: NavItem[] = [
@@ -167,10 +168,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* User Card */}
+      {/* User Card with Dropdown Arrow */}
       <div style={{ padding: '12px 14px' }}>
         <button
-          onClick={onOpenAuthModal}
+          onClick={onOpenProfileModal || onOpenAuthModal}
+          title="Xem thông tin chi tiết & Đổi mật khẩu"
           style={{
             width: '100%',
             padding: '10px 12px',
@@ -181,7 +183,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             alignItems: 'center',
             gap: '10px',
             cursor: 'pointer',
-            textAlign: 'left'
+            textAlign: 'left',
+            transition: 'all 0.15s ease'
           }}
         >
           <div style={{
@@ -201,6 +204,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {isAdmin ? 'Giảng Viên' : 'Học Viên'}
             </div>
           </div>
+          <ChevronDown size={15} color="var(--text-muted)" style={{ flexShrink: 0 }} />
         </button>
       </div>
 

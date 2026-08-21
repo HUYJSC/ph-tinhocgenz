@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Flame, Award, Shield, Bell, LogOut } from 'lucide-react';
+import { Moon, Sun, Flame, Award, Shield, Bell, LogOut, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -14,12 +14,13 @@ interface HeaderProps {
   onLogout?: () => void;
   onOpenNotifications?: () => void;
   onOpenAuthModal?: () => void;
+  onOpenProfileModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   theme, toggleTheme, streak, totalPoints, studentName,
   programTrack, isAdmin = false,
-  unreadNotificationCount = 0, onLogout, onOpenNotifications, onOpenAuthModal
+  unreadNotificationCount = 0, onLogout, onOpenNotifications, onOpenAuthModal, onOpenProfileModal
 }) => {
 
   const TRACK_MAP: Record<string,string> = {
@@ -39,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="app-header">
-      {/* LEFT: Logo + Compact User Pill */}
+      {/* LEFT: Logo + Compact User Pill with Chevron */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flexShrink: 1 }}>
         <div style={{
           width: '38px', height: '38px', borderRadius: '10px',
@@ -51,17 +52,17 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <button
-          onClick={onOpenAuthModal}
+          onClick={onOpenProfileModal || onOpenAuthModal}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
             padding: '4px 8px 4px 4px',
             borderRadius: 'var(--radius-full)',
             background: isAdmin ? 'rgba(217,119,6,0.08)' : 'rgba(79,110,247,0.07)',
             border: isAdmin ? '1px solid rgba(217,119,6,0.22)' : '1px solid rgba(79,110,247,0.18)',
-            cursor: 'pointer', minWidth: 0, maxWidth: '170px',
+            cursor: 'pointer', minWidth: 0, maxWidth: '180px',
             textAlign: 'left'
           }}
-          title="Bấm để đổi môn / tài khoản"
+          title="Bấm để xem thông tin chi tiết & đổi mật khẩu"
         >
           <div style={{
             width: '24px', height: '24px', borderRadius: '50%',
@@ -71,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}>
             {isAdmin ? <Shield size={12} /> : initial}
           </div>
-          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ minWidth: 0, overflow: 'hidden', flex: 1 }}>
             <div style={{
               fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2
@@ -82,9 +83,10 @@ export const Header: React.FC<HeaderProps> = ({
               fontSize: '0.62rem', color: 'var(--text-muted)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
             }}>
-              {isAdmin ? 'Quản Trị' : (TRACK_MAP[programTrack || ''] || 'Đổi Môn ▾')}
+              {isAdmin ? 'Giảng Viên' : (TRACK_MAP[programTrack || ''] || 'Đổi Môn')}
             </div>
           </div>
+          <ChevronDown size={13} color="var(--text-muted)" style={{ flexShrink: 0 }} />
         </button>
       </div>
 

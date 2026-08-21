@@ -3,12 +3,14 @@ import { CurriculumTrack, StudentAccount, UserProfile } from '../../types/auth';
 import {
   User, Shield, KeyRound, ArrowRight, ShieldAlert, BookOpen, Lock
 } from 'lucide-react';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { soundFx } from '../../utils/audio';
 
 interface UnifiedAuthGatewayProps {
   studentAccounts?: StudentAccount[];
   onStudentLogin: (studentCode: string, password: string, selectedTrack: CurriculumTrack) => { success: boolean; user?: UserProfile; message?: string };
   onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string };
+  onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
 }
 
 const TRACK_LIST: { id: CurriculumTrack; label: string }[] = [
@@ -26,11 +28,13 @@ const TRACK_LIST: { id: CurriculumTrack; label: string }[] = [
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   onStudentLogin,
-  onAdminLogin
+  onAdminLogin,
+  onResetPassword
 }) => {
   const [role, setRole] = useState<'student' | 'admin'>('student');
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [adminTrackChoice, setAdminTrackChoice] = useState<CurriculumTrack | 'all'>('all');
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
   // Student Form
   const [studentCode, setStudentCode] = useState('');
@@ -289,9 +293,26 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
 
               {/* Password Input */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Mật Khẩu
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                    Mật Khẩu
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotModalOpen(true)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--brand)',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
                 <div style={{ position: 'relative' }}>
                   <KeyRound size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
@@ -391,15 +412,32 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
 
               {/* Password / Admin PIN */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Mật Khẩu Quản Trị
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                    Mật Khẩu Quản Trị / Giảng Viên
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotModalOpen(true)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#d97706',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
                 <div style={{ position: 'relative' }}>
                   <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="password"
                     required
-                    placeholder="Nhập mã PIN hoặc mật khẩu quản trị"
+                    placeholder="Nhập mã PIN hoặc mật khẩu giảng viên"
                     value={adminPin}
                     onChange={e => setAdminPin(e.target.value)}
                     style={{
@@ -501,6 +539,13 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
           Hệ thống đào tạo nội bộ © <b>PH-TINHOCGENZ</b>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+        onResetPassword={onResetPassword || (() => ({ success: false, message: 'Tính năng chưa sẵn sàng' }))}
+      />
     </div>
   );
 };

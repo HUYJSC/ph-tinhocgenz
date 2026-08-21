@@ -31,11 +31,13 @@ export interface StudentAccount {
   studentCode: string;
   classCode?: string;      // e.g. "K26-WE01", "K26-CC02", "K26-AI01"
   phone?: string;
+  email?: string;
   password?: string;
   schoolOrClass: string;
   programTrack: CurriculumTrack;
   enrolledTracks: CurriculumTrack[];
   assignedTeacherId?: string;
+  mustChangePassword?: boolean;
   role: 'student';
   createdAt: string;
 }
@@ -44,9 +46,12 @@ export interface TeacherAccount {
   id: string;
   name: string;
   teacherCode: string;
-  password?: string;
+  phone?: string;
+  email?: string;
   phoneOrEmail?: string;
+  password?: string;
   assignedTracks: CurriculumTrack[];
+  mustChangePassword?: boolean;
   role: 'teacher';
   createdAt: string;
 }
@@ -55,12 +60,18 @@ export interface UserProfile {
   id: string;
   name: string;
   email?: string;
+  phone?: string;
+  phoneOrEmail?: string;
   studentCode?: string;
+  teacherCode?: string;
+  classCode?: string;
   role: UserRole;
   avatar?: string;
   schoolOrClass?: string;
   programTrack?: CurriculumTrack;
   enrolledTracks?: CurriculumTrack[];
+  assignedTracks?: CurriculumTrack[];
+  mustChangePassword?: boolean;
   createdAt: string;
 }
 
