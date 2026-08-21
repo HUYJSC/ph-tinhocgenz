@@ -3,8 +3,9 @@ import { ClassScheduleItem, ShiftTimeSlot } from '../../types/schedule';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import {
   Calendar, MapPin, Video, User, PlusCircle, Trash2,
-  CheckCircle2, X
+  CheckCircle2, X, Edit3
 } from 'lucide-react';
+import { soundFx } from '../../utils/audio';
 
 interface ScheduleCalendarProps {
   currentUser: UserProfile;
@@ -59,7 +60,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const [formEndTime, setFormEndTime] = useState('20:30');
   const [formShift, setFormShift] = useState<ShiftTimeSlot>('evening');
   const [formRoom, setFormRoom] = useState('Phòng LAB 01 (Tầng 2)');
-  const [formMeetingUrl, setFormMeetingUrl] = useState('https://meet.google.com/ph-tinhocgenz-lab01');
+  const [formMeetingUrl, setFormMeetingUrl] = useState('https://meet.google.com/sja-vcpy-rsu');
   const [formLessonNumber, setFormLessonNumber] = useState<number>(1);
   const [formTotalLessons, setFormTotalLessons] = useState<number>(3);
   const [formNotes, setFormNotes] = useState('');
@@ -96,11 +97,32 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     setFormEndTime('20:30');
     setFormShift('evening');
     setFormRoom('Phòng LAB 01 (Tầng 2)');
-    setFormMeetingUrl('');
+    setFormMeetingUrl('https://meet.google.com/sja-vcpy-rsu');
     setFormLessonNumber(1);
     setFormTotalLessons(6);
     setFormNotes('');
     setIsCreateModalOpen(true);
+    soundFx.playClick();
+  };
+
+  const handleOpenEditModal = (sch: ClassScheduleItem) => {
+    setEditingItem(sch);
+    setFormTitle(sch.title);
+    setFormTrack(sch.track);
+    setFormClassCode(sch.classCode);
+    setFormTeacherName(sch.teacherName);
+    setFormDayOfWeek(sch.dayOfWeek);
+    setFormDate(sch.date || new Date().toISOString().split('T')[0]);
+    setFormStartTime(sch.startTime);
+    setFormEndTime(sch.endTime);
+    setFormShift(sch.shift);
+    setFormRoom(sch.room);
+    setFormMeetingUrl(sch.onlineMeetingUrl || 'https://meet.google.com/sja-vcpy-rsu');
+    setFormLessonNumber(sch.lessonNumber || 1);
+    setFormTotalLessons(sch.totalLessons || 6);
+    setFormNotes(sch.notes || '');
+    setIsCreateModalOpen(true);
+    soundFx.playClick();
   };
 
   const handleSaveSchedule = (e: React.FormEvent) => {
@@ -492,20 +514,42 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                               )}
 
                               {isStaff && (
-                                <button
-                                  onClick={() => onDeleteSchedule(sch.id)}
-                                  title="Xóa ca học này"
-                                  style={{
-                                    padding: '5px 8px',
-                                    borderRadius: '6px',
-                                    background: 'rgba(239, 68, 68, 0.1)',
-                                    color: '#ef4444',
-                                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  <Trash2 size={12} />
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => handleOpenEditModal(sch)}
+                                    title="Chỉnh sửa tiết học / ca dạy này"
+                                    style={{
+                                      padding: '5px 8px',
+                                      borderRadius: '6px',
+                                      background: 'rgba(79, 110, 247, 0.1)',
+                                      color: 'var(--brand)',
+                                      border: '1px solid rgba(79, 110, 247, 0.2)',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    <Edit3 size={12} />
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Bạn có chắc chắn muốn xóa tiết học "${sch.title}"?`)) {
+                                        onDeleteSchedule(sch.id);
+                                        soundFx.playClick();
+                                      }
+                                    }}
+                                    title="Xóa ca học này"
+                                    style={{
+                                      padding: '5px 8px',
+                                      borderRadius: '6px',
+                                      background: 'rgba(239, 68, 68, 0.1)',
+                                      color: '#ef4444',
+                                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </>
                               )}
                             </div>
                           </div>
@@ -627,14 +671,31 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     )}
 
                     {isStaff && (
-                      <button
-                        onClick={() => onDeleteSchedule(sch.id)}
-                        className="btn btn-icon"
-                        title="Xóa ca học"
-                        style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleOpenEditModal(sch)}
+                          className="btn btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 800, borderRadius: '8px', gap: '4px' }}
+                          title="Chỉnh sửa tiết học / ca dạy này"
+                        >
+                          <Edit3 size={14} />
+                          <span>Sửa Tiết Học</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (confirm(`Bạn có chắc chắn muốn xóa tiết học "${sch.title}"?`)) {
+                              onDeleteSchedule(sch.id);
+                              soundFx.playClick();
+                            }
+                          }}
+                          className="btn btn-icon"
+                          title="Xóa ca học"
+                          style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -676,7 +737,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Calendar size={20} color="#d97706" />
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Thêm Ca Học Mới Vào Thời Khóa Biểu
+                  {editingItem ? `Chỉnh Sửa Tiết Học: ${editingItem.title}` : 'Thêm Tiết Học Mới Vào Thời Khóa Biểu'}
                 </h3>
               </div>
               <button
@@ -877,7 +938,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
                   }}
                 >
-                  Lưu Ca Học
+                  {editingItem ? 'Lưu Thay Đổi Tiết Học' : 'Thêm Tiết Học Vào Lịch'}
                 </button>
               </div>
             </form>
