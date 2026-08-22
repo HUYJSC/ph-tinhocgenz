@@ -3,11 +3,11 @@ import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfi
 import { UserProfile, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import { SubjectCategory } from '../../types/quiz';
 import { parseUploadedDocument } from '../../utils/documentParser';
-import { GOOGLE_APPS_SCRIPT_CODE } from '../../utils/googleDriveService';
+import { MASTER_ADMIN_DRIVE_CONFIG } from '../../utils/googleDriveService';
 import {
   PlusCircle, Trash2,
   Bell, Lock, Unlock, Eye, X, Clock, FileText,
-  FolderOpen, Cloud, Copy, Check, ExternalLink, Link2, FileSpreadsheet,
+  FolderOpen, Cloud, ExternalLink, FileSpreadsheet,
   Search, RotateCcw
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
@@ -118,27 +118,19 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   const [gradeScore, setGradeScore] = useState<number>(85);
   const [gradeFeedback, setGradeFeedback] = useState<string>('Bài làm rất tốt, định dạng chuẩn yêu cầu.');
 
-  // Google Drive Settings State
-  const [driveFolderInput, setDriveFolderInput] = useState(googleDriveConfig?.driveFolderUrl || 'https://drive.google.com/drive/my-drive');
-  const [driveWebhookInput, setDriveWebhookInput] = useState(googleDriveConfig?.scriptWebhookUrl || '');
-  const [driveFolderNameInput, setDriveFolderNameInput] = useState(googleDriveConfig?.folderName || 'PH_TINHOCGENZ_BAI_NOP');
-  const [isCopiedScript, setIsCopiedScript] = useState(false);
+  // Master Google Drive Settings State
+  const [driveFolderInput, setDriveFolderInput] = useState(
+    googleDriveConfig?.driveFolderUrl || MASTER_ADMIN_DRIVE_CONFIG.masterFolderUrl
+  );
+  const driveFolderNameInput = googleDriveConfig?.folderName || MASTER_ADMIN_DRIVE_CONFIG.folderName;
   const [driveSaveSuccess, setDriveSaveSuccess] = useState(false);
-
-  const handleCopyScript = () => {
-    navigator.clipboard.writeText(GOOGLE_APPS_SCRIPT_CODE);
-    setIsCopiedScript(true);
-    soundFx.playClick();
-    setTimeout(() => setIsCopiedScript(false), 2500);
-  };
 
   const handleSaveDriveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     if (onUpdateGoogleDriveConfig) {
       onUpdateGoogleDriveConfig({
-        driveFolderUrl: driveFolderInput.trim() || 'https://drive.google.com/drive/my-drive',
-        scriptWebhookUrl: driveWebhookInput.trim(),
-        folderName: driveFolderNameInput.trim() || 'PH_TINHOCGENZ_BAI_NOP',
+        driveFolderUrl: driveFolderInput.trim() || MASTER_ADMIN_DRIVE_CONFIG.masterFolderUrl,
+        folderName: driveFolderNameInput || MASTER_ADMIN_DRIVE_CONFIG.folderName,
         autoSyncEnabled: true,
         lastConnectedAt: new Date().toISOString().split('T')[0]
       });
@@ -352,7 +344,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
         {[
           { id: 'manage', label: `Đề Thi (${assignments.length})`, icon: FileText },
           { id: 'submissions', label: `Bài Nộp (${submissions.length})`, icon: FolderOpen },
-          { id: 'drive_cloud', label: 'Google Drive Cloud', icon: Cloud },
+          { id: 'drive_cloud', label: 'Google Drive Tổng (Admin)', icon: Cloud },
           { id: 'create', label: 'Soạn Đề Mới', icon: PlusCircle },
           { id: 'notifications', label: `Thông Báo (${notifications.filter(n => !n.isRead).length})`, icon: Bell }
         ].map(tab => {
@@ -676,132 +668,125 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
         </div>
       )}
 
-      {/* 3. GOOGLE DRIVE CLOUD SETTINGS TAB */}
+      {/* 3. GOOGLE DRIVE MASTER CLOUD TAB */}
       {activeTab === 'drive_cloud' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }} className="animate-slide-up">
-          <div className="card" style={{ padding: '24px', border: '1.5px solid var(--accent-primary)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(37, 99, 235, 0.12)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Cloud size={24} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} className="animate-slide-up">
+          {/* Main Card: Master Drive Connection Status */}
+          <div className="card" style={{ padding: '24px', border: '1.5px solid #2563EB', background: '#FFFFFF', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '18px', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Cloud size={28} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                      Google Drive Tổng Trung Tâm (Master Academic Cloud)
+                    </h3>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '2px 8px', borderRadius: '4px', border: '1px solid #86EFAC' }}>
+                      🟢 TỰ ĐỘNG ĐỒNG BỘ 100%
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#64748B', margin: '4px 0 0' }}>
+                    Tất cả bài tập thực hành của sinh viên tự động lưu thẳng về Google Drive Tổng của Admin mà không cần bất kỳ cài đặt nào.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Cấu Hình Lưu Trữ Google Drive Của Giảng Viên
-                </h3>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                  Kết nối thư mục Google Drive để toàn bộ bài làm của học viên tự động được lưu và phân loại khoa học.
-                </p>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <a
+                  href={driveFolderInput || MASTER_ADMIN_DRIVE_CONFIG.masterFolderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    background: '#2563EB',
+                    color: '#FFFFFF',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <FolderOpen size={15} />
+                  <span>Mở Thư Mục Drive Tổng</span>
+                  <ExternalLink size={13} />
+                </a>
               </div>
             </div>
 
-            {driveSaveSuccess && (
-              <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', color: '#059669', fontSize: '0.85rem', fontWeight: 700, marginBottom: '16px' }}>
-                ✓ Đã lưu cấu hình Google Drive thành công! Các bài nộp mới sẽ tự động liên kết tới thư mục này.
-              </div>
-            )}
-
-            <form onSubmit={handleSaveDriveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                  1. Đường Dẫn Thư Mục Google Drive Của Bạn (Folder URL) *
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://drive.google.com/drive/folders/..."
-                    value={driveFolderInput}
-                    onChange={e => setDriveFolderInput(e.target.value)}
-                    style={{ flex: 1, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
-                  />
-                  {driveFolderInput && (
-                    <a
-                      href={driveFolderInput}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-secondary"
-                      style={{ padding: '10px 14px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      <FolderOpen size={15} />
-                      <span>Mở Thử</span>
-                    </a>
-                  )}
+            {/* Cloud Status Metrics Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>Tài Khoản Lưu Trữ Gốc</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                  {MASTER_ADMIN_DRIVE_CONFIG.organizationName}
                 </div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Mẹo: Mở Google Drive của bạn ➔ Tạo thư mục "PH_TINHOCGENZ_BAI_NOP" ➔ Bấm Chuột phải chọn "Chia sẻ" (hoặc lấy đường link) ➔ Dán vào ô trên.
+                <div style={{ fontSize: '11.5px', color: '#2563EB', marginTop: '2px' }}>{MASTER_ADMIN_DRIVE_CONFIG.adminEmail}</div>
+              </div>
+
+              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>Thư Mục Gốc Lưu Trữ</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                  {driveFolderNameInput || 'PH_TINHOCGENZ_MASTER_STORE'}
                 </div>
+                <div style={{ fontSize: '11.5px', color: '#16A34A', marginTop: '2px' }}>Tự phân loại theo môn & tên HV</div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                  2. Tên Thư Mục Lưu Trữ
-                </label>
-                <input
-                  type="text"
-                  placeholder="PH_TINHOCGENZ_BAI_NOP"
-                  value={driveFolderNameInput}
-                  onChange={e => setDriveFolderNameInput(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
-                />
+              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>Tổng Số Bài Nộp Đã Lưu</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                  {submissions.length} Bài Thực Hành
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>~{(submissions.length * 3.2).toFixed(1)} MB Đã Lưu</div>
               </div>
+            </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                  3. Webhook Google Apps Script (Tùy chọn tự động hóa tải file trực tiếp):
-                </label>
+            {/* Admin Settings Section (Optional link change) */}
+            <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+              <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>
+                ⚙️ Cấu Hình Đường Dẫn Drive Tổng Của Học Viện (Dành cho Admin)
+              </div>
+              <p style={{ fontSize: '12.5px', color: '#64748B', marginBottom: '12px', lineHeight: 1.4 }}>
+                Nếu Admin chuyển sang tài khoản Google Drive khác, chỉ cần dán đường dẫn Folder Drive mới tại đây một lần duy nhất. Toàn bộ giáo viên và học viên sẽ tự động chuyển sang lưu tại thư mục mới.
+              </p>
+
+              {driveSaveSuccess && (
+                <div style={{ padding: '10px 14px', borderRadius: '6px', background: '#DCFCE7', border: '1px solid #86EFAC', color: '#166534', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>
+                  ✓ Đã lưu cập nhật đường dẫn Google Drive Tổng thành công!
+                </div>
+              )}
+
+              <form onSubmit={handleSaveDriveSettings} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <input
                   type="url"
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  value={driveWebhookInput}
-                  onChange={e => setDriveWebhookInput(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none' }}
+                  required
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  value={driveFolderInput}
+                  onChange={e => setDriveFolderInput(e.target.value)}
+                  style={{ flex: 1, minWidth: '280px', padding: '9px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', outline: 'none' }}
                 />
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" className="btn btn-primary" style={{ padding: '10px 20px', fontWeight: 800 }}>
-                  Lưu Cấu Hình Google Drive
+                <button
+                  type="submit"
+                  style={{
+                    padding: '9px 18px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Lưu Cập Nhật
                 </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Apps Script Guide Card */}
-          <div className="card" style={{ padding: '22px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Link2 size={18} color="#d97706" />
-                <span>Mã Google Apps Script Tự Động Lưu File (Sao Chép 1 Chạm)</span>
-              </h4>
-
-              <button
-                onClick={handleCopyScript}
-                className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
-              >
-                {isCopiedScript ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
-                <span>{isCopiedScript ? 'Đã Sao Chép!' : 'Sao Chép Mã Script'}</span>
-              </button>
+              </form>
             </div>
-
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '10px' }}>
-              Giảng viên chỉ cần mở <a href="https://script.google.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>script.google.com</a> ➔ Bấm <b>Dự án mới</b> ➔ Dán đoạn mã bên dưới ➔ Bấm <b>Triển khai (Deploy as Web App)</b> ➔ Dán link nhận được vào ô Webhook ở trên.
-            </p>
-
-            <pre
-              style={{
-                fontFamily: 'var(--font-mono)',
-                background: '#0f172a',
-                color: '#38bdf8',
-                padding: '14px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.78rem',
-                maxHeight: '220px',
-                overflowY: 'auto'
-              }}
-            >
-              {GOOGLE_APPS_SCRIPT_CODE}
-            </pre>
           </div>
         </div>
       )}

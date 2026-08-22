@@ -425,6 +425,11 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   />
                 </div>
 
+                <div style={{ fontSize: '12px', color: '#16A34A', background: '#DCFCE7', padding: '6px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Cloud size={14} />
+                  <span>File bài làm sẽ được tự động lưu trữ vào Google Drive Tổng của Học Viện khi bấm nộp.</span>
+                </div>
+
                 {/* Big Action Submit Button */}
                 <button
                   type="button"
@@ -443,7 +448,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   }}
                 >
                   <Send size={18} />
-                  <span>Xác Nhận & Nộp Bài Lên Google Drive Giảng Viên</span>
+                  <span>Xác Nhận & Nộp Bài Lên Google Drive Học Vụ</span>
                 </button>
               </div>
             </div>
