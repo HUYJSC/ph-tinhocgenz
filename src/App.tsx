@@ -318,6 +318,8 @@ export function App() {
             onOpenInstallModal={() => setShowInstallModal(true)}
             onOpenNotices={() => setShowNoticeModal(true)}
             onOpenFeedback={() => setShowFeedbackModal(true)}
+            onOpenQRScanner={() => setShowCameraScanner(true)}
+            onOpenCheckInModal={() => setShowCheckInModal(true)}
           />
         )}
 
@@ -416,6 +418,8 @@ export function App() {
                   onOpenAssignments={() => setActiveTab('assignments')}
                   onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
                   onActiveSectionChange={(sec) => setActiveSection(sec as any)}
+                  onOpenQRScanner={() => setShowCameraScanner(true)}
+                  onOpenCheckInModal={() => setShowCheckInModal(true)}
                 />
               )}
 

@@ -5,7 +5,8 @@ import { SmartReviewService } from '../../services/smartReviewService';
 import { ClassScheduleItem } from '../../types/schedule';
 import {
   Play, BookOpen, RotateCcw, Award, CheckCircle2,
-  Calendar, Layers, BookmarkCheck, ArrowRight, Bot, Send, Check
+  Calendar, Layers, BookmarkCheck, ArrowRight, Bot, Send, Check,
+  Camera, QrCode, KeyRound
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -22,6 +23,8 @@ interface StudentOnePageDashboardProps {
   onOpenAssignments: () => void;
   onOpenAITutor: (prompt?: string) => void;
   onActiveSectionChange?: (sectionId: string) => void;
+  onOpenQRScanner?: () => void;
+  onOpenCheckInModal?: () => void;
 }
 
 export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = ({
@@ -36,7 +39,9 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   onOpenBookmarks,
   onOpenAssignments,
   onOpenAITutor,
-  onActiveSectionChange
+  onActiveSectionChange,
+  onOpenQRScanner,
+  onOpenCheckInModal
 }) => {
   const track: CurriculumTrack = currentUser.programTrack || 'office-fast-3in1';
   const trackName = TRACK_LABELS[track] || 'Tin học Văn phòng Cấp tốc';
@@ -189,6 +194,103 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
           />
         </div>
       </section>
+
+      {/* ── 1.5. KHỐI ĐIỂM DANH LỚP HỌC TRỰC TIẾP (CAMERA QR & PIN) ── */}
+      {(onOpenQRScanner || onOpenCheckInModal) && (
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1.5px solid #BFDBFE',
+            borderRadius: '8px',
+            padding: '14px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '14px',
+            boxShadow: '0 1px 3px rgba(37, 99, 235, 0.08)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '8px',
+                background: '#EFF6FF',
+                color: '#2563EB',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <QrCode size={24} />
+            </div>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
+                Điểm danh trực tiếp tại lớp học
+              </div>
+              <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>
+                Bật Camera điện thoại/laptop quét mã QR trên máy chiếu hoặc nhập PIN 6 số của giảng viên để ghi nhận chuyên cần.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {onOpenQRScanner && (
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenQRScanner();
+                }}
+                style={{
+                  padding: '9px 18px',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  background: '#2563EB',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  boxShadow: '0 1px 2px rgba(37, 99, 235, 0.25)'
+                }}
+              >
+                <Camera size={16} />
+                <span>Quét Mã QR (Camera)</span>
+              </button>
+            )}
+
+            {onOpenCheckInModal && (
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenCheckInModal();
+                }}
+                style={{
+                  padding: '9px 16px',
+                  fontSize: '13.5px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  background: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  color: '#1E293B',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <KeyRound size={15} />
+                <span>Nhập Mã PIN</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── 2. BỐ CỤC 2 CỘT CHUẨN CỔNG HỌC VỤ (66% TRỌNG TÂM / 34% ÔN TẬP & NĂNG LỰC) ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: '20px', alignItems: 'start' }}>
