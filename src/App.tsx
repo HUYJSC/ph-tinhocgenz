@@ -277,13 +277,8 @@ export function App() {
           setActiveTab={setActiveTab}
           bookmarkCount={stats.bookmarkedQuestionIds.length}
           unreadNotificationCount={unreadNotificationCount}
-          onLogout={handleLogout}
-          onOpenInstallModal={() => setShowInstallModal(true)}
-          onOpenAuthModal={handleLogout}
-          onOpenProfileModal={() => setShowProfileModal(true)}
           onOpenAITutor={() => handleOpenAITutor()}
           isAdmin={isStaff}
-          studentName={user.name}
         />
       )}
 
@@ -320,7 +315,7 @@ export function App() {
             />
           )}
 
-          {/* 2. Quiz result review */}
+          {/* 2. Quiz Result Review */}
           {activeQuiz && latestAttempt && (
             <QuizResult
               quiz={activeQuiz}
@@ -334,10 +329,11 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
-              {/* Dashboard 2026 Tab (Student) */}
+              {/* Trang chủ Tab (Student) */}
               {activeTab === 'dashboard' && (
                 <StudentDashboard2026
                   currentUser={user}
+                  streak={stats.currentStreak}
                   onNavigateToCatalog={() => setActiveTab('quizzes')}
                   onNavigateToSmartReview={() => setShowSmartReviewModal(true)}
                   onNavigateToLearningPath={() => setActiveTab('learning_path')}
@@ -513,14 +509,20 @@ export function App() {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation Bar (Hidden when taking active quiz) */}
+      {/* Mobile Bottom Navigation (Strict 5 Tabs: Home, Learn, Continue, AI, Profile) */}
       {!activeQuiz && (
         <MobileBottomNav
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          bookmarkCount={stats.bookmarkedQuestionIds.length}
-          unreadNotificationCount={unreadNotificationCount}
-          isAdmin={isStaff}
+          onOpenAITutor={() => handleOpenAITutor()}
+          onOpenProfile={() => setShowProfileModal(true)}
+          onContinueLearning={() => {
+            if (allQuizzes.length > 0) {
+              handleStartQuiz(allQuizzes[0], 'practice');
+            } else {
+              setActiveTab('quizzes');
+            }
+          }}
         />
       )}
 

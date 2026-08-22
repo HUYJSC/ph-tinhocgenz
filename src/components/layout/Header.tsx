@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
         height: 'var(--header-height)',
         minHeight: 'var(--header-height)',
         maxHeight: 'var(--header-height)',
-        padding: '0 16px',
+        padding: '0 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -57,29 +57,42 @@ export const Header: React.FC<HeaderProps> = ({
         zIndex: 40
       }}
     >
-      {/* LEFT: Track Badge & Quick AI Tutor Button */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-        {/* Track Badge */}
+      {/* ── LEFT: Mobile Logo / Desktop Track Badge ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+        {/* Mobile Logo Only */}
+        <div
+          className="show-mobile-only"
+          style={{
+            display: 'none',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <img src="/logo.png" alt="Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>TinHocGenZ</span>
+        </div>
+
+        {/* Current Course Track Badge (Desktop & Tablet) */}
         <div
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
-            padding: '3px 10px',
+            gap: '6px',
+            padding: '4px 12px',
             borderRadius: 'var(--radius-full)',
             background: 'var(--brand-light)',
             border: '1px solid rgba(79, 110, 247, 0.2)',
             color: 'var(--brand)',
-            fontSize: '0.74rem',
-            fontWeight: 800,
+            fontSize: '13px',
+            fontWeight: 600,
             whiteSpace: 'nowrap'
           }}
         >
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brand)' }} />
-          <span>{isAdmin ? '🛡️ Ban Đào Tạo & Khảo Thí' : `📘 ${trackName}`}</span>
+          <span>{isAdmin ? '🛡️ Quản trị đào tạo' : `📘 ${trackName}`}</span>
         </div>
 
-        {/* Quick AI Tutor Trigger (Tablet & Desktop) */}
+        {/* Quick AI Tutor Pill */}
         {onOpenAITutor && (
           <button
             onClick={() => {
@@ -90,67 +103,67 @@ export const Header: React.FC<HeaderProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '5px',
-              padding: '3px 10px',
+              gap: '6px',
+              padding: '4px 12px',
               borderRadius: 'var(--radius-full)',
               background: 'rgba(139, 92, 246, 0.08)',
               border: '1px solid rgba(139, 92, 246, 0.25)',
-              color: '#8b5cf6',
-              fontSize: '0.72rem',
-              fontWeight: 800,
+              color: 'var(--purple-ai)',
+              fontSize: '12px',
+              fontWeight: 600,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
           >
-            <Bot size={13} />
-            <span>Hỏi AI Tutor</span>
+            <Bot size={14} />
+            <span>AI Tutor</span>
           </button>
         )}
       </div>
 
-      {/* RIGHT: Gamification Badges + Notifications + User Dropdown */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-        {/* Streak Badge */}
+      {/* ── RIGHT: Unified Controls (Streak + XP + User Dropdown) ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+        {/* Streak Badge (Single Source of Truth) */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-            padding: '3px 8px',
+            padding: '4px 10px',
             borderRadius: 'var(--radius-full)',
             background: 'rgba(245, 158, 11, 0.09)',
             border: '1px solid rgba(245, 158, 11, 0.22)',
-            color: '#d97706',
-            fontSize: '0.72rem',
-            fontWeight: 800,
+            color: 'var(--warning)',
+            fontSize: '13px',
+            fontWeight: 600,
             whiteSpace: 'nowrap'
           }}
           title="Chuỗi ngày học liên tục"
         >
-          <Flame size={13} fill="#f59e0b" color="#d97706" />
-          <span>{streak || 3}d</span>
+          <Flame size={14} fill="#f59e0b" color="#d97706" />
+          <span>{streak || 1}d streak</span>
         </div>
 
-        {/* XP Points (Hidden on extra small screens) */}
+        {/* XP Points (Desktop only) */}
         <div
           className="hide-sm"
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-            padding: '3px 8px',
+            padding: '4px 10px',
             borderRadius: 'var(--radius-full)',
             background: 'rgba(79, 110, 247, 0.07)',
             border: '1px solid rgba(79, 110, 247, 0.18)',
             color: 'var(--accent-primary)',
-            fontSize: '0.72rem',
-            fontWeight: 800,
+            fontSize: '13px',
+            fontWeight: 600,
             whiteSpace: 'nowrap'
           }}
           title="Điểm kinh nghiệm tích lũy"
         >
-          <Award size={13} />
-          <span>{totalPoints || 120} XP</span>
+          <Award size={14} />
+          <span>{totalPoints || 0} XP</span>
         </div>
 
         {/* Admin Notification Bell */}
@@ -160,30 +173,30 @@ export const Header: React.FC<HeaderProps> = ({
               soundFx.playClick();
               onOpenNotifications();
             }}
-            title="Thông báo bài nộp mới"
+            title="Thông báo bài nộp"
             className="btn btn-icon"
             style={{
-              width: '32px',
-              height: '32px',
-              minHeight: '32px',
+              width: '36px',
+              height: '36px',
+              minHeight: '36px',
               position: 'relative',
-              color: unreadNotificationCount > 0 ? '#dc2626' : 'var(--text-secondary)'
+              color: unreadNotificationCount > 0 ? 'var(--danger)' : 'var(--text-secondary)'
             }}
           >
-            <Bell size={15} />
+            <Bell size={16} />
             {unreadNotificationCount > 0 && (
               <span
                 style={{
                   position: 'absolute',
                   top: '-2px',
                   right: '-2px',
-                  width: '14px',
-                  height: '14px',
+                  width: '15px',
+                  height: '15px',
                   borderRadius: '50%',
-                  background: '#dc2626',
+                  background: 'var(--danger)',
                   color: '#fff',
-                  fontSize: '0.55rem',
-                  fontWeight: 900,
+                  fontSize: '10px',
+                  fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -195,7 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Unified User Dropdown (Gom Profile / Theme / PWA / Logout) */}
+        {/* ── User Dropdown (Gom Profile, Password, Theme, PWA, Logout) ── */}
         <UserDropdown
           currentUser={currentUser}
           theme={theme}
@@ -203,7 +216,6 @@ export const Header: React.FC<HeaderProps> = ({
           onOpenProfile={onOpenProfileModal}
           onOpenChangePassword={onOpenChangePassword}
           onOpenInstallPWA={onOpenInstallModal}
-          onOpenAITutor={onOpenAITutor}
           onLogout={onLogout}
           isAdmin={isAdmin}
         />

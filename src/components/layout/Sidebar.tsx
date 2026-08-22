@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  BookOpen, Layers, BarChart2, PlusCircle, BookmarkCheck,
-  Shield, FileText, QrCode, ChevronDown, Calendar,
-  LayoutDashboard, GitBranch, RotateCcw, Bot, ShieldAlert
+  Home, BookOpen, Layers, BookmarkCheck,
+  Calendar, GitBranch, RotateCcw, Bot,
+  ShieldAlert, Shield, FileText, QrCode, PlusCircle,
+  ChevronDown, GraduationCap, Award, PenTool
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -26,28 +27,22 @@ interface SidebarProps {
   setActiveTab: (tab: ActiveTab) => void;
   bookmarkCount: number;
   unreadNotificationCount?: number;
-  onLogout?: () => void;
-  onOpenInstallModal: () => void;
-  onOpenAuthModal: () => void;
-  onOpenProfileModal?: () => void;
   onOpenAITutor?: () => void;
   isAdmin: boolean;
-  studentName: string;
 }
 
-interface NavItem {
+interface SubMenuItem {
   id: ActiveTab;
   label: string;
   icon: any;
-  color: string;
-  bg: string;
   count?: number;
 }
 
-interface NavSection {
+interface AccordionGroup {
   id: string;
-  title: string;
-  items: NavItem[];
+  label: string;
+  icon: any;
+  items: SubMenuItem[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -55,92 +50,100 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   bookmarkCount,
   unreadNotificationCount = 0,
-  onOpenProfileModal,
   onOpenAITutor,
-  isAdmin,
-  studentName
+  isAdmin
 }) => {
-  // Accordion open sections state (all expanded by default for quick access)
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    learn: true,
-    assess: true,
-    class: true,
-    admin_mgmt: true,
-    admin_bank: true
-  });
-
-  const toggleSection = (sectionId: string) => {
-    soundFx.playClick();
-    setOpenSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  };
-
-  // ── STUDENT ACCORDION SECTIONS (NO DUPLICATES) ──
-  const studentSections: NavSection[] = [
+  // Student Accordion Groups
+  const studentGroups: AccordionGroup[] = [
     {
-      id: 'learn',
-      title: '📘 Học Tập & Lộ Trình',
+      id: 'study',
+      label: 'Học tập',
+      icon: GraduationCap,
       items: [
-        { id: 'dashboard',    label: 'Dashboard 2026',    icon: LayoutDashboard, color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
-        { id: 'learning_path',label: 'Lộ Trình Cá Nhân',  icon: GitBranch,       color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' },
-        { id: 'smart_review', label: 'Ôn Lỗi Sai (Spaced)',icon: RotateCcw,     color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-        { id: 'flashcards',   label: 'Thẻ Ghi Nhớ',        icon: Layers,          color: '#ec4899', bg: 'rgba(236,72,153,0.1)' },
-        { id: 'bookmarks',    label: 'Câu Đã Lưu',         icon: BookmarkCheck,   color: '#6366f1', bg: 'rgba(99,102,241,0.1)', count: bookmarkCount }
+        { id: 'learning_path', label: 'Lộ trình cá nhân', icon: GitBranch },
+        { id: 'schedule',     label: 'Thời khóa biểu',   icon: Calendar },
+        { id: 'quizzes',      label: 'Khóa học của tôi', icon: BookOpen }
       ]
     },
     {
-      id: 'assess',
-      title: '📝 Khảo Thí & Thực Hành',
+      id: 'practice',
+      label: 'Luyện tập',
+      icon: RotateCcw,
       items: [
-        { id: 'quizzes',     label: 'Luyện Đề Thi Trắc Nghiệm', icon: BookOpen, color: '#2563eb', bg: 'rgba(37,99,235,0.1)' },
-        { id: 'assignments', label: 'Đề Thi MOS & Nộp Bài',      icon: FileText, color: '#10b981', bg: 'rgba(16,185,129,0.1)' }
+        { id: 'quizzes',     label: 'Luyện đề',   icon: BookOpen },
+        { id: 'smart_review', label: 'Ôn câu sai', icon: RotateCcw },
+        { id: 'flashcards',  label: 'Thẻ ghi nhớ',icon: Layers },
+        { id: 'bookmarks',   label: 'Câu đã lưu', icon: BookmarkCheck, count: bookmarkCount }
       ]
     },
     {
-      id: 'class',
-      title: '📅 Lớp Học & Tiện Ích',
+      id: 'exam',
+      label: 'Thi & Bài tập',
+      icon: FileText,
       items: [
-        { id: 'schedule',   label: 'Thời Khóa Biểu & Meet', icon: Calendar, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-        { id: 'attendance', label: 'Điểm Danh QR Code',     icon: QrCode,   color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
-        { id: 'analytics',  label: 'Báo Cáo Năng Lực',      icon: BarChart2,color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' }
+        { id: 'assignments', label: 'Bài kiểm tra', icon: FileText },
+        { id: 'quizzes',     label: 'Đề thi',       icon: Award },
+        { id: 'assignments', label: 'Nộp bài',      icon: PenTool }
       ]
     }
   ];
 
-  // ── ADMIN / TEACHER ACCORDION SECTIONS (NO DUPLICATES) ──
-  const adminSections: NavSection[] = [
+  // Admin / Teacher Accordion Groups
+  const adminGroups: AccordionGroup[] = [
     {
       id: 'admin_mgmt',
-      title: '🛡️ Quản Trị Đào Tạo',
+      label: 'Quản trị đào tạo',
+      icon: Shield,
       items: [
-        { id: 'early_warning',label: 'Cảnh Báo Sớm 🚨',   icon: ShieldAlert, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
-        { id: 'admin',        label: 'Quản Lý Học Viên',  icon: Shield,      color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
-        { id: 'attendance',   label: 'Điểm Danh Lớp (5m)',icon: QrCode,      color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
-        { id: 'assignments',  label: 'Quản Lý & Chấm Bài',icon: FileText,    color: '#10b981', bg: 'rgba(16,185,129,0.1)', count: unreadNotificationCount }
+        { id: 'early_warning',label: 'Cảnh báo sớm 🚨',   icon: ShieldAlert },
+        { id: 'admin',        label: 'Quản lý học viên',  icon: Shield },
+        { id: 'attendance',   label: 'Điểm danh lớp',     icon: QrCode },
+        { id: 'assignments',  label: 'Chấm bài & Quản lý',icon: FileText, count: unreadNotificationCount }
       ]
     },
     {
       id: 'admin_bank',
-      title: '📚 Ngân Hàng & Khảo Thí',
+      label: 'Ngân hàng & Lịch dạy',
+      icon: BookOpen,
       items: [
-        { id: 'quizzes',    label: 'Ngân Hàng Đề Thi',  icon: BookOpen,   color: '#4f6ef7', bg: 'rgba(79,110,247,0.1)' },
-        { id: 'creator',    label: 'Soạn Đề Thi Mới',   icon: PlusCircle, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
-        { id: 'schedule',   label: 'Lịch Dạy & Meet Hub',icon: Calendar,  color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-        { id: 'flashcards', label: 'Bộ Thẻ Ghi Nhớ',    icon: Layers,     color: '#ec4899', bg: 'rgba(236,72,153,0.1)' }
+        { id: 'quizzes',  label: 'Ngân hàng đề thi', icon: BookOpen },
+        { id: 'creator',  label: 'Soạn đề thi mới',  icon: PlusCircle },
+        { id: 'schedule', label: 'Lịch dạy & Meet',  icon: Calendar },
+        { id: 'flashcards',label: 'Bộ thẻ ghi nhớ',  icon: Layers }
       ]
     }
   ];
 
-  const sections = isAdmin ? adminSections : studentSections;
+  const groups = isAdmin ? adminGroups : studentGroups;
 
-  const handleSelect = (tab: ActiveTab) => {
+  // Find which group contains activeTab
+  const getActiveGroupId = (tab: ActiveTab): string => {
+    for (const g of groups) {
+      if (g.items.some(item => item.id === tab)) {
+        return g.id;
+      }
+    }
+    return 'study';
+  };
+
+  // State: Only open group is expanded (accordion style)
+  const [openGroupId, setOpenGroupId] = useState<string>(() => getActiveGroupId(activeTab));
+
+  // Auto-expand group when activeTab changes externally
+  useEffect(() => {
+    const activeG = getActiveGroupId(activeTab);
+    setOpenGroupId(activeG);
+  }, [activeTab]);
+
+  const toggleGroup = (groupId: string) => {
+    soundFx.playClick();
+    setOpenGroupId(prev => (prev === groupId ? '' : groupId));
+  };
+
+  const handleSelectTab = (tab: ActiveTab) => {
     soundFx.playClick();
     setActiveTab(tab);
   };
-
-  const initial = studentName ? studentName.charAt(0).toUpperCase() : 'H';
 
   return (
     <aside
@@ -159,25 +162,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         userSelect: 'none'
       }}
     >
-      {/* ── 1. LOGO & BRAND HEADER ── */}
+      {/* ── 1. LOGO & BRAND HEADER (64px) ── */}
       <div
         style={{
-          padding: '14px 16px',
+          height: 'var(--header-height)',
+          padding: '0 16px',
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '12px'
         }}
       >
         <div
           style={{
             width: '36px',
             height: '36px',
-            borderRadius: '10px',
+            borderRadius: 'var(--radius-sm)',
             background: '#fff',
-            padding: '3px',
+            padding: '2px',
             border: '1px solid var(--border-color)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+            boxShadow: 'var(--shadow-xs)',
             flexShrink: 0
           }}
         >
@@ -185,155 +189,124 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div>
-          <div style={{ fontSize: '0.94rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
             Tin Học GenZ
           </div>
-          <div style={{ fontSize: '0.66rem', fontWeight: 800, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            AI Platform 2026
+          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--brand)', letterSpacing: '0.02em' }}>
+            Học & Khảo Thí Online
           </div>
         </div>
       </div>
 
-      {/* ── 2. COMPACT USER PROFILE TILE ── */}
-      <div style={{ padding: '10px 12px 6px' }}>
+      {/* ── 2. NAVIGATION LIST ── */}
+      <nav
+        style={{
+          padding: '12px 12px',
+          flex: 1,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px'
+        }}
+      >
+        {/* TOP ITEM: TRANG CHỦ (44px) */}
         <button
-          onClick={onOpenProfileModal}
+          onClick={() => handleSelectTab('dashboard')}
           style={{
             width: '100%',
-            padding: '8px 10px',
-            borderRadius: '12px',
-            background: isAdmin ? 'rgba(217, 119, 6, 0.07)' : 'rgba(79, 110, 247, 0.06)',
-            border: isAdmin ? '1px solid rgba(217, 119, 6, 0.2)' : '1px solid rgba(79, 110, 247, 0.18)',
+            height: 'var(--menu-item-h)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '12px',
+            padding: '0 12px',
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            background: activeTab === 'dashboard' ? 'var(--brand-light)' : 'transparent',
+            color: activeTab === 'dashboard' ? 'var(--brand)' : 'var(--text-secondary)',
+            fontWeight: activeTab === 'dashboard' ? 600 : 500,
+            fontSize: 'var(--text-nav)',
             cursor: 'pointer',
             textAlign: 'left',
             transition: 'all 0.15s ease'
           }}
-          title="Xem thông tin chi tiết tài khoản"
         >
-          <div
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              background: isAdmin ? 'linear-gradient(135deg, #d97706, #b45309)' : 'linear-gradient(135deg, #4f6ef7, #3b82f6)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '0.76rem',
-              flexShrink: 0
-            }}
-          >
-            {isAdmin ? <Shield size={13} /> : initial}
-          </div>
-
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {studentName || 'Học Viên'}
-            </div>
-            <div style={{ fontSize: '0.62rem', color: isAdmin ? '#d97706' : '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: isAdmin ? '#d97706' : '#10b981', display: 'inline-block' }} />
-              <span>{isAdmin ? 'Giảng Viên' : 'Học Viên Online'}</span>
-            </div>
-          </div>
+          <Home size={19} color={activeTab === 'dashboard' ? 'var(--brand)' : 'var(--text-muted)'} />
+          <span style={{ flex: 1 }}>Trang chủ</span>
         </button>
-      </div>
 
-      {/* ── 3. ACCORDION NAVIGATION GROUPS ── */}
-      <nav style={{ padding: '4px 10px 14px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {sections.map(sec => {
-          const isOpen = openSections[sec.id] ?? true;
+        {/* ACCORDION GROUPS */}
+        {groups.map(group => {
+          const isExpanded = openGroupId === group.id;
+          const GroupIcon = group.icon;
+          const isGroupActive = group.items.some(i => i.id === activeTab);
 
           return (
-            <div
-              key={sec.id}
-              style={{
-                borderRadius: '12px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                overflow: 'hidden',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              {/* Accordion Header */}
+            <div key={group.id} style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Accordion Group Header (44px) */}
               <button
-                onClick={() => toggleSection(sec.id)}
+                onClick={() => toggleGroup(group.id)}
                 style={{
                   width: '100%',
-                  padding: '7px 10px',
+                  height: 'var(--menu-item-h)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  background: 'var(--bg-secondary)',
+                  padding: '0 12px',
+                  borderRadius: 'var(--radius-md)',
                   border: 'none',
+                  background: isGroupActive && !isExpanded ? 'rgba(79, 110, 247, 0.05)' : 'transparent',
+                  color: isGroupActive ? 'var(--brand)' : 'var(--text-primary)',
+                  fontWeight: 600,
+                  fontSize: 'var(--text-nav)',
                   cursor: 'pointer',
-                  fontSize: '0.68rem',
-                  fontWeight: 800,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)'
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
                 }}
               >
-                <span>{sec.title}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <GroupIcon size={19} color={isGroupActive ? 'var(--brand)' : 'var(--text-muted)'} />
+                  <span>{group.label}</span>
+                </div>
                 <ChevronDown
-                  size={13}
+                  size={16}
                   color="var(--text-muted)"
                   style={{
                     transition: 'transform 0.2s ease',
-                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
                   }}
                 />
               </button>
 
-              {/* Accordion Items List */}
-              {isOpen && (
-                <div style={{ padding: '4px 4px 6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  {sec.items.map(item => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id;
+              {/* Accordion Submenu Items (40px) */}
+              {isExpanded && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', margin: '2px 0 4px' }}>
+                  {group.items.map((item, idx) => {
+                    const SubIcon = item.icon;
+                    const isSubActive = activeTab === item.id;
 
                     return (
                       <button
-                        key={item.id}
-                        onClick={() => handleSelect(item.id)}
+                        key={`${group.id}_${item.id}_${idx}`}
+                        onClick={() => handleSelectTab(item.id)}
                         style={{
                           width: '100%',
+                          height: 'var(--submenu-item-h)',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '8px',
-                          padding: '7px 10px',
-                          borderRadius: '8px',
+                          gap: '10px',
+                          padding: '0 12px',
+                          borderRadius: 'var(--radius-sm)',
                           border: 'none',
-                          background: isActive ? item.bg : 'transparent',
-                          color: isActive ? item.color : 'var(--text-secondary)',
-                          fontWeight: isActive ? 800 : 500,
-                          fontSize: '0.78rem',
+                          background: isSubActive ? 'var(--brand-light)' : 'transparent',
+                          color: isSubActive ? 'var(--brand)' : 'var(--text-secondary)',
+                          fontWeight: isSubActive ? 600 : 500,
+                          fontSize: '13.5px',
                           cursor: 'pointer',
                           textAlign: 'left',
-                          borderLeft: isActive ? `3px solid ${item.color}` : '3px solid transparent',
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        <div
-                          style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '6px',
-                            background: isActive ? item.bg : 'var(--bg-primary)',
-                            color: item.color,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0
-                          }}
-                        >
-                          <Icon size={14} />
-                        </div>
-
+                        <SubIcon size={16} color={isSubActive ? 'var(--brand)' : 'var(--text-muted)'} />
                         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {item.label}
                         </span>
@@ -341,11 +314,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {item.count !== undefined && item.count > 0 && (
                           <span
                             style={{
-                              padding: '1px 5px',
-                              borderRadius: '999px',
-                              fontSize: '0.62rem',
-                              fontWeight: 900,
-                              background: item.color,
+                              padding: '1px 6px',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: 'var(--brand)',
                               color: '#fff'
                             }}
                           >
@@ -360,35 +333,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           );
         })}
-      </nav>
 
-      {/* ── 4. FOOTER: QUICK AI TUTOR BUTTON ── */}
-      {onOpenAITutor && (
-        <div style={{ padding: '10px 12px', borderTop: '1px solid var(--border-color)' }}>
+        {/* BOTTOM ITEM: AI TUTOR (44px) */}
+        {onOpenAITutor && (
           <button
-            onClick={onOpenAITutor}
+            onClick={() => {
+              soundFx.playClick();
+              onOpenAITutor();
+            }}
             style={{
               width: '100%',
+              height: 'var(--menu-item-h)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              padding: '8px 12px',
-              borderRadius: '10px',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(79, 110, 247, 0.05) 100%)',
-              color: '#8b5cf6',
-              fontSize: '0.78rem',
-              fontWeight: 800,
+              gap: '12px',
+              padding: '0 12px',
+              marginTop: '4px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid rgba(139, 92, 246, 0.25)',
+              background: 'rgba(139, 92, 246, 0.08)',
+              color: 'var(--purple-ai)',
+              fontWeight: 600,
+              fontSize: 'var(--text-nav)',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.1)'
+              textAlign: 'left',
+              transition: 'all 0.15s ease'
             }}
           >
-            <Bot size={15} />
-            <span>Trợ Lý AI Tutor 2026</span>
+            <Bot size={19} color="var(--purple-ai)" />
+            <span style={{ flex: 1 }}>AI Tutor</span>
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 700,
+                background: 'var(--purple-ai)',
+                color: '#fff',
+                padding: '1px 5px',
+                borderRadius: 'var(--radius-full)'
+              }}
+            >
+              AI
+            </span>
           </button>
-        </div>
-      )}
+        )}
+      </nav>
     </aside>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import {
   User, Key, Moon, Sun, Smartphone, LogOut, ChevronDown,
-  Shield, Bot
+  Shield
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -13,7 +13,6 @@ interface UserDropdownProps {
   onOpenProfile: () => void;
   onOpenChangePassword?: () => void;
   onOpenInstallPWA: () => void;
-  onOpenAITutor?: () => void;
   onLogout: () => void;
   isAdmin?: boolean;
 }
@@ -25,7 +24,6 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   onOpenProfile,
   onOpenChangePassword,
   onOpenInstallPWA,
-  onOpenAITutor,
   onLogout,
   isAdmin = false
 }) => {
@@ -33,10 +31,10 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const track: CurriculumTrack = currentUser.programTrack || 'office-fast-3in1';
-  const trackName = TRACK_LABELS[track] || 'Office Cấp Tốc (3b)';
+  const trackName = TRACK_LABELS[track] || 'Office 3b';
   const initial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'H';
 
-  // Close dropdown on outside click
+  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -59,7 +57,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
 
   return (
     <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
-      {/* Trigger Button */}
+      {/* User Dropdown Trigger (Compact Capsule) */}
       <button
         onClick={() => {
           soundFx.playClick();
@@ -69,7 +67,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          padding: '4px 10px 4px 5px',
+          padding: '4px 10px 4px 4px',
           borderRadius: 'var(--radius-full)',
           background: isAdmin ? 'rgba(217, 119, 6, 0.08)' : 'rgba(79, 110, 247, 0.08)',
           border: isOpen
@@ -77,36 +75,36 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             : isAdmin ? '1px solid rgba(217, 119, 6, 0.22)' : '1px solid rgba(79, 110, 247, 0.2)',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
-          outline: 'none'
+          outline: 'none',
+          height: '40px'
         }}
-        title="Tài khoản & Thiết lập"
+        title="Tài khoản & Cài đặt"
       >
-        {/* Avatar */}
+        {/* Avatar Circle */}
         <div
           style={{
-            width: '28px',
-            height: '28px',
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
             background: isAdmin ? 'linear-gradient(135deg, #d97706, #b45309)' : 'linear-gradient(135deg, #4f6ef7, #3b82f6)',
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: 800,
-            fontSize: '0.78rem',
-            flexShrink: 0,
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+            fontWeight: 700,
+            fontSize: '13px',
+            flexShrink: 0
           }}
         >
-          {isAdmin ? <Shield size={13} /> : initial}
+          {isAdmin ? <Shield size={15} /> : initial}
         </div>
 
-        {/* User Short Info */}
-        <div style={{ textAlign: 'left', minWidth: 0, maxWidth: '140px' }}>
+        {/* User Info (Name + Role) */}
+        <div style={{ textAlign: 'left', minWidth: 0, maxWidth: '130px' }}>
           <div
             style={{
-              fontSize: '0.78rem',
-              fontWeight: 800,
+              fontSize: '13px',
+              fontWeight: 600,
               color: 'var(--text-primary)',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -118,15 +116,15 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
           </div>
           <div
             style={{
-              fontSize: '0.62rem',
+              fontSize: '11px',
               color: isAdmin ? '#d97706' : 'var(--brand)',
-              fontWeight: 700,
+              fontWeight: 500,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis'
             }}
           >
-            {isAdmin ? 'Giảng Viên / Quản Trị' : trackName}
+            {isAdmin ? 'Giảng viên' : 'Học viên'}
           </div>
         </div>
 
@@ -149,79 +147,64 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             position: 'absolute',
             top: 'calc(100% + 8px)',
             right: 0,
-            width: '260px',
-            borderRadius: '16px',
+            width: '240px',
+            borderRadius: 'var(--radius-md)',
             padding: '8px',
             background: 'var(--bg-card)',
             border: '1px solid var(--border-color)',
-            boxShadow: '0 12px 36px rgba(0, 0, 0, 0.18)',
+            boxShadow: 'var(--shadow-lg)',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
-            gap: '3px'
+            gap: '2px'
           }}
         >
-          {/* Header Card inside Dropdown */}
+          {/* Header Block: Name + Role */}
           <div
             style={{
-              padding: '10px 12px',
-              borderRadius: '12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
+              padding: '8px 12px 10px',
+              borderBottom: '1px solid var(--border-color)',
               marginBottom: '4px'
             }}
           >
-            <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              {currentUser.name}
+            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              {currentUser.name || 'Học Viên'}
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Mã: <strong>{currentUser.studentCode || 'THGZ-01'}</strong> • {isAdmin ? 'Giảng Viên' : trackName}
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '1px' }}>
+              {isAdmin ? 'Giảng viên / Quản trị' : `Học viên • ${trackName}`}
             </div>
           </div>
 
-          {/* Item 1: Hồ sơ cá nhân */}
+          {/* Section 1: Actions */}
           <button
             onClick={() => handleAction(onOpenProfile)}
             className="btn-dropdown-item"
             style={dropdownItemStyle}
           >
-            <div style={{ ...iconBadgeStyle, background: 'rgba(79, 110, 247, 0.1)', color: 'var(--brand)' }}>
-              <User size={14} />
-            </div>
-            <span>Thông Tin Cá Nhân & Khóa Học</span>
+            <User size={15} color="var(--brand)" />
+            <span>Hồ sơ cá nhân</span>
           </button>
 
-          {/* Item 2: Đổi mật khẩu */}
           {onOpenChangePassword && (
             <button
               onClick={() => handleAction(onOpenChangePassword)}
               className="btn-dropdown-item"
               style={dropdownItemStyle}
             >
-              <div style={{ ...iconBadgeStyle, background: 'rgba(245, 158, 11, 0.1)', color: '#d97706' }}>
-                <Key size={14} />
-              </div>
-              <span>Đổi Mật Khẩu Bảo Vệ</span>
+              <Key size={15} color="#d97706" />
+              <span>Đổi mật khẩu</span>
             </button>
           )}
 
-          {/* Item 3: AI Tutor Quick Launch */}
-          {onOpenAITutor && (
-            <button
-              onClick={() => handleAction(onOpenAITutor)}
-              className="btn-dropdown-item"
-              style={dropdownItemStyle}
-            >
-              <div style={{ ...iconBadgeStyle, background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
-                <Bot size={14} />
-              </div>
-              <span>Trợ Lý AI Tutor 2026</span>
-            </button>
-          )}
+          <button
+            onClick={() => handleAction(onOpenInstallPWA)}
+            className="btn-dropdown-item"
+            style={dropdownItemStyle}
+          >
+            <Smartphone size={15} color="#06b6d4" />
+            <span>Cài ứng dụng</span>
+          </button>
 
-          <div style={{ height: '1px', background: 'var(--border-color)', margin: '4px 0' }} />
-
-          {/* Item 4: Theme Toggle */}
           <button
             onClick={() => {
               toggleTheme();
@@ -230,42 +213,26 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             className="btn-dropdown-item"
             style={dropdownItemStyle}
           >
-            <div style={{ ...iconBadgeStyle, background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-            </div>
+            {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#4f6ef7" />}
             <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Giao Diện: {theme === 'dark' ? 'Tối (Dark)' : 'Sáng (Light)'}</span>
-              <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--brand)' }}>Đổi</span>
+              <span>Chế độ {theme === 'dark' ? 'Sáng' : 'Tối'}</span>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--brand)' }}>Đổi</span>
             </div>
           </button>
 
-          {/* Item 5: Install PWA Web App */}
-          <button
-            onClick={() => handleAction(onOpenInstallPWA)}
-            className="btn-dropdown-item"
-            style={dropdownItemStyle}
-          >
-            <div style={{ ...iconBadgeStyle, background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4' }}>
-              <Smartphone size={14} />
-            </div>
-            <span>Cài Ứng Dụng (PWA)</span>
-          </button>
-
+          {/* Section 2: Divider + Logout */}
           <div style={{ height: '1px', background: 'var(--border-color)', margin: '4px 0' }} />
 
-          {/* Item 6: Logout */}
           <button
             onClick={() => handleAction(onLogout)}
             className="btn-dropdown-item"
             style={{
               ...dropdownItemStyle,
-              color: '#dc2626'
+              color: 'var(--danger)'
             }}
           >
-            <div style={{ ...iconBadgeStyle, background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626' }}>
-              <LogOut size={14} />
-            </div>
-            <span style={{ fontWeight: 800 }}>Đăng Xuất Khỏi Thiết Bị</span>
+            <LogOut size={15} color="var(--danger)" />
+            <span style={{ fontWeight: 600 }}>Đăng xuất</span>
           </button>
         </div>
       )}
@@ -278,24 +245,14 @@ const dropdownItemStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: '10px',
   padding: '8px 10px',
-  borderRadius: '10px',
+  borderRadius: 'var(--radius-sm)',
   border: 'none',
   background: 'transparent',
   color: 'var(--text-primary)',
-  fontSize: '0.78rem',
-  fontWeight: 600,
+  fontSize: '13px',
+  fontWeight: 500,
   cursor: 'pointer',
   textAlign: 'left',
   width: '100%',
   transition: 'background-color 0.15s ease'
-};
-
-const iconBadgeStyle: React.CSSProperties = {
-  width: '26px',
-  height: '26px',
-  borderRadius: '8px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0
 };

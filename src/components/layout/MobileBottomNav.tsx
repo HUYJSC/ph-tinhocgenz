@@ -1,49 +1,25 @@
 import React from 'react';
-import { BookOpen, Shield, FileText, Calendar, LayoutDashboard, GitBranch, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Home, GitBranch, Play, Bot, User } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
+import { soundFx } from '../../utils/audio';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  bookmarkCount?: number;
-  unreadNotificationCount?: number;
-  isAdmin?: boolean;
-}
-
-interface BottomNavItem {
-  id: ActiveTab;
-  label: string;
-  icon: any;
-  accentColor: string;
-  count?: number;
+  onOpenAITutor: () => void;
+  onOpenProfile: () => void;
+  onContinueLearning: () => void;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
   setActiveTab,
-  unreadNotificationCount = 0,
-  isAdmin = false
+  onOpenAITutor,
+  onOpenProfile,
+  onContinueLearning
 }) => {
-  const studentTabs: BottomNavItem[] = [
-    { id: 'dashboard',    label: 'Home',       icon: LayoutDashboard,accentColor: '#4f6ef7' },
-    { id: 'learning_path',label: 'Lộ Trình',   icon: GitBranch,      accentColor: '#8b5cf6' },
-    { id: 'quizzes',     label: 'Luyện Đề',   icon: BookOpen,       accentColor: '#2563eb' },
-    { id: 'smart_review', label: 'Ôn Lỗi Sai', icon: RotateCcw,      accentColor: '#f59e0b' },
-    { id: 'schedule',    label: 'Lịch Học',   icon: Calendar,       accentColor: '#10b981' }
-  ];
-
-  const adminTabs: BottomNavItem[] = [
-    { id: 'early_warning',label: 'Cảnh Báo 🚨',icon: ShieldAlert,    accentColor: '#ef4444' },
-    { id: 'admin',       label: 'Quản Trị',   icon: Shield,         accentColor: '#d97706' },
-    { id: 'schedule',    label: 'Lịch Học',   icon: Calendar,       accentColor: '#f59e0b' },
-    { id: 'assignments', label: 'Chấm Điểm',  icon: FileText,       accentColor: '#10b981', count: unreadNotificationCount },
-    { id: 'quizzes',     label: 'Kho Đề',     icon: BookOpen,       accentColor: '#4f6ef7' }
-  ];
-
-  const tabs: BottomNavItem[] = isAdmin ? adminTabs : studentTabs;
-
-  const handleSelect = (tab: ActiveTab) => {
-    setActiveTab(tab);
+  const handleVibrate = () => {
+    soundFx.playClick();
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try { navigator.vibrate(8); } catch (e) {}
     }
@@ -58,124 +34,164 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 'calc(56px + var(--safe-bottom))',
+        height: 'calc(58px + var(--safe-bottom))',
         paddingBottom: 'var(--safe-bottom)',
-        paddingLeft: 'max(6px, var(--safe-left))',
-        paddingRight: 'max(6px, var(--safe-right))',
+        paddingLeft: 'max(8px, var(--safe-left))',
+        paddingRight: 'max(8px, var(--safe-right))',
         background: 'var(--bg-glass)',
         backdropFilter: 'blur(24px) saturate(1.8)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
         borderTop: '1px solid var(--border-color)',
         zIndex: 90,
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.06)',
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
         justifyContent: 'space-around',
         alignItems: 'center',
         userSelect: 'none'
       }}
     >
-      {tabs.map(tab => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
+      {/* 1. Home */}
+      <button
+        onClick={() => {
+          handleVibrate();
+          setActiveTab('dashboard');
+        }}
+        style={navBtnStyle}
+      >
+        <Home
+          size={20}
+          color={activeTab === 'dashboard' ? 'var(--brand)' : 'var(--text-muted)'}
+          strokeWidth={activeTab === 'dashboard' ? 2.5 : 2}
+        />
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: activeTab === 'dashboard' ? 700 : 500,
+            color: activeTab === 'dashboard' ? 'var(--brand)' : 'var(--text-muted)'
+          }}
+        >
+          Home
+        </span>
+      </button>
 
-        return (
-          <button
-            key={tab.id}
-            onClick={() => handleSelect(tab.id as ActiveTab)}
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '2px',
-              height: '100%',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              position: 'relative',
-              padding: '4px 2px',
-              transition: 'all 0.15s ease',
-              outline: 'none',
-              minHeight: '44px'
-            }}
-          >
-            {/* Top Indicator Glow Bar */}
-            {isActive && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '28px',
-                  height: '3px',
-                  borderRadius: '0 0 3px 3px',
-                  background: tab.accentColor,
-                  boxShadow: `0 2px 8px ${tab.accentColor}`
-                }}
-              />
-            )}
+      {/* 2. Learn */}
+      <button
+        onClick={() => {
+          handleVibrate();
+          setActiveTab('learning_path');
+        }}
+        style={navBtnStyle}
+      >
+        <GitBranch
+          size={20}
+          color={activeTab === 'learning_path' ? 'var(--brand)' : 'var(--text-muted)'}
+          strokeWidth={activeTab === 'learning_path' ? 2.5 : 2}
+        />
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: activeTab === 'learning_path' ? 700 : 500,
+            color: activeTab === 'learning_path' ? 'var(--brand)' : 'var(--text-muted)'
+          }}
+        >
+          Learn
+        </span>
+      </button>
 
-            {/* Icon Box with Active Capsule */}
-            <div
-              style={{
-                position: 'relative',
-                width: '32px',
-                height: '26px',
-                borderRadius: '8px',
-                background: isActive ? `${tab.accentColor}16` : 'transparent',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: isActive ? 'scale(1.06)' : 'scale(1)'
-              }}
-            >
-              <Icon
-                size={18}
-                color={isActive ? tab.accentColor : 'var(--text-muted)'}
-                strokeWidth={isActive ? 2.5 : 2}
-              />
+      {/* 3. Continue (Prominent Center Pill) */}
+      <button
+        onClick={() => {
+          handleVibrate();
+          onContinueLearning();
+        }}
+        style={{
+          ...navBtnStyle,
+          marginTop: '-12px'
+        }}
+        title="Tiếp tục học"
+      >
+        <div
+          style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--brand) 0%, #3b82f6 100%)',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(79, 110, 247, 0.4)',
+            transform: 'scale(1.05)'
+          }}
+        >
+          <Play size={18} fill="#fff" style={{ marginLeft: '2px' }} />
+        </div>
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            color: 'var(--brand)',
+            marginTop: '2px'
+          }}
+        >
+          Continue
+        </span>
+      </button>
 
-              {/* Notification Badge */}
-              {tab.count !== undefined && tab.count > 0 && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '-3px',
-                    right: '-4px',
-                    minWidth: '14px',
-                    height: '14px',
-                    padding: '0 3px',
-                    borderRadius: 'var(--radius-full)',
-                    background: '#ef4444',
-                    color: '#ffffff',
-                    fontSize: '0.58rem',
-                    fontWeight: 900,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-                  }}
-                >
-                  {tab.count}
-                </span>
-              )}
-            </div>
+      {/* 4. AI */}
+      <button
+        onClick={() => {
+          handleVibrate();
+          onOpenAITutor();
+        }}
+        style={navBtnStyle}
+      >
+        <Bot size={20} color="var(--purple-ai)" strokeWidth={2} />
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            color: 'var(--purple-ai)'
+          }}
+        >
+          AI
+        </span>
+      </button>
 
-            {/* Tab Label */}
-            <span
-              style={{
-                fontSize: '0.66rem',
-                fontWeight: isActive ? 800 : 500,
-                color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
-                letterSpacing: '-0.01em',
-                lineHeight: 1
-              }}
-            >
-              {tab.label}
-            </span>
-          </button>
-        );
-      })}
+      {/* 5. Profile */}
+      <button
+        onClick={() => {
+          handleVibrate();
+          onOpenProfile();
+        }}
+        style={navBtnStyle}
+      >
+        <User size={20} color="var(--text-muted)" strokeWidth={2} />
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 500,
+            color: 'var(--text-muted)'
+          }}
+        >
+          Profile
+        </span>
+      </button>
     </nav>
   );
+};
+
+const navBtnStyle: React.CSSProperties = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '2px',
+  height: '100%',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '4px 2px',
+  outline: 'none',
+  minHeight: '44px'
 };

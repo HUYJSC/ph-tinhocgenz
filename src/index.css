@@ -1,66 +1,81 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  /* ── 1. TYPOGRAPHY TOKENS ── */
-  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* ── 1. TYPOGRAPHY SCALE (BE VIETNAM PRO) ── */
+  --font-sans: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --text-2xs:  0.68rem;  /* 10.2px */
-  --text-xs:   0.75rem;  /* 11.25px */
-  --text-sm:   0.84rem;  /* 12.6px */
-  --text-base: 0.92rem;  /* 13.8px */
-  --text-md:   1.02rem;  /* 15.3px */
-  --text-lg:   1.18rem;  /* 17.7px */
-  --text-xl:   1.38rem;  /* 20.7px */
-  --text-2xl:  1.68rem;  /* 25.2px */
-  --text-3xl:  2.10rem;  /* 31.5px */
+  /* Standardized Sizes */
+  --text-h1:         28px;
+  --text-h2:         20px;
+  --text-h3:         17px;
+  --text-card-title: 15px;
+  --text-body:       14px;
+  --text-nav:        14px;
+  --text-btn:        14px;
+  --text-caption:    12px;
 
+  /* Standardized Font Weights (Only 400, 500, 600, 700) */
   --weight-regular:  400;
   --weight-medium:   500;
   --weight-semibold: 600;
   --weight-bold:     700;
-  --weight-extrabold:800;
-  --weight-black:    900;
 
-  --leading-tight:  1.2;
-  --leading-normal: 1.5;
-  --leading-relaxed:1.65;
+  --leading-tight:   1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.6;
 
-  /* ── 2. SPACING SCALE TOKENS ── */
-  --space-2xs: 2px;
+  /* ── 2. 8-POINT SPACING SYSTEM (4, 8, 12, 16, 24, 32, 40, 48) ── */
+  --space-4:  4px;
+  --space-8:  8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+
+  /* Aliases for compatibility */
+  --space-2xs: 4px;
   --space-xs:  4px;
   --space-sm:  8px;
   --space-md:  12px;
   --space-lg:  16px;
-  --space-xl:  20px;
-  --space-2xl: 24px;
-  --space-3xl: 32px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
 
   /* ── 3. RADIUS SCALE TOKENS ── */
   --radius-xs:   6px;
-  --radius-sm:   10px;
-  --radius-md:   14px;
-  --radius-lg:   18px;
-  --radius-xl:   24px;
+  --radius-sm:   8px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   18px;
   --radius-full: 9999px;
 
-  /* ── 4. SAFE AREA TOKENS ── */
+  /* ── 4. GEOMETRY & LAYOUT ── */
+  --sidebar-width: 240px;
+  --header-height: 64px;
+  --menu-item-h:   44px;
+  --submenu-item-h:40px;
+
+  /* Safe Area Tokens */
   --safe-top:    env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left, 0px);
   --safe-right:  env(safe-area-inset-right, 0px);
 
-  /* ── 5. LIGHT THEME TOKENS ── */
+  /* ── 5. LIGHT THEME PALETTE ── */
   --bg-base:       #f4f7fc;
   --bg-primary:    #f4f7fc;
   --bg-secondary:  #ffffff;
   --bg-card:       #ffffff;
   --bg-card-hover: #f8faff;
-  --bg-glass:      rgba(255, 255, 255, 0.92);
-  --bg-overlay:    rgba(15, 23, 42, 0.5);
+  --bg-glass:      rgba(255, 255, 255, 0.94);
+  --bg-overlay:    rgba(15, 23, 42, 0.45);
 
-  --border-color:  #e3e8f3;
-  --border-muted:  #edf2f9;
+  --border-color:  #e2e8f0;
+  --border-muted:  #f1f5f9;
   --border-active: #4f6ef7;
 
   --text-primary:   #0f172a;
@@ -79,23 +94,21 @@
   --accent-gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   --accent-gradient-teal: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
 
-  --success:    #16a34a;
-  --success-bg: rgba(22, 163, 74, 0.08);
-  --danger:     #dc2626;
-  --danger-bg:  rgba(220, 38, 38, 0.08);
-  --warning:    #d97706;
-  --warning-bg: rgba(217, 119, 6, 0.08);
+  --success:    #10b981;
+  --success-bg: rgba(16, 185, 129, 0.08);
+  --danger:     #ef4444;
+  --danger-bg:  rgba(239, 68, 68, 0.08);
+  --warning:    #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.08);
   --info:       #4f6ef7;
+  --purple-ai:  #8b5cf6;
 
   --shadow-xs:    0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm:    0 1px 4px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.03);
-  --shadow-md:    0 4px 14px rgba(15, 23, 42, 0.07), 0 2px 5px rgba(15, 23, 42, 0.03);
-  --shadow-lg:    0 10px 25px rgba(15, 23, 42, 0.09), 0 4px 10px rgba(15, 23, 42, 0.04);
-  --shadow-glow:  0 0 20px rgba(79, 110, 247, 0.18);
+  --shadow-sm:    0 1px 4px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.02);
+  --shadow-md:    0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.03);
+  --shadow-lg:    0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-glow:  0 0 16px rgba(79, 110, 247, 0.16);
   --shadow-brand: 0 4px 14px rgba(79, 110, 247, 0.25);
-
-  --sidebar-width: 250px;
-  --header-height: 56px;
 }
 
 /* ── 6. DARK THEME TOKENS ── */
@@ -165,11 +178,54 @@ body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
-  line-height: 1.55;
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'cv02', 'cv03', 'cv11';
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ─── TYPOGRAPHY HIERARCHY (H1 28/700, H2 20/700, H3 17/600, Card 15/600, Body 14/400, Nav 14/500, Btn 14/600, Caption 12/500) ─── */
+h1 {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.card-title {
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+}
+
+.nav-item-text {
+  font-size: var(--text-nav);
+  font-weight: var(--weight-medium);
+}
+
+.caption-text {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
 }
 
 /* ─── UNIFIED TEXTBOX & INPUT SYSTEM (ALL PROJECT) ─── */
@@ -529,18 +585,25 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
-/* Smooth Horizontal Scroll Utility */
-.horizontal-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 2px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* Responsive Mobile Rules */
+.show-mobile-only {
+  display: none !important;
 }
 
-.horizontal-scroll::-webkit-scrollbar {
-  display: none;
+@media (max-width: 768px) {
+  .show-mobile-only {
+    display: flex !important;
+  }
+  .sidebar {
+    display: none !important;
+  }
+  .mobile-nav {
+    display: flex !important;
+  }
+  .app-container {
+    padding-bottom: calc(64px + var(--safe-bottom)) !important;
+  }
+  .app-header {
+    padding: 0 16px !important;
+  }
 }
