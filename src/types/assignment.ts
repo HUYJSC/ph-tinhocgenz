@@ -4,9 +4,26 @@ export type FileSourceType = 'docx' | 'doc' | 'pdf' | 'image' | 'text';
 
 export interface SecurityOptions {
   disableCopy: boolean;
-  disableDownload: boolean;
+  disableDownload: boolean; // CHẶN TUYỆT ĐỐI TẢI FILE ĐỀ THI
   watermarkStudent: boolean;
   fullscreenRequired?: boolean;
+  disableInspectPrint?: boolean;
+}
+
+export interface SampleDataFile {
+  id: string;
+  name: string;
+  size: string;
+  fileType: 'excel' | 'word' | 'powerpoint' | 'zip' | 'other';
+  downloadUrl?: string; // URL hoặc data URI để tải về máy
+  previewData?: string; // Nội dung xem trước dữ liệu mẫu trực tiếp trên web
+}
+
+export interface VideoLecture {
+  title: string;
+  videoUrl: string; // Embed YouTube / Google Drive / MP4
+  durationText?: string;
+  description?: string;
 }
 
 export interface Assignment {
@@ -19,7 +36,7 @@ export interface Assignment {
   targetClass: string;
   sourceFileName?: string;
   sourceFileType: FileSourceType;
-  rawContent: string; // Extracted text or base64 preview
+  rawContent: string; // Extracted text or preview (Hiển thị an toàn, CHẶN TẢI XUỐNG 100%)
   parsedQuestions: Array<{
     id: string;
     number: number;
@@ -33,6 +50,11 @@ export interface Assignment {
   isOpen: boolean; // Manual or scheduled toggle
   allowLateSubmission: boolean;
   securityOptions: SecurityOptions;
+
+  // New: Video Clip bài giảng & File dữ liệu mẫu (cho phép học viên xem/tải về)
+  videoLecture?: VideoLecture;
+  sampleDataFiles?: SampleDataFile[];
+
   createdAt: string;
 }
 

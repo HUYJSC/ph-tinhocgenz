@@ -326,6 +326,8 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                 studentName={currentUser.name}
                 studentCode={currentUser.studentCode || 'THGZ01'}
                 title={activeAssignment.title}
+                videoLecture={activeAssignment.videoLecture}
+                sampleDataFiles={activeAssignment.sampleDataFiles}
               />
             </div>
 

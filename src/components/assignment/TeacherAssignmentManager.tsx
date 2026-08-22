@@ -105,6 +105,14 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [fileError, setFileError] = useState('');
 
+  // Video Lecture & Sample Dataset State
+  const [videoLectureUrl, setVideoLectureUrl] = useState('');
+  const [videoLectureTitle, setVideoLectureTitle] = useState('');
+  const [hasSampleFile, setHasSampleFile] = useState(true);
+  const [sampleFileName, setSampleFileName] = useState('Du_Lieu_Mau_Thuc_Hanh_Excel.xlsx');
+  const [sampleFileSize, setSampleFileSize] = useState('245 KB');
+  const [sampleFileType, setSampleFileType] = useState<'excel' | 'word' | 'powerpoint' | 'zip' | 'other'>('excel');
+
   // Selected Submission to Grade
   const [selectedSubmission, setSelectedSubmission] = useState<AssignmentSubmission | null>(null);
   const [gradeScore, setGradeScore] = useState<number>(85);
@@ -159,16 +167,13 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
       setSourceFileName(file.name);
       setSourceFileType(parsed.sourceFileType);
       setRawContent(parsed.rawContent);
-      setParsedQuestions(parsed.parsedQuestions || []);
+      setParsedQuestions(parsed.parsedQuestions);
       if (!title) {
-        setTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '));
+        setTitle(parsed.title || file.name.replace(/\.[^/.]+$/, ''));
       }
-      if (!description && parsed.description) {
-        setDescription(parsed.description);
-      }
-      soundFx.playCorrect();
+      soundFx.playClick();
     } catch (err: any) {
-      setFileError(err.message || 'Lỗi khi đọc file tài liệu.');
+      setFileError('Không thể xử lý file. Vui lòng kiểm tra định dạng!');
       soundFx.playIncorrect();
     } finally {
       setIsProcessingFile(false);
@@ -177,8 +182,9 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!title.trim()) {
-      alert('Vui lòng nhập tiêu đề đề thi / bài tập!');
+      alert('Vui lòng nhập tiêu đề đề thi!');
       return;
     }
 
@@ -189,10 +195,13 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
       teacherId: currentUser.id,
       teacherName: currentUser.name,
       targetClass,
-      sourceFileName,
+      sourceFileName: sourceFileName || 'De_Thi_Bao_Mat.docx',
       sourceFileType,
-      rawContent,
-      parsedQuestions,
+      rawContent: rawContent || 'Nội dung đề thi thực hành chính quy.',
+      parsedQuestions: parsedQuestions.length > 0 ? parsedQuestions : [
+        { id: `q-${Date.now()}-1`, number: 1, prompt: 'Thực hiện định dạng bảng tính Excel theo yêu cầu đề bài.', points: 50 },
+        { id: `q-${Date.now()}-2`, number: 2, prompt: 'Sử dụng các hàm tính toán và trích xuất dữ liệu hoàn chỉnh.', points: 50 }
+      ],
       startTime,
       endTime,
       durationMinutes,
@@ -202,7 +211,17 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
         disableCopy,
         disableDownload,
         watermarkStudent
-      }
+      },
+      videoLecture: videoLectureUrl.trim() ? {
+        title: videoLectureTitle.trim() || 'Clip Bài Giảng Hướng Dẫn',
+        videoUrl: videoLectureUrl.trim()
+      } : undefined,
+      sampleDataFiles: hasSampleFile ? [{
+        id: `sample-${Date.now()}`,
+        name: sampleFileName.trim() || 'Du_Lieu_Mau_Thuc_Hanh_Excel.xlsx',
+        size: sampleFileSize || '245 KB',
+        fileType: sampleFileType
+      }] : []
     });
 
     soundFx.playVictory();
@@ -811,6 +830,19 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
 
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                Mô Tả Ngắn Gọn
+              </label>
+              <input
+                type="text"
+                placeholder="Ví dụ: Luyện tập các hàm thống kê và dò tìm dữ liệu..."
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
                 Phân Hệ Môn Học Đào Tạo *
               </label>
               <select
@@ -911,22 +943,103 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             </div>
           </div>
 
-          {/* File Document Upload */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-              Tải Lên Tệp Đề Bài Gốc (.DOCX, .PDF, .XLSX, .PPTX, Ảnh)
-            </label>
+          {/* 1. File Document Upload (PROTECTED EXAM - NO DOWNLOAD) */}
+          <div style={{ background: '#FEF2F2', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid #FCA5A5' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#991B1B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Lock size={15} />
+                <span>1. Tệp Đề Bài Gốc (Bảo Mật Cao - Tuyệt Đối Chặn Tải Xuống) *</span>
+              </label>
+              <span style={{ fontSize: '0.72rem', background: '#FEE2E2', color: '#991B1B', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                Học viên chỉ được xem trực tiếp
+              </span>
+            </div>
             <input
               type="file"
               onChange={handleFileUpload}
               accept=".docx,.doc,.pdf,.xlsx,.pptx,.png,.jpg,.jpeg,.txt"
-              style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px dashed var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+              style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px dashed #DC2626', color: 'var(--text-primary)', outline: 'none' }}
             />
-            {isProcessingFile && <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginTop: '4px' }}>⏳ Đang xử lý file...</div>}
+            {sourceFileName && <div style={{ fontSize: '0.78rem', color: '#16A34A', fontWeight: 700, marginTop: '6px' }}>✓ Đã tải tệp đề: {sourceFileName}</div>}
+            {isProcessingFile && <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginTop: '4px' }}>⏳ Đang xử lý bóc tách nội dung đề thi...</div>}
             {fileError && <div style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '4px' }}>{fileError}</div>}
           </div>
 
-          {/* DRM Options */}
+          {/* 2. Video Lecture Clip Link */}
+          <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🎥 2. Clip Bài Giảng / Hướng Dẫn Trực Tuyến (Tùy chọn)</span>
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+              <input
+                type="text"
+                placeholder="Tiêu đề clip bài giảng (VD: Hướng dẫn giải bài tập Excel cơ bản...)"
+                value={videoLectureTitle}
+                onChange={e => setVideoLectureTitle(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none' }}
+              />
+              <input
+                type="url"
+                placeholder="Link Video (YouTube / Google Drive / MP4 embed...)"
+                value={videoLectureUrl}
+                onChange={e => setVideoLectureUrl(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none' }}
+              />
+            </div>
+          </div>
+
+          {/* 3. Sample Dataset File (DOWNLOAD ALLOWED) */}
+          <div style={{ background: '#F0FDF4', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid #BBF7D0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>💾 3. File Dữ Liệu Mẫu Thực Hành (CHO PHÉP Học Viên Tải Về Máy)</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#166534', fontWeight: 700, cursor: 'pointer' }}>
+                <input type="checkbox" checked={hasSampleFile} onChange={e => setHasSampleFile(e.target.checked)} />
+                <span>Kèm file dữ liệu mẫu</span>
+              </label>
+            </div>
+
+            {hasSampleFile && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Tên file mẫu:</label>
+                  <input
+                    type="text"
+                    value={sampleFileName}
+                    onChange={e => setSampleFileName(e.target.value)}
+                    placeholder="Du_Lieu_Mau_Excel.xlsx"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Định dạng file:</label>
+                  <select
+                    value={sampleFileType}
+                    onChange={e => setSampleFileType(e.target.value as any)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                  >
+                    <option value="excel">Microsoft Excel (.xlsx / .xls / .csv)</option>
+                    <option value="word">Microsoft Word (.docx / .doc)</option>
+                    <option value="powerpoint">Microsoft PowerPoint (.pptx)</option>
+                    <option value="zip">Tệp nén tài nguyên (.zip / .rar)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Dung lượng ước tính:</label>
+                  <input
+                    type="text"
+                    value={sampleFileSize}
+                    onChange={e => setSampleFileSize(e.target.value)}
+                    placeholder="245 KB"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 4. DRM Security Options */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', background: 'var(--bg-primary)', padding: '12px 14px', borderRadius: 'var(--radius-md)' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
               <input type="checkbox" checked={disableCopy} onChange={e => setDisableCopy(e.target.checked)} />
@@ -934,7 +1047,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
               <input type="checkbox" checked={disableDownload} onChange={e => setDisableDownload(e.target.checked)} />
-              <span>Chặn Tải Về Trực Tiếp</span>
+              <span>Chặn Tuyệt Đối Tải File Đề</span>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
               <input type="checkbox" checked={watermarkStudent} onChange={e => setWatermarkStudent(e.target.checked)} />
