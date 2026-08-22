@@ -4,7 +4,7 @@ import { UserProfile } from '../../types/auth';
 import { SecureDocViewer } from './SecureDocViewer';
 import {
   Clock, CheckCircle2, Play, UploadCloud, Send,
-  AlertCircle, ArrowLeft, Cloud, Link2
+  AlertCircle, ArrowLeft, Cloud
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import confetti from 'canvas-confetti';
@@ -410,24 +410,9 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   </label>
                 </div>
 
-                {/* Google Drive Link Input (Optional) */}
-                <div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    <Link2 size={14} color="var(--accent-primary)" />
-                    <span>Hoặc Dán Link Google Drive Bài Làm Của Bạn (Tùy chọn):</span>
-                  </label>
-                  <input
-                    type="url"
-                    placeholder="https://drive.google.com/file/d/..."
-                    value={customDriveLink}
-                    onChange={e => setCustomDriveLink(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.86rem', outline: 'none' }}
-                  />
-                </div>
-
-                <div style={{ fontSize: '12px', color: '#16A34A', background: '#DCFCE7', padding: '6px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Cloud size={14} />
-                  <span>File bài làm sẽ được tự động lưu trữ vào Google Drive Tổng của Học Viện khi bấm nộp.</span>
+                <div style={{ fontSize: '12.5px', color: '#16A34A', background: '#DCFCE7', padding: '8px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={15} />
+                  <span>Bài làm của bạn được bảo mật và chuyển trực tiếp tới Giảng viên chấm điểm ngay sau khi nộp.</span>
                 </div>
 
                 {/* Big Action Submit Button */}
@@ -448,7 +433,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   }}
                 >
                   <Send size={18} />
-                  <span>Xác Nhận & Nộp Bài Lên Google Drive Học Vụ</span>
+                  <span>Xác Nhận & Nộp Bài Làm</span>
                 </button>
               </div>
             </div>
@@ -639,13 +624,12 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
             </div>
 
             <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '14px' }}>
-              Bạn có chắc chắn muốn nộp bài thi <b>{activeAssignment?.title}</b>? Bài làm sẽ được gửi trực tiếp lên <b>Google Drive của Giảng viên</b> để chấm điểm.
+              Bạn có chắc chắn muốn nộp bài thi <b>{activeAssignment?.title}</b>? Bài làm sẽ được chuyển an toàn tới Giảng viên để chấm điểm.
             </p>
 
             <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: 'var(--radius-md)', fontSize: '0.82rem', marginBottom: '18px' }}>
               <div>• Học viên: <b>{currentUser.name}</b> ({currentUser.studentCode})</div>
               {attachedFile && <div>• Tệp đính kèm: <b>{attachedFile.name}</b></div>}
-              {customDriveLink && <div>• Link Google Drive: <b>{customDriveLink}</b></div>}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
