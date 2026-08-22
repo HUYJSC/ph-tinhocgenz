@@ -137,6 +137,9 @@ export function App() {
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<DigitalCertificate | null>(null);
 
+  // Scroll-Spy Active Section state (Must be declared before any conditional return!)
+  const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress' | 'class' | 'risk' | 'grading' | 'mgmt'>('learn');
+
   // Sync auth name to storage stats
   useEffect(() => {
     if (user.name && user.name !== stats.studentName) {
@@ -189,6 +192,7 @@ export function App() {
     setIsSessionActive(false);
     setActiveQuiz(null);
     setLatestAttempt(null);
+    setActiveTab('dashboard');
     try {
       localStorage.removeItem(SESSION_ACTIVE_KEY);
     } catch (e) {}
@@ -267,9 +271,6 @@ export function App() {
       </div>
     );
   }
-
-  // Scroll-Spy Active Section state
-  const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress' | 'class' | 'risk' | 'grading' | 'mgmt'>('learn');
 
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
