@@ -4,7 +4,7 @@ import { UserProfile, TRACK_LABELS } from '../../types/auth';
 import {
   QrCode, Camera, CheckCircle2, AlertCircle, Clock,
   Calendar, ShieldCheck, UserCheck, CheckCheck,
-  Award, Video, ExternalLink, MapPin, Copy, Check
+  Award, MapPin
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -22,7 +22,6 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
   onOpenPinModal
 }) => {
   const [selectedTrackFilter, setSelectedTrackFilter] = useState<string>('all');
-  const [copiedMeet, setCopiedMeet] = useState(false);
 
   const studentCode = currentUser.studentCode?.trim().toLowerCase() || '';
   const studentName = currentUser.name?.trim().toLowerCase() || '';
@@ -51,16 +50,9 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
     selectedTrackFilter !== 'all' ? s.track === selectedTrackFilter : s.track === currentUser.programTrack
   ) || studentSessions[0] || sessions.find(s => s.track === currentUser.programTrack) || sessions[0];
 
-  const activeMeetUrl = activeClassSession?.onlineMeetingUrl || 'https://meet.google.com/ph-tinhocgenz-lab01';
   const activeClassTitle = activeClassSession?.className || `Lớp ${activeClassSession?.classCode || 'K26'}`;
   const activeRoomName = activeClassSession?.room || 'Phòng LAB 01 (Tầng 2)';
   const activeTeacher = activeClassSession?.teacherName || 'Giảng Viên';
-
-  const handleCopyMeet = () => {
-    navigator.clipboard.writeText(activeMeetUrl);
-    setCopiedMeet(true);
-    setTimeout(() => setCopiedMeet(false), 2000);
-  };
 
   // Calculate student statistics
   let totalClasses = studentSessions.length;
@@ -99,9 +91,9 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
         className="card"
         style={{
           padding: '24px 20px',
-          background: 'linear-gradient(135deg, rgba(79, 110, 247, 0.1) 0%, rgba(16, 185, 129, 0.08) 100%)',
-          borderRadius: 'var(--radius-xl)',
-          border: '1.5px solid rgba(79, 110, 247, 0.25)',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%)',
+          borderRadius: '8px',
+          border: '1.5px solid #2563EB',
           marginBottom: '20px',
           position: 'relative',
           overflow: 'hidden'
@@ -115,9 +107,9 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
             gap: '6px',
             padding: '3px 12px',
             borderRadius: '999px',
-            background: 'var(--brand-light)',
-            color: 'var(--brand)',
-            fontSize: '0.74rem',
+            background: '#EFF6FF',
+            color: '#2563EB',
+            fontSize: '0.78rem',
             fontWeight: 800,
             marginBottom: '10px'
           }}>
@@ -125,8 +117,8 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
             <span>HỌC VIÊN: {currentUser.name} ({currentUser.studentCode || 'THGZ01'})</span>
           </div>
 
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-            Phòng Học & Điểm Danh Trực Tuyến
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+            Điểm Danh Chuyên Cần Trực Tiếp Tại Lớp
           </h2>
 
           {/* Dedicated Classroom Info Pill */}
@@ -135,75 +127,29 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
             alignItems: 'center',
             gap: '8px',
             padding: '4px 12px',
-            borderRadius: '10px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            fontSize: '0.76rem',
+            borderRadius: '6px',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            fontSize: '0.8rem',
             fontWeight: 700,
-            color: 'var(--text-primary)',
+            color: '#0F172A',
             margin: '6px auto 14px',
             flexWrap: 'wrap',
             justifyContent: 'center'
           }}>
-            <span style={{ color: 'var(--brand)' }}>🏫 {activeClassTitle}</span>
+            <span style={{ color: '#2563EB' }}>🏫 {activeClassTitle}</span>
             <span>•</span>
-            <span style={{ color: '#10b981' }}>👨‍🏫 {activeTeacher}</span>
+            <span style={{ color: '#16A34A' }}>👨‍🏫 {activeTeacher}</span>
             <span>•</span>
-            <span style={{ color: 'var(--text-muted)' }}>📍 {activeRoomName}</span>
+            <span style={{ color: '#64748B' }}>📍 {activeRoomName}</span>
           </div>
 
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>
-            Nhấp <strong>"Vào Lớp Học Google Meet"</strong> để kết nối trực tiếp phòng học của lớp, sau đó quét mã QR hoặc nhập mã PIN 5 phút để xác nhận chuyên cần.
+          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>
+            Bật camera điện thoại hoặc laptop để quét mã QR trên màn hình máy chiếu lớp học, hoặc nhập mã PIN 6 số để ghi nhận chuyên cần.
           </p>
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '360px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <a
-                href={activeMeetUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-secondary"
-                style={{
-                  flex: 1,
-                  padding: '11px 14px',
-                  fontSize: '0.86rem',
-                  fontWeight: 800,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  textDecoration: 'none',
-                  background: 'var(--bg-card)',
-                  color: 'var(--brand)',
-                  border: '1.5px solid var(--brand)',
-                  boxShadow: '0 4px 12px rgba(79, 110, 247, 0.12)'
-                }}
-              >
-                <Video size={17} />
-                <span>Vào Google Meet 🎥</span>
-                <ExternalLink size={13} />
-              </a>
-
-              <button
-                onClick={handleCopyMeet}
-                className="btn btn-secondary"
-                title="Sao chép link Google Meet"
-                style={{
-                  width: '44px',
-                  padding: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: copiedMeet ? '#10b981' : 'var(--bg-card)',
-                  color: copiedMeet ? '#fff' : 'var(--text-secondary)',
-                  border: copiedMeet ? '1.5px solid #10b981' : '1.5px solid var(--border-color)'
-                }}
-              >
-                {copiedMeet ? <Check size={16} /> : <Copy size={16} />}
-              </button>
-            </div>
-
             <button
               onClick={() => {
                 onOpenQRScanner();
@@ -213,16 +159,18 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
               style={{
                 padding: '13px 20px',
                 fontSize: '0.95rem',
-                fontWeight: 900,
+                fontWeight: 800,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 8px 20px rgba(79, 110, 247, 0.3)'
+                borderRadius: '6px',
+                background: '#2563EB',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
               }}
             >
               <Camera size={19} />
-              <span>Mở Camera Quét Mã QR</span>
+              <span>Bật Camera Quét Mã QR</span>
             </button>
 
             <button
@@ -233,12 +181,13 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
               className="btn btn-secondary"
               style={{
                 padding: '10px 18px',
-                fontSize: '0.84rem',
+                fontSize: '0.86rem',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px'
+                gap: '6px',
+                borderRadius: '6px'
               }}
             >
               <QrCode size={16} />
@@ -405,33 +354,6 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
                           </span>
                         )}
                       </div>
-
-                      {session.onlineMeetingUrl && (
-                        <div style={{ marginTop: '6px' }}>
-                          <a
-                            href={session.onlineMeetingUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              background: 'var(--brand-light)',
-                              color: 'var(--brand)',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              textDecoration: 'none',
-                              border: '1px solid rgba(79, 110, 247, 0.2)'
-                            }}
-                          >
-                            <Video size={12} />
-                            <span>Vào Phòng Học Google Meet</span>
-                            <ExternalLink size={10} />
-                          </a>
-                        </div>
-                      )}
                     </div>
                   </div>
 

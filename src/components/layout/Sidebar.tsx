@@ -60,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Học tập & Giáo trình',
       icon: GraduationCap,
       items: [
+        { id: 'attendance',   label: 'Điểm danh & Quét QR',   icon: QrCode },
         { id: 'learning_path', label: 'Lộ trình đào tạo',       icon: GitBranch },
         { id: 'quizzes',      label: 'Khóa học & Chuyên đề',   icon: BookOpen },
         { id: 'schedule',     label: 'Thời khóa biểu lớp',     icon: Calendar }

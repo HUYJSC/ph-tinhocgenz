@@ -49,6 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const studentNavItems: { id: ActiveTab; label: string }[] = [
     { id: 'dashboard', label: 'Tổng quan' },
+    { id: 'attendance', label: 'Điểm danh lớp' },
     { id: 'learning_path', label: 'Lộ trình học' },
     { id: 'quizzes', label: 'Khóa học & Đề thi' },
     { id: 'schedule', label: 'Thời khóa biểu' },
