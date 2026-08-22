@@ -1,41 +1,81 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* ── 1. TYPOGRAPHY TOKENS ── */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Safe Area Variables (iOS & Android notched screens) */
+  --text-2xs:  0.68rem;  /* 10.2px */
+  --text-xs:   0.75rem;  /* 11.25px */
+  --text-sm:   0.84rem;  /* 12.6px */
+  --text-base: 0.92rem;  /* 13.8px */
+  --text-md:   1.02rem;  /* 15.3px */
+  --text-lg:   1.18rem;  /* 17.7px */
+  --text-xl:   1.38rem;  /* 20.7px */
+  --text-2xl:  1.68rem;  /* 25.2px */
+  --text-3xl:  2.10rem;  /* 31.5px */
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-extrabold:800;
+  --weight-black:    900;
+
+  --leading-tight:  1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.65;
+
+  /* ── 2. SPACING SCALE TOKENS ── */
+  --space-2xs: 2px;
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-lg:  16px;
+  --space-xl:  20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+
+  /* ── 3. RADIUS SCALE TOKENS ── */
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* ── 4. SAFE AREA TOKENS ── */
   --safe-top:    env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left, 0px);
   --safe-right:  env(safe-area-inset-right, 0px);
 
-  /* Light Theme */
-  --bg-base:       #f3f6fc;
-  --bg-primary:    #f3f6fc;
+  /* ── 5. LIGHT THEME TOKENS ── */
+  --bg-base:       #f4f7fc;
+  --bg-primary:    #f4f7fc;
   --bg-secondary:  #ffffff;
   --bg-card:       #ffffff;
   --bg-card-hover: #f8faff;
-  --bg-glass:      rgba(255, 255, 255, 0.88);
-  --bg-overlay:    rgba(15, 23, 42, 0.48);
+  --bg-glass:      rgba(255, 255, 255, 0.92);
+  --bg-overlay:    rgba(15, 23, 42, 0.5);
 
-  --border-color:  #e5e9f2;
-  --border-muted:  #eef1f8;
+  --border-color:  #e3e8f3;
+  --border-muted:  #edf2f9;
   --border-active: #4f6ef7;
 
-  --text-primary:   #111827;
-  --text-secondary: #4b5563;
-  --text-muted:     #9ca3af;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
   --text-inverse:   #ffffff;
 
   --brand:       #4f6ef7;
   --brand-dark:  #3b55d9;
   --brand-light: #eef2ff;
-  --brand-glow:  rgba(79, 110, 247, 0.18);
+  --brand-glow:  rgba(79, 110, 247, 0.16);
 
   --accent-primary:       #4f6ef7;
   --accent-primary-hover: #3b55d9;
-  --accent-gradient:      linear-gradient(135deg, #3b55d9 0%, #4f6ef7 55%, #6b8afb 100%);
+  --accent-gradient:      linear-gradient(135deg, #3b55d9 0%, #4f6ef7 60%, #6b8afb 100%);
   --accent-gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   --accent-gradient-teal: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
 
@@ -48,40 +88,33 @@
   --info:       #4f6ef7;
 
   --shadow-xs:    0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm:    0 1px 4px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.03);
-  --shadow-md:    0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
-  --shadow-lg:    0 10px 28px rgba(15, 23, 42, 0.1), 0 4px 10px rgba(15, 23, 42, 0.05);
-  --shadow-glow:  0 0 22px rgba(79, 110, 247, 0.2);
-  --shadow-brand: 0 4px 16px rgba(79, 110, 247, 0.28);
-
-  --radius-xs:   6px;
-  --radius-sm:   9px;
-  --radius-md:   13px;
-  --radius-lg:   18px;
-  --radius-xl:   24px;
-  --radius-full: 9999px;
+  --shadow-sm:    0 1px 4px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.03);
+  --shadow-md:    0 4px 14px rgba(15, 23, 42, 0.07), 0 2px 5px rgba(15, 23, 42, 0.03);
+  --shadow-lg:    0 10px 25px rgba(15, 23, 42, 0.09), 0 4px 10px rgba(15, 23, 42, 0.04);
+  --shadow-glow:  0 0 20px rgba(79, 110, 247, 0.18);
+  --shadow-brand: 0 4px 14px rgba(79, 110, 247, 0.25);
 
   --sidebar-width: 250px;
-  --header-height: 58px;
+  --header-height: 56px;
 }
 
-/* Dark Theme */
+/* ── 6. DARK THEME TOKENS ── */
 .dark {
-  --bg-base:       #0a0f1c;
-  --bg-primary:    #0a0f1c;
-  --bg-secondary:  #0f1626;
-  --bg-card:       #161f33;
-  --bg-card-hover: #1b2540;
-  --bg-glass:      rgba(10, 15, 28, 0.88);
-  --bg-overlay:    rgba(0, 0, 0, 0.65);
+  --bg-base:       #090d16;
+  --bg-primary:    #090d16;
+  --bg-secondary:  #0f172a;
+  --bg-card:       #131d33;
+  --bg-card-hover: #192542;
+  --bg-glass:      rgba(9, 13, 22, 0.92);
+  --bg-overlay:    rgba(0, 0, 0, 0.7);
 
   --border-color:  rgba(255, 255, 255, 0.08);
   --border-muted:  rgba(255, 255, 255, 0.04);
-  --border-active: rgba(99, 132, 251, 0.5);
+  --border-active: rgba(99, 132, 251, 0.6);
 
-  --text-primary:   #f1f5f9;
+  --text-primary:   #f8fafc;
   --text-secondary: #94a3b8;
-  --text-muted:     #4b5675;
+  --text-muted:     #4b5563;
 
   --brand:       #6384fb;
   --brand-dark:  #4f6ef7;
@@ -101,10 +134,10 @@
 
   --shadow-xs:    0 1px 3px rgba(0,0,0,0.3);
   --shadow-sm:    0 2px 8px rgba(0,0,0,0.38);
-  --shadow-md:    0 6px 20px rgba(0,0,0,0.46);
-  --shadow-lg:    0 12px 36px rgba(0,0,0,0.56);
-  --shadow-glow:  0 0 22px rgba(99, 132, 251, 0.25);
-  --shadow-brand: 0 4px 20px rgba(99, 132, 251, 0.32);
+  --shadow-md:    0 6px 18px rgba(0,0,0,0.46);
+  --shadow-lg:    0 12px 32px rgba(0,0,0,0.56);
+  --shadow-glow:  0 0 20px rgba(99, 132, 251, 0.25);
+  --shadow-brand: 0 4px 18px rgba(99, 132, 251, 0.32);
 }
 
 /* Base Reset & Global Overflow Control */
@@ -467,6 +500,18 @@ textarea {
 /* Responsive Utility */
 .desktop-inline { display: none !important; }
 @media (min-width: 769px) { .desktop-inline { display: inline !important; } }
+
+@media (max-width: 480px) {
+  .hide-xs { display: none !important; }
+}
+
+/* User Dropdown Item Hover */
+.btn-dropdown-item:hover {
+  background: var(--bg-secondary) !important;
+}
+.dark .btn-dropdown-item:hover {
+  background: var(--bg-card-hover) !important;
+}
 
 .text-gradient {
   background: var(--accent-gradient);

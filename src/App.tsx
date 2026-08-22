@@ -295,15 +295,15 @@ export function App() {
           toggleTheme={toggleTheme}
           streak={stats.currentStreak}
           totalPoints={stats.totalPoints}
-          studentName={user.name}
-          studentCode={user.studentCode}
-          programTrack={user.programTrack}
+          currentUser={user}
           isAdmin={isStaff}
           unreadNotificationCount={unreadNotificationCount}
           onLogout={handleLogout}
           onOpenNotifications={() => setActiveTab('assignments')}
-          onOpenAuthModal={handleLogout}
           onOpenProfileModal={() => setShowProfileModal(true)}
+          onOpenChangePassword={() => setShowChangePasswordModal(true)}
+          onOpenInstallModal={() => setShowInstallModal(true)}
+          onOpenAITutor={() => handleOpenAITutor()}
         />
 
         {/* Content Router */}

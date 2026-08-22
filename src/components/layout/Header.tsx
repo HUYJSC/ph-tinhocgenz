@@ -1,175 +1,212 @@
 import React from 'react';
-import { Moon, Sun, Flame, Award, Shield, Bell, LogOut, ChevronDown } from 'lucide-react';
+import { Flame, Award, Bell, Bot } from 'lucide-react';
+import { UserProfile, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
+import { UserDropdown } from './UserDropdown';
+import { soundFx } from '../../utils/audio';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
   toggleTheme: () => void;
   streak: number;
   totalPoints: number;
-  studentName: string;
-  studentCode?: string;
-  programTrack?: string;
+  currentUser: UserProfile;
   isAdmin?: boolean;
   unreadNotificationCount?: number;
-  onLogout?: () => void;
+  onLogout: () => void;
   onOpenNotifications?: () => void;
-  onOpenAuthModal?: () => void;
-  onOpenProfileModal?: () => void;
+  onOpenProfileModal: () => void;
+  onOpenChangePassword?: () => void;
+  onOpenInstallModal: () => void;
+  onOpenAITutor?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  theme, toggleTheme, streak, totalPoints, studentName,
-  programTrack, isAdmin = false,
-  unreadNotificationCount = 0, onLogout, onOpenNotifications, onOpenAuthModal, onOpenProfileModal
+  theme,
+  toggleTheme,
+  streak,
+  totalPoints,
+  currentUser,
+  isAdmin = false,
+  unreadNotificationCount = 0,
+  onLogout,
+  onOpenNotifications,
+  onOpenProfileModal,
+  onOpenChangePassword,
+  onOpenInstallModal,
+  onOpenAITutor
 }) => {
-
-  const TRACK_MAP: Record<string,string> = {
-    'office-fast-3in1': 'Office 3b',
-    'cc-cntt-basic':    'CC CNTT Cơ bản',
-    'cc-cntt-advanced': 'CC CNTT Nâng cao',
-    'cntt-basic-we':    'CNTT CB (W+E)',
-    'cntt-adv-we':      'CNTT NC (W+E)',
-    'ai-office':        'AI Văn phòng',
-    'excel-accounting': 'Excel Kế toán',
-    'word-6b':          'Word 6b',
-    'excel-6b':         'Excel 6b',
-    'ppt-6b':           'PPT 6b',
-  };
-
-  const initial = studentName ? studentName.charAt(0).toUpperCase() : 'H';
+  const track: CurriculumTrack = currentUser.programTrack || 'office-fast-3in1';
+  const trackName = TRACK_LABELS[track] || 'Office 3b';
 
   return (
-    <header className="app-header">
-      {/* LEFT: Logo + Compact User Pill with Chevron */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flexShrink: 1 }}>
-        <div style={{
-          width: '38px', height: '38px', borderRadius: '10px',
-          background: '#fff', padding: '3px',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)', flexShrink: 0
-        }}>
-          <img src="/logo.png" alt="PH - Tin Học GenZ" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+    <header
+      className="app-header"
+      style={{
+        height: 'var(--header-height)',
+        minHeight: 'var(--header-height)',
+        maxHeight: 'var(--header-height)',
+        padding: '0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border-color)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40
+      }}
+    >
+      {/* LEFT: Track Badge & Quick AI Tutor Button */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+        {/* Track Badge */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '3px 10px',
+            borderRadius: 'var(--radius-full)',
+            background: 'var(--brand-light)',
+            border: '1px solid rgba(79, 110, 247, 0.2)',
+            color: 'var(--brand)',
+            fontSize: '0.74rem',
+            fontWeight: 800,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brand)' }} />
+          <span>{isAdmin ? '🛡️ Ban Đào Tạo & Khảo Thí' : `📘 ${trackName}`}</span>
         </div>
 
-        <button
-          onClick={onOpenProfileModal || onOpenAuthModal}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '4px 8px 4px 4px',
-            borderRadius: 'var(--radius-full)',
-            background: isAdmin ? 'rgba(217,119,6,0.08)' : 'rgba(79,110,247,0.07)',
-            border: isAdmin ? '1px solid rgba(217,119,6,0.22)' : '1px solid rgba(79,110,247,0.18)',
-            cursor: 'pointer', minWidth: 0, maxWidth: '180px',
-            textAlign: 'left'
-          }}
-          title="Bấm để xem thông tin chi tiết & đổi mật khẩu"
-        >
-          <div style={{
-            width: '24px', height: '24px', borderRadius: '50%',
-            background: isAdmin ? 'linear-gradient(135deg,#d97706,#b45309)' : 'linear-gradient(135deg,#4f6ef7,#6384fb)',
-            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: '0.72rem', flexShrink: 0
-          }}>
-            {isAdmin ? <Shield size={12} /> : initial}
-          </div>
-          <div style={{ minWidth: 0, overflow: 'hidden', flex: 1 }}>
-            <div style={{
-              fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2
-            }}>
-              {studentName}
-            </div>
-            <div style={{
-              fontSize: '0.62rem', color: 'var(--text-muted)',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-            }}>
-              {isAdmin ? 'Giảng Viên' : (TRACK_MAP[programTrack || ''] || 'Đổi Môn')}
-            </div>
-          </div>
-          <ChevronDown size={13} color="var(--text-muted)" style={{ flexShrink: 0 }} />
-        </button>
+        {/* Quick AI Tutor Trigger (Tablet & Desktop) */}
+        {onOpenAITutor && (
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              onOpenAITutor();
+            }}
+            className="hide-xs"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '3px 10px',
+              borderRadius: 'var(--radius-full)',
+              background: 'rgba(139, 92, 246, 0.08)',
+              border: '1px solid rgba(139, 92, 246, 0.25)',
+              color: '#8b5cf6',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Bot size={13} />
+            <span>Hỏi AI Tutor</span>
+          </button>
+        )}
       </div>
 
-      {/* RIGHT: Compact Controls (Never Overlaps) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-        {/* Streak Pill */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '3px',
-          padding: '4px 8px', borderRadius: 'var(--radius-full)',
-          background: 'rgba(245,158,11,0.09)', border: '1px solid rgba(245,158,11,0.22)',
-          color: '#d97706', fontSize: '0.74rem', fontWeight: 800,
-          whiteSpace: 'nowrap'
-        }}>
-          <Flame size={12} fill="#f59e0b" color="#d97706" />
-          <span>{streak}d</span>
+      {/* RIGHT: Gamification Badges + Notifications + User Dropdown */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {/* Streak Badge */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '3px 8px',
+            borderRadius: 'var(--radius-full)',
+            background: 'rgba(245, 158, 11, 0.09)',
+            border: '1px solid rgba(245, 158, 11, 0.22)',
+            color: '#d97706',
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            whiteSpace: 'nowrap'
+          }}
+          title="Chuỗi ngày học liên tục"
+        >
+          <Flame size={13} fill="#f59e0b" color="#d97706" />
+          <span>{streak || 3}d</span>
         </div>
 
-        {/* XP Points (Desktop & larger mobile only) */}
-        <div className="hide-sm" style={{
-          display: 'flex', alignItems: 'center', gap: '3px',
-          padding: '4px 8px', borderRadius: 'var(--radius-full)',
-          background: 'rgba(79,110,247,0.07)', border: '1px solid rgba(79,110,247,0.18)',
-          color: 'var(--accent-primary)', fontSize: '0.74rem', fontWeight: 800,
-          whiteSpace: 'nowrap'
-        }}>
-          <Award size={12} />
-          <span>{totalPoints} XP</span>
+        {/* XP Points (Hidden on extra small screens) */}
+        <div
+          className="hide-sm"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '3px 8px',
+            borderRadius: 'var(--radius-full)',
+            background: 'rgba(79, 110, 247, 0.07)',
+            border: '1px solid rgba(79, 110, 247, 0.18)',
+            color: 'var(--accent-primary)',
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            whiteSpace: 'nowrap'
+          }}
+          title="Điểm kinh nghiệm tích lũy"
+        >
+          <Award size={13} />
+          <span>{totalPoints || 120} XP</span>
         </div>
 
-        {/* Notification Bell (Admin) */}
+        {/* Admin Notification Bell */}
         {isAdmin && onOpenNotifications && (
           <button
-            onClick={onOpenNotifications}
-            title="Thông báo"
+            onClick={() => {
+              soundFx.playClick();
+              onOpenNotifications();
+            }}
+            title="Thông báo bài nộp mới"
             className="btn btn-icon"
             style={{
-              width: '32px', height: '32px', minHeight: '32px',
+              width: '32px',
+              height: '32px',
+              minHeight: '32px',
               position: 'relative',
               color: unreadNotificationCount > 0 ? '#dc2626' : 'var(--text-secondary)'
             }}
           >
-            <Bell size={14} />
+            <Bell size={15} />
             {unreadNotificationCount > 0 && (
-              <span style={{
-                position: 'absolute', top: '-2px', right: '-2px',
-                width: '14px', height: '14px', borderRadius: '50%',
-                background: '#dc2626', color: '#fff', fontSize: '0.55rem',
-                fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-2px',
+                  right: '-2px',
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '50%',
+                  background: '#dc2626',
+                  color: '#fff',
+                  fontSize: '0.55rem',
+                  fontWeight: 900,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
                 {unreadNotificationCount}
               </span>
             )}
           </button>
         )}
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          title={theme === 'dark' ? 'Giao diện Sáng' : 'Giao diện Tối'}
-          className="btn btn-icon"
-          style={{ width: '32px', height: '32px', minHeight: '32px', color: 'var(--text-secondary)' }}
-        >
-          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-        </button>
-
-        {/* Logout */}
-        {onLogout && (
-          <button
-            onClick={onLogout}
-            title="Đăng xuất"
-            className="btn"
-            style={{
-              padding: '6px 8px', minHeight: '32px', height: '32px',
-              color: 'var(--danger)',
-              border: '1px solid rgba(220,38,38,0.2)',
-              background: 'rgba(220,38,38,0.05)',
-              gap: '4px', display: 'flex', alignItems: 'center'
-            }}
-          >
-            <LogOut size={13} />
-            <span className="desktop-inline" style={{ fontSize: '0.76rem', fontWeight: 700 }}>Đăng Xuất</span>
-          </button>
-        )}
+        {/* Unified User Dropdown (Gom Profile / Theme / PWA / Logout) */}
+        <UserDropdown
+          currentUser={currentUser}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          onOpenProfile={onOpenProfileModal}
+          onOpenChangePassword={onOpenChangePassword}
+          onOpenInstallPWA={onOpenInstallModal}
+          onOpenAITutor={onOpenAITutor}
+          onLogout={onLogout}
+          isAdmin={isAdmin}
+        />
       </div>
     </header>
   );
