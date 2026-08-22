@@ -27,7 +27,8 @@ import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { UserProfileModal } from './components/auth/UserProfileModal';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
 import { StudentOnePageDashboard } from './components/dashboard/StudentOnePageDashboard';
-import { TeacherOnePageDashboard } from './components/teacher/TeacherOnePageDashboard';
+import { TeacherAcademicHeader } from './components/layout/TeacherAcademicHeader';
+import { TeacherAcademicPortal } from './components/teacher/TeacherAcademicPortal';
 import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
 import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
 import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
@@ -276,27 +277,44 @@ export function App() {
   return (
     <div className={`app-container ${theme}`}>
       {/* Main Content Area (Zero Heavy Sidebar for both Student & Teacher) */}
-      <main className="main-content">
-        {/* Persistent Minimal Header */}
-        <Header
-          theme={theme}
-          toggleTheme={toggleTheme}
-          streak={stats.currentStreak}
-          totalPoints={stats.totalPoints}
-          currentUser={user}
-          activeSection={activeSection as any}
-          isAdmin={isStaff}
-          unreadNotificationCount={unreadNotificationCount}
-          onLogout={handleLogout}
-          onOpenNotifications={() => setActiveTab('assignments')}
-          onOpenProfileModal={() => setShowProfileModal(true)}
-          onOpenChangePassword={() => setShowChangePasswordModal(true)}
-          onOpenInstallModal={() => setShowInstallModal(true)}
-        />
+      <main className="main-content" style={{ padding: 0 }}>
+        {/* Header: Two-Tier Academic Header for Staff / Minimal Flow Header for Students */}
+        {isStaff ? (
+          <TeacherAcademicHeader
+            currentUser={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            unreadNotificationCount={unreadNotificationCount}
+            onLogout={handleLogout}
+            onOpenNotifications={() => setActiveTab('assignments')}
+            onOpenProfileModal={() => setShowProfileModal(true)}
+            onOpenChangePassword={() => setShowChangePasswordModal(true)}
+            onOpenInstallModal={() => setShowInstallModal(true)}
+            onOpenAITutor={() => handleOpenAITutor()}
+          />
+        ) : (
+          <Header
+            theme={theme}
+            toggleTheme={toggleTheme}
+            streak={stats.currentStreak}
+            totalPoints={stats.totalPoints}
+            currentUser={user}
+            activeSection={activeSection as any}
+            isAdmin={false}
+            unreadNotificationCount={unreadNotificationCount}
+            onLogout={handleLogout}
+            onOpenNotifications={() => setActiveTab('assignments')}
+            onOpenProfileModal={() => setShowProfileModal(true)}
+            onOpenChangePassword={() => setShowChangePasswordModal(true)}
+            onOpenInstallModal={() => setShowInstallModal(true)}
+          />
+        )}
 
-        {/* Optional Back to One-Page Dashboard bar for deep tabs */}
+        {/* Optional Back to Overview Bar for deep tabs in Teacher/Student views */}
         {activeTab !== 'dashboard' && !activeQuiz && (
-          <div style={{ maxWidth: '860px', margin: '0 auto', width: '100%', padding: '8px 20px 0' }}>
+          <div style={{ maxWidth: isStaff ? '1100px' : '860px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
             <button
               onClick={() => setActiveTab('dashboard')}
               style={{
@@ -304,7 +322,7 @@ export function App() {
                 border: 'none',
                 color: 'var(--brand)',
                 fontSize: '13px',
-                fontWeight: 600,
+                fontWeight: 500,
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -312,13 +330,13 @@ export function App() {
                 padding: '4px 0'
               }}
             >
-              <span>← Quay lại {isStaff ? 'Bàn Làm Việc Giảng Viên' : 'Trang Học Tập'}</span>
+              <span>← Quay lại {isStaff ? 'Tổng quan giảng dạy' : 'Trang Học Tập'}</span>
             </button>
           </div>
         )}
 
         {/* Content Router */}
-        <div style={{ flex: 1, padding: '8px 0' }}>
+        <div style={{ flex: 1, padding: 0 }}>
           {/* 1. Quiz is running */}
           {activeQuiz && !latestAttempt && (
             <QuizRunner
@@ -345,15 +363,14 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
-              {/* Teacher One-Page Dashboard */}
+              {/* Teacher Academic Portal (Modern University Academic Style) */}
               {isStaff && activeTab === 'dashboard' && (
-                <TeacherOnePageDashboard
+                <TeacherAcademicPortal
                   currentUser={user}
                   studentAccounts={studentAccounts}
                   schedules={schedules}
                   assignments={assignments}
                   submissions={submissions}
-                  unreadNotificationCount={unreadNotificationCount}
                   onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
                   onOpenEarlyWarning={() => setActiveTab('early_warning')}
                   onOpenAssignmentManager={() => setActiveTab('assignments')}
@@ -361,8 +378,6 @@ export function App() {
                   onOpenScheduleCalendar={() => setActiveTab('schedule')}
                   onOpenQuizCreator={() => setActiveTab('creator')}
                   onOpenQuizBank={() => setActiveTab('quizzes')}
-                  onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
-                  onActiveSectionChange={(sec) => setActiveSection(sec as any)}
                 />
               )}
 
