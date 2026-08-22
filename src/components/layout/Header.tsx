@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Bell } from 'lucide-react';
+import { Flame, Bell, FileText, MessageSquare } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { soundFx } from '../../utils/audio';
@@ -18,6 +18,8 @@ interface HeaderProps {
   onOpenProfileModal: () => void;
   onOpenChangePassword?: () => void;
   onOpenInstallModal: () => void;
+  onOpenNotices?: () => void;
+  onOpenFeedback?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,7 +34,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNotifications,
   onOpenProfileModal,
   onOpenChangePassword,
-  onOpenInstallModal
+  onOpenInstallModal,
+  onOpenNotices,
+  onOpenFeedback
 }) => {
   const studentNavShortcuts = [
     { id: 'learn', label: 'Giáo trình', targetId: 'section-learn' },
@@ -196,6 +200,48 @@ export const Header: React.FC<HeaderProps> = ({
                 {unreadNotificationCount}
               </span>
             )}
+          </button>
+        )}
+
+        {/* Academic Notice Board */}
+        {onOpenNotices && (
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              onOpenNotices();
+            }}
+            title="Bảng tin thông báo học vụ"
+            className="btn btn-icon"
+            style={{
+              width: '32px',
+              height: '32px',
+              minHeight: '32px',
+              color: 'var(--brand)',
+              borderRadius: 'var(--radius-sm)'
+            }}
+          >
+            <FileText size={15} />
+          </button>
+        )}
+
+        {/* Student Help Desk / Feedback */}
+        {onOpenFeedback && (
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              onOpenFeedback();
+            }}
+            title="Góp ý & Hỗ trợ học vụ"
+            className="btn btn-icon"
+            style={{
+              width: '32px',
+              height: '32px',
+              minHeight: '32px',
+              color: 'var(--text-secondary)',
+              borderRadius: 'var(--radius-sm)'
+            }}
+          >
+            <MessageSquare size={15} />
           </button>
         )}
 

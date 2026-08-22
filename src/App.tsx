@@ -41,6 +41,8 @@ import { AnalyticsService } from './services/analyticsService';
 import { Quiz, QuizAttempt } from './types/quiz';
 import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
+import { AcademicNoticeModal } from './components/modals/AcademicNoticeModal';
+import { AcademicFeedbackModal } from './components/modals/AcademicFeedbackModal';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
@@ -137,6 +139,8 @@ export function App() {
   const [showSmartReviewModal, setShowSmartReviewModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<DigitalCertificate | null>(null);
+  const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // Scroll-Spy Active Section state (Must be declared before any conditional return!)
   const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress' | 'class' | 'risk' | 'grading' | 'mgmt'>('learn');
@@ -293,6 +297,7 @@ export function App() {
             onOpenChangePassword={() => setShowChangePasswordModal(true)}
             onOpenInstallModal={() => setShowInstallModal(true)}
             onOpenAITutor={() => handleOpenAITutor()}
+            onOpenNotices={() => setShowNoticeModal(true)}
           />
         ) : (
           <Header
@@ -309,6 +314,8 @@ export function App() {
             onOpenProfileModal={() => setShowProfileModal(true)}
             onOpenChangePassword={() => setShowChangePasswordModal(true)}
             onOpenInstallModal={() => setShowInstallModal(true)}
+            onOpenNotices={() => setShowNoticeModal(true)}
+            onOpenFeedback={() => setShowFeedbackModal(true)}
           />
         )}
 
@@ -671,6 +678,20 @@ export function App() {
         onClose={() => setShowChangePasswordModal(false)}
         currentUser={user}
         onChangePassword={changeUserPassword}
+      />
+
+      {/* Official Academic Notice Board Modal */}
+      <AcademicNoticeModal
+        isOpen={showNoticeModal}
+        onClose={() => setShowNoticeModal(false)}
+      />
+
+      {/* Student Academic Help Desk & Feedback Modal */}
+      <AcademicFeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        studentName={user.name}
+        studentCode={user.studentCode || 'THGZ01'}
       />
     </div>
   );

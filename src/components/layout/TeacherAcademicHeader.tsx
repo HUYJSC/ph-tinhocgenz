@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Bot } from 'lucide-react';
+import { Bell, Bot, FileText } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { ActiveTab } from './Sidebar';
@@ -18,6 +18,7 @@ interface TeacherAcademicHeaderProps {
   onOpenChangePassword?: () => void;
   onOpenInstallModal: () => void;
   onOpenAITutor?: () => void;
+  onOpenNotices?: () => void;
 }
 
 export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
@@ -32,7 +33,8 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
   onOpenProfileModal,
   onOpenChangePassword,
   onOpenInstallModal,
-  onOpenAITutor
+  onOpenAITutor,
+  onOpenNotices
 }) => {
   const academicNavItems: { id: ActiveTab; label: string }[] = [
     { id: 'dashboard', label: 'Tổng quan' },
@@ -121,6 +123,31 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
             >
               <Bot size={14} color="#2563EB" />
               <span>Trợ lý học vụ AI</span>
+            </button>
+          )}
+
+          {/* Academic Notice Board Trigger */}
+          {onOpenNotices && (
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onOpenNotices();
+              }}
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '6px',
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#2563EB'
+              }}
+              title="Bảng tin thông báo & Biểu mẫu học vụ"
+            >
+              <FileText size={15} />
             </button>
           )}
 
