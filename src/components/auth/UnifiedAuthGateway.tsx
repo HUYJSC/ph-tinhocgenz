@@ -112,15 +112,16 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
           alignItems: 'center'
         }}
       >
-        {/* ── 1. LOGO TRỰC TIẾP (KHÔNG BACKGROUND TRẮNG, KHÔNG CARD, KHÔNG BORDER) ── */}
+        {/* ── 1. LOGO TRỰC TIẾP BO GÓC TRÒN ── */}
         <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
           <img
             src="/logo.png"
             alt="PH - Tin Học GenZ"
             style={{
-              height: '96px',
-              maxWidth: '180px',
-              objectFit: 'contain',
+              width: '92px',
+              height: '92px',
+              borderRadius: '20px',
+              objectFit: 'cover',
               display: 'block'
             }}
           />
