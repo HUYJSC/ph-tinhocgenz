@@ -5,7 +5,7 @@
 
 export const MASTER_ADMIN_DRIVE_CONFIG = {
   masterAccountName: 'PH - TIN HỌC GENZ ACADEMY MASTER CLOUD',
-  masterFolderUrl: 'https://drive.google.com/drive/folders/1ph_tinhocgenz_master_store_academic',
+  masterFolderUrl: 'https://drive.google.com/drive/folders/1LxB7Dqd8LowIiuP5TL-3JFmnGnSPhIxL?usp=drive_link',
   folderName: 'PH_TINHOCGENZ_MASTER_STORE',
   organizationName: 'PH - TIN HỌC GENZ',
   adminEmail: 'admin@tinhocgenz.io.vn',

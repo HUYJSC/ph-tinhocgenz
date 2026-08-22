@@ -87,7 +87,12 @@ export function useAssignmentStorage() {
     try {
       const saved = localStorage.getItem(DRIVE_CONFIG_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.driveFolderUrl && !parsed.driveFolderUrl.includes('1LxB7Dqd8LowIiuP5TL-3JFmnGnSPhIxL')) {
+          parsed.driveFolderUrl = MASTER_ADMIN_DRIVE_CONFIG.masterFolderUrl;
+          localStorage.setItem(DRIVE_CONFIG_KEY, JSON.stringify(parsed));
+        }
+        return parsed;
       }
     } catch (e) {
       console.error('Failed to load drive config', e);
