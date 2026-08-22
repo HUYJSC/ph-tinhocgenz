@@ -1,6 +1,6 @@
 import React from 'react';
-import { Flame, Award, Bell, Bot } from 'lucide-react';
-import { UserProfile, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
+import { Flame, Bell } from 'lucide-react';
+import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { soundFx } from '../../utils/audio';
 
@@ -10,6 +10,7 @@ interface HeaderProps {
   streak: number;
   totalPoints: number;
   currentUser: UserProfile;
+  activeSection?: 'learn' | 'review' | 'exam' | 'progress';
   isAdmin?: boolean;
   unreadNotificationCount?: number;
   onLogout: () => void;
@@ -17,26 +18,36 @@ interface HeaderProps {
   onOpenProfileModal: () => void;
   onOpenChangePassword?: () => void;
   onOpenInstallModal: () => void;
-  onOpenAITutor?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   theme,
   toggleTheme,
   streak,
-  totalPoints,
   currentUser,
+  activeSection = 'learn',
   isAdmin = false,
   unreadNotificationCount = 0,
   onLogout,
   onOpenNotifications,
   onOpenProfileModal,
   onOpenChangePassword,
-  onOpenInstallModal,
-  onOpenAITutor
+  onOpenInstallModal
 }) => {
-  const track: CurriculumTrack = currentUser.programTrack || 'office-fast-3in1';
-  const trackName = TRACK_LABELS[track] || 'Office 3b';
+  const navShortcuts = [
+    { id: 'learn', label: 'Học', targetId: 'section-learn' },
+    { id: 'review', label: 'Ôn luyện', targetId: 'section-review' },
+    { id: 'exam', label: 'Thi', targetId: 'section-exam' },
+    { id: 'progress', label: 'Tiến độ', targetId: 'section-progress' }
+  ];
+
+  const handleScrollToSection = (targetId: string) => {
+    soundFx.playClick();
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <header
@@ -51,119 +62,92 @@ export const Header: React.FC<HeaderProps> = ({
         justifyContent: 'space-between',
         background: 'var(--bg-glass)',
         backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--border-color)',
         position: 'sticky',
         top: 0,
-        zIndex: 40
+        zIndex: 50
       }}
     >
-      {/* ── LEFT: Mobile Logo / Desktop Track Badge ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-        {/* Mobile Logo Only */}
-        <div
-          className="show-mobile-only"
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <img src="/logo.png" alt="Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
-          <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>TinHocGenZ</span>
-        </div>
-
-        {/* Current Course Track Badge (Desktop & Tablet) */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '4px 12px',
-            borderRadius: 'var(--radius-full)',
-            background: 'var(--brand-light)',
-            border: '1px solid rgba(79, 110, 247, 0.2)',
-            color: 'var(--brand)',
-            fontSize: '13px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brand)' }} />
-          <span>{isAdmin ? '🛡️ Quản trị đào tạo' : `📘 ${trackName}`}</span>
-        </div>
-
-        {/* Quick AI Tutor Pill */}
-        {onOpenAITutor && (
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onOpenAITutor();
-            }}
-            className="hide-xs"
+      {/* ── LEFT: Logo Brand & Top Nav Shortcuts ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', minWidth: 0 }}>
+        {/* Brand Logo + Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          <div
             style={{
-              display: 'inline-flex',
+              width: '32px',
+              height: '32px',
+              borderRadius: 'var(--radius-sm)',
+              background: '#fff',
+              padding: '2px',
+              border: '1px solid var(--border-color)',
+              display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
-              borderRadius: 'var(--radius-full)',
-              background: 'rgba(139, 92, 246, 0.08)',
-              border: '1px solid rgba(139, 92, 246, 0.25)',
-              color: 'var(--purple-ai)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
+              justifyContent: 'center',
+              boxShadow: 'var(--shadow-xs)'
             }}
           >
-            <Bot size={14} />
-            <span>AI Tutor</span>
-          </button>
+            <img src="/logo.png" alt="PH - Tin Học GenZ" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+            PH TIN HỌC GENZ
+          </span>
+        </div>
+
+        {/* Scroll-Spy Top Navigation Shortcuts (Desktop & Tablet) */}
+        {!isAdmin && (
+          <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {navShortcuts.map(item => {
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleScrollToSection(item.targetId)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-full)',
+                    background: isActive ? 'var(--brand-light)' : 'transparent',
+                    border: 'none',
+                    color: isActive ? 'var(--brand)' : 'var(--text-secondary)',
+                    fontSize: '13.5px',
+                    fontWeight: isActive ? 600 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {isActive && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--brand)' }} />}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
         )}
       </div>
 
-      {/* ── RIGHT: Unified Controls (Streak + XP + User Dropdown) ── */}
+      {/* ── RIGHT: Minimal Controls (Streak + Notifications + User Dropdown) ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-        {/* Streak Badge (Single Source of Truth) */}
+        {/* Streak Badge (Small & Unified) */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
-            padding: '4px 10px',
+            gap: '3px',
+            padding: '3px 8px',
             borderRadius: 'var(--radius-full)',
-            background: 'rgba(245, 158, 11, 0.09)',
-            border: '1px solid rgba(245, 158, 11, 0.22)',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.2)',
             color: 'var(--warning)',
-            fontSize: '13px',
+            fontSize: '12.5px',
             fontWeight: 600,
             whiteSpace: 'nowrap'
           }}
           title="Chuỗi ngày học liên tục"
         >
-          <Flame size={14} fill="#f59e0b" color="#d97706" />
-          <span>{streak || 1}d streak</span>
-        </div>
-
-        {/* XP Points (Desktop only) */}
-        <div
-          className="hide-sm"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '4px 10px',
-            borderRadius: 'var(--radius-full)',
-            background: 'rgba(79, 110, 247, 0.07)',
-            border: '1px solid rgba(79, 110, 247, 0.18)',
-            color: 'var(--accent-primary)',
-            fontSize: '13px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap'
-          }}
-          title="Điểm kinh nghiệm tích lũy"
-        >
-          <Award size={14} />
-          <span>{totalPoints || 0} XP</span>
+          <Flame size={13} fill="#f59e0b" color="#d97706" />
+          <span>{streak || 1}</span>
         </div>
 
         {/* Admin Notification Bell */}
@@ -176,26 +160,26 @@ export const Header: React.FC<HeaderProps> = ({
             title="Thông báo bài nộp"
             className="btn btn-icon"
             style={{
-              width: '36px',
-              height: '36px',
-              minHeight: '36px',
+              width: '34px',
+              height: '34px',
+              minHeight: '34px',
               position: 'relative',
               color: unreadNotificationCount > 0 ? 'var(--danger)' : 'var(--text-secondary)'
             }}
           >
-            <Bell size={16} />
+            <Bell size={15} />
             {unreadNotificationCount > 0 && (
               <span
                 style={{
                   position: 'absolute',
                   top: '-2px',
                   right: '-2px',
-                  width: '15px',
-                  height: '15px',
+                  width: '14px',
+                  height: '14px',
                   borderRadius: '50%',
                   background: 'var(--danger)',
                   color: '#fff',
-                  fontSize: '10px',
+                  fontSize: '9px',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
@@ -208,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* ── User Dropdown (Gom Profile, Password, Theme, PWA, Logout) ── */}
+        {/* User Dropdown */}
         <UserDropdown
           currentUser={currentUser}
           theme={theme}

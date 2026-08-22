@@ -26,7 +26,7 @@ import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
 import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { UserProfileModal } from './components/auth/UserProfileModal';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
-import { StudentDashboard2026 } from './components/dashboard/StudentDashboard2026';
+import { StudentOnePageDashboard } from './components/dashboard/StudentOnePageDashboard';
 import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
 import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
 import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
@@ -267,11 +267,14 @@ export function App() {
     );
   }
 
+  // Scroll-Spy Active Section state
+  const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress'>('learn');
+
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
     <div className={`app-container ${theme}`}>
-      {/* Desktop Sidebar (hidden when taking active quiz) */}
-      {!activeQuiz && (
+      {/* Desktop Sidebar (Only for Admin/Teacher portal to manage classes) */}
+      {isStaff && !activeQuiz && (
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -284,13 +287,14 @@ export function App() {
 
       {/* Main Content Area */}
       <main className="main-content">
-        {/* Persistent Top Header */}
+        {/* Persistent Minimal Header */}
         <Header
           theme={theme}
           toggleTheme={toggleTheme}
           streak={stats.currentStreak}
           totalPoints={stats.totalPoints}
           currentUser={user}
+          activeSection={activeSection}
           isAdmin={isStaff}
           unreadNotificationCount={unreadNotificationCount}
           onLogout={handleLogout}
@@ -298,7 +302,6 @@ export function App() {
           onOpenProfileModal={() => setShowProfileModal(true)}
           onOpenChangePassword={() => setShowChangePasswordModal(true)}
           onOpenInstallModal={() => setShowInstallModal(true)}
-          onOpenAITutor={() => handleOpenAITutor()}
         />
 
         {/* Content Router */}
@@ -329,15 +332,20 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
-              {/* Trang chủ Tab (Student) */}
+              {/* Trang chủ Tab (Student One-Page Vertical Flow) */}
               {activeTab === 'dashboard' && (
-                <StudentDashboard2026
+                <StudentOnePageDashboard
                   currentUser={user}
                   streak={stats.currentStreak}
-                  onNavigateToCatalog={() => setActiveTab('quizzes')}
-                  onNavigateToSmartReview={() => setShowSmartReviewModal(true)}
-                  onNavigateToLearningPath={() => setActiveTab('learning_path')}
-                  onNavigateToAITutor={() => handleOpenAITutor()}
+                  schedules={schedules}
+                  onContinueLearning={() => {
+                    if (allQuizzes.length > 0) {
+                      handleStartQuiz(allQuizzes[0], 'practice');
+                    } else {
+                      setActiveTab('quizzes');
+                    }
+                  }}
+                  onStartSmartReview={() => setShowSmartReviewModal(true)}
                   onStartMiniTest={() => {
                     if (allQuizzes.length > 0) {
                       handleStartQuiz(allQuizzes[0], 'practice');
@@ -345,6 +353,12 @@ export function App() {
                       setActiveTab('quizzes');
                     }
                   }}
+                  onOpenLearningPath={() => setActiveTab('learning_path')}
+                  onOpenFlashcards={() => setActiveTab('flashcards')}
+                  onOpenBookmarks={() => setActiveTab('bookmarks')}
+                  onOpenAssignments={() => setActiveTab('assignments')}
+                  onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
+                  onActiveSectionChange={(sec) => setActiveSection(sec as any)}
                 />
               )}
 
@@ -509,12 +523,16 @@ export function App() {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation (Strict 5 Tabs: Home, Learn, Continue, AI, Profile) */}
-      {!activeQuiz && (
+      {/* Mobile Bottom Navigation (4 Items: Home, Learn, Continue, Profile) */}
+      {!activeQuiz && !isStaff && (
         <MobileBottomNav
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onOpenAITutor={() => handleOpenAITutor()}
+          onScrollToTop={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onScrollToLearn={() => {
+            const el = document.getElementById('section-learn');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
           onOpenProfile={() => setShowProfileModal(true)}
           onContinueLearning={() => {
             if (allQuizzes.length > 0) {

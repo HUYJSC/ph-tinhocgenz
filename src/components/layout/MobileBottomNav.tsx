@@ -1,20 +1,17 @@
 import React from 'react';
-import { Home, GitBranch, Play, Bot, User } from 'lucide-react';
-import { ActiveTab } from './Sidebar';
+import { Home, BookOpen, Play, User } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface MobileBottomNavProps {
-  activeTab: ActiveTab;
-  setActiveTab: (tab: ActiveTab) => void;
-  onOpenAITutor: () => void;
+  onScrollToTop: () => void;
+  onScrollToLearn: () => void;
   onOpenProfile: () => void;
   onContinueLearning: () => void;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
-  activeTab,
-  setActiveTab,
-  onOpenAITutor,
+  onScrollToTop,
+  onScrollToLearn,
   onOpenProfile,
   onContinueLearning
 }) => {
@@ -34,7 +31,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 'calc(58px + var(--safe-bottom))',
+        height: 'calc(56px + var(--safe-bottom))',
         paddingBottom: 'var(--safe-bottom)',
         paddingLeft: 'max(8px, var(--safe-left))',
         paddingRight: 'max(8px, var(--safe-right))',
@@ -43,7 +40,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
         borderTop: '1px solid var(--border-color)',
         zIndex: 90,
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
+        boxShadow: '0 -2px 12px rgba(0, 0, 0, 0.06)',
         justifyContent: 'space-around',
         alignItems: 'center',
         userSelect: 'none'
@@ -53,22 +50,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <button
         onClick={() => {
           handleVibrate();
-          setActiveTab('dashboard');
+          onScrollToTop();
         }}
         style={navBtnStyle}
       >
-        <Home
-          size={20}
-          color={activeTab === 'dashboard' ? 'var(--brand)' : 'var(--text-muted)'}
-          strokeWidth={activeTab === 'dashboard' ? 2.5 : 2}
-        />
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: activeTab === 'dashboard' ? 700 : 500,
-            color: activeTab === 'dashboard' ? 'var(--brand)' : 'var(--text-muted)'
-          }}
-        >
+        <Home size={19} color="var(--brand)" />
+        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--brand)' }}>
           Home
         </span>
       </button>
@@ -77,22 +64,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <button
         onClick={() => {
           handleVibrate();
-          setActiveTab('learning_path');
+          onScrollToLearn();
         }}
         style={navBtnStyle}
       >
-        <GitBranch
-          size={20}
-          color={activeTab === 'learning_path' ? 'var(--brand)' : 'var(--text-muted)'}
-          strokeWidth={activeTab === 'learning_path' ? 2.5 : 2}
-        />
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: activeTab === 'learning_path' ? 700 : 500,
-            color: activeTab === 'learning_path' ? 'var(--brand)' : 'var(--text-muted)'
-          }}
-        >
+        <BookOpen size={19} color="var(--text-secondary)" />
+        <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-secondary)' }}>
           Learn
         </span>
       </button>
@@ -105,59 +82,31 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         }}
         style={{
           ...navBtnStyle,
-          marginTop: '-12px'
+          marginTop: '-10px'
         }}
         title="Tiếp tục học"
       >
         <div
           style={{
-            width: '42px',
-            height: '42px',
+            width: '40px',
+            height: '40px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--brand) 0%, #3b82f6 100%)',
+            background: 'var(--brand)',
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(79, 110, 247, 0.4)',
-            transform: 'scale(1.05)'
+            boxShadow: '0 4px 14px rgba(79, 110, 247, 0.35)'
           }}
         >
-          <Play size={18} fill="#fff" style={{ marginLeft: '2px' }} />
+          <Play size={16} fill="#fff" style={{ marginLeft: '2px' }} />
         </div>
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: 'var(--brand)',
-            marginTop: '2px'
-          }}
-        >
+        <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--brand)', marginTop: '2px' }}>
           Continue
         </span>
       </button>
 
-      {/* 4. AI */}
-      <button
-        onClick={() => {
-          handleVibrate();
-          onOpenAITutor();
-        }}
-        style={navBtnStyle}
-      >
-        <Bot size={20} color="var(--purple-ai)" strokeWidth={2} />
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            color: 'var(--purple-ai)'
-          }}
-        >
-          AI
-        </span>
-      </button>
-
-      {/* 5. Profile */}
+      {/* 4. Profile */}
       <button
         onClick={() => {
           handleVibrate();
@@ -165,14 +114,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         }}
         style={navBtnStyle}
       >
-        <User size={20} color="var(--text-muted)" strokeWidth={2} />
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 500,
-            color: 'var(--text-muted)'
-          }}
-        >
+        <User size={19} color="var(--text-secondary)" />
+        <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-secondary)' }}>
           Profile
         </span>
       </button>
