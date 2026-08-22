@@ -37,11 +37,11 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
   const academicNavItems: { id: ActiveTab; label: string }[] = [
     { id: 'dashboard', label: 'Tổng quan' },
     { id: 'attendance', label: 'Lớp học & Điểm danh' },
-    { id: 'schedule', label: 'Lịch giảng' },
-    { id: 'assignments', label: 'Chấm bài' },
-    { id: 'admin', label: 'Học viên' },
+    { id: 'schedule', label: 'Lịch giảng dạy' },
+    { id: 'assignments', label: 'Chấm bài & Đề thi' },
+    { id: 'admin', label: 'Hồ sơ học viên' },
     { id: 'early_warning', label: 'Cảnh báo học vụ' },
-    { id: 'creator', label: 'Ngân hàng đề thi' }
+    { id: 'creator', label: 'Soạn đề thi' }
   ];
 
   return (

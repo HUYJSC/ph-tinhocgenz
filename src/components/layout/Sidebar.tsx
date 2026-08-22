@@ -3,7 +3,7 @@ import {
   Home, BookOpen, Layers, BookmarkCheck,
   Calendar, GitBranch, RotateCcw, Bot,
   ShieldAlert, Shield, FileText, QrCode, PlusCircle,
-  ChevronDown, GraduationCap, Award, PenTool
+  ChevronDown, GraduationCap
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -53,37 +53,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenAITutor,
   isAdmin
 }) => {
-  // Student Accordion Groups
+  // Student Accordion Groups (Clean, No Duplicate Navigation)
   const studentGroups: AccordionGroup[] = [
     {
       id: 'study',
-      label: 'Học tập',
+      label: 'Học tập & Giáo trình',
       icon: GraduationCap,
       items: [
-        { id: 'learning_path', label: 'Lộ trình cá nhân', icon: GitBranch },
-        { id: 'schedule',     label: 'Thời khóa biểu',   icon: Calendar },
-        { id: 'quizzes',      label: 'Khóa học của tôi', icon: BookOpen }
+        { id: 'learning_path', label: 'Lộ trình đào tạo',       icon: GitBranch },
+        { id: 'quizzes',      label: 'Khóa học & Chuyên đề',   icon: BookOpen },
+        { id: 'schedule',     label: 'Thời khóa biểu lớp',     icon: Calendar }
       ]
     },
     {
       id: 'practice',
-      label: 'Luyện tập',
+      label: 'Ôn luyện & Củng cố',
       icon: RotateCcw,
       items: [
-        { id: 'quizzes',     label: 'Luyện đề',   icon: BookOpen },
-        { id: 'smart_review', label: 'Ôn câu sai', icon: RotateCcw },
-        { id: 'flashcards',  label: 'Thẻ ghi nhớ',icon: Layers },
-        { id: 'bookmarks',   label: 'Câu đã lưu', icon: BookmarkCheck, count: bookmarkCount }
+        { id: 'smart_review', label: 'Ôn câu sai thông minh',  icon: RotateCcw },
+        { id: 'flashcards',   label: 'Thẻ ghi nhớ kiến thức', icon: Layers },
+        { id: 'bookmarks',    label: 'Câu hỏi đã đánh dấu',   icon: BookmarkCheck, count: bookmarkCount }
       ]
     },
     {
       id: 'exam',
-      label: 'Thi & Bài tập',
+      label: 'Khảo thí & Thực hành',
       icon: FileText,
       items: [
-        { id: 'assignments', label: 'Bài kiểm tra', icon: FileText },
-        { id: 'quizzes',     label: 'Đề thi',       icon: Award },
-        { id: 'assignments', label: 'Nộp bài',      icon: PenTool }
+        { id: 'assignments',  label: 'Bài tập & Nộp bài thực hành', icon: FileText }
       ]
     }
   ];
@@ -95,21 +92,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Quản trị đào tạo',
       icon: Shield,
       items: [
-        { id: 'early_warning',label: 'Cảnh báo sớm 🚨',   icon: ShieldAlert },
-        { id: 'admin',        label: 'Quản lý học viên',  icon: Shield },
-        { id: 'attendance',   label: 'Điểm danh lớp',     icon: QrCode },
-        { id: 'assignments',  label: 'Chấm bài & Quản lý',icon: FileText, count: unreadNotificationCount }
+        { id: 'early_warning',label: 'Cảnh báo học vụ sớm',    icon: ShieldAlert },
+        { id: 'admin',        label: 'Danh sách học viên',    icon: Shield },
+        { id: 'attendance',   label: 'Điểm danh lớp học',     icon: QrCode },
+        { id: 'assignments',  label: 'Chấm bài & Google Drive',icon: FileText, count: unreadNotificationCount }
       ]
     },
     {
       id: 'admin_bank',
-      label: 'Ngân hàng & Lịch dạy',
+      label: 'Học liệu & Lịch giảng',
       icon: BookOpen,
       items: [
-        { id: 'quizzes',  label: 'Ngân hàng đề thi', icon: BookOpen },
-        { id: 'creator',  label: 'Soạn đề thi mới',  icon: PlusCircle },
-        { id: 'schedule', label: 'Lịch dạy & Meet',  icon: Calendar },
-        { id: 'flashcards',label: 'Bộ thẻ ghi nhớ',  icon: Layers }
+        { id: 'quizzes',      label: 'Ngân hàng đề thi',      icon: BookOpen },
+        { id: 'creator',      label: 'Soạn đề thi mới',       icon: PlusCircle },
+        { id: 'schedule',     label: 'Lịch giảng dạy & Meet', icon: Calendar },
+        { id: 'flashcards',   label: 'Thẻ ghi nhớ học phần',  icon: Layers }
       ]
     }
   ];

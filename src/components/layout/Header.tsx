@@ -35,10 +35,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenInstallModal
 }) => {
   const studentNavShortcuts = [
-    { id: 'learn', label: 'Học', targetId: 'section-learn' },
-    { id: 'review', label: 'Ôn luyện', targetId: 'section-review' },
-    { id: 'exam', label: 'Thi', targetId: 'section-exam' },
-    { id: 'progress', label: 'Tiến độ', targetId: 'section-progress' }
+    { id: 'learn', label: 'Giáo trình', targetId: 'section-learn' },
+    { id: 'review', label: 'Ôn tập', targetId: 'section-review' },
+    { id: 'exam', label: 'Khảo thí', targetId: 'section-exam' },
+    { id: 'progress', label: 'Năng lực', targetId: 'section-progress' }
   ];
 
   const teacherNavShortcuts = [
