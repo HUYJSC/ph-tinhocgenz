@@ -5,7 +5,7 @@ import { useAssignmentStorage } from './hooks/useAssignmentStorage';
 import { useAttendanceStorage } from './hooks/useAttendanceStorage';
 import { useScheduleStorage } from './hooks/useScheduleStorage';
 import { Header } from './components/layout/Header';
-import { Sidebar, ActiveTab } from './components/layout/Sidebar';
+import { type ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { QuizCatalog } from './components/quiz/QuizCatalog';
 import { QuizRunner } from './components/quiz/QuizRunner';
@@ -27,6 +27,7 @@ import { PWAInstallModal } from './components/ui/PWAInstallModal';
 import { UserProfileModal } from './components/auth/UserProfileModal';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
 import { StudentOnePageDashboard } from './components/dashboard/StudentOnePageDashboard';
+import { TeacherOnePageDashboard } from './components/teacher/TeacherOnePageDashboard';
 import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
 import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
 import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
@@ -175,7 +176,7 @@ export function App() {
         switchStudentTrack(selectedTrack);
       }
       setIsSessionActive(true);
-      setActiveTab('early_warning');
+      setActiveTab('dashboard');
       try {
         localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
       } catch (e) {}
@@ -268,24 +269,12 @@ export function App() {
   }
 
   // Scroll-Spy Active Section state
-  const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress'>('learn');
+  const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress' | 'class' | 'risk' | 'grading' | 'mgmt'>('learn');
 
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
     <div className={`app-container ${theme}`}>
-      {/* Desktop Sidebar (Only for Admin/Teacher portal to manage classes) */}
-      {isStaff && !activeQuiz && (
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          bookmarkCount={stats.bookmarkedQuestionIds.length}
-          unreadNotificationCount={unreadNotificationCount}
-          onOpenAITutor={() => handleOpenAITutor()}
-          isAdmin={isStaff}
-        />
-      )}
-
-      {/* Main Content Area */}
+      {/* Main Content Area (Zero Heavy Sidebar for both Student & Teacher) */}
       <main className="main-content">
         {/* Persistent Minimal Header */}
         <Header
@@ -294,7 +283,7 @@ export function App() {
           streak={stats.currentStreak}
           totalPoints={stats.totalPoints}
           currentUser={user}
-          activeSection={activeSection}
+          activeSection={activeSection as any}
           isAdmin={isStaff}
           unreadNotificationCount={unreadNotificationCount}
           onLogout={handleLogout}
@@ -303,6 +292,29 @@ export function App() {
           onOpenChangePassword={() => setShowChangePasswordModal(true)}
           onOpenInstallModal={() => setShowInstallModal(true)}
         />
+
+        {/* Optional Back to One-Page Dashboard bar for deep tabs */}
+        {activeTab !== 'dashboard' && !activeQuiz && (
+          <div style={{ maxWidth: '860px', margin: '0 auto', width: '100%', padding: '8px 20px 0' }}>
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--brand)',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 0'
+              }}
+            >
+              <span>← Quay lại {isStaff ? 'Bàn Làm Việc Giảng Viên' : 'Trang Học Tập'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Content Router */}
         <div style={{ flex: 1, padding: '8px 0' }}>
@@ -332,8 +344,29 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
-              {/* Trang chủ Tab (Student One-Page Vertical Flow) */}
-              {activeTab === 'dashboard' && (
+              {/* Teacher One-Page Dashboard */}
+              {isStaff && activeTab === 'dashboard' && (
+                <TeacherOnePageDashboard
+                  currentUser={user}
+                  studentAccounts={studentAccounts}
+                  schedules={schedules}
+                  assignments={assignments}
+                  submissions={submissions}
+                  unreadNotificationCount={unreadNotificationCount}
+                  onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
+                  onOpenEarlyWarning={() => setActiveTab('early_warning')}
+                  onOpenAssignmentManager={() => setActiveTab('assignments')}
+                  onOpenAdminPortal={() => setActiveTab('admin')}
+                  onOpenScheduleCalendar={() => setActiveTab('schedule')}
+                  onOpenQuizCreator={() => setActiveTab('creator')}
+                  onOpenQuizBank={() => setActiveTab('quizzes')}
+                  onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
+                  onActiveSectionChange={(sec) => setActiveSection(sec as any)}
+                />
+              )}
+
+              {/* Student One-Page Vertical Learning Flow */}
+              {!isStaff && activeTab === 'dashboard' && (
                 <StudentOnePageDashboard
                   currentUser={user}
                   streak={stats.currentStreak}

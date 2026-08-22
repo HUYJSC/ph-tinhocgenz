@@ -34,12 +34,21 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenChangePassword,
   onOpenInstallModal
 }) => {
-  const navShortcuts = [
+  const studentNavShortcuts = [
     { id: 'learn', label: 'Học', targetId: 'section-learn' },
     { id: 'review', label: 'Ôn luyện', targetId: 'section-review' },
     { id: 'exam', label: 'Thi', targetId: 'section-exam' },
     { id: 'progress', label: 'Tiến độ', targetId: 'section-progress' }
   ];
+
+  const teacherNavShortcuts = [
+    { id: 'class', label: 'Lớp học', targetId: 'section-teacher-class' },
+    { id: 'risk', label: 'Cảnh báo', targetId: 'section-teacher-risk' },
+    { id: 'grading', label: 'Chấm bài', targetId: 'section-teacher-grading' },
+    { id: 'mgmt', label: 'Quản lý', targetId: 'section-teacher-mgmt' }
+  ];
+
+  const navShortcuts = isAdmin ? teacherNavShortcuts : studentNavShortcuts;
 
   const handleScrollToSection = (targetId: string) => {
     soundFx.playClick();
@@ -70,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
       }}
     >
       {/* ── LEFT: Logo Brand & Top Nav Shortcuts ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', minWidth: 0 }}>
         {/* Brand Logo + Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           <div
@@ -95,36 +104,34 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Scroll-Spy Top Navigation Shortcuts (Desktop & Tablet) */}
-        {!isAdmin && (
-          <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {navShortcuts.map(item => {
-              const isActive = activeSection === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleScrollToSection(item.targetId)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 10px',
-                    borderRadius: 'var(--radius-full)',
-                    background: isActive ? 'var(--brand-light)' : 'transparent',
-                    border: 'none',
-                    color: isActive ? 'var(--brand)' : 'var(--text-secondary)',
-                    fontSize: '13.5px',
-                    fontWeight: isActive ? 600 : 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {isActive && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--brand)' }} />}
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        )}
+        <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {navShortcuts.map(item => {
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleScrollToSection(item.targetId)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-full)',
+                  background: isActive ? (isAdmin ? 'rgba(217, 119, 6, 0.1)' : 'var(--brand-light)') : 'transparent',
+                  border: 'none',
+                  color: isActive ? (isAdmin ? '#d97706' : 'var(--brand)') : 'var(--text-secondary)',
+                  fontSize: '13.5px',
+                  fontWeight: isActive ? 600 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {isActive && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: isAdmin ? '#d97706' : 'var(--brand)' }} />}
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       {/* ── RIGHT: Minimal Controls (Streak + Notifications + User Dropdown) ── */}
