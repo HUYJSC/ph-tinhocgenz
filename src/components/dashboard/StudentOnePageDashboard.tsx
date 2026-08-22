@@ -89,13 +89,12 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
     };
   }, [onActiveSectionChange]);
 
-  // Gợi ý câu hỏi trợ lý AI phù hợp theo ngữ cảnh bài học
   const getAiPlaceholder = () => {
     switch (activeSection) {
       case 'learn':
-        return 'Đặt câu hỏi về cú pháp hàm XLOOKUP hoặc lý thuyết bài học...';
+        return 'Đặt câu hỏi về cú pháp hàm XLOOKUP hoặc bài học...';
       case 'review':
-        return 'Yêu cầu AI giải thích chi tiết các câu trắc nghiệm làm sai...';
+        return 'Yêu cầu AI giải thích câu trắc nghiệm làm sai...';
       case 'exam':
         return 'Hỏi phương pháp giải và cấu trúc đề thi thực hành...';
       case 'progress':
@@ -116,11 +115,20 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   };
 
   return (
-    <div style={{ maxWidth: '860px', margin: '0 auto', width: '100%', padding: '24px 20px 100px', display: 'flex', flexDirection: 'column', gap: '28px', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-      
-      {/* ── 1. TỔNG QUAN TIẾN TRÌNH & BÀI HỌC KẾ TIẾP ── */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* Thông báo lịch học trong ngày nếu có */}
+    <div
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        width: '100%',
+        padding: '24px 20px 80px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        fontFamily: "'Be Vietnam Pro', sans-serif"
+      }}
+    >
+      {/* ── 1. HEADER TIẾN ĐỘ & THỜI KHÓA BIỂU HÔM NAY ── */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {todaySchedule && (
           <div
             style={{
@@ -146,499 +154,459 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                 rel="noreferrer"
                 style={{ color: '#2563EB', textDecoration: 'underline', marginLeft: '4px', fontWeight: 600 }}
               >
-                Vào lớp trực tuyến
+                Vào phòng Meet trực tuyến
               </a>
             )}
           </div>
         )}
 
-        {/* Lời chào & Tên chương trình đào tạo */}
-        <div>
-          <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 500, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>Chào bạn, {currentUser.name || 'Học viên'}</span>
-            {streak > 0 && <span style={{ color: '#D97706', fontWeight: 600 }}>• {streak} ngày học liên tục</span>}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>Chào bạn, {currentUser.name || 'Học viên'}</span>
+              {streak > 0 && <span style={{ color: '#D97706', fontWeight: 600 }}>• 🔥 {streak} ngày học liên tục</span>}
+            </div>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: '3px 0 0' }}>
               {trackName}
             </h1>
+          </div>
+
+          <div style={{ textAlign: 'right' }}>
             <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#2563EB' }}>
               Tiến độ hoàn thành: {masteryScore}%
             </span>
           </div>
-
-          {/* Thanh tiến độ học tập */}
-          <div
-            style={{
-              width: '100%',
-              height: '6px',
-              borderRadius: 'var(--radius-full)',
-              background: '#E2E8F0',
-              marginTop: '8px',
-              overflow: 'hidden'
-            }}
-          >
-            <div
-              style={{
-                width: `${masteryScore}%`,
-                height: '100%',
-                background: '#2563EB',
-                borderRadius: 'var(--radius-full)',
-                transition: 'width 0.6s ease'
-              }}
-            />
-          </div>
         </div>
 
-        {/* Thẻ bài học kế tiếp (Thao tác học tập chính) */}
+        {/* Thanh tiến độ học tập */}
         <div
           style={{
-            padding: '18px 22px',
-            borderRadius: '8px',
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px'
+            width: '100%',
+            height: '6px',
+            borderRadius: 'var(--radius-full)',
+            background: '#E2E8F0',
+            overflow: 'hidden'
           }}
         >
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-              BÀI HỌC KẾ TIẾP
-            </div>
-            <div style={{ fontSize: '15.5px', fontWeight: 600, color: '#0F172A', marginTop: '2px' }}>
-              Chuyên đề: Tra cứu dữ liệu nâng cao với hàm XLOOKUP
-            </div>
-            <div style={{ fontSize: '13px', color: '#64748B', marginTop: '3px' }}>
-              Thời lượng 12 phút • Hướng dẫn cú pháp chuẩn và phương pháp xử lý lỗi dữ liệu thực tế.
-            </div>
-          </div>
-
-          {/* Nút hành động chính */}
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onContinueLearning();
-            }}
+          <div
             style={{
-              padding: '10px 22px',
-              fontSize: '14px',
-              fontWeight: 600,
-              borderRadius: '6px',
+              width: `${masteryScore}%`,
+              height: '100%',
               background: '#2563EB',
-              color: '#FFFFFF',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              flexShrink: 0,
-              boxShadow: '0 1px 2px rgba(37, 99, 235, 0.2)'
+              borderRadius: 'var(--radius-full)',
+              transition: 'width 0.6s ease'
             }}
-          >
-            <Play size={15} fill="#fff" />
-            <span>Tiếp tục học ngay</span>
-          </button>
+          />
         </div>
       </section>
 
-      <div style={{ height: '1px', background: '#E2E8F0' }} />
-
-      {/* ── 2. PHÂN MỤC 1: GIÁO TRÌNH & NỘI DUNG ĐÀO TẠO ── */}
-      <section id="section-learn" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          01. GIÁO TRÌNH & BÀI HỌC CHUYÊN ĐỀ
-        </div>
-
-        <div
-          style={{
-            padding: '16px 20px',
-            borderRadius: '8px',
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
-            <div
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '6px',
-                background: '#EFF6FF',
-                color: '#2563EB',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}
-            >
-              <BookOpen size={18} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
-                Hệ thống bài giảng lý thuyết & Video hướng dẫn
-              </div>
-              <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>
-                Khám phá toàn bộ danh mục bài giảng, tài liệu tham khảo và file mẫu của khóa học.
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onOpenLearningPath();
-            }}
-            style={{
-              padding: '8px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              borderRadius: '6px',
-              background: '#F1F5F9',
-              border: '1px solid #CBD5E1',
-              color: '#1E293B',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              flexShrink: 0
-            }}
-          >
-            <span>Mở giáo trình</span>
-            <ArrowRight size={14} />
-          </button>
-        </div>
-      </section>
-
-      {/* ── 3. PHÂN MỤC 2: ÔN TẬP & CỦNG CỐ KIẾN THỨC ── */}
-      <section id="section-review" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          02. ÔN TẬP & CỦNG CỐ KIẾN THỨC
-        </div>
-
-        <div
-          style={{
-            padding: '18px 20px',
-            borderRadius: '8px',
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '6px',
-                  background: '#FEF3C7',
-                  color: '#D97706',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}
-              >
-                <RotateCcw size={18} />
-              </div>
-              <div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
-                  {dueReviewCount} câu hỏi cần củng cố hôm nay
-                </div>
-                <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>
-                  Hệ thống tự động nhắc lại các nội dung hay nhầm lẫn theo chu kỳ trí nhớ.
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onStartSmartReview();
-              }}
-              style={{
-                padding: '8px 18px',
-                fontSize: '13px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                background: '#D97706',
-                color: '#FFFFFF',
-                border: 'none',
-                cursor: 'pointer',
-                flexShrink: 0
-              }}
-            >
-              <span>Ôn câu sai ngay</span>
-            </button>
-          </div>
-
-          {/* Tiện ích bổ trợ học tập */}
+      {/* ── 2. BỐ CỤC 2 CỘT CHUẨN CỔNG HỌC VỤ (66% TRỌNG TÂM / 34% ÔN TẬP & NĂNG LỰC) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: '20px', alignItems: 'start' }}>
+        
+        {/* ── CỘT TRÁI (66%): HỌC TẬP & KHẢO THÍ CHÍNH ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Khối 1: Thao tác học tập chính (Bài học kế tiếp) */}
           <div
             style={{
-              paddingTop: '12px',
-              borderTop: '1px solid #F1F5F9',
+              padding: '18px 22px',
+              borderRadius: '8px',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)',
               display: 'flex',
               alignItems: 'center',
-              gap: '16px',
-              fontSize: '13px',
-              flexWrap: 'wrap'
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '16px'
             }}
           >
-            <span style={{ color: '#64748B', fontWeight: 500 }}>Công cụ hỗ trợ:</span>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenFlashcards();
-              }}
-              style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <Layers size={14} />
-              <span>Thẻ ghi nhớ (Flashcards)</span>
-            </button>
-            <span style={{ color: '#CBD5E1' }}>•</span>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenBookmarks();
-              }}
-              style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <BookmarkCheck size={14} />
-              <span>Danh sách câu đã lưu</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. PHÂN MỤC 3: KHẢO THÍ & BÀI TẬP THỰC HÀNH ── */}
-      <section id="section-exam" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          03. KHẢO THÍ & BÀI TẬP THỰC HÀNH
-        </div>
-
-        <div
-          style={{
-            padding: '18px 20px',
-            borderRadius: '8px',
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '6px',
-                  background: '#DCFCE7',
-                  color: '#16A34A',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}
-              >
-                <CheckCircle2 size={18} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                BÀI HỌC KẾ TIẾP
               </div>
-              <div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
-                  Bài kiểm tra củng cố (10 câu • 8 phút)
-                </div>
-                <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>
-                  Đánh giá mức độ tiếp thu kiến thức và cập nhật điểm tích lũy chuyên đề.
-                </div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', marginTop: '2px' }}>
+                Chuyên đề: Tra cứu dữ liệu nâng cao với hàm XLOOKUP
+              </div>
+              <div style={{ fontSize: '13px', color: '#64748B', marginTop: '3px' }}>
+                Thời lượng 12 phút • Nắm vững cú pháp chuẩn và phương pháp xử lý lỗi thực tế.
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onStartMiniTest();
-              }}
-              style={{
-                padding: '8px 18px',
-                fontSize: '13px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                background: '#16A34A',
-                color: '#FFFFFF',
-                border: 'none',
-                cursor: 'pointer',
-                flexShrink: 0
-              }}
-            >
-              <span>Làm bài kiểm tra</span>
-            </button>
-          </div>
-
-          {/* Đề thi và Nộp bài thực hành */}
-          <div
-            style={{
-              paddingTop: '12px',
-              borderTop: '1px solid #F1F5F9',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              fontSize: '13px',
-              flexWrap: 'wrap'
-            }}
-          >
-            <span style={{ color: '#64748B', fontWeight: 500 }}>Khảo thí học phần:</span>
             <button
               onClick={() => {
                 soundFx.playClick();
                 onContinueLearning();
               }}
-              style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <Award size={14} />
-              <span>Đề thi chuẩn kỹ năng ứng dụng</span>
-            </button>
-            <span style={{ color: '#CBD5E1' }}>•</span>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenAssignments();
+              style={{
+                padding: '10px 22px',
+                fontSize: '14px',
+                fontWeight: 600,
+                borderRadius: '6px',
+                background: '#2563EB',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexShrink: 0,
+                boxShadow: '0 1px 2px rgba(37, 99, 235, 0.2)'
               }}
-              style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
             >
-              <Check size={14} />
-              <span>Nộp bài tập thực hành</span>
+              <Play size={15} fill="#fff" />
+              <span>Tiếp tục học ngay</span>
             </button>
           </div>
-        </div>
-      </section>
 
-      {/* ── 5. PHÂN MỤC 4: MỨC ĐỘ TÍCH LŨY KỸ NĂNG CHUYÊN MÔN ── */}
-      <section id="section-progress" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          04. MỨC ĐỘ TÍCH LŨY KỸ NĂNG CHUYÊN MÔN
-        </div>
-
-        <div
-          style={{
-            padding: '18px 20px',
-            borderRadius: '8px',
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
-              Đánh giá mức độ thành thạo theo từng học phần
+          {/* Khối 2: Giáo trình & Danh mục bài học */}
+          <section id="section-learn" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+              01. GIÁO TRÌNH & BÀI HỌC CHUYÊN ĐỀ
             </div>
-            <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#2563EB' }}>
-              Tổng điểm chuẩn: {masteryScore}%
-            </span>
-          </div>
 
-          {/* Thanh kỹ năng chuẩn hóa */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <SkillProgressBar label="Kiến thức nền tảng & Tổ hợp phím tắt" percent={100} color="#16A34A" />
-            <SkillProgressBar label="Xây dựng công thức & Hàm tính toán cơ bản" percent={82} color="#2563EB" />
-            <SkillProgressBar label="Kỹ thuật tra cứu dữ liệu (XLOOKUP / VLOOKUP)" percent={54} color="#D97706" />
-            <SkillProgressBar label="Tổng hợp và phân tích báo cáo PivotTable" percent={31} color="#7C3AED" />
-          </div>
-
-          <div style={{ paddingTop: '8px', borderTop: '1px solid #F1F5F9', textAlign: 'right' }}>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenLearningPath();
+            <div
+              style={{
+                padding: '16px 20px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
               }}
-              style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 600, fontSize: '13px', padding: 0 }}
             >
-              Xem chi tiết toàn bộ lộ trình đào tạo →
-            </button>
-          </div>
-        </div>
-      </section>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '6px',
+                    background: '#EFF6FF',
+                    color: '#2563EB',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  <BookOpen size={18} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '14.5px', fontWeight: 600, color: '#0F172A' }}>
+                    Hệ thống bài giảng lý thuyết & Video hướng dẫn
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '2px' }}>
+                    Khám phá toàn bộ danh mục bài giảng, tài liệu tham khảo và file thực hành mẫu.
+                  </div>
+                </div>
+              </div>
 
-      {/* ── 6. THANH TRỢ LÝ HỌC VỤ AI CỐ ĐỊNH (STICKY CONTEXTUAL AI) ── */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'calc(100% - 32px)',
-          maxWidth: '720px',
-          zIndex: 80
-        }}
-      >
-        <form
-          onSubmit={handleAiSubmit}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '6px 8px 6px 14px',
-            borderRadius: 'var(--radius-full)',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1.5px solid #DDD6FE',
-            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)'
-          }}
-        >
-          <Bot size={18} color="#7C3AED" style={{ flexShrink: 0 }} />
-          <input
-            type="text"
-            value={aiInputText}
-            onChange={(e) => setAiInputText(e.target.value)}
-            placeholder={getAiPlaceholder()}
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenLearningPath();
+                }}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  background: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  color: '#1E293B',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  flexShrink: 0
+                }}
+              >
+                <span>Mở giáo trình</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </section>
+
+          {/* Khối 3: Khảo thí & Bài tập thực hành */}
+          <section id="section-exam" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+              02. KHẢO THÍ & BÀI TẬP THỰC HÀNH
+            </div>
+
+            <div
+              style={{
+                padding: '16px 20px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '6px',
+                      background: '#DCFCE7',
+                      color: '#16A34A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    <CheckCircle2 size={18} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14.5px', fontWeight: 600, color: '#0F172A' }}>
+                      Bài kiểm tra củng cố (10 câu • 8 phút)
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '2px' }}>
+                      Đánh giá mức độ tiếp thu kiến thức và cập nhật điểm tích lũy chuyên đề.
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    soundFx.playClick();
+                    onStartMiniTest();
+                  }}
+                  style={{
+                    padding: '7px 16px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    background: '#16A34A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  <span>Làm bài kiểm tra</span>
+                </button>
+              </div>
+
+              {/* Nộp bài thực hành */}
+              <div
+                style={{
+                  paddingTop: '10px',
+                  borderTop: '1px solid #F1F5F9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  fontSize: '12.5px',
+                  flexWrap: 'wrap'
+                }}
+              >
+                <span style={{ color: '#64748B', fontWeight: 500 }}>Khảo thí học phần:</span>
+                <button
+                  onClick={() => {
+                    soundFx.playClick();
+                    onContinueLearning();
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Award size={13} />
+                  <span>Đề thi chuẩn kỹ năng ứng dụng</span>
+                </button>
+                <span style={{ color: '#CBD5E1' }}>•</span>
+                <button
+                  onClick={() => {
+                    soundFx.playClick();
+                    onOpenAssignments();
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Check size={13} />
+                  <span>Nộp bài tập thực hành</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        {/* ── CỘT PHẢI (34%): ÔN TẬP, NĂNG LỰC & TRỢ LÝ AI ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Widget 1: Ôn tập củng cố (Smart Review) */}
+          <section id="section-review" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              style={{
+                padding: '16px 18px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px', fontWeight: 600, color: '#D97706' }}>
+                  <RotateCcw size={15} />
+                  <span>Ôn tập & Củng cố</span>
+                </div>
+                <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                  {dueReviewCount} câu cần ôn
+                </span>
+              </div>
+
+              <p style={{ fontSize: '12.5px', color: '#64748B', margin: 0, lineHeight: 1.4 }}>
+                Hệ thống tự động nhắc lại các câu hỏi hay nhầm lẫn theo chu kỳ trí nhớ.
+              </p>
+
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onStartSmartReview();
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 0',
+                  borderRadius: '6px',
+                  background: '#D97706',
+                  color: '#FFFFFF',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                Ôn câu sai ngay
+              </button>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #F1F5F9', paddingTop: '10px', fontSize: '12px' }}>
+                <button
+                  onClick={() => { soundFx.playClick(); onOpenFlashcards(); }}
+                  style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Layers size={13} />
+                  <span>Thẻ Flashcards</span>
+                </button>
+                <button
+                  onClick={() => { soundFx.playClick(); onOpenBookmarks(); }}
+                  style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <BookmarkCheck size={13} />
+                  <span>Câu đã lưu</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Widget 2: Mức độ tích lũy kỹ năng chuyên môn */}
+          <section id="section-progress" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              style={{
+                padding: '16px 18px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F172A' }}>
+                  Kỹ năng chuyên môn
+                </div>
+                <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#2563EB' }}>
+                  {masteryScore}% chuẩn
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                <SkillProgressBar label="Kiến thức nền tảng & Phím tắt" percent={100} color="#16A34A" />
+                <SkillProgressBar label="Công thức & Hàm tính toán" percent={82} color="#2563EB" />
+                <SkillProgressBar label="Tra cứu dữ liệu (XLOOKUP)" percent={54} color="#D97706" />
+                <SkillProgressBar label="Phân tích báo cáo PivotTable" percent={31} color="#7C3AED" />
+              </div>
+
+              <div style={{ paddingTop: '6px', borderTop: '1px solid #F1F5F9', textAlign: 'right' }}>
+                <button
+                  onClick={() => {
+                    soundFx.playClick();
+                    onOpenLearningPath();
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontWeight: 600, fontSize: '12px', padding: 0 }}
+                >
+                  Xem toàn bộ lộ trình →
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Widget 3: Trợ lý Học vụ AI nhanh */}
+          <div
             style={{
-              flex: 1,
-              border: 'none',
-              background: 'transparent',
-              fontSize: '13.5px',
-              color: '#0F172A',
-              outline: 'none',
-              padding: '4px 0',
-              fontWeight: 500
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: '#7C3AED',
-              color: '#FFFFFF',
-              border: 'none',
-              cursor: 'pointer',
+              padding: '16px 18px',
+              borderRadius: '8px',
+              background: '#F5F3FF',
+              border: '1px solid #DDD6FE',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
+              flexDirection: 'column',
+              gap: '10px'
             }}
-            title="Gửi câu hỏi cho Trợ lý Trực tuyến AI"
           >
-            <Send size={13} style={{ marginLeft: '1px' }} />
-          </button>
-        </form>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px', fontWeight: 600, color: '#6D28D9' }}>
+              <Bot size={16} />
+              <span>Trợ lý Học vụ AI</span>
+            </div>
+
+            <form onSubmit={handleAiSubmit} style={{ display: 'flex', gap: '6px' }}>
+              <input
+                type="text"
+                value={aiInputText}
+                onChange={(e) => setAiInputText(e.target.value)}
+                placeholder="Hỏi AI về bài học..."
+                style={{
+                  flex: 1,
+                  height: '34px',
+                  borderRadius: '6px',
+                  background: '#FFFFFF',
+                  border: '1px solid #C4B5FD',
+                  fontSize: '12.5px',
+                  padding: '0 10px',
+                  outline: 'none'
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '6px',
+                  background: '#7C3AED',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+              >
+                <Send size={13} />
+              </button>
+            </form>
+          </div>
+
+        </div>
+
       </div>
 
     </div>
@@ -647,7 +615,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
 
 const SkillProgressBar: React.FC<{ label: string; percent: number; color: string }> = ({ label, percent, color }) => (
   <div>
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', marginBottom: '3px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
       <span style={{ color: '#475569', fontWeight: 500 }}>{label}</span>
       <span style={{ fontWeight: 600, color }}>{percent}%</span>
     </div>

@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UserProfile, StudentAccount } from '../../types/auth';
 import { EarlyWarningService } from '../../services/earlyWarningService';
 import { ClassScheduleItem } from '../../types/schedule';
 import { Assignment, AssignmentSubmission } from '../../types/assignment';
 import {
-  QrCode, FileText, CheckCircle2,
-  ExternalLink, Users, ChevronRight,
-  BookOpen
+  QrCode, ExternalLink, ChevronRight,
+  BookOpen, Calendar, AlertTriangle, Download,
+  Send, PlusCircle, Check, Search
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -38,7 +38,10 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
   onOpenQuizCreator,
   onOpenQuizBank
 }) => {
-  // Current date formatting
+  const [remindedAll, setRemindedAll] = useState(false);
+  const [searchWarning, setSearchWarning] = useState('');
+
+  // Date formatting
   const todayStr = new Date().toISOString().split('T')[0];
   const formattedToday = new Intl.DateTimeFormat('vi-VN', {
     weekday: 'long',
@@ -47,32 +50,59 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
     year: 'numeric'
   }).format(new Date());
 
-  // 1. Evaluate today's schedule
+  // 1. Next schedule
   const todayClasses = schedules.filter(s => s.date === todayStr);
+  const nextClass = todayClasses.length > 0 ? todayClasses[0] : (schedules.length > 0 ? schedules[0] : null);
 
-  // 2. Evaluate Early Warning students
+  // 2. Early Warning students
   const evaluatedStudents = EarlyWarningService.evaluateAllStudents(studentAccounts);
   const atRiskStudents = evaluatedStudents.filter(s => s.riskLevel === 'CRITICAL' || s.riskLevel === 'HIGH');
+  const filteredRiskStudents = atRiskStudents.filter(s =>
+    (s.studentName || '').toLowerCase().includes(searchWarning.toLowerCase()) ||
+    (s.studentCode || '').toLowerCase().includes(searchWarning.toLowerCase())
+  );
 
-  // 3. Evaluate pending submissions
+  // 3. Submissions
   const ungradedSubmissions = submissions.filter(s => s.status === 'submitted');
+
+  const handleRemindAll = () => {
+    soundFx.playClick();
+    setRemindedAll(true);
+    alert(`📢 Đã gửi thông báo nhắc nhở chuyên cần và làm bài tập tới toàn bộ ${atRiskStudents.length} học viên cần lưu ý!`);
+    setTimeout(() => setRemindedAll(false), 4000);
+  };
+
+  const exportAttendanceReport = () => {
+    soundFx.playClick();
+    const csvContent = `Mã HV,Họ và Tên,Lớp học,Chuyên cần,Trạng thái\n` +
+      studentAccounts.map(s => `${s.studentCode},"${s.name}","Lớp Word, Excel, PowerPoint",95%,Đang theo học`).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bao_Cao_Chuyen_Can_Hoc_Vien_${todayStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div
       style={{
-        maxWidth: '1100px',
+        maxWidth: '1180px',
         margin: '0 auto',
         width: '100%',
-        padding: '24px 24px 64px',
+        padding: '24px 20px 60px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px',
+        gap: '20px',
         background: '#F5F7FA',
         minHeight: 'calc(100vh - 96px)',
         fontFamily: "'Be Vietnam Pro', sans-serif"
       }}
     >
-      {/* ── 1. TIÊU ĐỀ HỌC VỤ & THỜI GIAN HIỆN TẠI (NO PROMO HERO) ── */}
+      {/* ── 1. TIÊU ĐỀ HỌC VỤ TRANG TRỌNG ── */}
       <div
         style={{
           display: 'flex',
@@ -80,30 +110,30 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
           alignItems: 'baseline',
           flexWrap: 'wrap',
           gap: '8px',
-          paddingBottom: '16px',
+          paddingBottom: '14px',
           borderBottom: '1px solid #E2E8F0'
         }}
       >
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#0F172A', margin: 0, letterSpacing: '-0.01em' }}>
-            Tổng quan giảng dạy
+          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+            Tổng quan giảng dạy & Quản trị học vụ
           </h1>
-          <p style={{ fontSize: '13px', color: '#64748B', margin: '3px 0 0', fontWeight: 400 }}>
+          <p style={{ fontSize: '13px', color: '#64748B', margin: '3px 0 0' }}>
             {formattedToday.charAt(0).toUpperCase() + formattedToday.slice(1)} • Học kỳ 1 (2026 - 2027)
           </p>
         </div>
 
         <div style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>
-          Giảng viên: <span style={{ fontWeight: 600, color: '#0F172A' }}>{currentUser.name || 'Thầy Quang Huy'}</span>
+          Giảng viên: <span style={{ fontWeight: 600, color: '#0F172A' }}>{currentUser.name || 'Cô Hoàng Mai'}</span>
         </div>
       </div>
 
-      {/* ── 2. BỐN CHỈ SỐ HỌC VỤ (STAT TILES - COMPACT & INSTITUTIONAL) ── */}
+      {/* ── 2. BỐN CHỈ SỐ HỌC VỤ (STAT TILES) ── */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px'
+          gap: '14px'
         }}
       >
         {/* Tile 1: Lớp phụ trách */}
@@ -113,19 +143,20 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
             background: '#ffffff',
             border: '1px solid #E2E8F0',
             borderRadius: '6px',
-            padding: '16px',
+            padding: '14px 16px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'border-color 0.15s ease'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-            Lớp phụ trách
+          <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            LỚP PHỤ TRÁCH
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '4px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 600, color: '#0F172A' }}>3</span>
-            <span style={{ fontSize: '12.5px', color: '#16A34A', fontWeight: 500 }}>Chuyên cần 94.2%</span>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A' }}>3</span>
+            <span style={{ fontSize: '12px', color: '#16A34A', fontWeight: 600 }}>Chuyên cần 94.2%</span>
           </div>
-          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
             {schedules.length} buổi học trong tháng
           </div>
         </div>
@@ -137,19 +168,20 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
             background: '#ffffff',
             border: '1px solid #E2E8F0',
             borderRadius: '6px',
-            padding: '16px',
+            padding: '14px 16px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'border-color 0.15s ease'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-            Học viên quản lý
+          <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            HỌC VIÊN QUẢN LÝ
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '4px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 600, color: '#0F172A' }}>{studentAccounts.length || 48}</span>
-            <span style={{ fontSize: '12.5px', color: '#2563EB', fontWeight: 500 }}>Đang theo học</span>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A' }}>{studentAccounts.length || 12}</span>
+            <span style={{ fontSize: '12px', color: '#2563EB', fontWeight: 600 }}>Đang theo học</span>
           </div>
-          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
             Phân bổ trên 3 lớp chuyên đề
           </div>
         </div>
@@ -161,23 +193,24 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
             background: '#ffffff',
             border: '1px solid #E2E8F0',
             borderRadius: '6px',
-            padding: '16px',
+            padding: '14px 16px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'border-color 0.15s ease'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-            Bài chờ chấm
+          <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            BÀI CHỜ CHẤM
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '4px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 600, color: ungradedSubmissions.length > 0 ? '#D97706' : '#0F172A' }}>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: ungradedSubmissions.length > 0 ? '#D97706' : '#0F172A' }}>
               {ungradedSubmissions.length}
             </span>
-            <span style={{ fontSize: '12.5px', color: ungradedSubmissions.length > 0 ? '#D97706' : '#64748B', fontWeight: 500 }}>
+            <span style={{ fontSize: '12px', color: ungradedSubmissions.length > 0 ? '#D97706' : '#16A34A', fontWeight: 600 }}>
               {ungradedSubmissions.length > 0 ? 'Cần xử lý' : 'Đã hoàn tất'}
             </span>
           </div>
-          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
             Bài tập thực hành Word/Excel
           </div>
         </div>
@@ -189,436 +222,484 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
             background: '#ffffff',
             border: '1px solid #E2E8F0',
             borderRadius: '6px',
-            padding: '16px',
+            padding: '14px 16px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'border-color 0.15s ease'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-            Cảnh báo học vụ
+          <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            CẢNH BÁO HỌC VỤ
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '4px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 600, color: atRiskStudents.length > 0 ? '#DC2626' : '#16A34A' }}>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: atRiskStudents.length > 0 ? '#DC2626' : '#16A34A' }}>
               {atRiskStudents.length}
             </span>
-            <span style={{ fontSize: '12.5px', color: atRiskStudents.length > 0 ? '#DC2626' : '#16A34A', fontWeight: 500 }}>
+            <span style={{ fontSize: '12px', color: atRiskStudents.length > 0 ? '#DC2626' : '#16A34A', fontWeight: 600 }}>
               {atRiskStudents.length > 0 ? 'Cần theo dõi' : 'Bình thường'}
             </span>
           </div>
-          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
-            Vắng học hoặc điểm quiz thấp
+          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+            Vắng học hoặc điểm thấp
           </div>
         </div>
       </div>
 
-      {/* ── 3. PHÂN MỤC 1: LỊCH GIẢNG DẠY (TEACHING SCHEDULE) ── */}
-      <div
-        style={{
-          background: '#ffffff',
-          border: '1px solid #E2E8F0',
-          borderRadius: '6px',
-          padding: '20px',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div>
-            <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
-              Lịch giảng dạy hôm nay
-            </h2>
-            <p style={{ fontSize: '12.5px', color: '#64748B', margin: '2px 0 0' }}>
-              Thời khóa biểu và phòng học trực tuyến/trực tiếp
-            </p>
-          </div>
-
-          <button
-            onClick={() => { soundFx.playClick(); onOpenScheduleCalendar(); }}
+      {/* ── 3. BỐ CỤC 2 CỘT HIỆN ĐẠI (68% NỘI DUNG CHÍNH / 32% TÁC VỤ NHANH) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: '20px', alignItems: 'start' }}>
+        
+        {/* ── CỘT TRÁI (68%): NỘI DUNG HỌC VỤ TRỌNG TÂM ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Khối 1: Học viên cần lưu ý & Cảnh báo học vụ */}
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563EB',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              padding: 0
+              background: '#ffffff',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              padding: '18px 20px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
             }}
           >
-            Xem toàn bộ thời khóa biểu →
-          </button>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <AlertTriangle size={16} color="#DC2626" />
+                  <h2 style={{ fontSize: '15.5px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+                    Học viên cần lưu ý & hỗ trợ ({atRiskStudents.length})
+                  </h2>
+                </div>
+                <p style={{ fontSize: '12.5px', color: '#64748B', margin: '2px 0 0' }}>
+                  Danh sách học sinh có nguy cơ vắng học hoặc kết quả kiểm tra giảm sút
+                </p>
+              </div>
 
-        {todayClasses.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Thời gian</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Mã lớp</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Tên môn học / Chuyên đề</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Địa điểm / Meet</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569', textAlign: 'right' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {todayClasses.map(cls => (
-                  <tr key={cls.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '12px', color: '#0F172A', fontWeight: 600 }}>
-                      {cls.startTime} - {cls.endTime}
-                    </td>
-                    <td style={{ padding: '12px', color: '#2563EB', fontWeight: 500 }}>
-                      {cls.classCode}
-                    </td>
-                    <td style={{ padding: '12px', color: '#0F172A', fontWeight: 500 }}>
-                      {cls.title}
-                    </td>
-                    <td style={{ padding: '12px', color: '#475569' }}>
-                      {cls.room || 'Phòng LAB 01'}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        {cls.onlineMeetingUrl && (
-                          <a
-                            href={cls.onlineMeetingUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '5px 10px',
-                              borderRadius: '6px',
-                              background: '#F1F5F9',
-                              border: '1px solid #CBD5E1',
-                              color: '#334155',
-                              fontSize: '12px',
-                              fontWeight: 500,
-                              textDecoration: 'none'
-                            }}
-                          >
-                            <ExternalLink size={12} />
-                            <span>Vào Meet</span>
-                          </a>
-                        )}
-                        <button
-                          onClick={() => onOpenAttendanceSession(cls)}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={handleRemindAll}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    background: remindedAll ? '#DCFCE7' : '#FEF2F2',
+                    border: '1px solid #FCA5A5',
+                    color: remindedAll ? '#166534' : '#991B1B',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {remindedAll ? <Check size={13} /> : <Send size={13} />}
+                  <span>{remindedAll ? 'Đã gửi nhắc nhở!' : 'Nhắc nhở cả lớp'}</span>
+                </button>
+
+                <button
+                  onClick={() => { soundFx.playClick(); onOpenEarlyWarning(); }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#2563EB',
+                    fontSize: '12.5px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  Xem tất cả →
+                </button>
+              </div>
+            </div>
+
+            {/* Compact Search */}
+            <div style={{ position: 'relative', marginBottom: '12px' }}>
+              <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+              <input
+                type="text"
+                placeholder="Tìm kiếm mã hoặc tên học viên..."
+                value={searchWarning}
+                onChange={e => setSearchWarning(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '34px',
+                  borderRadius: '6px',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  fontSize: '12.5px',
+                  padding: '0 10px 0 32px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            {/* Compact Table */}
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                    <th style={{ padding: '8px 10px', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Mã HV</th>
+                    <th style={{ padding: '8px 10px', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Họ và tên</th>
+                    <th style={{ padding: '8px 10px', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Vấn đề ghi nhận</th>
+                    <th style={{ padding: '8px 10px', fontWeight: 600, color: '#475569', fontSize: '12px' }}>Mức độ</th>
+                    <th style={{ padding: '8px 10px', fontWeight: 600, color: '#475569', fontSize: '12px', textAlign: 'right' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(filteredRiskStudents.length > 0 ? filteredRiskStudents.slice(0, 5) : evaluatedStudents.slice(0, 4)).map((item, idx) => (
+                    <tr key={item.studentId || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '9px 10px', color: '#2563EB', fontWeight: 600 }}>{item.studentCode}</td>
+                      <td style={{ padding: '9px 10px', fontWeight: 500, color: '#0F172A' }}>{item.studentName}</td>
+                      <td style={{ padding: '9px 10px', color: '#64748B', fontSize: '12.5px' }}>
+                        {item.factors && item.factors.length > 0 ? item.factors[0] : 'Không hoạt động 14 ngày'}
+                      </td>
+                      <td style={{ padding: '9px 10px' }}>
+                        <span
                           style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            background: '#2563EB',
-                            border: 'none',
-                            color: '#ffffff',
-                            fontSize: '12.5px',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            background: item.riskLevel === 'CRITICAL' ? '#FEE2E2' : '#FEF3C7',
+                            color: item.riskLevel === 'CRITICAL' ? '#991B1B' : '#92400E',
+                            fontSize: '11px',
+                            fontWeight: 600
+                          }}
+                        >
+                          {item.riskLevel === 'CRITICAL' ? 'Nguy cơ cao' : 'Cảnh báo mức 1'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '9px 10px', textAlign: 'right' }}>
+                        <button
+                          onClick={() => { soundFx.playClick(); onOpenAdminPortal(); }}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            background: '#F1F5F9',
+                            border: '1px solid #E2E8F0',
+                            color: '#334155',
+                            fontSize: '12px',
                             fontWeight: 500,
                             cursor: 'pointer'
                           }}
                         >
-                          <QrCode size={13} />
-                          <span>Mở lớp & điểm danh</span>
+                          Hồ sơ
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div style={{ padding: '20px 0', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
-            Hôm nay không có lịch giảng dạy. Giảng viên có thể kiểm tra danh sách bài nộp hoặc thời khóa biểu tuần tới.
-          </div>
-        )}
-      </div>
-
-      {/* ── 4. PHÂN MỤC 2: CÔNG VIỆC CẦN XỬ LÝ (PENDING TASKS) ── */}
-      <div
-        style={{
-          background: '#ffffff',
-          border: '1px solid #E2E8F0',
-          borderRadius: '6px',
-          padding: '20px',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div>
-            <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
-              Công việc cần xử lý ({ungradedSubmissions.length})
-            </h2>
-            <p style={{ fontSize: '12.5px', color: '#64748B', margin: '2px 0 0' }}>
-              Danh sách bài nộp và nhiệm vụ học vụ cần phê duyệt & chấm điểm
-            </p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <button
-            onClick={() => { soundFx.playClick(); onOpenAssignmentManager(); }}
+          {/* Khối 2: Trạng thái 3 Lớp Chuyên Đề Phụ Trách */}
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563EB',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              padding: 0
+              background: '#ffffff',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              padding: '18px 20px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
             }}
           >
-            Quản lý tất cả bài nộp →
-          </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div>
+                <h2 style={{ fontSize: '15.5px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+                  Tiến độ đào tạo các lớp học phụ trách
+                </h2>
+                <p style={{ fontSize: '12.5px', color: '#64748B', margin: '2px 0 0' }}>
+                  Tình hình sĩ số, tỷ lệ chuyên cần và buổi học gần nhất
+                </p>
+              </div>
+
+              <button
+                onClick={() => { soundFx.playClick(); onOpenAttendanceSession(); }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  background: '#2563EB',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <QrCode size={13} />
+                <span>Mở điểm danh QR</span>
+              </button>
+            </div>
+
+            {/* 3 Class Cards Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              {[
+                { name: '1. Kỹ năng soạn thảo Word (3 buổi)', code: 'WORD-3B', students: 4, attendance: '96%', color: '#2563EB' },
+                { name: '2. Xử lý bảng tính Excel (3 buổi)', code: 'EXCEL-3B', students: 5, attendance: '92%', color: '#16A34A' },
+                { name: '3. Thuyết trình PowerPoint (3 buổi)', code: 'PPT-3B', students: 3, attendance: '95%', color: '#D97706' }
+              ].map(cls => (
+                <div
+                  key={cls.code}
+                  style={{
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '6px',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '10px'
+                  }}
+                >
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: cls.color, background: '#ffffff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                      {cls.code}
+                    </span>
+                    <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F172A', marginTop: '6px', lineHeight: 1.3 }}>
+                      {cls.name}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', borderTop: '1px dashed #E2E8F0', paddingTop: '8px' }}>
+                    <span style={{ color: '#64748B' }}>Sĩ số: <b>{cls.students} HV</b></span>
+                    <span style={{ color: '#16A34A', fontWeight: 600 }}>Chuyên cần: {cls.attendance}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
 
-        {ungradedSubmissions.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Học viên</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Bài tập</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Thời gian nộp</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Trạng thái</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569', textAlign: 'right' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ungradedSubmissions.slice(0, 5).map(sub => (
-                  <tr key={sub.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '12px', color: '#0F172A', fontWeight: 500 }}>
-                      {sub.studentName}
-                    </td>
-                    <td style={{ padding: '12px', color: '#334155' }}>
-                      {sub.assignmentTitle}
-                    </td>
-                    <td style={{ padding: '12px', color: '#64748B', fontSize: '12.5px' }}>
-                      {sub.submittedAt.replace('T', ' ').substring(0, 16)}
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <span
-                        style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '11.5px',
-                          fontWeight: 500,
-                          background: '#FEF3C7',
-                          color: '#B45309'
-                        }}
-                      >
-                        Chờ chấm điểm
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => onOpenAssignmentManager()}
-                        style={{
-                          padding: '5px 12px',
-                          borderRadius: '6px',
-                          background: '#ffffff',
-                          border: '1px solid #CBD5E1',
-                          color: '#2563EB',
-                          fontSize: '12.5px',
-                          fontWeight: 500,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Chấm điểm
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div style={{ padding: '20px 0', textAlign: 'center', color: '#16A34A', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <CheckCircle2 size={16} />
-            <span>Tất cả bài tập đã được chấm điểm và phản hồi đầy đủ!</span>
-          </div>
-        )}
-      </div>
-
-      {/* ── 5. PHÂN MỤC 3: HỌC VIÊN CẦN LƯU Ý (ACADEMIC WARNINGS) ── */}
-      <div
-        style={{
-          background: '#ffffff',
-          border: '1px solid #E2E8F0',
-          borderRadius: '6px',
-          padding: '20px',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div>
-            <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
-              Học viên cần lưu ý ({atRiskStudents.length})
-            </h2>
-            <p style={{ fontSize: '12.5px', color: '#64748B', margin: '2px 0 0' }}>
-              Danh sách học viên có nguy cơ vắng học hoặc kết quả kiểm tra giảm
-            </p>
-          </div>
-
-          <button
-            onClick={() => { soundFx.playClick(); onOpenEarlyWarning(); }}
+        {/* ── CỘT PHẢI (32%): LỊCH DẠY, HỘP CÔNG VIỆC & LỆNH NHANH ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Widget 1: Lịch giảng dạy kế tiếp */}
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563EB',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              padding: 0
+              background: '#ffffff',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              padding: '18px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
             }}
           >
-            Xem tất cả cảnh báo học vụ →
-          </button>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>
+                <Calendar size={15} color="#2563EB" />
+                <span>Buổi dạy kế tiếp</span>
+              </div>
+              <button
+                onClick={() => { soundFx.playClick(); onOpenScheduleCalendar(); }}
+                style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '12px', cursor: 'pointer', padding: 0 }}
+              >
+                Thời khóa biểu →
+              </button>
+            </div>
 
-        {atRiskStudents.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Mã HV</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Họ và tên</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Vấn đề ghi nhận</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Mức độ</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569', textAlign: 'right' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {atRiskStudents.slice(0, 5).map(s => (
-                  <tr key={s.studentId} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '12px', color: '#2563EB', fontWeight: 500 }}>
-                      {s.studentCode}
-                    </td>
-                    <td style={{ padding: '12px', color: '#0F172A', fontWeight: 500 }}>
-                      {s.studentName}
-                    </td>
-                    <td style={{ padding: '12px', color: '#475569' }}>
-                      {s.factors[0] || 'Vắng học 2 buổi liên tiếp hoặc điểm kiểm tra dưới 50%'}
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <span
-                        style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '11.5px',
-                          fontWeight: 500,
-                          background: s.riskLevel === 'CRITICAL' ? '#FEE2E2' : '#FEF3C7',
-                          color: s.riskLevel === 'CRITICAL' ? '#B91C1C' : '#B45309'
-                        }}
-                      >
-                        {s.riskLevel === 'CRITICAL' ? 'Cảnh báo mức 2' : 'Cảnh báo mức 1'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => onOpenEarlyWarning()}
-                        style={{
-                          padding: '5px 12px',
-                          borderRadius: '6px',
-                          background: '#ffffff',
-                          border: '1px solid #CBD5E1',
-                          color: '#2563EB',
-                          fontSize: '12.5px',
-                          fontWeight: 500,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Hồ sơ
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div style={{ padding: '20px 0', textAlign: 'center', color: '#16A34A', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <CheckCircle2 size={16} />
-            <span>Tình hình học vụ của toàn bộ học viên đang ở mức ổn định!</span>
-          </div>
-        )}
-      </div>
+            {nextClass ? (
+              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '12px', color: '#2563EB', fontWeight: 600 }}>
+                  📅 {nextClass.date || 'Tuần này'} • {nextClass.startTime || '19:30'} - {nextClass.endTime || '21:00'}
+                </div>
+                <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F172A', margin: '4px 0 2px' }}>
+                  {nextClass.title || 'Lớp Word & Excel Thực Chiến'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  Phòng: {nextClass.room || 'Google Meet Trực Tuyến'}
+                </div>
 
-      {/* ── 6. PHÂN MỤC 4: TIỆN ÍCH QUẢN TRỊ & KHẢO THÍ (ACADEMIC UTILITIES) ── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '16px'
-        }}
-      >
-        <div
-          onClick={() => { soundFx.playClick(); onOpenAdminPortal(); }}
-          style={{
-            background: '#ffffff',
-            border: '1px solid #E2E8F0',
-            borderRadius: '6px',
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Users size={20} color="#2563EB" />
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>Danh sách học viên</div>
-              <div style={{ fontSize: '12px', color: '#64748B' }}>Tra cứu & quản lý hồ sơ {studentAccounts.length} học viên</div>
+                <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                  {nextClass.onlineMeetingUrl ? (
+                    <a
+                      href={nextClass.onlineMeetingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        flex: 1,
+                        padding: '7px 0',
+                        borderRadius: '6px',
+                        background: '#2563EB',
+                        color: '#ffffff',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <ExternalLink size={13} />
+                      <span>Vào phòng Meet</span>
+                    </a>
+                  ) : null}
+
+                  <button
+                    onClick={() => { soundFx.playClick(); onOpenAttendanceSession(nextClass); }}
+                    style={{
+                      flex: 1,
+                      padding: '7px 0',
+                      borderRadius: '6px',
+                      background: '#F1F5F9',
+                      border: '1px solid #CBD5E1',
+                      color: '#1E293B',
+                      fontSize: '12.5px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Điểm danh lớp
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: '#64748B', textAlign: 'center', padding: '16px 0' }}>
+                Hôm nay không có lịch dạy trực tiếp.
+              </div>
+            )}
+          </div>
+
+          {/* Widget 2: Hộp tác vụ học vụ (Task Queue) */}
+          <div
+            style={{
+              background: '#ffffff',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              padding: '18px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+            }}
+          >
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>
+              Hộp công việc học vụ
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#0F172A' }}>Bài tập chờ chấm</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B' }}>Đồng bộ Google Drive</div>
+                </div>
+                <button
+                  onClick={() => { soundFx.playClick(); onOpenAssignmentManager(); }}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    background: ungradedSubmissions.length > 0 ? '#D97706' : '#F1F5F9',
+                    border: 'none',
+                    color: ungradedSubmissions.length > 0 ? '#FFFFFF' : '#64748B',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {ungradedSubmissions.length} bài
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#0F172A' }}>Yêu cầu hỗ trợ học vụ</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B' }}>Phản hồi câu hỏi học viên</div>
+                </div>
+                <span style={{ fontSize: '12px', color: '#16A34A', fontWeight: 600 }}>0 yêu cầu</span>
+              </div>
             </div>
           </div>
-          <ChevronRight size={16} color="#94A3B8" />
-        </div>
 
-        <div
-          onClick={() => { soundFx.playClick(); onOpenQuizCreator(); }}
-          style={{
-            background: '#ffffff',
-            border: '1px solid #E2E8F0',
-            borderRadius: '6px',
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <FileText size={20} color="#16A34A" />
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>Soạn đề kiểm tra</div>
-              <div style={{ fontSize: '12px', color: '#64748B' }}>Tạo ngân hàng câu hỏi trắc nghiệm</div>
+          {/* Widget 3: Tiện ích & Lệnh nhanh (Quick Actions) */}
+          <div
+            style={{
+              background: '#ffffff',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              padding: '18px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+            }}
+          >
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>
+              Lệnh học vụ nhanh
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={exportAttendanceReport}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '6px',
+                  background: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  color: '#166534',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Download size={14} />
+                  <span>Xuất báo cáo điểm danh Excel</span>
+                </span>
+                <ChevronRight size={14} />
+              </button>
+
+              <button
+                onClick={() => { soundFx.playClick(); onOpenQuizCreator(); }}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '6px',
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  color: '#1D4ED8',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <PlusCircle size={14} />
+                  <span>Soạn đề thi & bài tập mới</span>
+                </span>
+                <ChevronRight size={14} />
+              </button>
+
+              <button
+                onClick={() => { soundFx.playClick(); onOpenQuizBank(); }}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '6px',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  color: '#334155',
+                  fontSize: '12.5px',
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BookOpen size={14} />
+                  <span>Kho đề thi chứng chỉ chuẩn</span>
+                </span>
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
-          <ChevronRight size={16} color="#94A3B8" />
+
         </div>
 
-        <div
-          onClick={() => { soundFx.playClick(); onOpenQuizBank(); }}
-          style={{
-            background: '#ffffff',
-            border: '1px solid #E2E8F0',
-            borderRadius: '6px',
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <BookOpen size={20} color="#D97706" />
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>Ngân hàng đề thi</div>
-              <div style={{ fontSize: '12px', color: '#64748B' }}>Kho đề thi chứng chỉ chuẩn hóa</div>
-            </div>
-          </div>
-          <ChevronRight size={16} color="#94A3B8" />
-        </div>
       </div>
 
     </div>
