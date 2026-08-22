@@ -97,7 +97,7 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
         gap: '20px',
         background: '#F5F7FA',
         minHeight: 'calc(100vh - 96px)',
-        fontFamily: "'Be Vietnam Pro', sans-serif"
+        fontFamily: "'Times New Roman', Times, serif"
       }}
     >
       {/* ── 1. TIÊU ĐỀ HỌC VỤ TRANG TRỌNG ── */}

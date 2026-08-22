@@ -100,7 +100,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
         justifyContent: 'center',
         padding: '32px 16px',
         background: 'linear-gradient(180deg, #F8FAFD 0%, #F2F5FA 100%)',
-        fontFamily: "'Be Vietnam Pro', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        fontFamily: "'Times New Roman', Times, serif"
       }}
     >
       <div

@@ -24,7 +24,7 @@ export const AcademicNoticeModal: React.FC<AcademicNoticeModalProps> = ({ isOpen
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        fontFamily: "'Be Vietnam Pro', sans-serif"
+        fontFamily: "'Times New Roman', Times, serif"
       }}
       onClick={onClose}
     >

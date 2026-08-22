@@ -119,7 +119,7 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
         border: '1px solid #CBD5E1',
         overflow: 'hidden',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-        fontFamily: "'Be Vietnam Pro', sans-serif"
+        fontFamily: "'Times New Roman', Times, serif"
       }}
     >
       {/* ── TOP HEADER TABS: ĐỀ THI / CLIP BÀI GIẢNG / FILE DỮ LIỆU MẪU ── */}

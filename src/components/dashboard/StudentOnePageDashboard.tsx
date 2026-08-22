@@ -124,7 +124,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
         display: 'flex',
         flexDirection: 'column',
         gap: '20px',
-        fontFamily: "'Be Vietnam Pro', sans-serif"
+        fontFamily: "'Times New Roman', Times, serif"
       }}
     >
       {/* ── 1. HEADER TIẾN ĐỘ & THỜI KHÓA BIỂU HÔM NAY ── */}

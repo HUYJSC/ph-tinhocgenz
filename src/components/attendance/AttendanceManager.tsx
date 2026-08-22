@@ -199,7 +199,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=14&data=${encodeURIComponent(qrCheckInUrl)}`;
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px 20px', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px 20px', fontFamily: "'Times New Roman', Times, serif" }}>
       {/* Top Selector Bar */}
       <div
         style={{

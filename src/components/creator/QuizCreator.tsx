@@ -350,7 +350,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', padding: '24px 20px', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', padding: '24px 20px', fontFamily: "'Times New Roman', Times, serif" }}>
       
       {/* ── TOP HEADER ── */}
       <div

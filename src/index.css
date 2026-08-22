@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  /* ── 1. TYPOGRAPHY SCALE (BE VIETNAM PRO) ── */
-  --font-sans: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* ── 1. TYPOGRAPHY SCALE (TIMES NEW ROMAN) ── */
+  --font-sans: 'Times New Roman', Times, 'Georgia', serif;
+  --font-serif: 'Times New Roman', Times, 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
   /* Standardized Sizes */
   --text-h1:         28px;
@@ -169,8 +170,12 @@ html {
   max-width: 100vw;
 }
 
+html, body, button, input, select, textarea, optgroup, [class*="card"], [class*="btn"], [class*="app"] {
+  font-family: var(--font-sans) !important;
+}
+
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans) !important;
   background-color: var(--bg-base);
   color: var(--text-primary);
   min-height: 100vh;
