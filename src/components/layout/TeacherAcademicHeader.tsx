@@ -42,8 +42,7 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
     { id: 'schedule', label: 'Lịch giảng dạy' },
     { id: 'assignments', label: 'Chấm bài & Đề thi' },
     { id: 'admin', label: 'Hồ sơ học viên' },
-    { id: 'early_warning', label: 'Cảnh báo học vụ' },
-    { id: 'creator', label: 'Soạn đề thi' }
+    { id: 'early_warning', label: 'Cảnh báo học vụ' }
   ];
 
   return (

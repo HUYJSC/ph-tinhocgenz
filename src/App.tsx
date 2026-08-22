@@ -383,7 +383,6 @@ export function App() {
                   onOpenAssignmentManager={() => setActiveTab('assignments')}
                   onOpenAdminPortal={() => setActiveTab('admin')}
                   onOpenScheduleCalendar={() => setActiveTab('schedule')}
-                  onOpenQuizCreator={() => setActiveTab('creator')}
                   onOpenQuizBank={() => setActiveTab('quizzes')}
                 />
               )}

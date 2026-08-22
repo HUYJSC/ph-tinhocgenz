@@ -4,9 +4,9 @@ import { EarlyWarningService } from '../../services/earlyWarningService';
 import { ClassScheduleItem } from '../../types/schedule';
 import { Assignment, AssignmentSubmission } from '../../types/assignment';
 import {
-  QrCode, ExternalLink, ChevronRight,
+  QrCode, ChevronRight,
   BookOpen, Calendar, AlertTriangle, Download,
-  Send, PlusCircle, Check, Search
+  Send, Check, Search
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -21,7 +21,6 @@ interface TeacherAcademicPortalProps {
   onOpenAssignmentManager: () => void;
   onOpenAdminPortal: () => void;
   onOpenScheduleCalendar: () => void;
-  onOpenQuizCreator: () => void;
   onOpenQuizBank: () => void;
 }
 
@@ -35,7 +34,6 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
   onOpenAssignmentManager,
   onOpenAdminPortal,
   onOpenScheduleCalendar,
-  onOpenQuizCreator,
   onOpenQuizBank
 }) => {
   const [remindedAll, setRemindedAll] = useState(false);
@@ -507,51 +505,30 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
                   {nextClass.title || 'Lớp Word & Excel Thực Chiến'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748B' }}>
-                  Phòng: {nextClass.room || 'Google Meet Trực Tuyến'}
+                  Phòng: {nextClass.room || 'Phòng Học Trực Tiếp'}
                 </div>
 
-                <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                  {nextClass.onlineMeetingUrl ? (
-                    <a
-                      href={nextClass.onlineMeetingUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        flex: 1,
-                        padding: '7px 0',
-                        borderRadius: '6px',
-                        background: '#2563EB',
-                        color: '#ffffff',
-                        fontSize: '12.5px',
-                        fontWeight: 600,
-                        textAlign: 'center',
-                        textDecoration: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <ExternalLink size={13} />
-                      <span>Vào phòng Meet</span>
-                    </a>
-                  ) : null}
-
+                <div style={{ marginTop: '12px' }}>
                   <button
                     onClick={() => { soundFx.playClick(); onOpenAttendanceSession(nextClass); }}
                     style={{
-                      flex: 1,
-                      padding: '7px 0',
+                      width: '100%',
+                      padding: '8px 0',
                       borderRadius: '6px',
-                      background: '#F1F5F9',
-                      border: '1px solid #CBD5E1',
-                      color: '#1E293B',
-                      fontSize: '12.5px',
+                      background: '#2563EB',
+                      color: '#ffffff',
+                      fontSize: '13px',
                       fontWeight: 600,
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      border: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                   >
-                    Điểm danh lớp
+                    <QrCode size={14} />
+                    <span>Mở điểm danh lớp (QR & PIN)</span>
                   </button>
                 </div>
               </div>
@@ -644,30 +621,6 @@ export const TeacherAcademicPortal: React.FC<TeacherAcademicPortalProps> = ({
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Download size={14} />
                   <span>Xuất báo cáo điểm danh Excel</span>
-                </span>
-                <ChevronRight size={14} />
-              </button>
-
-              <button
-                onClick={() => { soundFx.playClick(); onOpenQuizCreator(); }}
-                style={{
-                  width: '100%',
-                  padding: '9px 12px',
-                  borderRadius: '6px',
-                  background: '#EFF6FF',
-                  border: '1px solid #BFDBFE',
-                  color: '#1D4ED8',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  cursor: 'pointer'
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <PlusCircle size={14} />
-                  <span>Soạn đề thi & bài tập mới</span>
                 </span>
                 <ChevronRight size={14} />
               </button>

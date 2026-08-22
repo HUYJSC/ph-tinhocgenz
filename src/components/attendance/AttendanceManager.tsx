@@ -5,8 +5,8 @@ import { TRACK_CLASS_CODES } from '../../hooks/useAttendanceStorage';
 import {
   QrCode, CheckCircle2, Clock, RefreshCw,
   FileSpreadsheet, Trash2, Save, Users, Calendar,
-  CheckCheck, Lock, Unlock, UserCheck, AlertTriangle,
-  MapPin, Video, ExternalLink, Settings, X
+  CheckCheck, Lock, Unlock, UserCheck,
+  MapPin, Radio
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { getCurrentCoordinates } from '../../utils/securityUtils';
@@ -42,7 +42,7 @@ const ALL_TRACKS: { id: CurriculumTrack; label: string }[] = [
 
 export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   sessions,
-  studentAccounts = [],
+  studentAccounts: _studentAccounts = [],
   makeupReports = [],
   currentUser,
   onCreateSession,
@@ -62,9 +62,6 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(300);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
   const [isFetchingGps, setIsFetchingGps] = useState(false);
-  const [isEditMeetModalOpen, setIsEditMeetModalOpen] = useState(false);
-  const [tempMeetUrl, setTempMeetUrl] = useState('');
-  const [tempRoom, setTempRoom] = useState('');
 
   // Auto select active session
   const activeSession = sessions.find(s => s.id === selectedSessionId) || sessions.find(s => s.track === selectedTrack) || sessions[0];
@@ -76,7 +73,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         selectedTrack,
         `Lớp ${classMeta?.classCode || 'K26'} - ${TRACK_LABELS[selectedTrack]}`,
         currentUser.id || classMeta?.defaultTeacherId || 'tch-03',
-        currentUser.name || classMeta?.defaultTeacherName || 'Thầy Quang Huy',
+        currentUser.name || classMeta?.defaultTeacherName || 'Cô Hoàng Mai',
         classMeta?.classCode
       );
       setSelectedSessionId(newSess.id);
@@ -128,131 +125,89 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         });
         soundFx.playVictory();
       }
-    } catch (e: any) {
-      alert('Lỗi lấy GPS: ' + (e?.message || 'Vui lòng cấp quyền vị trí trên trình duyệt.'));
+    } catch (err: any) {
+      alert(`Không thể lấy tọa độ GPS: ${err?.message || 'Vui lòng cấp quyền vị trí trình duyệt'}`);
     } finally {
       setIsFetchingGps(false);
     }
   };
 
-  const handleSaveCurrentSession = () => {
-    if (!activeSession) return;
-    onSaveSession(activeSession);
-    setIsSavedNotice(true);
-    soundFx.playVictory();
-    setTimeout(() => setIsSavedNotice(false), 3000);
+  const formatMMSS = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Format MM:SS helper
-  const formatMMSS = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  };
+  // Compute live attendance metrics
+  const totalStudents = activeSession?.records?.length || 0;
+  const presentCount = activeSession?.records?.filter(r => r.status === 'present').length || 0;
+  const lateCount = activeSession?.records?.filter(r => r.status === 'late').length || 0;
+  const makeupCount = activeSession?.records?.filter(r => r.status === 'makeup' || r.isMakeup).length || 0;
+  const presentRate = totalStudents > 0 ? Math.round(((presentCount + makeupCount + lateCount) / totalStudents) * 100) : 0;
 
-  // Export Attendance to Excel
-  const exportAttendanceExcel = (sessionToExport?: AttendanceSession) => {
-    const targetSession = sessionToExport || activeSession;
-    if (!targetSession || targetSession.records.length === 0) {
-      alert('Chưa có dữ liệu học viên để xuất file Excel!');
-      return;
-    }
-
-    const headers = [
-      'STT',
-      'Ngày',
-      'Giờ',
-      'Mã Lớp',
-      'Môn Học',
-      'Giáo Viên',
-      'Mã HV',
-      'Họ Và Tên',
-      'Số Điện Thoại',
-      'Trạng Thái',
-      'Học Bù / Vắng Bù',
-      'Hình Thức',
-      'Thời Điểm',
-      'Ghi Chú'
-    ];
-
-    const escapeCsv = (val: any) => {
-      const str = String(val ?? '').replace(/"/g, '""');
-      return `"${str}"`;
-    };
-
-    const statusMap: Record<AttendanceStatus, string> = {
-      present: 'Có Mặt',
-      makeup: 'Học Bù (Vắng Bù)',
-      absent: 'Vắng Mặt',
-      late: 'Đi Trễ',
-      excused: 'Có Phép'
-    };
-
-    const methodMap: Record<string, string> = {
-      qr_scan: 'Quét QR',
-      pin_code: 'Nhập PIN',
-      manual: 'Thủ Công'
-    };
-
-    const trackTitle = TRACK_LABELS[targetSession.track] || targetSession.track;
-
-    const rows = targetSession.records.map((rec, index) => {
-      const stAcc = studentAccounts.find(s => s.studentCode === rec.studentCode);
-      return [
-        index + 1,
-        escapeCsv(targetSession.date),
-        escapeCsv(targetSession.startTime),
-        escapeCsv(rec.classCode || targetSession.classCode),
-        escapeCsv(trackTitle),
-        escapeCsv(targetSession.teacherName),
-        escapeCsv(rec.studentCode),
-        escapeCsv(rec.studentName),
-        escapeCsv(stAcc?.phone || '--'),
-        escapeCsv(statusMap[rec.status] || 'Vắng Mặt'),
-        escapeCsv(rec.isMakeup || rec.status === 'makeup' ? 'ĐÚNG (Học Bù)' : 'Không'),
-        escapeCsv(methodMap[rec.checkInMethod] || 'Thủ công'),
-        escapeCsv(rec.checkInTime || '--:--'),
-        escapeCsv(rec.note || '')
-      ].join(',');
+  // Filter ONLY students who have checked in, sorted newest first
+  const checkedInRecords = (activeSession?.records || [])
+    .filter(r => r.status === 'present' || r.status === 'makeup' || r.status === 'late' || r.isMakeup)
+    .sort((a, b) => {
+      if (!a.checkInTime) return 1;
+      if (!b.checkInTime) return -1;
+      return b.checkInTime.localeCompare(a.checkInTime);
     });
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+  const exportAttendanceExcel = (targetSession?: AttendanceSession) => {
+    const sess = targetSession || activeSession;
+    if (!sess) return;
+
+    soundFx.playClick();
+    const rows = [
+      ['STT', 'Mã Học Viên', 'Họ và Tên', 'Trạng Thái', 'Giờ Điểm Danh', 'Hình Thức', 'Ghi Chú'],
+      ...sess.records.map((r, i) => [
+        i + 1,
+        r.studentCode,
+        r.studentName,
+        r.status === 'present' ? 'Có mặt' : r.status === 'makeup' || r.isMakeup ? 'Học bù' : r.status === 'late' ? 'Đi muộn' : 'Vắng',
+        r.checkInTime || '',
+        r.checkInMethod === 'qr_scan' ? 'Quét QR' : r.checkInMethod === 'pin_code' ? 'Nhập PIN' : 'Thủ công',
+        r.note || ''
+      ])
+    ];
+
+    const csvContent = '\uFEFF' + rows.map(e => e.map(cell => `"${cell}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `DiemDanh_${targetSession.classCode || targetSession.track}_${targetSession.date}.csv`);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `DiemDanh_${sess.className.replace(/\s+/g, '_')}_${sess.date}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    soundFx.playVictory();
   };
 
-  // Live stats
-  const totalStudents = activeSession?.records.length || 0;
-  const presentCount = activeSession?.records.filter(r => r.status === 'present').length || 0;
-  const makeupCount = activeSession?.records.filter(r => r.status === 'makeup' || r.isMakeup).length || 0;
-  const lateCount = activeSession?.records.filter(r => r.status === 'late').length || 0;
-  const presentRate = totalStudents > 0 ? Math.round(((presentCount + makeupCount + lateCount) / totalStudents) * 100) : 0;
+  const handleSaveCurrentSession = () => {
+    if (!activeSession) return;
+    onSaveSession(activeSession);
+    soundFx.playVictory();
+    setIsSavedNotice(true);
+    setTimeout(() => setIsSavedNotice(false), 2500);
+  };
 
-  // QR Code Deep Link URL
   const currentClassCode = activeSession?.classCode || TRACK_CLASS_CODES[selectedTrack]?.classCode || 'K26';
   const qrCheckInUrl = activeSession
     ? `https://hoctructuyen.tinhocgenz.io.vn/?action=checkin&track=${activeSession.track}&class=${currentClassCode}&pin=${activeSession.qrPinCode}&token=${activeSession.qrToken}`
     : 'https://hoctructuyen.tinhocgenz.io.vn';
 
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(qrCheckInUrl)}`;
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=14&data=${encodeURIComponent(qrCheckInUrl)}`;
 
   return (
-    <div style={{ maxWidth: '980px', margin: '0 auto', width: '100%', padding: '14px 16px' }} className="animate-slide-up">
+    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px 20px', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
       {/* Top Selector Bar */}
       <div
-        className="card"
         style={{
           padding: '12px 16px',
-          borderRadius: '16px',
-          marginBottom: '14px',
+          borderRadius: '8px',
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          marginBottom: '16px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -261,7 +216,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         }}
       >
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '260px' }}>
-          <Users size={16} color="var(--brand)" />
+          <Users size={16} color="#2563EB" />
           <select
             value={selectedTrack}
             onChange={e => {
@@ -275,17 +230,20 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               flex: 1,
               maxWidth: '380px',
               padding: '6px 12px',
-              fontSize: '0.86rem',
-              fontWeight: 700,
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)'
+              fontSize: '13.5px',
+              fontWeight: 600,
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#0F172A',
+              outline: 'none'
             }}
           >
             {ALL_TRACKS.map(t => (
               <option key={t.id} value={t.id}>{t.label}</option>
             ))}
           </select>
-          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--brand)', background: 'rgba(79,110,247,0.1)', padding: '3px 8px', borderRadius: '6px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: '#2563EB', background: '#EFF6FF', padding: '3px 8px', borderRadius: '4px', border: '1px solid #BFDBFE' }}>
             {currentClassCode}
           </span>
         </div>
@@ -293,8 +251,19 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={() => exportAttendanceExcel()}
-            className="btn btn-secondary"
-            style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: 700, gap: '6px' }}
+            style={{
+              padding: '6px 14px',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              borderRadius: '6px',
+              background: '#F8FAFC',
+              border: '1px solid #CBD5E1',
+              color: '#334155',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
           >
             <FileSpreadsheet size={14} />
             <span>Xuất Excel</span>
@@ -303,10 +272,10 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', marginBottom: '16px', background: '#FFFFFF', borderRadius: '6px 6px 0 0' }}>
         {[
-          { id: 'qr_mode',        label: 'Mã QR Điểm Danh', icon: QrCode },
-          { id: 'manual_list',    label: `Danh Sách Lớp (${presentCount + makeupCount + lateCount}/${totalStudents})`, icon: CheckCheck },
+          { id: 'qr_mode',        label: 'Mã QR Điểm Danh Trực Tiếp', icon: QrCode },
+          { id: 'manual_list',    label: `Danh Sách Cả Lớp (${presentCount + makeupCount + lateCount}/${totalStudents})`, icon: CheckCheck },
           { id: 'makeup_reports', label: `Học Bù (${makeupReports.length})`, icon: UserCheck },
           { id: 'history',        label: `Lịch Sử (${sessions.length})`, icon: Calendar }
         ].map(tab => {
@@ -323,13 +292,13 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '8px 16px',
+                padding: '10px 18px',
                 border: 'none',
                 background: 'transparent',
-                borderBottom: isActive ? '2.5px solid var(--brand)' : '2.5px solid transparent',
-                color: isActive ? 'var(--brand)' : 'var(--text-secondary)',
-                fontWeight: isActive ? 800 : 600,
-                fontSize: '0.86rem',
+                borderBottom: isActive ? '2.5px solid #2563EB' : '2.5px solid transparent',
+                color: isActive ? '#2563EB' : '#64748B',
+                fontWeight: isActive ? 600 : 500,
+                fontSize: '13px',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap'
               }}
@@ -337,7 +306,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
               <Icon size={15} />
               <span>{tab.label}</span>
               {tab.id === 'makeup_reports' && makeupReports.length > 0 && (
-                <span style={{ background: '#f59e0b', color: '#fff', fontSize: '0.65rem', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
+                <span style={{ background: '#D97706', color: '#fff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
                   {makeupReports.length}
                 </span>
               )}
@@ -346,33 +315,27 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         })}
       </div>
 
-      {/* ─── TAB 1: DUAL VIEW (QR CODE + LIVE CHECK-IN ROSTER BOARD) ─── */}
+      {/* ─── TAB 1: DUAL VIEW (GIANT QR CODE HERO + LIVE CHECK-IN STREAM) ─── */}
       {activeSubTab === 'qr_mode' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: '16px', alignItems: 'start' }}>
-          {/* Left: Projector QR Code Card */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 0.85fr)', gap: '18px', alignItems: 'start' }}>
+          
+          {/* CỘT TRÁI (ƯU TIÊN MÃ ĐIỂM DANH SIÊU BỰ CHO MÁY CHIẾU) */}
           <div
-            className="card"
             style={{
               padding: '24px 20px',
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              borderRadius: '20px',
-              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-card)'
+              borderRadius: '8px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              border: '1px solid #E2E8F0',
+              background: '#FFFFFF'
             }}
           >
             {/* Header Status & Countdown */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              marginBottom: '14px'
-            }}>
-              <div style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '14px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>
                 {activeSession?.className || `Lớp ${currentClassCode}`}
               </div>
 
@@ -381,37 +344,37 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                padding: '3px 10px',
+                padding: '4px 10px',
                 borderRadius: '999px',
-                background: activeSession?.isOpen === false ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                color: activeSession?.isOpen === false ? '#ef4444' : '#10b981',
-                fontSize: '0.84rem',
-                fontWeight: 900
+                background: activeSession?.isOpen === false ? '#FEE2E2' : '#DCFCE7',
+                color: activeSession?.isOpen === false ? '#DC2626' : '#16A34A',
+                fontSize: '12.5px',
+                fontWeight: 700
               }}>
                 <Clock size={14} />
-                <span>{activeSession?.isOpen === false ? 'ĐÃ KHÓA' : formatMMSS(timeLeftSeconds)}</span>
+                <span>{activeSession?.isOpen === false ? 'ĐÃ KHÓA' : `Tự đổi mã: ${formatMMSS(timeLeftSeconds)}`}</span>
               </div>
             </div>
 
-            {/* Giant QR Code Display */}
+            {/* Giant QR Code Display (280x280px) */}
             <div style={{
               position: 'relative',
-              padding: '12px',
-              background: '#ffffff',
-              borderRadius: '16px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              marginBottom: '14px',
+              padding: '14px',
+              background: '#FFFFFF',
+              borderRadius: '10px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)',
+              border: '1.5px solid #E2E8F0',
+              marginBottom: '16px',
               overflow: 'hidden'
             }}>
               <img
                 src={qrImageUrl}
-                alt="QR Code"
+                alt="Mã QR Điểm Danh"
                 style={{
-                  width: '240px',
-                  height: '240px',
+                  width: '280px',
+                  height: '280px',
                   display: 'block',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   filter: activeSession?.isOpen === false ? 'blur(8px) grayscale(100%)' : 'none',
                   opacity: activeSession?.isOpen === false ? 0.3 : 1,
                   transition: 'all 0.3s ease'
@@ -432,8 +395,8 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                   color: '#fff',
                   textAlign: 'center'
                 }}>
-                  <Lock size={32} color="#ef4444" style={{ marginBottom: '6px' }} />
-                  <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#fff', marginBottom: '6px' }}>
+                  <Lock size={36} color="#ef4444" style={{ marginBottom: '6px' }} />
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
                     ĐÃ KHÓA ĐIỂM DANH
                   </div>
                   <button
@@ -443,50 +406,87 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                         soundFx.playVictory();
                       }
                     }}
-                    className="btn btn-success"
-                    style={{ padding: '5px 12px', fontSize: '0.76rem', fontWeight: 800, gap: '4px' }}
+                    style={{
+                      padding: '6px 16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      background: '#16A34A',
+                      color: '#fff',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
                   >
-                    <Unlock size={13} />
+                    <Unlock size={14} />
                     <span>Mở Lại QR</span>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* 6-Digit PIN Code */}
-            <div style={{ marginBottom: '14px' }}>
+            {/* Giant 6-Digit PIN Code for Manual Typing */}
+            <div style={{ marginBottom: '16px', width: '100%', textAlign: 'center' }}>
+              <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>
+                MÃ PIN NHẬP TAY 6 SỐ
+              </div>
               <div style={{
-                fontSize: '1.9rem',
+                fontSize: '2.4rem',
                 fontWeight: 900,
-                color: activeSession?.isOpen === false ? 'var(--text-muted)' : 'var(--brand)',
-                letterSpacing: '0.2em',
-                fontFamily: 'var(--font-mono)'
+                color: activeSession?.isOpen === false ? '#94A3B8' : '#2563EB',
+                letterSpacing: '0.22em',
+                fontFamily: 'monospace',
+                lineHeight: 1.2
               }}>
                 {activeSession?.isOpen === false ? 'LOCKED' : (activeSession?.qrPinCode || '------')}
               </div>
             </div>
 
-            {/* Minimal Toolbar (GPS Toggle, Rotate Now, Lock/Unlock) */}
-            <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {/* Minimal Toolbar (Rotate, GPS, Lock) */}
+            <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={handleRotateNow}
-                className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '5px' }}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  background: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  color: '#1E293B',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
                 title="Đổi mã QR & PIN mới ngay lập tức"
               >
                 <RefreshCw size={13} />
-                <span>Đổi Mã</span>
+                <span>Đổi Mã Ngay</span>
               </button>
 
               <button
                 onClick={handleToggleGpsLock}
                 disabled={isFetchingGps}
-                className={`btn ${activeSession?.requireLocation ? 'btn-warning' : 'btn-secondary'}`}
-                style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '5px' }}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  background: activeSession?.requireLocation ? '#FEF3C7' : '#F1F5F9',
+                  border: activeSession?.requireLocation ? '1px solid #FCD34D' : '1px solid #CBD5E1',
+                  color: activeSession?.requireLocation ? '#92400E' : '#1E293B',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
                 title="Giới hạn học viên điểm danh trong bán kính GPS 150m lớp học"
               >
                 <MapPin size={13} />
-                <span>{isFetchingGps ? 'Đang lấy GPS...' : activeSession?.requireLocation ? 'GPS: BẬT' : 'Bật GPS'}</span>
+                <span>{isFetchingGps ? 'Đang lấy GPS...' : activeSession?.requireLocation ? 'GPS: ĐANG BẬT (150m)' : 'Bật Vị Trí GPS'}</span>
               </button>
 
               {activeSession && (
@@ -495,179 +495,152 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                     onToggleSessionOpen(activeSession.id);
                     soundFx.playClick();
                   }}
-                  className={`btn ${activeSession.isOpen !== false ? 'btn-danger' : 'btn-success'}`}
-                  style={{ padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, gap: '5px' }}
+                  style={{
+                    padding: '7px 14px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    background: activeSession.isOpen !== false ? '#FEE2E2' : '#DCFCE7',
+                    border: activeSession.isOpen !== false ? '1px solid #FCA5A5' : '1px solid #86EFAC',
+                    color: activeSession.isOpen !== false ? '#DC2626' : '#166534',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
                 >
                   {activeSession.isOpen !== false ? <Lock size={13} /> : <Unlock size={13} />}
                   <span>{activeSession.isOpen !== false ? 'Khóa QR' : 'Mở QR'}</span>
                 </button>
               )}
             </div>
-
-            {/* Google Meet Online Room Link */}
-            {activeSession?.onlineMeetingUrl && (
-              <div style={{
-                marginTop: '12px',
-                padding: '8px 12px',
-                borderRadius: '12px',
-                background: 'var(--brand-light)',
-                border: '1px solid rgba(79, 110, 247, 0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '8px',
-                width: '100%',
-                maxWidth: '280px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', color: 'var(--brand)', fontWeight: 800, overflow: 'hidden' }}>
-                  <Video size={15} />
-                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                    {activeSession.room || 'Google Meet Trực Tuyến'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  <button
-                    onClick={() => {
-                      setTempMeetUrl(activeSession.onlineMeetingUrl || '');
-                      setTempRoom(activeSession.room || 'Phòng LAB 01 (Tầng 2)');
-                      setIsEditMeetModalOpen(true);
-                    }}
-                    title="Cài đặt link Meet & phòng học cho lớp này"
-                    className="btn btn-secondary"
-                    style={{ padding: '4px 6px', height: '26px', minHeight: '26px', borderRadius: '6px' }}
-                  >
-                    <Settings size={12} />
-                  </button>
-
-                  <a
-                    href={activeSession.onlineMeetingUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-primary"
-                    style={{ padding: '4px 10px', fontSize: '0.72rem', fontWeight: 800, textDecoration: 'none', borderRadius: '8px', flexShrink: 0 }}
-                  >
-                    <span>Mở Meet</span>
-                    <ExternalLink size={11} />
-                  </a>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Right: Live Student Attendance Board */}
+          {/* CỘT PHẢI: DÒNG SỰ KIỆN HỌC VIÊN ĐIỂM DANH THÀNH CÔNG (REALTIME STREAM) */}
           <div
-            className="card"
             style={{
               padding: '18px 20px',
-              borderRadius: '20px',
-              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-card)',
+              borderRadius: '8px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              border: '1px solid #E2E8F0',
+              background: '#FFFFFF',
               display: 'flex',
               flexDirection: 'column',
-              minHeight: '440px'
+              minHeight: '480px'
             }}
           >
             {/* Header with Live Stats & Counter */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Học Viên Đã Điểm Danh
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16A34A', boxShadow: '0 0 8px #16A34A' }} />
+                <h3 style={{ fontSize: '14.5px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+                  Dòng sự kiện điểm danh ({checkedInRecords.length})
                 </h3>
               </div>
 
-              <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '3px 9px', borderRadius: '999px' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '3px 9px', borderRadius: '999px' }}>
                 {presentCount + makeupCount + lateCount} / {totalStudents} Có Mặt ({presentRate}%)
               </span>
             </div>
 
-            {/* Scrollable Live List of Students */}
-            <div style={{ flex: 1, maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '4px' }}>
-              {activeSession && activeSession.records.length > 0 ? (
-                activeSession.records.map((rec, index) => {
-                  const isCheckedIn = rec.status === 'present' || rec.status === 'makeup' || rec.status === 'late' || rec.isMakeup;
+            {/* Live Stream of Checked-In Students (Newest on Top) */}
+            <div style={{ flex: 1, maxHeight: '410px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '2px' }}>
+              {checkedInRecords.length > 0 ? (
+                checkedInRecords.map((rec, idx) => {
+                  const isNewest = idx === 0;
+                  const checkInOrder = checkedInRecords.length - idx;
                   return (
                     <div
                       key={rec.studentId}
                       style={{
-                        padding: '8px 12px',
-                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        borderRadius: '6px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        gap: '8px',
-                        background: isCheckedIn ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
-                        border: isCheckedIn ? '1px solid rgba(16, 185, 129, 0.28)' : '1px solid var(--border-color)',
-                        transition: 'all 0.2s ease'
+                        gap: '10px',
+                        background: isNewest ? '#F0FDF4' : '#F8FAFC',
+                        border: isNewest ? '1.5px solid #86EFAC' : '1px solid #E2E8F0',
+                        boxShadow: isNewest ? '0 2px 8px rgba(22, 163, 74, 0.1)' : 'none',
+                        transition: 'all 0.3s ease'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', width: '18px', textAlign: 'center' }}>
-                          {index + 1}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: isNewest ? '#16A34A' : '#64748B',
+                          background: isNewest ? '#DCFCE7' : '#FFFFFF',
+                          border: '1px solid',
+                          borderColor: isNewest ? '#86EFAC' : '#CBD5E1',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          minWidth: '28px',
+                          textAlign: 'center'
+                        }}>
+                          #{checkInOrder}
                         </span>
+
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {rec.studentName}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {rec.studentName}
+                            </span>
+                            {isNewest && (
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 5px', borderRadius: '4px' }}>
+                                ⭐ MỚI NHẤT
+                              </span>
+                            )}
                           </div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                          <div style={{ fontSize: '11.5px', color: '#64748B', fontFamily: 'monospace', marginTop: '1px' }}>
                             {rec.studentCode}
                           </div>
                         </div>
                       </div>
 
-                      {/* Status indicator */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                        {isCheckedIn ? (
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{
-                              fontSize: '0.72rem',
-                              fontWeight: 800,
-                              color: rec.status === 'makeup' || rec.isMakeup ? '#f59e0b' : '#10b981',
-                              background: rec.status === 'makeup' || rec.isMakeup ? 'rgba(245, 158, 11, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}>
-                              <CheckCircle2 size={12} />
-                              <span>{rec.status === 'makeup' || rec.isMakeup ? 'HỌC BÙ' : 'ĐÃ CÓ MẶT'}</span>
-                            </span>
-                            {rec.checkInTime && (
-                              <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                {rec.checkInTime} ({rec.checkInMethod === 'qr_scan' ? 'QR' : 'PIN'})
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span style={{
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            color: 'var(--text-muted)',
-                            background: 'var(--bg-primary)',
-                            padding: '2px 7px',
-                            borderRadius: '6px',
-                            border: '1px solid var(--border-color)'
-                          }}>
-                            Chưa quét
-                          </span>
-                        )}
+                      {/* Check-in time & method badge */}
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <span style={{
+                          fontSize: '11.5px',
+                          fontWeight: 600,
+                          color: rec.status === 'makeup' || rec.isMakeup ? '#92400E' : '#166534',
+                          background: rec.status === 'makeup' || rec.isMakeup ? '#FEF3C7' : '#DCFCE7',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <CheckCircle2 size={12} />
+                          <span>{rec.status === 'makeup' || rec.isMakeup ? 'HỌC BÙ' : 'ĐÃ ĐIỂM DANH'}</span>
+                        </span>
+                        <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
+                          ⏱️ {rec.checkInTime || 'Vừa xong'} • {rec.checkInMethod === 'qr_scan' ? 'Quét QR' : 'Nhập PIN'}
+                        </div>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                  Chưa có học viên nào trong danh sách lớp.
+                <div style={{ padding: '48px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', height: '100%' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Radio size={24} />
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>
+                    Đang chờ học viên quét mã...
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#64748B', maxWidth: '280px', lineHeight: 1.4 }}>
+                    Khi học viên quét QR hoặc nhập PIN 6 số trên màn hình, danh sách sẽ tự động cập nhật và đẩy học viên mới lên trên cùng.
+                  </div>
                 </div>
               )}
             </div>
           </div>
+
         </div>
       )}
 
-      {/* ─── TAB 2: DETAILED STUDENT CLASS ROSTER ─── */}
+      {/* ─── TAB 2: DETAILED STUDENT CLASS ROSTER (FULL LIST FOR MANUAL TICK) ─── */}
       {activeSubTab === 'manual_list' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
@@ -679,424 +652,179 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                     soundFx.playVictory();
                   }
                 }}
-                className="btn btn-success"
-                style={{ padding: '7px 13px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  background: '#16A34A',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
               >
                 <CheckCircle2 size={14} />
-                <span>Tick Tất Cả Có Mặt</span>
+                <span>Đánh Dấu Tất Cả Có Mặt</span>
               </button>
 
               <button
                 onClick={handleSaveCurrentSession}
-                className="btn btn-primary"
-                style={{ padding: '7px 13px', fontSize: '0.78rem', fontWeight: 700, gap: '6px' }}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  background: '#2563EB',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
               >
                 <Save size={14} />
                 <span>{isSavedNotice ? 'Đã Lưu! ✓' : 'Lưu Danh Sách'}</span>
               </button>
             </div>
 
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '13px', color: '#64748B' }}>
               Lớp: <b>{currentClassCode}</b> • Có mặt: <b>{presentCount + makeupCount + lateCount}/{totalStudents}</b> ({presentRate}%)
             </div>
           </div>
 
-          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
-                <thead>
-                  <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '10px 12px', width: '35px', textAlign: 'center' }}>#</th>
-                    <th style={{ padding: '10px 12px', width: '90px' }}>Mã HV</th>
-                    <th style={{ padding: '10px 12px', minWidth: '140px' }}>Họ Và Tên</th>
-                    <th style={{ padding: '10px 12px', width: '90px' }}>Mã Lớp</th>
-                    <th style={{ padding: '10px 12px', width: '100px' }}>SĐT</th>
-                    <th style={{ padding: '10px 12px', minWidth: '260px' }}>Trạng Thái Điểm Danh</th>
-                    <th style={{ padding: '10px 12px', minWidth: '120px' }}>Thời Điểm</th>
-                    <th style={{ padding: '10px 12px', minWidth: '150px' }}>Ghi Chú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeSession && activeSession.records.length > 0 ? (
-                    activeSession.records.map((rec, idx) => {
-                      const stAcc = studentAccounts.find(s => s.studentCode === rec.studentCode);
-                      return (
-                        <tr
-                          key={rec.studentId}
-                          style={{
-                            borderBottom: '1px solid var(--border-color)',
-                            background: rec.status === 'makeup' || rec.isMakeup
-                              ? 'rgba(245, 158, 11, 0.05)'
-                              : rec.status === 'present'
-                                ? 'rgba(16, 185, 129, 0.03)'
-                                : 'transparent'
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>STT</th>
+                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Mã HV</th>
+                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Họ và Tên</th>
+                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Trạng Thái</th>
+                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569' }}>Thời Gian</th>
+                  <th style={{ padding: '10px 12px', fontWeight: 600, color: '#475569', textAlign: 'right' }}>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeSession?.records.map((rec, idx) => (
+                  <tr key={rec.studentId} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '10px 12px', color: '#64748B' }}>{idx + 1}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 600, color: '#2563EB' }}>{rec.studentCode}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 500, color: '#0F172A' }}>{rec.studentName}</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '11.5px',
+                        fontWeight: 600,
+                        background: rec.status === 'present' ? '#DCFCE7' : rec.status === 'makeup' || rec.isMakeup ? '#FEF3C7' : rec.status === 'late' ? '#FEF9C3' : '#F1F5F9',
+                        color: rec.status === 'present' ? '#166534' : rec.status === 'makeup' || rec.isMakeup ? '#92400E' : rec.status === 'late' ? '#854D0E' : '#64748B'
+                      }}>
+                        {rec.status === 'present' ? 'Có mặt' : rec.status === 'makeup' || rec.isMakeup ? 'Học bù' : rec.status === 'late' ? 'Đi muộn' : 'Vắng'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px 12px', color: '#64748B', fontSize: '12px' }}>
+                      {rec.checkInTime || '--'}
+                    </td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: '4px' }}>
+                        <button
+                          onClick={() => {
+                            onUpdateStatus(activeSession.id, rec.studentId, 'present', undefined, 'manual');
+                            soundFx.playClick();
                           }}
+                          style={{ padding: '3px 8px', borderRadius: '4px', background: '#DCFCE7', border: '1px solid #86EFAC', color: '#166534', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer' }}
                         >
-                          <td style={{ padding: '8px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            {idx + 1}
-                          </td>
-                          <td style={{ padding: '8px 12px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                            {rec.studentCode}
-                          </td>
-                          <td style={{ padding: '8px 12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                            {rec.studentName}
-                          </td>
-                          <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--brand)' }}>
-                            {rec.classCode || currentClassCode}
-                          </td>
-                          <td style={{ padding: '8px 12px', color: 'var(--text-secondary)', fontSize: '0.76rem' }}>
-                            {stAcc?.phone || '--'}
-                          </td>
-                          <td style={{ padding: '8px 12px' }}>
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                              {[
-                                { id: 'present', label: 'Có Mặt', color: '#10b981' },
-                                { id: 'makeup',  label: 'Học Bù', color: '#f59e0b' },
-                                { id: 'late',    label: 'Đi Trễ', color: '#d97706' },
-                                { id: 'excused', label: 'Có Phép', color: '#3b82f6' },
-                                { id: 'absent',  label: 'Vắng',   color: '#ef4444' }
-                              ].map(st => {
-                                const isSelected = rec.status === st.id;
-                                return (
-                                  <button
-                                    key={st.id}
-                                    onClick={() => {
-                                      onUpdateStatus(
-                                        activeSession.id,
-                                        rec.studentId,
-                                        st.id as AttendanceStatus,
-                                        rec.note,
-                                        'manual',
-                                        st.id === 'makeup'
-                                      );
-                                      soundFx.playClick();
-                                    }}
-                                    style={{
-                                      padding: '3px 7px',
-                                      borderRadius: 'var(--radius-full)',
-                                      border: isSelected ? `1.5px solid ${st.color}` : '1px solid var(--border-color)',
-                                      background: isSelected ? `${st.color}22` : 'transparent',
-                                      color: isSelected ? st.color : 'var(--text-secondary)',
-                                      fontSize: '0.72rem',
-                                      fontWeight: isSelected ? 800 : 500,
-                                      cursor: 'pointer',
-                                      transition: 'all 0.15s ease'
-                                    }}
-                                  >
-                                    {st.label}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </td>
-                          <td style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '0.74rem' }}>
-                            {rec.checkInTime ? (
-                              <span style={{ color: '#10b981', fontWeight: 700 }}>
-                                {rec.checkInTime} ({rec.checkInMethod === 'qr_scan' ? 'QR' : rec.checkInMethod === 'pin_code' ? 'PIN' : 'Tay'})
-                              </span>
-                            ) : (
-                              '--:--'
-                            )}
-                          </td>
-                          <td style={{ padding: '8px 12px' }}>
-                            <input
-                              type="text"
-                              placeholder="Ghi chú..."
-                              defaultValue={rec.note || ''}
-                              onBlur={e => {
-                                if (e.target.value !== rec.note) {
-                                  onUpdateStatus(activeSession.id, rec.studentId, rec.status, e.target.value, rec.checkInMethod, rec.isMakeup);
-                                }
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '4px 8px',
-                                fontSize: '0.76rem',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '6px'
-                              }}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={8} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        Chưa có học viên nào trong danh sách lớp này.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          Có mặt
+                        </button>
+                        <button
+                          onClick={() => {
+                            onUpdateStatus(activeSession.id, rec.studentId, 'absent', undefined, 'manual');
+                            soundFx.playClick();
+                          }}
+                          style={{ padding: '3px 8px', borderRadius: '4px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 500, cursor: 'pointer' }}
+                        >
+                          Vắng
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
       {/* ─── TAB 3: MAKEUP ATTENDANCE REPORTS ─── */}
       {activeSubTab === 'makeup_reports' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{
-            padding: '12px 16px',
-            background: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}>
-            <AlertTriangle size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>
-              Danh sách học viên học bù từ lớp khác được ghi nhận tự động và gửi về Ban Quản Trị.
-            </div>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '16px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>
+            Danh sách học viên đăng ký học bù
           </div>
 
-          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
-                <thead>
-                  <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '10px 12px', width: '40px', textAlign: 'center' }}>#</th>
-                    <th style={{ padding: '10px 12px', width: '90px' }}>Mã HV</th>
-                    <th style={{ padding: '10px 12px' }}>Họ Và Tên</th>
-                    <th style={{ padding: '10px 12px' }}>Lớp Gốc</th>
-                    <th style={{ padding: '10px 12px' }}>Lớp Học Bù</th>
-                    <th style={{ padding: '10px 12px' }}>Giáo Viên</th>
-                    <th style={{ padding: '10px 12px' }}>Ngày / Giờ</th>
-                    <th style={{ padding: '10px 12px' }}>Lý Do</th>
-                    {onClearMakeupReport && <th style={{ padding: '10px 12px', width: '50px' }}>Xóa</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {makeupReports.length > 0 ? (
-                    makeupReports.map((rpt, idx) => (
-                      <tr key={rpt.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '8px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>{idx + 1}</td>
-                        <td style={{ padding: '8px 12px', fontWeight: 700, fontFamily: 'monospace' }}>{rpt.studentCode}</td>
-                        <td style={{ padding: '8px 12px', fontWeight: 600, color: 'var(--text-primary)' }}>{rpt.studentName}</td>
-                        <td style={{ padding: '8px 12px', color: 'var(--text-secondary)' }}>{rpt.originalClassCode}</td>
-                        <td style={{ padding: '8px 12px', fontWeight: 700, color: '#f59e0b' }}>{rpt.makeupClassCode}</td>
-                        <td style={{ padding: '8px 12px' }}>{rpt.teacherName}</td>
-                        <td style={{ padding: '8px 12px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                          {rpt.sessionDate} ({rpt.checkInTime})
-                        </td>
-                        <td style={{ padding: '8px 12px', fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{rpt.reason}</td>
-                        {onClearMakeupReport && (
-                          <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                            <button
-                              onClick={() => onClearMakeupReport(rpt.id)}
-                              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={9} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        Chưa có sinh viên nào đi học bù.
-                      </td>
-                    </tr>
+          {makeupReports.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {makeupReports.map(rep => (
+                <div key={rep.id} style={{ padding: '10px 14px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F172A' }}>{rep.studentName} ({rep.studentCode})</div>
+                    <div style={{ fontSize: '12px', color: '#64748B' }}>Lý do: {rep.reason || 'Học bù ca khác'} • Ngày: {rep.sessionDate}</div>
+                  </div>
+                  {onClearMakeupReport && (
+                    <button
+                      onClick={() => onClearMakeupReport(rep.id)}
+                      style={{ padding: '4px 10px', borderRadius: '4px', background: '#F1F5F9', border: '1px solid #CBD5E1', fontSize: '12px', cursor: 'pointer' }}
+                    >
+                      Đã xử lý
+                    </button>
                   )}
-                </tbody>
-              </table>
+                </div>
+              ))}
             </div>
-          </div>
+          ) : (
+            <div style={{ padding: '30px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+              Không có yêu cầu học bù nào đang chờ duyệt.
+            </div>
+          )}
         </div>
       )}
 
       {/* ─── TAB 4: ATTENDANCE HISTORY ─── */}
       {activeSubTab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {sessions.length > 0 ? (
-            sessions.map(sess => {
-              const pCount = sess.records.filter(r => r.status === 'present').length;
-              const mCount = sess.records.filter(r => r.status === 'makeup' || r.isMakeup).length;
-              const lCount = sess.records.filter(r => r.status === 'late').length;
-              const aCount = sess.records.filter(r => r.status === 'absent').length;
-              const tCount = sess.records.length;
-              const pRate = tCount > 0 ? Math.round(((pCount + mCount + lCount) / tCount) * 100) : 0;
-              const isCurrent = sess.id === activeSession?.id;
+        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '16px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>
+            Lịch sử các buổi điểm danh ({sessions.length})
+          </div>
 
-              return (
-                <div
-                  key={sess.id}
-                  className="card"
-                  style={{
-                    padding: '14px 16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '10px',
-                    borderLeft: isCurrent ? '4px solid var(--brand)' : '4px solid transparent'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                        Lớp {sess.classCode || 'K26'} - {TRACK_LABELS[sess.track] || sess.track}
-                      </span>
-                      {isCurrent && (
-                        <span style={{ fontSize: '0.66rem', background: 'var(--brand)', color: '#fff', padding: '1px 6px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
-                          HIỆN TẠI
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      📅 {sess.date} lúc {sess.startTime} • Giảng viên: {sess.teacherName}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ textAlign: 'right', fontSize: '0.78rem' }}>
-                      <div style={{ fontWeight: 800, color: '#10b981' }}>{pCount + mCount + lCount}/{tCount} Có mặt ({pRate}%)</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{mCount} học bù • {aCount} vắng</div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <button
-                        onClick={() => exportAttendanceExcel(sess)}
-                        className="btn btn-secondary"
-                        style={{ padding: '6px 10px', fontSize: '0.74rem', gap: '4px' }}
-                      >
-                        <FileSpreadsheet size={13} />
-                        <span>Excel</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          if (confirm(`Bạn có chắc chắn muốn xóa phiên điểm danh ngày ${sess.date}?`)) {
-                            onDeleteSession(sess.id);
-                            soundFx.playClick();
-                          }
-                        }}
-                        className="btn btn-danger"
-                        style={{ padding: '6px 8px', fontSize: '0.74rem' }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {sessions.map(s => (
+              <div key={s.id} style={{ padding: '12px 14px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F172A' }}>{s.className}</div>
+                  <div style={{ fontSize: '12px', color: '#64748B' }}>Ngày: {s.date} • Mã PIN: {s.qrPinCode}</div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="card" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Chưa có lịch sử buổi học nào.
-            </div>
-          )}
-        </div>
-      )}
-      {/* ── MODAL: CÀI ĐẶT LINK GOOGLE MEET & PHÒNG HỌC CHO LỚP ── */}
-      {isEditMeetModalOpen && activeSession && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(0, 0, 0, 0.65)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
-        >
-          <div
-            className="card animate-slide-up"
-            style={{
-              width: '100%',
-              maxWidth: '480px',
-              borderRadius: '20px',
-              padding: '22px',
-              background: 'var(--bg-card)',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Video size={18} color="var(--brand)" />
-                <h3 style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Cài Đặt Phòng Học & Link Meet
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsEditMeetModalOpen(false)}
-                className="btn btn-icon"
-                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
-              >
-                <X size={15} />
-              </button>
-            </div>
 
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
-              Thiết lập link Google Meet và địa điểm phòng học cho <strong>{activeSession.className || activeSession.classCode}</strong>.
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (onUpdateSessionSecurity) {
-                  onUpdateSessionSecurity(activeSession.id, {
-                    onlineMeetingUrl: tempMeetUrl.trim(),
-                    room: tempRoom.trim()
-                  });
-                }
-                setIsEditMeetModalOpen(false);
-                soundFx.playVictory();
-              }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
-            >
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Địa Điểm / Phòng Học:
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={tempRoom}
-                  onChange={(e) => setTempRoom(e.target.value)}
-                  placeholder="VD: Phòng LAB 01 (Tầng 2) hoặc Trực Tuyến"
-                  style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
-                />
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={() => exportAttendanceExcel(s)}
+                    style={{ padding: '4px 10px', borderRadius: '4px', background: '#FFFFFF', border: '1px solid #CBD5E1', fontSize: '12px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <FileSpreadsheet size={13} />
+                    <span>Xuất CSV</span>
+                  </button>
+                  <button
+                    onClick={() => onDeleteSession(s.id)}
+                    style={{ padding: '4px 8px', borderRadius: '4px', background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#DC2626', fontSize: '12px', cursor: 'pointer' }}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Đường Dẫn Google Meet / Zoom:
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={tempMeetUrl}
-                  onChange={(e) => setTempMeetUrl(e.target.value)}
-                  placeholder="https://meet.google.com/xyz-abcd-efg"
-                  style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsEditMeetModalOpen(false)}
-                  className="btn btn-secondary"
-                  style={{ padding: '7px 14px', fontSize: '0.8rem', borderRadius: '8px' }}
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{ padding: '7px 18px', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px' }}
-                >
-                  Lưu Cài Đặt
-                </button>
-              </div>
-            </form>
+            ))}
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Home, BookOpen, Layers, BookmarkCheck,
   Calendar, GitBranch, RotateCcw, Bot,
-  ShieldAlert, Shield, FileText, QrCode, PlusCircle,
+  ShieldAlert, Shield, FileText, QrCode,
   ChevronDown, GraduationCap
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
@@ -104,8 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: BookOpen,
       items: [
         { id: 'quizzes',      label: 'Ngân hàng đề thi',      icon: BookOpen },
-        { id: 'creator',      label: 'Soạn đề thi mới',       icon: PlusCircle },
-        { id: 'schedule',     label: 'Lịch giảng dạy & Meet', icon: Calendar },
+        { id: 'schedule',     label: 'Lịch giảng dạy',        icon: Calendar },
         { id: 'flashcards',   label: 'Thẻ ghi nhớ học phần',  icon: Layers }
       ]
     }

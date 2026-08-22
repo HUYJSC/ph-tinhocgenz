@@ -147,16 +147,6 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
           >
             <Calendar size={14} />
             <span>Lịch học hôm nay: {todaySchedule.startTime} • {todaySchedule.title}</span>
-            {todaySchedule.onlineMeetingUrl && (
-              <a
-                href={todaySchedule.onlineMeetingUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: '#2563EB', textDecoration: 'underline', marginLeft: '4px', fontWeight: 600 }}
-              >
-                Vào phòng Meet trực tuyến
-              </a>
-            )}
           </div>
         )}
 
