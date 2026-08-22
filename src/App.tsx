@@ -306,6 +306,8 @@ export function App() {
             streak={stats.currentStreak}
             totalPoints={stats.totalPoints}
             currentUser={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             activeSection={activeSection as any}
             isAdmin={false}
             unreadNotificationCount={unreadNotificationCount}

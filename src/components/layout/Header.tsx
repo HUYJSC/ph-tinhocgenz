@@ -4,6 +4,8 @@ import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { soundFx } from '../../utils/audio';
 
+import { ActiveTab } from './Sidebar';
+
 interface HeaderProps {
   theme: 'dark' | 'light';
   toggleTheme: () => void;
@@ -11,6 +13,8 @@ interface HeaderProps {
   totalPoints: number;
   currentUser: UserProfile;
   activeSection?: 'learn' | 'review' | 'exam' | 'progress';
+  activeTab?: ActiveTab;
+  setActiveTab?: (tab: ActiveTab) => void;
   isAdmin?: boolean;
   unreadNotificationCount?: number;
   onLogout: () => void;
@@ -27,7 +31,8 @@ export const Header: React.FC<HeaderProps> = ({
   toggleTheme,
   streak,
   currentUser,
-  activeSection = 'learn',
+  activeTab = 'dashboard',
+  setActiveTab,
   isAdmin = false,
   unreadNotificationCount = 0,
   onLogout,
@@ -38,28 +43,21 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNotices,
   onOpenFeedback
 }) => {
-  const studentNavShortcuts = [
-    { id: 'learn', label: 'Giáo trình', targetId: 'section-learn' },
-    { id: 'review', label: 'Ôn tập', targetId: 'section-review' },
-    { id: 'exam', label: 'Khảo thí', targetId: 'section-exam' },
-    { id: 'progress', label: 'Năng lực', targetId: 'section-progress' }
+  const studentNavItems: { id: ActiveTab; label: string }[] = [
+    { id: 'dashboard', label: 'Tổng quan' },
+    { id: 'learning_path', label: 'Lộ trình học' },
+    { id: 'quizzes', label: 'Khóa học & Đề thi' },
+    { id: 'schedule', label: 'Thời khóa biểu' },
+    { id: 'assignments', label: 'Bài tập & Nộp bài' },
+    { id: 'flashcards', label: 'Thẻ ghi nhớ' }
   ];
 
-  const teacherNavShortcuts = [
-    { id: 'class', label: 'Lớp học', targetId: 'section-teacher-class' },
-    { id: 'risk', label: 'Cảnh báo', targetId: 'section-teacher-risk' },
-    { id: 'grading', label: 'Chấm bài', targetId: 'section-teacher-grading' },
-    { id: 'mgmt', label: 'Quản lý', targetId: 'section-teacher-mgmt' }
-  ];
-
-  const navShortcuts = isAdmin ? teacherNavShortcuts : studentNavShortcuts;
-
-  const handleScrollToSection = (targetId: string) => {
+  const handleSelectTab = (tabId: ActiveTab) => {
     soundFx.playClick();
-    const el = document.getElementById(targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (setActiveTab) {
+      setActiveTab(tabId);
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -107,30 +105,31 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </div>
 
-        {/* Scroll-Spy Top Navigation Shortcuts (Desktop & Tablet) */}
-        <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {navShortcuts.map(item => {
-            const isActive = activeSection === item.id;
+        {/* Academic Top Navigation Tab Bar (Desktop & Mobile Scrollable) */}
+        <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto' }}>
+          {studentNavItems.map(item => {
+            const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => handleScrollToSection(item.targetId)}
+                onClick={() => handleSelectTab(item.id)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  padding: '4px 10px',
-                  borderRadius: 'var(--radius-full)',
-                  background: isActive ? (isAdmin ? 'rgba(217, 119, 6, 0.1)' : 'var(--brand-light)') : 'transparent',
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  background: isActive ? '#EFF6FF' : 'transparent',
                   border: 'none',
-                  color: isActive ? (isAdmin ? '#d97706' : 'var(--brand)') : 'var(--text-secondary)',
+                  borderBottom: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                  color: isActive ? '#2563EB' : '#475569',
                   fontSize: '13.5px',
-                  fontWeight: isActive ? 600 : 500,
+                  fontWeight: isActive ? 700 : 500,
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                {isActive && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: isAdmin ? '#d97706' : 'var(--brand)' }} />}
                 <span>{item.label}</span>
               </button>
             );
