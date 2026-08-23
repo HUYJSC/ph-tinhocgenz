@@ -13,17 +13,21 @@ export type CurriculumTrack =
   | 'ppt-6b';
 
 export const TRACK_LABELS: Record<CurriculumTrack, string> = {
-  'office-fast-3in1': '1. Word, Excel, PowerPoint (3Buổi 1 môn)',
+  'office-fast-3in1': '1. Word, Excel, PowerPoint (3 Buổi 1 môn)',
   'cc-cntt-basic': '2. CC CNTT Cơ bản (6 buổi)',
   'cc-cntt-advanced': '3. CC CNTT Nâng cao (6 buổi)',
-  'cntt-basic-we': '4. CNTT Cơ bản: Word + Excel (10-12b)',
-  'cntt-adv-we': '5. CNTT Nâng Cao: Word + Excel (10-12b)',
-  'ai-office': '6. Ứng dụng AI vào công việc Văn phòng (5b)',
-  'excel-accounting': '7. Excel cho Kế toán (Custom tuỳ nhu cầu)',
-  'word-6b': '8. Word (6 buổi)',
-  'excel-6b': '9. Excel (6 buổi)',
-  'ppt-6b': '10. PPT (6 buổi)'
+  'cntt-basic-we': '4. CNTT Cơ bản: Word + Excel (10-12 buổi)',
+  'cntt-adv-we': '5. CNTT Nâng Cao: Word + Excel (10-12 buổi)',
+  'ai-office': '6. Ứng dụng AI vào công việc Văn phòng (5 buổi)',
+  'excel-accounting': '7. Excel cho Kế toán',
+  'word-6b': '8. Kỹ năng soạn thảo Word (6 buổi)',
+  'excel-6b': '9. Xử lý bảng tính Excel (6 buổi)',
+  'ppt-6b': '10. Thiết kế thuyết trình PowerPoint (6 buổi)'
 };
+
+export const TRACK_LIST: { id: CurriculumTrack; label: string }[] = Object.entries(TRACK_LABELS).map(
+  ([id, label]) => ({ id: id as CurriculumTrack, label })
+);
 
 export interface StudentAccount {
   id: string;

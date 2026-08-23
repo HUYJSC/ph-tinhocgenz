@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CurriculumTrack, StudentAccount, UserProfile } from '../../types/auth';
+import { CurriculumTrack, StudentAccount, UserProfile, TRACK_LIST } from '../../types/auth';
 import {
   User, Shield, ShieldAlert, BookOpen, ArrowRight, Eye, EyeOff
 } from 'lucide-react';
@@ -12,19 +12,6 @@ interface UnifiedAuthGatewayProps {
   onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string };
   onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
 }
-
-const TRACK_LIST: { id: CurriculumTrack; label: string }[] = [
-  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3 Buổi 1 môn)' },
-  { id: 'cc-cntt-basic',    label: '2. CC CNTT Cơ bản (6 buổi)' },
-  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)' },
-  { id: 'cntt-basic-we',    label: '4. CNTT Cơ bản: Word + Excel (10-12 buổi)' },
-  { id: 'cntt-adv-we',      label: '5. CNTT Nâng Cao: Word + Excel (10-12 buổi)' },
-  { id: 'ai-office',        label: '6. Ứng dụng AI vào công việc Văn phòng (5 buổi)' },
-  { id: 'excel-accounting', label: '7. Excel cho Kế toán' },
-  { id: 'word-6b',          label: '8. Kỹ năng soạn thảo Word (6 buổi)' },
-  { id: 'excel-6b',         label: '9. Xử lý bảng tính Excel (6 buổi)' },
-  { id: 'ppt-6b',           label: '10. Thiết kế thuyết trình PowerPoint (6 buổi)' }
-];
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   onStudentLogin,

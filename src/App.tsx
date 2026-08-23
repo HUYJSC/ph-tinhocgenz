@@ -142,9 +142,6 @@ export function App() {
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
-  // Scroll-Spy Active Section state (Must be declared before any conditional return!)
-  const [activeSection, setActiveSection] = useState<'learn' | 'review' | 'exam' | 'progress' | 'class' | 'risk' | 'grading' | 'mgmt'>('learn');
-
   // Sync auth name to storage stats
   useEffect(() => {
     if (user.name && user.name !== stats.studentName) {
@@ -231,6 +228,15 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleLaunchTrackQuiz = (mode: QuizMode = 'practice') => {
+    const match = allQuizzes.find(q => q.category === user.programTrack) || allQuizzes[0];
+    if (match) {
+      handleStartQuiz(match, mode);
+    } else {
+      setActiveTab('quizzes');
+    }
+  };
+
   const handleFinishQuiz = (attempt: QuizAttempt) => {
     recordAttempt(attempt);
     setLatestAttempt(attempt);
@@ -308,7 +314,6 @@ export function App() {
             currentUser={user}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            activeSection={activeSection as any}
             isAdmin={false}
             unreadNotificationCount={unreadNotificationCount}
             onLogout={handleLogout}
@@ -397,27 +402,14 @@ export function App() {
                   currentUser={user}
                   streak={stats.currentStreak}
                   schedules={schedules}
-                  onContinueLearning={() => {
-                    if (allQuizzes.length > 0) {
-                      handleStartQuiz(allQuizzes[0], 'practice');
-                    } else {
-                      setActiveTab('quizzes');
-                    }
-                  }}
+                  onContinueLearning={() => handleLaunchTrackQuiz('practice')}
                   onStartSmartReview={() => setShowSmartReviewModal(true)}
-                  onStartMiniTest={() => {
-                    if (allQuizzes.length > 0) {
-                      handleStartQuiz(allQuizzes[0], 'practice');
-                    } else {
-                      setActiveTab('quizzes');
-                    }
-                  }}
+                  onStartMiniTest={() => handleLaunchTrackQuiz('practice')}
                   onOpenLearningPath={() => setActiveTab('learning_path')}
                   onOpenFlashcards={() => setActiveTab('flashcards')}
                   onOpenBookmarks={() => setActiveTab('bookmarks')}
                   onOpenAssignments={() => setActiveTab('assignments')}
                   onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
-                  onActiveSectionChange={(sec) => setActiveSection(sec as any)}
                   onOpenQRScanner={() => setShowCameraScanner(true)}
                   onOpenCheckInModal={() => setShowCheckInModal(true)}
                 />
@@ -427,14 +419,7 @@ export function App() {
               {activeTab === 'learning_path' && (
                 <LearningPathRoadmap
                   currentUser={user}
-                  onStartNodePractice={(_node) => {
-                    const match = allQuizzes.find(q => q.category === user.programTrack) || allQuizzes[0];
-                    if (match) {
-                      handleStartQuiz(match, 'practice');
-                    } else {
-                      setActiveTab('quizzes');
-                    }
-                  }}
+                  onStartNodePractice={(_node) => handleLaunchTrackQuiz('practice')}
                 />
               )}
 
