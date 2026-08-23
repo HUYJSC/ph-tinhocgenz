@@ -66,6 +66,107 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const [formTotalLessons, setFormTotalLessons] = useState<number>(3);
   const [formNotes, setFormNotes] = useState('');
 
+  // ── CONFLICT DETECTION ENGINE ──────────────────────────────────────────
+  interface ConflictResult {
+    type: 'meet_url' | 'teacher_double' | 'room';
+    severity: 'error' | 'warning';
+    message: string;
+    conflictWith?: ClassScheduleItem;
+    suggestedFix?: string;
+  }
+
+  // Generate a unique Google Meet-style room code
+  const generateMeetCode = (): string => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `https://meet.google.com/${seg()}-${seg()}-${seg()}`;
+  };
+
+  const detectConflicts = (
+    date: string,
+    shift: ShiftTimeSlot,
+    dayOfWeek: number,
+    teacherName: string,
+    room: string,
+    meetUrl: string,
+    excludeId?: string
+  ): ConflictResult[] => {
+    const conflicts: ConflictResult[] = [];
+    const others = schedules.filter(s => s.id !== excludeId);
+
+    // Check same date + shift combination
+    const sameSlot = others.filter(s => s.date === date && s.shift === shift);
+    // Also check recurring same dayOfWeek + shift (for weekly recurring slots)
+    const sameWeeklySlot = others.filter(s => !s.date && s.dayOfWeek === dayOfWeek && s.shift === shift);
+    const allSameSlot = [...sameSlot, ...sameWeeklySlot];
+
+    // 1. MEET URL DUPLICATE — same exact link used in same time slot
+    if (meetUrl && meetUrl.trim().startsWith('http')) {
+      const meetConflict = allSameSlot.find(
+        s => s.onlineMeetingUrl && s.onlineMeetingUrl.trim().toLowerCase() === meetUrl.trim().toLowerCase()
+      );
+      // Also check any slot with same URL (different day — still risky if near same time)
+      const meetAnySlot = others.find(
+        s => s.onlineMeetingUrl && s.onlineMeetingUrl.trim().toLowerCase() === meetUrl.trim().toLowerCase()
+      );
+      if (meetConflict) {
+        conflicts.push({
+          type: 'meet_url',
+          severity: 'error',
+          message: `⛔ Link Meet này đã được dùng cho lớp "${meetConflict.classCode} — ${meetConflict.teacherName}" cùng ca ${shift === 'morning' ? 'Sáng' : shift === 'afternoon' ? 'Chiều' : 'Tối'} ngày ${date}. Học viên 2 lớp sẽ vào chung 1 phòng!`,
+          conflictWith: meetConflict,
+          suggestedFix: generateMeetCode()
+        });
+      } else if (meetAnySlot) {
+        conflicts.push({
+          type: 'meet_url',
+          severity: 'warning',
+          message: `⚠️ Link Meet này cũng được dùng cho lớp "${meetAnySlot.classCode} — ${meetAnySlot.teacherName}" ở ca khác. Nên dùng link riêng cho mỗi lớp để tránh nhầm lẫn.`,
+          conflictWith: meetAnySlot,
+          suggestedFix: generateMeetCode()
+        });
+      }
+    }
+
+    // 2. TEACHER DOUBLE-BOOKING — same teacher, same slot
+    if (teacherName.trim()) {
+      const teacherConflict = allSameSlot.find(s =>
+        s.teacherName.trim().toLowerCase() === teacherName.trim().toLowerCase()
+      );
+      if (teacherConflict) {
+        conflicts.push({
+          type: 'teacher_double',
+          severity: 'warning',
+          message: `⚠️ Giảng viên "${teacherName}" đang có lớp "${teacherConflict.classCode}" cùng ca ${shift === 'morning' ? 'Sáng' : shift === 'afternoon' ? 'Chiều' : 'Tối'} ngày ${date}. Xác nhận lịch giảng dạy trùng?`,
+          conflictWith: teacherConflict
+        });
+      }
+    }
+
+    // 3. ROOM CONFLICT — same physical room, same slot
+    if (room.trim() && !room.toLowerCase().includes('trực tuyến') && !room.toLowerCase().includes('online')) {
+      const roomConflict = allSameSlot.find(s =>
+        s.room.trim().toLowerCase() === room.trim().toLowerCase()
+      );
+      if (roomConflict) {
+        conflicts.push({
+          type: 'room',
+          severity: 'error',
+          message: `⛔ Phòng "${room}" đã được đặt cho lớp "${roomConflict.classCode} — ${roomConflict.teacherName}" cùng ca này. Hai lớp không thể dùng chung phòng!`,
+          conflictWith: roomConflict
+        });
+      }
+    }
+
+    return conflicts;
+  };
+
+  // Live conflicts computed from current form values
+  const liveConflicts: ConflictResult[] = isCreateModalOpen
+    ? detectConflicts(formDate, formShift, formDayOfWeek, formTeacherName, formRoom, formMeetingUrl, editingItem?.id)
+    : [];
+  const hasBlockingConflict = liveConflicts.some(c => c.severity === 'error');
+
   // Filter schedules based on user role and selected filters
   const userEnrolledTracks = currentUser.enrolledTracks || (currentUser.programTrack ? [currentUser.programTrack] : []);
 
@@ -146,6 +247,13 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const handleSaveSchedule = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim()) return;
+
+    // GUARD: Block save if any ERROR-level conflict exists
+    const finalConflicts = detectConflicts(formDate, formShift, formDayOfWeek, formTeacherName, formRoom, formMeetingUrl, editingItem?.id);
+    if (finalConflicts.some(c => c.severity === 'error')) {
+      soundFx.playClick();
+      return; // Blocked — user must resolve conflicts first
+    }
 
     if (editingItem) {
       onUpdateSchedule({
@@ -953,14 +1061,72 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
                   Đường Dẫn Học Online (Google Meet / Zoom - Tùy chọn):
                 </label>
-                <input
-                  type="url"
-                  value={formMeetingUrl}
-                  onChange={e => setFormMeetingUrl(e.target.value)}
-                  placeholder="https://meet.google.com/..."
-                  style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
-                />
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <input
+                    type="url"
+                    value={formMeetingUrl}
+                    onChange={e => setFormMeetingUrl(e.target.value)}
+                    placeholder="https://meet.google.com/..."
+                    style={{
+                      flex: 1, padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px',
+                      border: liveConflicts.some(c => c.type === 'meet_url' && c.severity === 'error')
+                        ? '1.5px solid #ef4444'
+                        : liveConflicts.some(c => c.type === 'meet_url' && c.severity === 'warning')
+                        ? '1.5px solid #f59e0b'
+                        : undefined
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormMeetingUrl(generateMeetCode())}
+                    title="Tạo link Meet mới ngẫu nhiên"
+                    style={{
+                      padding: '8px 10px', borderRadius: '8px', border: '1px solid #d1d5db',
+                      background: '#f3f4f6', color: '#374151', fontSize: '11px', fontWeight: 700,
+                      cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0
+                    }}
+                  >
+                    🔄 Tạo link mới
+                  </button>
+                </div>
               </div>
+
+              {/* ── CONFLICT DETECTION PANEL ── */}
+              {liveConflicts.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {liveConflicts.map((conflict, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: conflict.severity === 'error' ? '#FEF2F2' : '#FFFBEB',
+                        border: `1px solid ${conflict.severity === 'error' ? '#FECACA' : '#FDE68A'}`,
+                        fontSize: '12px',
+                        lineHeight: 1.5,
+                        color: conflict.severity === 'error' ? '#991B1B' : '#92400E'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, marginBottom: '4px' }}>{conflict.message}</div>
+                      {conflict.suggestedFix && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                          <span style={{ fontSize: '11px', color: '#6B7280' }}>Gợi ý dùng link mới:</span>
+                          <code style={{ fontSize: '10.5px', background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '4px', wordBreak: 'break-all' }}>
+                            {conflict.suggestedFix}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => setFormMeetingUrl(conflict.suggestedFix!)}
+                            style={{ padding: '2px 8px', borderRadius: '6px', border: 'none', background: conflict.severity === 'error' ? '#DC2626' : '#D97706', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
+                          >
+                            Dùng link này
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
@@ -987,15 +1153,21 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 <button
                   type="submit"
                   className="btn btn-primary"
+                  disabled={hasBlockingConflict}
+                  title={hasBlockingConflict ? 'Vui lòng giải quyết xung đột trước khi lưu' : ''}
                   style={{
                     padding: '8px 20px',
                     fontSize: '0.82rem',
                     fontWeight: 800,
                     borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                    background: hasBlockingConflict
+                      ? '#9CA3AF'
+                      : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    cursor: hasBlockingConflict ? 'not-allowed' : 'pointer',
+                    opacity: hasBlockingConflict ? 0.7 : 1
                   }}
                 >
-                  {editingItem ? 'Lưu Thay Đổi Tiết Học' : 'Thêm Tiết Học Vào Lịch'}
+                  {hasBlockingConflict ? '⛔ Giải quyết xung đột trước' : editingItem ? 'Lưu Thay Đổi Tiết Học' : 'Thêm Tiết Học Vào Lịch'}
                 </button>
               </div>
             </form>
