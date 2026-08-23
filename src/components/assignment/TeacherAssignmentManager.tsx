@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
-import { UserProfile, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
+import { UserProfile, CurriculumTrack, TRACK_LABELS, TRACK_LIST } from '../../types/auth';
 import { SubjectCategory } from '../../types/quiz';
 import { parseUploadedDocument } from '../../utils/documentParser';
 import { MASTER_ADMIN_DRIVE_CONFIG } from '../../utils/googleDriveService';
@@ -11,18 +11,8 @@ import {
   Search, RotateCcw
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string }[] = [
-  { id: 'office-fast-3in1', label: '1. Word, Excel, PowerPoint (3 Buổi 1 môn)' },
-  { id: 'cc-cntt-basic',    label: '2. CC CNTT Cơ bản (6 buổi)' },
-  { id: 'cc-cntt-advanced', label: '3. CC CNTT Nâng cao (6 buổi)' },
-  { id: 'cntt-basic-we',    label: '4. CNTT Cơ bản: Word + Excel (10-12 buổi)' },
-  { id: 'cntt-adv-we',      label: '5. CNTT Nâng Cao: Word + Excel (10-12 buổi)' },
-  { id: 'ai-office',        label: '6. Ứng dụng AI vào công việc Văn phòng (5 buổi)' },
-  { id: 'excel-accounting', label: '7. Excel cho Kế toán' },
-  { id: 'word-6b',          label: '8. Kỹ năng soạn thảo Word (6 buổi)' },
-  { id: 'excel-6b',         label: '9. Xử lý bảng tính Excel (6 buổi)' },
-  { id: 'ppt-6b',           label: '10. Thiết kế PowerPoint (6 buổi)' }
-];
+
+const ALL_TRACK_OPTIONS = TRACK_LIST;
 
 interface TeacherAssignmentManagerProps {
   assignments: Assignment[];
@@ -307,14 +297,14 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h2 style={{ fontSize: '1.08rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-              Quản Lý Đề Thi & Chấm Bài Nộp
+              Khảo Thí & Đánh Giá Thực Hành
             </h2>
             <span style={{ fontSize: '0.68rem', background: '#d97706', color: '#fff', padding: '2px 8px', borderRadius: '999px', fontWeight: 800 }}>
-              Giảng Viên
+              Giảng Viên & Khảo Thí
             </span>
           </div>
           <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '3px 0 0' }}>
-            Đề thi bảo mật • Tự động đồng bộ bài nộp Google Drive
+            Chấm điểm bài nộp thực hành • Đồng bộ tự động Google Drive & DRM
           </p>
         </div>
 

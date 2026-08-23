@@ -90,13 +90,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const adminGroups: AccordionGroup[] = [
     {
       id: 'admin_mgmt',
-      label: 'Quản trị đào tạo',
+      label: 'Quản trị & Đào tạo',
       icon: Shield,
       items: [
-        { id: 'early_warning',label: 'Cảnh báo học vụ sớm',    icon: ShieldAlert },
-        { id: 'admin',        label: 'Danh sách học viên',    icon: Shield },
-        { id: 'attendance',   label: 'Điểm danh lớp học',     icon: QrCode },
-        { id: 'assignments',  label: 'Chấm bài & Google Drive',icon: FileText, count: unreadNotificationCount }
+        { id: 'admin',         label: 'Quản trị Học vụ & Học viên', icon: Shield },
+        { id: 'assignments',   label: 'Khảo thí & Chấm điểm',        icon: FileText, count: unreadNotificationCount },
+        { id: 'attendance',    label: 'Điểm danh & Quản lý lớp',     icon: QrCode },
+        { id: 'early_warning', label: 'Cảnh báo học vụ sớm',        icon: ShieldAlert }
       ]
     },
     {
