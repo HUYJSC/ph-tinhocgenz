@@ -323,6 +323,7 @@ export function App() {
             onOpenInstallModal={() => setShowInstallModal(true)}
             onOpenNotices={() => setShowNoticeModal(true)}
             onOpenFeedback={() => setShowFeedbackModal(true)}
+            onOpenAITutor={() => handleOpenAITutor()}
           />
         )}
 
@@ -576,17 +577,22 @@ export function App() {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation (4 Items: Home, Learn, Continue, Profile) */}
+      {/* Mobile Bottom Navigation — 3-Hub model + Continue CTA */}
       {!activeQuiz && !isStaff && (
         <MobileBottomNav
-          onScrollToTop={() => {
+          activeTab={activeTab}
+          onNavigateLearn={() => {
+            setActiveTab('dashboard');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          onScrollToLearn={() => {
-            const el = document.getElementById('section-learn');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          onNavigateClass={() => {
+            setActiveTab('attendance');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          onOpenProfile={() => setShowProfileModal(true)}
+          onNavigateCreds={() => {
+            setActiveTab('analytics');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           onContinueLearning={() => {
             if (allQuizzes.length > 0) {
               handleStartQuiz(allQuizzes[0], 'practice');

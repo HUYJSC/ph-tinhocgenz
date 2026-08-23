@@ -72,6 +72,7 @@
   --bg-secondary:  #ffffff;
   --bg-card:       #ffffff;
   --bg-card-hover: #f8faff;
+  --bg-hover:      #f8fafc;
   --bg-glass:      rgba(255, 255, 255, 0.94);
   --bg-overlay:    rgba(15, 23, 42, 0.45);
 
@@ -621,8 +622,24 @@ h1, h2, h3, h4, h5, h6 {
   display: none !important;
 }
 
+/* hide-sm: hide on screens <= 768px */
+.hide-sm {
+  display: flex !important;
+}
+
+/* show-sm: only show on mobile */
+.show-sm {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .show-mobile-only {
+    display: flex !important;
+  }
+  .hide-sm {
+    display: none !important;
+  }
+  .show-sm {
     display: flex !important;
   }
   .sidebar {
@@ -632,10 +649,11 @@ h1, h2, h3, h4, h5, h6 {
     display: flex !important;
   }
   .app-container {
-    padding-bottom: calc(64px + var(--safe-bottom)) !important;
+    padding-bottom: calc(68px + var(--safe-bottom)) !important;
   }
   .app-header {
-    padding: 0 16px !important;
+    padding: 0 14px !important;
   }
 }
+
 

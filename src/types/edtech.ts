@@ -132,6 +132,17 @@ export interface StudentRiskProfile {
 }
 
 // ── 7. VERIFIABLE QR CERTIFICATE ──
+export interface BlockchainProof {
+  certHash: string;         // SHA-256 of canonical cert payload (Merkle leaf)
+  txHash: string;           // On-chain transaction hash
+  blockHeight: number;      // Polygon PoS block height
+  network: string;          // Network label
+  contractAddress: string;  // SBT Smart Contract address
+  issuerKey: string;        // Issuer public key
+  anchoredAt: string;       // ISO timestamp of anchoring
+  merkleLeaf: string;       // Human-readable Merkle leaf input
+}
+
 export interface DigitalCertificate {
   certificateId: string; // e.g. TGZ-MOS-2026-02831
   studentName: string;
@@ -143,6 +154,7 @@ export interface DigitalCertificate {
   honorsTitle?: string; // e.g. "Thủ Khoa Khóa Học", "Xuất Sắc"
   verificationUrl: string;
   status: 'valid' | 'revoked';
+  blockchainProof?: BlockchainProof; // On-chain verifiable proof
 }
 
 // ── 8. LEARNING EVENTS (EDTECH ANALYTICS) ──
