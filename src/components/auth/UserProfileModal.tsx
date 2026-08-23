@@ -204,8 +204,92 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </div>
         </div>
 
-        {/* Actions (Change Password, Logout) */}
+        {/* Actions (Data Backup, Change Password, Logout) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+          {/* Data Backup & Restore Group */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <button
+              onClick={() => {
+                const data = {
+                  version: '2026.1',
+                  backupDate: new Date().toISOString(),
+                  user: currentUser,
+                  localStorageDump: { ...localStorage }
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup_ph_digital_${currentUser.studentCode || currentUser.teacherCode || 'user'}_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                alert('Đã xuất file sao lưu dữ liệu học tập thành công!');
+              }}
+              className="btn btn-secondary"
+              style={{
+                padding: '9px 12px',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                borderRadius: '10px'
+              }}
+              title="Tải về file JSON sao lưu tiến độ học tập"
+            >
+              <span>📥 Xuất Sao Lưu</span>
+            </button>
+
+            <label
+              style={{
+                padding: '9px 12px',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                borderRadius: '10px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                textAlign: 'center'
+              }}
+              title="Nạp lại tiến độ học tập từ file JSON"
+            >
+              <span>📤 Nạp Sao Lưu</span>
+              <input
+                type="file"
+                accept=".json"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    try {
+                      const parsed = JSON.parse(event.target?.result as string);
+                      if (parsed.localStorageDump) {
+                        Object.entries(parsed.localStorageDump).forEach(([k, v]) => {
+                          localStorage.setItem(k, v as string);
+                        });
+                        alert('Khôi phục dữ liệu học tập thành công! Ứng dụng sẽ tự động tải lại.');
+                        window.location.reload();
+                      } else {
+                        alert('File sao lưu không hợp lệ!');
+                      }
+                    } catch (err) {
+                      alert('Lỗi đọc file sao lưu JSON!');
+                    }
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+            </label>
+          </div>
+
           <button
             onClick={() => {
               onClose();
