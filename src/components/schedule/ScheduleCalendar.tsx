@@ -61,7 +61,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const [formEndTime, setFormEndTime] = useState('20:30');
   const [formShift, setFormShift] = useState<ShiftTimeSlot>('evening');
   const [formRoom, setFormRoom] = useState('Phòng LAB 01 (Tầng 2)');
-  const [formMeetingUrl, setFormMeetingUrl] = useState('https://meet.google.com/sja-vcpy-rsu');
+  const [formMeetingUrl, setFormMeetingUrl] = useState('');
   const [formLessonNumber, setFormLessonNumber] = useState<number>(1);
   const [formTotalLessons, setFormTotalLessons] = useState<number>(3);
   const [formNotes, setFormNotes] = useState('');
@@ -216,7 +216,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     setFormEndTime('20:30');
     setFormShift('evening');
     setFormRoom('Phòng LAB 01 (Tầng 2)');
-    setFormMeetingUrl('https://meet.google.com/sja-vcpy-rsu');
+    setFormMeetingUrl(generateMeetCode()); // ← Tự sinh link Meet duy nhất cho lớp này
     setFormLessonNumber(1);
     setFormTotalLessons(6);
     setFormNotes('');
@@ -236,7 +236,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     setFormEndTime(sch.endTime);
     setFormShift(sch.shift);
     setFormRoom(sch.room);
-    setFormMeetingUrl(sch.onlineMeetingUrl || 'https://meet.google.com/sja-vcpy-rsu');
+    setFormMeetingUrl(sch.onlineMeetingUrl || generateMeetCode()); // ← Giữ link cũ, hoặc sinh mới nếu chưa có
     setFormLessonNumber(sch.lessonNumber || 1);
     setFormTotalLessons(sch.totalLessons || 6);
     setFormNotes(sch.notes || '');
