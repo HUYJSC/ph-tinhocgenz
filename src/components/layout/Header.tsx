@@ -103,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Academic Top Navigation Tab Bar (Desktop & Mobile Scrollable) */}
-        <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto' }}>
+        <nav className="hide-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', padding: '4px 0' }}>
           {studentNavItems.map(item => {
             const isActive = activeTab === item.id;
             return (
@@ -114,17 +114,28 @@ export const Header: React.FC<HeaderProps> = ({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  padding: '5px 12px',
-                  borderRadius: '6px',
+                  padding: '7px 14px',
+                  borderRadius: '8px',
                   background: isActive ? '#EFF6FF' : 'transparent',
-                  border: 'none',
-                  borderBottom: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                  border: isActive ? '1px solid #BFDBFE' : '1px solid transparent',
                   color: isActive ? '#2563EB' : '#475569',
                   fontSize: '13.5px',
-                  fontWeight: isActive ? 700 : 500,
+                  fontWeight: isActive ? 700 : 600,
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  transition: 'all 0.18s ease',
                   whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = '#F8FAFC';
+                    e.currentTarget.style.color = '#0F172A';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#475569';
+                  }
                 }}
               >
                 <span>{item.label}</span>
