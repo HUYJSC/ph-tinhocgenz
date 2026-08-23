@@ -21,8 +21,8 @@ interface TeacherAcademicHeaderProps {
   onOpenNotices?: () => void;
 }
 
-// ── Teacher Hub Definitions (3 Hubs gom 6 tabs cũ lại) ──
-type TeacherHubId = 'hub_teach' | 'hub_assess' | 'hub_admin';
+// ── Teacher Hub Definitions (Gộp Lịch dạy + Quản trị học vụ + Khảo thí vào 1 Hub) ──
+type TeacherHubId = 'hub_teach' | 'hub_academic' | 'hub_admin';
 
 const TEACHER_HUB_DEFS: {
   id: TeacherHubId;
@@ -38,28 +38,28 @@ const TEACHER_HUB_DEFS: {
     defaultTab: 'dashboard',
     subItems: [
       { id: 'dashboard',  label: 'Tổng quan giảng dạy' },
-      { id: 'attendance', label: 'Lớp học & Điểm danh QR' },
-      { id: 'schedule',   label: 'Lịch giảng dạy theo tuần' },
+      { id: 'attendance', label: 'Điểm danh & Quản lý lớp' },
     ]
   },
   {
-    id: 'hub_assess',
-    label: '📝 Khảo thí & Chấm điểm',
+    id: 'hub_academic',
+    label: '🏫 Học vụ & Khảo thí',
     icon: <ClipboardList size={14} />,
-    defaultTab: 'assignments',
+    defaultTab: 'admin',
     subItems: [
-      { id: 'assignments',   label: 'Quản lý & Chấm bài nộp' },
+      { id: 'admin',         label: 'Quản trị Học vụ & Tài khoản' },
+      { id: 'schedule',      label: 'Thời khóa biểu & Lịch dạy' },
+      { id: 'assignments',   label: 'Khảo thí & Chấm bài nộp' },
       { id: 'early_warning', label: 'Cảnh báo học vụ sớm' },
       { id: 'creator',       label: 'Soạn đề thi mới' },
     ]
   },
   {
     id: 'hub_admin',
-    label: '⚙️ Quản trị & Blockchain',
+    label: '⚙️ Sổ cái & Cấu hình',
     icon: <Settings2 size={14} />,
-    defaultTab: 'admin',
+    defaultTab: 'analytics',
     subItems: [
-      { id: 'admin',   label: 'Quản trị Học vụ & Tài khoản' },
       { id: 'analytics', label: 'Sổ cái Blockchain Chứng chỉ' },
     ]
   }

@@ -16,7 +16,6 @@ import { QuizCreator } from './components/creator/QuizCreator';
 import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
-import { TeacherAssignmentManager } from './components/assignment/TeacherAssignmentManager';
 import { AttendanceManager } from './components/attendance/AttendanceManager';
 import { StudentAttendanceDashboard } from './components/attendance/StudentAttendanceDashboard';
 import { ScheduleCalendar } from './components/schedule/ScheduleCalendar';
@@ -32,7 +31,6 @@ import { TeacherAcademicPortal } from './components/teacher/TeacherAcademicPorta
 import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
 import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
 import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
-import { EarlyWarningDashboard } from './components/teacher/EarlyWarningDashboard';
 import { DiagnosticOnboardingModal } from './components/onboarding/DiagnosticOnboardingModal';
 import { CertificateVerificationModal } from './components/certificates/CertificateVerificationModal';
 import { DigitalCertificate, DiagnosticResult } from './types/edtech';
@@ -421,12 +419,6 @@ export function App() {
                 />
               )}
 
-              {/* Early Warning Dashboard (Teacher & Admin) */}
-              {activeTab === 'early_warning' && isStaff && (
-                <EarlyWarningDashboard
-                  studentAccounts={studentAccounts}
-                />
-              )}
 
               {/* Smart Review Direct Tab */}
               {activeTab === 'smart_review' && (
@@ -441,8 +433,8 @@ export function App() {
                 </div>
               )}
 
-              {/* Admin Portal Tab */}
-              {activeTab === 'admin' && (
+              {/* Unified Staff Academic & Exam Portal (Schedule + Grading + Admin + Early Warning) */}
+              {isStaff && (activeTab === 'admin' || activeTab === 'schedule' || activeTab === 'assignments' || activeTab === 'early_warning') && (
                 <AdminPortal
                   quizzes={allQuizzes}
                   attempts={stats.history}
@@ -467,34 +459,40 @@ export function App() {
                   onCreateTeacherAccount={createTeacherAccount}
                   onUpdateTeacherAccount={updateTeacherAccount}
                   onDeleteTeacherAccount={deleteTeacherAccount}
+                  schedules={schedules}
+                  onCreateSchedule={createSchedule}
+                  onUpdateSchedule={updateSchedule}
+                  onDeleteSchedule={deleteSchedule}
+                  initialSubTab={
+                    activeTab === 'schedule' ? 'schedules' :
+                    activeTab === 'assignments' ? 'grading_assignments' :
+                    activeTab === 'early_warning' ? 'early_warning' : 'overview'
+                  }
+                  onNavigateToAttendance={() => setActiveTab('attendance')}
                   currentUser={user}
                 />
               )}
 
-              {/* Classroom Assignments (DRM File Exams & Homework) */}
-              {activeTab === 'assignments' && (
-                isStaff ? (
-                  <TeacherAssignmentManager
-                    assignments={assignments}
-                    submissions={submissions}
-                    notifications={notifications}
-                    googleDriveConfig={googleDriveConfig}
-                    onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
-                    currentUser={user}
-                    onCreateAssignment={createAssignment}
-                    onDeleteAssignment={deleteAssignment}
-                    onToggleOpen={toggleAssignmentOpen}
-                    onGradeSubmission={gradeSubmission}
-                    onMarkNotificationAsRead={markNotificationAsRead}
-                  />
-                ) : (
-                  <StudentAssignmentView
-                    assignments={assignments}
-                    submissions={submissions}
-                    currentUser={user}
-                    onSubmitAssignment={submitAssignment}
-                  />
-                )
+              {/* Student Classroom Assignments View */}
+              {!isStaff && activeTab === 'assignments' && (
+                <StudentAssignmentView
+                  assignments={assignments}
+                  submissions={submissions}
+                  currentUser={user}
+                  onSubmitAssignment={submitAssignment}
+                />
+              )}
+
+              {/* Student Schedule Calendar */}
+              {!isStaff && activeTab === 'schedule' && (
+                <ScheduleCalendar
+                  currentUser={user}
+                  schedules={schedules}
+                  onCreateSchedule={createSchedule}
+                  onUpdateSchedule={updateSchedule}
+                  onDeleteSchedule={deleteSchedule}
+                  onNavigateToAttendance={() => setActiveTab('attendance')}
+                />
               )}
 
               {activeTab === 'attendance' && (
@@ -522,17 +520,6 @@ export function App() {
                     onOpenPinModal={() => setShowCheckInModal(true)}
                   />
                 )
-              )}
-
-              {activeTab === 'schedule' && (
-                <ScheduleCalendar
-                  currentUser={user}
-                  schedules={schedules}
-                  onCreateSchedule={createSchedule}
-                  onUpdateSchedule={updateSchedule}
-                  onDeleteSchedule={deleteSchedule}
-                  onNavigateToAttendance={() => setActiveTab('attendance')}
-                />
               )}
 
               {activeTab === 'quizzes' && (

@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
+import { ClassScheduleItem } from '../../types/schedule';
 import { TeacherAssignmentManager } from '../assignment/TeacherAssignmentManager';
+import { ScheduleCalendar } from '../schedule/ScheduleCalendar';
+import { EarlyWarningDashboard } from '../teacher/EarlyWarningDashboard';
 import {
   Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
-  Eye, BookOpenCheck, Printer
+  Eye, BookOpenCheck, Printer, Calendar, AlertTriangle
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+
+export type AdminPortalSubTab =
+  | 'overview'
+  | 'schedules'
+  | 'grading_assignments'
+  | 'student_directory'
+  | 'teachers'
+  | 'early_warning'
+  | 'exams'
+  | 'question_bank'
+  | 'meet_hub'
+  | 'seo_center';
 
 interface AdminPortalProps {
   quizzes: Quiz[];
@@ -35,6 +50,12 @@ interface AdminPortalProps {
   onCreateTeacherAccount?: (name: string, teacherCode: string, password?: string, phoneOrEmail?: string, assignedTracks?: CurriculumTrack[]) => void;
   onUpdateTeacherAccount?: (updatedTeacher: TeacherAccount) => void;
   onDeleteTeacherAccount?: (id: string) => void;
+  schedules?: ClassScheduleItem[];
+  onCreateSchedule?: (data: Omit<ClassScheduleItem, 'id' | 'createdAt'>) => void;
+  onUpdateSchedule?: (item: ClassScheduleItem) => void;
+  onDeleteSchedule?: (id: string) => void;
+  initialSubTab?: AdminPortalSubTab;
+  onNavigateToAttendance?: () => void;
   currentUser: UserProfile;
 }
 
@@ -74,20 +95,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onCreateTeacherAccount,
   onUpdateTeacherAccount,
   onDeleteTeacherAccount,
+  schedules = [],
+  onCreateSchedule,
+  onUpdateSchedule,
+  onDeleteSchedule,
+  initialSubTab = 'overview',
+  onNavigateToAttendance,
   currentUser
 }) => {
   const isSuperAdmin = currentUser.role === 'admin';
-  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'grading_assignments' | 'student_directory' | 'teachers' | 'exams' | 'question_bank' | 'seo_center' | 'meet_hub'>('overview');
+  const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
+
+  // Sync initialSubTab if passed externally
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
+
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [examFamilyFilter, setExamFamilyFilter] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
 
-  // Master Google Meet Hub State (Admin Only)
-  const [masterMeetUrlInput, setMasterMeetUrlInput] = useState('https://meet.google.com/sja-vcpy-rsu');
+  // Master Google Meet Hub State (Admin Only) - Synced with schedules
+  const [masterMeetUrlInput, setMasterMeetUrlInput] = useState('https://meet.google.com/tgz-master-live');
   const [copiedMeetIndex, setCopiedMeetIndex] = useState<number | null>(null);
   const [meetHubRooms, setMeetHubRooms] = useState(() => {
-    const saved = localStorage.getItem('phtinhocgenz_admin_meet_rooms_v2');
+    const saved = localStorage.getItem('phtinhocgenz_admin_meet_rooms_v3');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -95,16 +130,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       } catch (e) {}
     }
     return [
-      { track: 'office-fast-3in1', classCode: 'K26-WE01', className: '1. Word, Excel, PowerPoint (3b/môn)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'cc-cntt-basic', classCode: 'K26-CC01', className: '2. CC CNTT Cơ bản (6 buổi)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'cc-cntt-advanced', classCode: 'K26-CCN01', className: '3. CC CNTT Nâng cao (6 buổi)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'cntt-basic-we', classCode: 'K26-WE-CB', className: '4. CNTT Cơ bản: Word + Excel (10-12b)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'cntt-adv-we', classCode: 'K26-WENC01', className: '5. CNTT Nâng Cao: Word + Excel (10-12b)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'ai-office', classCode: 'K26-AI01', className: '6. Ứng dụng AI vào công việc Văn phòng (5b)', teacher: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'excel-accounting', classCode: 'K26-KT01', className: '7. Excel cho Kế toán', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'word-6b', classCode: 'K26-W01', className: '8. Kỹ năng soạn thảo Word (6 buổi)', teacher: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'excel-6b', classCode: 'K26-EX01', className: '9. Xử lý bảng tính Excel (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-      { track: 'ppt-6b', classCode: 'K26-PPT01', className: '10. Thiết kế PowerPoint (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' }
+      { track: 'office-fast-3in1', classCode: 'K26-WE01', className: '1. Word, Excel, PowerPoint (3b/môn)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/tgz-we01-live' },
+      { track: 'cc-cntt-basic', classCode: 'K26-CC01', className: '2. CC CNTT Cơ bản (6 buổi)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/tgz-cc01-live' },
+      { track: 'cc-cntt-advanced', classCode: 'K26-CCN01', className: '3. CC CNTT Nâng cao (6 buổi)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/tgz-ccn01-room' },
+      { track: 'cntt-basic-we', classCode: 'K26-WE-CB', className: '4. CNTT Cơ bản: Word + Excel (10-12b)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/tgz-wecb-room' },
+      { track: 'cntt-adv-we', classCode: 'K26-WENC01', className: '5. CNTT Nâng Cao: Word + Excel (10-12b)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/tgz-wenc-room' },
+      { track: 'ai-office', classCode: 'K26-AI01', className: '6. Ứng dụng AI vào công việc Văn phòng (5b)', teacher: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/tgz-ai01-live' },
+      { track: 'excel-accounting', classCode: 'K26-KT01', className: '7. Excel cho Kế toán', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/tgz-kt01-room' },
+      { track: 'word-6b', classCode: 'K26-MOSW01', className: '8. Kỹ năng soạn thảo Word (6 buổi)', teacher: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/tgz-mosw-room' },
+      { track: 'excel-6b', classCode: 'K26-EX01', className: '9. Xử lý bảng tính Excel (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/tgz-ex01-live' },
+      { track: 'ppt-6b', classCode: 'K26-PPT01', className: '10. Thiết kế PowerPoint (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/tgz-ppt01-live' }
     ];
   });
 
@@ -122,9 +157,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       meetUrl: generateRandomMeetCode()
     }));
     setMeetHubRooms(updated);
-    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v2', JSON.stringify(updated));
+    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v3', JSON.stringify(updated));
+
+    // Sync to schedules if callback exists
+    if (onUpdateSchedule && schedules.length > 0) {
+      updated.forEach((room: any) => {
+        schedules.filter(s => s.track === room.track || s.classCode === room.classCode).forEach(s => {
+          onUpdateSchedule({ ...s, onlineMeetingUrl: room.meetUrl });
+        });
+      });
+    }
+
     soundFx.playVictory();
-    alert('🎉 Đã tự động sinh 10 Link Google Meet hoàn toàn độc lập cho 10 lớp học! Giáo viên dạy cùng ca hoặc cùng ngày sẽ không bị trùng phòng.');
+    alert('🎉 Đã tự động sinh 10 Link Google Meet hoàn toàn độc lập cho 10 lớp học và đồng bộ vào Thời Khóa Biểu!');
   };
 
   const handleGenerateSingleMeet = (track: string) => {
@@ -138,9 +183,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (!masterMeetUrlInput.trim()) return;
     const updated = meetHubRooms.map((r: any) => ({ ...r, meetUrl: masterMeetUrlInput.trim() }));
     setMeetHubRooms(updated);
-    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v2', JSON.stringify(updated));
+    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v3', JSON.stringify(updated));
+
+    if (onUpdateSchedule && schedules.length > 0) {
+      schedules.forEach(s => {
+        onUpdateSchedule({ ...s, onlineMeetingUrl: masterMeetUrlInput.trim() });
+      });
+    }
+
     soundFx.playVictory();
-    alert('✓ Đã cập nhật và đồng bộ link Google Meet cho toàn bộ 10 lớp học thành công!');
+    alert('✓ Đã cập nhật và đồng bộ link Google Meet cho toàn bộ lớp học thành công!');
   };
 
   const handleUpdateSingleRoomMeet = (track: string, newUrl: string, newRoom?: string) => {
@@ -151,7 +203,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       return r;
     });
     setMeetHubRooms(updated);
-    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v2', JSON.stringify(updated));
+    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v3', JSON.stringify(updated));
+
+    if (onUpdateSchedule && schedules.length > 0) {
+      schedules.filter(s => s.track === track).forEach(s => {
+        onUpdateSchedule({ ...s, onlineMeetingUrl: newUrl.trim(), ...(newRoom ? { room: newRoom.trim() } : {}) });
+      });
+    }
   };
 
   // SEO State
@@ -558,13 +616,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       </div>
 
-      {/* Sub Tabs Navigation */}
+      {/* Sub Tabs Navigation - Unified Academic Hub */}
       <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '20px' }}>
         {[
           { id: 'overview', label: 'Tổng Quan Hệ Thống', icon: BarChart3 },
+          { id: 'schedules', label: `Lịch Dạy & Phòng Học (${schedules.length}) 📅`, icon: Calendar },
           { id: 'grading_assignments', label: `Khảo Thí & Chấm Điểm (${assignments.length}) ✍️`, icon: CheckSquare },
           { id: 'student_directory', label: `Hồ Sơ Học Viên (${studentAccounts.length})`, icon: Users },
           ...(isSuperAdmin ? [{ id: 'teachers', label: `Giảng Viên (${teacherAccounts.length})`, icon: UserCheck }] : []),
+          { id: 'early_warning', label: 'Cảnh Báo Học Vụ Sớm 🚨', icon: AlertTriangle },
           ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Tổng Đài Google Meet (10 Lớp) 🎥', icon: Video }] : []),
           { id: 'exams', label: `Kho Đề Thi (${totalQuizzes})`, icon: BookOpen },
           { id: 'question_bank', label: `Ngân Hàng Câu Hỏi (${totalQuestions})`, icon: FileSpreadsheet },
@@ -602,7 +662,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         })}
       </div>
 
-      {/* ── 0. KHẢO THÍ & CHẤM BÀI THỰC HÀNH SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}
+      {/* ── 0A. THỜI KHÓA BIỂU & LỊCH DẠY SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}
+      {activeSubTab === 'schedules' && (
+        <ScheduleCalendar
+          currentUser={currentUser}
+          schedules={schedules}
+          onCreateSchedule={onCreateSchedule || (() => {})}
+          onUpdateSchedule={onUpdateSchedule || (() => {})}
+          onDeleteSchedule={onDeleteSchedule || (() => {})}
+          onNavigateToAttendance={onNavigateToAttendance}
+        />
+      )}
+
+      {/* ── 0B. KHẢO THÍ & CHẤM BÀI THỰC HÀNH SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}
       {activeSubTab === 'grading_assignments' && (
         <TeacherAssignmentManager
           assignments={assignments}
@@ -616,6 +688,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onToggleOpen={onToggleOpen || (() => {})}
           onGradeSubmission={onGradeSubmission || (() => {})}
           onMarkNotificationAsRead={onMarkNotificationAsRead || (() => {})}
+        />
+      )}
+
+      {/* ── 0C. CẢNH BÁO HỌC VỤ SỚM SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}
+      {activeSubTab === 'early_warning' && (
+        <EarlyWarningDashboard
+          studentAccounts={studentAccounts}
         />
       )}
 
