@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Bell, FileText, MessageSquare, Camera } from 'lucide-react';
+import { Flame, Bell, FileText, MessageSquare } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { soundFx } from '../../utils/audio';
@@ -24,8 +24,6 @@ interface HeaderProps {
   onOpenInstallModal: () => void;
   onOpenNotices?: () => void;
   onOpenFeedback?: () => void;
-  onOpenQRScanner?: () => void;
-  onOpenCheckInModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -43,9 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenChangePassword,
   onOpenInstallModal,
   onOpenNotices,
-  onOpenFeedback,
-  onOpenQRScanner,
-  onOpenCheckInModal
+  onOpenFeedback
 }) => {
   const studentNavItems: { id: ActiveTab; label: string }[] = [
     { id: 'dashboard', label: 'Tổng quan' },
@@ -147,57 +143,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* ── RIGHT: Minimal Controls (Streak + Notifications + User Dropdown) ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-        {/* Student QR Check-In Scanner Button */}
-        {onOpenQRScanner && !isAdmin && (
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenQRScanner();
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                background: '#2563EB',
-                color: '#FFFFFF',
-                border: 'none',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 1px 2px rgba(37, 99, 235, 0.2)'
-              }}
-              title="Mở Camera quét mã QR điểm danh lớp học"
-            >
-              <Camera size={14} />
-              <span>Quét QR</span>
-            </button>
-
-            {onOpenCheckInModal && (
-              <button
-                onClick={() => {
-                  soundFx.playClick();
-                  onOpenCheckInModal();
-                }}
-                className="btn btn-secondary"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  fontSize: '12.5px',
-                  fontWeight: 600
-                }}
-                title="Nhập mã PIN điểm danh 6 số"
-              >
-                <span>Nhập PIN</span>
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Streak Badge (Small & Unified) */}
         <div

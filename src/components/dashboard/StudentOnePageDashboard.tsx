@@ -6,7 +6,7 @@ import { ClassScheduleItem } from '../../types/schedule';
 import {
   Play, BookOpen, RotateCcw, Award,
   Calendar, Layers, BookmarkCheck, ArrowRight, Bot, Send,
-  Camera, QrCode, KeyRound, ListTodo, Flame, Clock, TrendingUp,
+  Camera, ListTodo, Flame, Clock, TrendingUp,
   FileText, ExternalLink
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
@@ -23,9 +23,7 @@ interface StudentOnePageDashboardProps {
   onOpenBookmarks: () => void;
   onOpenAssignments: () => void;
   onOpenAITutor: (prompt?: string) => void;
-  onActiveSectionChange?: (sectionId: string) => void;
   onOpenQRScanner?: () => void;
-  onOpenCheckInModal?: () => void;
 }
 
 export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = ({
@@ -40,8 +38,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   onOpenBookmarks,
   onOpenAssignments,
   onOpenAITutor,
-  onOpenQRScanner,
-  onOpenCheckInModal
+  onOpenQRScanner
 }) => {
   const track: CurriculumTrack = currentUser.programTrack || 'office-fast-3in1';
   const trackName = TRACK_LABELS[track] || 'Tin học Văn phòng Cấp tốc';
@@ -142,22 +139,53 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
             </span>
 
             {todaySchedule && (
-              <span
+              <div
                 style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  background: 'rgba(245, 158, 11, 0.2)',
-                  color: '#FBBF24',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '8px',
+                  background: 'rgba(245, 158, 11, 0.2)',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(245, 158, 11, 0.35)'
                 }}
               >
-                <Calendar size={13} />
-                <span>Lớp hôm nay: {todaySchedule.startTime} ({todaySchedule.title})</span>
-              </span>
+                <span
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#FBBF24',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Calendar size={13} />
+                  <span>Lớp hôm nay: {todaySchedule.startTime} ({todaySchedule.title})</span>
+                </span>
+
+                {onOpenQRScanner && (
+                  <button
+                    onClick={() => { soundFx.playClick(); onOpenQRScanner(); }}
+                    style={{
+                      background: '#D97706',
+                      border: 'none',
+                      color: '#FFFFFF',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}
+                  >
+                    <Camera size={11} />
+                    <span>Điểm danh</span>
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
@@ -280,111 +308,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
         </div>
       </div>
 
-      {/* ── 2. QUICK SMART CHECK-IN BAR (Điểm danh lớp học) ── */}
-      {(onOpenQRScanner || onOpenCheckInModal) && (
-        <div
-          style={{
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            borderRadius: '14px',
-            padding: '16px 22px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px',
-            boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
-            <div
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '10px',
-                background: '#EFF6FF',
-                color: '#2563EB',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                border: '1px solid #BFDBFE'
-              }}
-            >
-              <QrCode size={22} />
-            </div>
-            <div>
-              <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
-                Điểm danh trực tiếp tại lớp học
-              </div>
-              <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>
-                Bật Camera quét mã QR trên màn hình giảng viên hoặc nhập mã PIN 6 số để ghi nhận chuyên cần.
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {onOpenQRScanner && (
-              <button
-                onClick={() => {
-                  soundFx.playClick();
-                  onOpenQRScanner();
-                }}
-                style={{
-                  padding: '9px 18px',
-                  fontSize: '13.5px',
-                  fontWeight: 700,
-                  borderRadius: '8px',
-                  background: '#2563EB',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-                  transition: 'background-color 0.15s ease'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1D4ED8')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2563EB')}
-              >
-                <Camera size={16} />
-                <span>Quét Mã QR</span>
-              </button>
-            )}
-
-            {onOpenCheckInModal && (
-              <button
-                onClick={() => {
-                  soundFx.playClick();
-                  onOpenCheckInModal();
-                }}
-                style={{
-                  padding: '9px 16px',
-                  fontSize: '13.5px',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  background: '#F8FAFC',
-                  border: '1px solid #CBD5E1',
-                  color: '#1E293B',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.15s ease'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = '#94A3B8')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
-              >
-                <KeyRound size={15} />
-                <span>Nhập Mã PIN</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── 3. MAIN 2-COLUMN DASHBOARD BENTO GRID ── */}
+      {/* ── 2. MAIN 2-COLUMN DASHBOARD BENTO GRID ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: '24px', alignItems: 'start' }}>
         
         {/* ── CỘT TRÁI (65%): CÁC MODULE HỌC TẬP & KHẢO THÍ CHÍNH ── */}
