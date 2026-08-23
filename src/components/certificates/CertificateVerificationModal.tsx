@@ -62,11 +62,11 @@ export const CertificateVerificationModal: React.FC<CertificateVerificationModal
           {/* Badge & Security Icon */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 14px', borderRadius: '999px', background: 'rgba(16, 185, 129, 0.12)', color: '#059669', fontSize: '0.76rem', fontWeight: 800, marginBottom: '14px' }}>
             <ShieldCheck size={15} />
-            <span>CHỨNG NHẬN SỐ HỢP LỆ • VERIFIED BY TINHOCGENZ</span>
+            <span>CHỨNG NHẬN SỐ HỢP LỆ • PH DIGITAL EDUCATION</span>
           </div>
 
           <div style={{ fontSize: '0.86rem', letterSpacing: '0.15em', fontWeight: 900, color: '#d97706', textTransform: 'uppercase', marginBottom: '8px' }}>
-            HỆ THỐNG ĐÀO TẠO & KHẢO THÍ TIN HỌC TINHOCGENZ
+            HỆ THỐNG ĐÀO TẠO & KHẢO THÍ TIN HỌC PH DIGITAL EDUCATION
           </div>
 
           <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>

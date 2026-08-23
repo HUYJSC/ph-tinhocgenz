@@ -167,31 +167,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '10px'
         }}
       >
         <div
           style={{
-            width: '36px',
             height: '36px',
-            borderRadius: 'var(--radius-sm)',
-            background: '#fff',
-            padding: '2px',
-            border: '1px solid var(--border-color)',
-            boxShadow: 'var(--shadow-xs)',
-            flexShrink: 0
+            maxWidth: '180px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start'
           }}
         >
-          <img src="/logo.png" alt="Tin Học GenZ" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-        </div>
-
-        <div>
-          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-            Tin Học GenZ
-          </div>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--brand)', letterSpacing: '0.02em' }}>
-            Học & Khảo Thí Online
-          </div>
+          <img src="/logo.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
         </div>
       </div>
 

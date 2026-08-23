@@ -139,39 +139,28 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '12px'
+              marginBottom: '10px'
             }}
           >
             <img
               src="/logo.png"
-              alt="PH - Tin Học GenZ"
+              alt="PH DIGITAL EDUCATION"
               style={{
-                height: '64px',
-                width: 'auto',
+                maxHeight: '56px',
+                maxWidth: '100%',
                 objectFit: 'contain'
               }}
             />
           </div>
-          <h1
-            style={{
-              fontSize: '19px',
-              fontWeight: 800,
-              color: '#0F172A',
-              margin: '0 0 4px',
-              letterSpacing: '-0.02em'
-            }}
-          >
-            PH - TIN HỌC GENZ
-          </h1>
           <p
             style={{
               fontSize: '13px',
               color: '#64748B',
-              margin: 0,
+              margin: '4px 0 0',
               fontWeight: 500
             }}
           >
-            Cổng Đăng nhập Quản lý Học tập LMS
+            Cổng Đăng nhập Hệ thống Học tập & Khảo thí LMS
           </p>
         </div>
 
@@ -778,10 +767,10 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
             Trợ giúp học vụ
           </a>
           <span>•</span>
-          <span style={{ color: '#94A3B8' }}>PH - Tin Học GenZ LMS</span>
+          <span style={{ color: '#94A3B8' }}>PH DIGITAL EDUCATION LMS</span>
         </div>
         <div style={{ fontSize: '11.5px', color: '#64748B' }}>
-          Hệ thống Quản lý Học tập & Khảo thí Trực tuyến
+          Hệ thống Quản lý Học tập & Khảo thí Tin học Chuẩn Quốc tế
         </div>
       </footer>
 

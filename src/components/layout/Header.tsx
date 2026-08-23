@@ -91,23 +91,15 @@ export const Header: React.FC<HeaderProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           <div
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: 'var(--radius-sm)',
-              background: '#fff',
-              padding: '2px',
-              border: '1px solid var(--border-color)',
+              height: '34px',
+              maxWidth: '160px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--shadow-xs)'
+              justifyContent: 'center'
             }}
           >
-            <img src="/logo.png" alt="PH - Tin Học GenZ" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/logo.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
           </div>
-          <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-            PH TIN HỌC GENZ
-          </span>
         </div>
 
         {/* Academic Top Navigation Tab Bar (Desktop & Mobile Scrollable) */}

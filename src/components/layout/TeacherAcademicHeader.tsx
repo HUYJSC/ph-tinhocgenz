@@ -71,27 +71,14 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              width: '32px',
               height: '32px',
-              borderRadius: '6px',
-              background: '#fff',
-              border: '1px solid #E2E8F0',
-              padding: '2px',
+              maxWidth: '160px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <img src="/logo.png" alt="PH - Tin Học GenZ" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-              PH TIN HỌC GENZ
-            </div>
-            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 500, letterSpacing: '0.01em' }}>
-              Cổng đào tạo & Quản lý học vụ
-            </div>
+            <img src="/logo.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
           </div>
         </div>
 
