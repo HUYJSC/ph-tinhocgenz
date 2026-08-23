@@ -71,8 +71,8 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              height: '32px',
-              maxWidth: '160px',
+              height: '42px',
+              maxWidth: '220px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'

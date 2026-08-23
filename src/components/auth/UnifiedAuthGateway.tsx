@@ -123,45 +123,49 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
       <div
         style={{
           width: '100%',
-          maxWidth: '440px',
+          maxWidth: '460px',
           background: '#FFFFFF',
-          borderRadius: '16px',
-          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.45)',
-          padding: '36px 32px 28px',
+          borderRadius: '20px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+          padding: '38px 34px 30px',
           position: 'relative',
           zIndex: 10
         }}
       >
-        {/* ── 1. LOGO TRƯỜNG / HỆ THỐNG Ở ĐẦU CARD (Chuẩn Canvas LMS Header Logo) ── */}
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        {/* ── 1. LOGO TRƯỜNG / HỆ THỐNG Ở ĐẦU CARD (To rõ, sắc nét chuẩn thương hiệu) ── */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div
             style={{
-              display: 'inline-flex',
+              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '10px'
+              marginBottom: '10px',
+              padding: '0 10px'
             }}
           >
             <img
               src="/logo.png"
               alt="PH DIGITAL EDUCATION"
               style={{
-                maxHeight: '56px',
-                maxWidth: '100%',
-                objectFit: 'contain'
+                height: '72px',
+                maxWidth: '320px',
+                width: 'auto',
+                objectFit: 'contain',
+                display: 'block'
               }}
             />
           </div>
-          <p
+          <div
             style={{
               fontSize: '13px',
-              color: '#64748B',
-              margin: '4px 0 0',
-              fontWeight: 500
+              fontWeight: 600,
+              color: '#475569',
+              marginTop: '6px',
+              letterSpacing: '0.01em'
             }}
           >
             Cổng Đăng nhập Hệ thống Học tập & Khảo thí LMS
-          </p>
+          </div>
         </div>
 
         {/* ── 2. ROLE TABS (Học viên / Giảng viên) ── */}

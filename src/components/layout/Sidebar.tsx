@@ -159,21 +159,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
         userSelect: 'none'
       }}
     >
-      {/* ── 1. LOGO & BRAND HEADER (64px) ── */}
+      {/* ── 1. LOGO & BRAND HEADER (72px) ── */}
       <div
         style={{
-          height: 'var(--header-height)',
+          height: '72px',
           padding: '0 16px',
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '10px'
         }}
       >
         <div
           style={{
-            height: '36px',
-            maxWidth: '180px',
+            height: '48px',
+            maxWidth: '200px',
+            width: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-start'
