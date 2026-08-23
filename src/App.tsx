@@ -447,6 +447,16 @@ export function App() {
                   attempts={stats.history}
                   studentAccounts={studentAccounts}
                   teacherAccounts={teacherAccounts}
+                  assignments={assignments}
+                  submissions={submissions}
+                  notifications={notifications}
+                  googleDriveConfig={googleDriveConfig}
+                  onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
+                  onCreateAssignment={createAssignment}
+                  onDeleteAssignment={deleteAssignment}
+                  onToggleOpen={toggleAssignmentOpen}
+                  onGradeSubmission={gradeSubmission}
+                  onMarkNotificationAsRead={markNotificationAsRead}
                   onAddQuiz={addCustomQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
                   onNavigateToCreator={() => setActiveTab('creator')}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
+import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
+import { TeacherAssignmentManager } from '../assignment/TeacherAssignmentManager';
 import {
   Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
@@ -14,6 +16,16 @@ interface AdminPortalProps {
   attempts: QuizAttempt[];
   studentAccounts: StudentAccount[];
   teacherAccounts?: TeacherAccount[];
+  assignments?: Assignment[];
+  submissions?: AssignmentSubmission[];
+  notifications?: TeacherNotification[];
+  googleDriveConfig?: GoogleDriveConfig;
+  onUpdateGoogleDriveConfig?: (config: GoogleDriveConfig) => void;
+  onCreateAssignment?: (data: Omit<Assignment, 'id' | 'createdAt'>) => void;
+  onDeleteAssignment?: (id: string) => void;
+  onToggleOpen?: (id: string) => void;
+  onGradeSubmission?: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
+  onMarkNotificationAsRead?: (id: string) => void;
   onAddQuiz: (quiz: Quiz) => void;
   onDeleteCustomQuiz: (quizId: string) => void;
   onNavigateToCreator: () => void;
@@ -44,6 +56,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   attempts,
   studentAccounts,
   teacherAccounts = [],
+  assignments = [],
+  submissions = [],
+  notifications = [],
+  googleDriveConfig,
+  onUpdateGoogleDriveConfig,
+  onCreateAssignment,
+  onDeleteAssignment,
+  onToggleOpen,
+  onGradeSubmission,
+  onMarkNotificationAsRead,
   onDeleteCustomQuiz,
   onNavigateToCreator,
   onCreateStudentAccount,
@@ -55,7 +77,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   currentUser
 }) => {
   const isSuperAdmin = currentUser.role === 'admin';
-  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'student_directory' | 'teachers' | 'exams' | 'question_bank' | 'seo_center' | 'meet_hub'>('overview');
+  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'grading_assignments' | 'student_directory' | 'teachers' | 'exams' | 'question_bank' | 'seo_center' | 'meet_hub'>('overview');
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [examFamilyFilter, setExamFamilyFilter] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
@@ -540,12 +562,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       <div className="horizontal-scroll" style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '20px' }}>
         {[
           { id: 'overview', label: 'Tổng Quan Hệ Thống', icon: BarChart3 },
-          { id: 'student_directory', label: `Học Viên (${studentAccounts.length})`, icon: Users },
+          { id: 'grading_assignments', label: `Khảo Thí & Chấm Điểm (${assignments.length}) ✍️`, icon: CheckSquare },
+          { id: 'student_directory', label: `Hồ Sơ Học Viên (${studentAccounts.length})`, icon: Users },
           ...(isSuperAdmin ? [{ id: 'teachers', label: `Giảng Viên (${teacherAccounts.length})`, icon: UserCheck }] : []),
           ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Tổng Đài Google Meet (10 Lớp) 🎥', icon: Video }] : []),
           { id: 'exams', label: `Kho Đề Thi (${totalQuizzes})`, icon: BookOpen },
           { id: 'question_bank', label: `Ngân Hàng Câu Hỏi (${totalQuestions})`, icon: FileSpreadsheet },
-          ...(isSuperAdmin ? [{ id: 'seo_center', label: 'Đẩy Top Google 🚀', icon: Globe }] : [])
+          ...(isSuperAdmin ? [{ id: 'seo_center', label: 'Cấu Hình SEO 🚀', icon: Globe }] : [])
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -578,6 +601,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           );
         })}
       </div>
+
+      {/* ── 0. KHẢO THÍ & CHẤM BÀI THỰC HÀNH SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}
+      {activeSubTab === 'grading_assignments' && (
+        <TeacherAssignmentManager
+          assignments={assignments}
+          submissions={submissions}
+          notifications={notifications}
+          googleDriveConfig={googleDriveConfig}
+          onUpdateGoogleDriveConfig={onUpdateGoogleDriveConfig}
+          currentUser={currentUser}
+          onCreateAssignment={onCreateAssignment || (() => {})}
+          onDeleteAssignment={onDeleteAssignment || (() => {})}
+          onToggleOpen={onToggleOpen || (() => {})}
+          onGradeSubmission={onGradeSubmission || (() => {})}
+          onMarkNotificationAsRead={onMarkNotificationAsRead || (() => {})}
+        />
+      )}
 
       {/* 1. OVERVIEW TAB */}
       {activeSubTab === 'overview' && (
