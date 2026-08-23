@@ -86,6 +86,31 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     ];
   });
 
+  const generateRandomMeetCode = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const r1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const r2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const r3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `https://meet.google.com/${r1}-${r2}-${r3}`;
+  };
+
+  const handleAutoGenerateUniqueMeets = () => {
+    const updated = meetHubRooms.map((r: any) => ({
+      ...r,
+      meetUrl: generateRandomMeetCode()
+    }));
+    setMeetHubRooms(updated);
+    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v2', JSON.stringify(updated));
+    soundFx.playVictory();
+    alert('🎉 Đã tự động sinh 10 Link Google Meet hoàn toàn độc lập cho 10 lớp học! Giáo viên dạy cùng ca hoặc cùng ngày sẽ không bị trùng phòng.');
+  };
+
+  const handleGenerateSingleMeet = (track: string) => {
+    const newMeet = generateRandomMeetCode();
+    handleUpdateSingleRoomMeet(track, newMeet);
+    soundFx.playClick();
+  };
+
   const handleBatchUpdateMeetUrl = (e: React.FormEvent) => {
     e.preventDefault();
     if (!masterMeetUrlInput.trim()) return;
@@ -1843,35 +1868,68 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             className="card"
             style={{
               padding: '24px',
-              background: 'linear-gradient(135deg, rgba(79, 110, 247, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
-              border: '1.5px solid rgba(79, 110, 247, 0.3)',
+              background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%)',
+              border: '1.5px solid rgba(37, 99, 235, 0.25)',
               borderRadius: 'var(--radius-xl)'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '18px' }}>
               <div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '999px', background: 'var(--brand)', color: '#fff', fontSize: '0.72rem', fontWeight: 800, marginBottom: '6px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '999px', background: '#2563EB', color: '#fff', fontSize: '0.72rem', fontWeight: 800, marginBottom: '8px' }}>
                   <Video size={13} />
-                  <span>TRUNG TÂM ĐIỀU PHỐI GOOGLE MEET TOÀN HỆ THỐNG</span>
+                  <span>TRUNG TÂM ĐIỀU PHỐI GOOGLE MEET & THANH TRA GIÁO VỤ</span>
                 </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-                  Tổng Đài Google Meet Trực Tuyến (10 Lớp Học)
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
+                  Tổng Đài Google Meet Đa Kênh (10 Lớp Học)
                 </h3>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                  Chỉ tài khoản <strong>Admin</strong> mới có quyền truy cập toàn bộ 10 phòng học Meet, giám sát dự giờ, và thay đổi link hàng loạt cho các lớp.
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '6px 0 0', maxWidth: '640px', lineHeight: 1.5 }}>
+                  Hệ thống tự động sinh link riêng biệt cho từng môn/lớp để <strong>2-3 giáo viên dạy cùng ngày, cùng ca học</strong> không bị trùng phòng. Ban Giám Hiệu & Thanh Tra có quyền truy cập trực tiếp giám sát dự giờ mà không cần đợi giáo viên duyệt.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              {/* Master Actions Buttons */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateUniqueMeets}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '10px 16px',
+                    fontSize: '0.84rem',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    borderRadius: '10px',
+                    background: '#FEF3C7',
+                    border: '1px solid #F59E0B',
+                    color: '#92400E',
+                    cursor: 'pointer'
+                  }}
+                  title="Tự động tạo 10 link Google Meet hoàn toàn khác nhau cho 10 lớp học"
+                >
+                  <span>🎲 Tự Động Sinh 10 Link Meet Độc Lập</span>
+                </button>
+
                 <a
                   href="https://meet.google.com/sja-vcpy-rsu"
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-primary"
-                  style={{ padding: '9px 16px', fontSize: '0.84rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}
+                  style={{
+                    padding: '10px 18px',
+                    fontSize: '0.84rem',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    borderRadius: '10px',
+                    background: '#2563EB',
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
+                  }}
                 >
                   <Video size={16} />
-                  <span>Vào Phòng Họp Tổng (Admin Room)</span>
+                  <span>Phòng Họp Tổng (Admin & Thanh Tra)</span>
                   <ExternalLink size={13} />
                 </a>
               </div>
@@ -1879,9 +1937,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
             {/* Batch Update Form */}
             <form onSubmit={handleBatchUpdateMeetUrl} style={{ background: 'var(--bg-card)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
-                ⚡ Tự Động Đồng Bộ / Gán 1 Link Google Meet Mới Cho Toàn Bộ 10 Lớp Học:
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  ⚡ Gán 1 Link Chung Cho Toàn Hệ Thống (Khi Có Hội Thảo / Họp Toàn Trường):
+                </label>
+                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                  Mặc định: Các lớp nên dùng 10 link độc lập bên dưới
+                </span>
+              </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <input
                   type="url"
@@ -1894,7 +1957,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     minWidth: '280px',
                     padding: '10px 14px',
                     borderRadius: '10px',
-                    border: '1.5px solid var(--brand)',
+                    border: '1.5px solid var(--border-color)',
                     background: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     fontSize: '0.88rem',
@@ -1903,17 +1966,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 />
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn btn-secondary"
                   style={{ padding: '10px 20px', fontSize: '0.86rem', fontWeight: 800, whiteSpace: 'nowrap' }}
                 >
-                  Áp Dụng Cho Tất Cả 10 Lớp
+                  Đồng Bộ Cho Tất Cả 10 Lớp
                 </button>
               </div>
             </form>
           </div>
 
           {/* Grid of 10 Dedicated Class Rooms */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '18px' }}>
             {meetHubRooms.map((roomItem: any, idx: number) => {
               const isCopied = copiedMeetIndex === idx;
               return (
@@ -1921,26 +1984,28 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   key={roomItem.track}
                   className="card"
                   style={{
-                    padding: '18px',
+                    padding: '20px',
                     borderRadius: '16px',
                     border: '1.5px solid var(--border-color)',
                     background: 'var(--bg-card)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: '12px'
+                    gap: '14px',
+                    boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
                   }}
                 >
                   {/* Top: Class & Lecturer */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
                       <span style={{
-                        padding: '3px 8px',
+                        padding: '4px 10px',
                         borderRadius: '6px',
-                        background: 'var(--brand-light)',
-                        color: 'var(--brand)',
-                        fontSize: '0.74rem',
-                        fontWeight: 900
+                        background: '#EFF6FF',
+                        color: '#2563EB',
+                        fontSize: '0.76rem',
+                        fontWeight: 800,
+                        border: '1px solid #BFDBFE'
                       }}>
                         LỚP {roomItem.classCode}
                       </span>
@@ -1948,32 +2013,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       <span style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        padding: '2px 8px',
+                        gap: '5px',
+                        padding: '3px 10px',
                         borderRadius: '999px',
                         background: 'rgba(16, 185, 129, 0.12)',
                         color: '#10b981',
-                        fontSize: '0.7rem',
+                        fontSize: '0.72rem',
                         fontWeight: 800
                       }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
-                        SẴN SÀNG
+                        PHÒNG RIÊNG SẴN SÀNG
                       </span>
                     </div>
 
-                    <h4 style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.35 }}>
                       {roomItem.className}
                     </h4>
 
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px', background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '10px' }}>
                       <div>👨‍🏫 <strong>Giảng viên:</strong> {roomItem.teacher}</div>
-                      <div>📍 <strong>Phòng:</strong> {roomItem.room}</div>
+                      <div>📍 <strong>Địa điểm / Ca học:</strong> {roomItem.room}</div>
                     </div>
                   </div>
 
                   {/* Middle: Meet Link Input/Display */}
                   <div style={{
-                    padding: '8px 10px',
+                    padding: '8px 12px',
                     borderRadius: '10px',
                     background: 'var(--bg-primary)',
                     border: '1px solid var(--border-color)',
@@ -1983,8 +2048,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     gap: '8px'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                      <Video size={14} color="var(--brand)" />
-                      <span style={{ fontSize: '0.76rem', color: 'var(--text-primary)', fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                      <Video size={15} color="#2563EB" />
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
                         {roomItem.meetUrl}
                       </span>
                     </div>
@@ -1998,17 +2063,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       }}
                       className="btn btn-secondary"
                       style={{
-                        padding: '3px 8px',
-                        fontSize: '0.72rem',
-                        height: '24px',
-                        minHeight: '24px',
+                        padding: '4px 8px',
+                        fontSize: '0.74rem',
+                        height: '26px',
+                        minHeight: '26px',
                         borderRadius: '6px',
                         background: isCopied ? '#10b981' : undefined,
-                        color: isCopied ? '#fff' : undefined
+                        color: isCopied ? '#fff' : undefined,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                       title="Sao chép link Google Meet cho lớp này"
                     >
                       {isCopied ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{isCopied ? 'Đã chép' : 'Chép'}</span>
                     </button>
                   </div>
 
@@ -2021,31 +2090,43 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       className="btn btn-primary"
                       style={{
                         flex: 1,
-                        padding: '8px 12px',
-                        fontSize: '0.8rem',
+                        padding: '9px 12px',
+                        fontSize: '0.82rem',
                         fontWeight: 800,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
-                        textDecoration: 'none'
+                        textDecoration: 'none',
+                        background: '#2563EB',
+                        borderRadius: '10px'
                       }}
+                      title="Admin / Thanh tra vào dự giờ lớp trực tiếp không cần đợi duyệt"
                     >
                       <Video size={14} />
-                      <span>Vào Dự Giờ Lớp 🎥</span>
+                      <span>Vào Dự Giờ Thanh Tra 🎥</span>
                       <ExternalLink size={12} />
                     </a>
 
                     <button
+                      onClick={() => handleGenerateSingleMeet(roomItem.track)}
+                      className="btn btn-secondary"
+                      style={{ padding: '8px 10px', fontSize: '0.78rem', borderRadius: '10px' }}
+                      title="Tự động sinh link Meet ngẫu nhiên mới cho lớp này"
+                    >
+                      <span>🎲</span>
+                    </button>
+
+                    <button
                       onClick={() => {
-                        const newUrl = prompt(`Nhập link Google Meet mới cho lớp ${roomItem.classCode}:`, roomItem.meetUrl);
+                        const newUrl = prompt(`Nhập link Google Meet tùy chỉnh cho lớp ${roomItem.classCode}:`, roomItem.meetUrl);
                         if (newUrl && newUrl.trim()) {
                           handleUpdateSingleRoomMeet(roomItem.track, newUrl);
                           soundFx.playVictory();
                         }
                       }}
                       className="btn btn-secondary"
-                      style={{ padding: '8px 10px', fontSize: '0.78rem', borderRadius: '8px' }}
+                      style={{ padding: '8px 10px', fontSize: '0.78rem', borderRadius: '10px' }}
                       title="Tùy chỉnh link Meet riêng cho lớp này"
                     >
                       <Settings size={14} />
