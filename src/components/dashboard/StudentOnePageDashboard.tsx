@@ -6,7 +6,7 @@ import { ClassScheduleItem } from '../../types/schedule';
 import {
   Play, BookOpen, RotateCcw, Award, CheckCircle2,
   Calendar, Layers, BookmarkCheck, ArrowRight, Bot, Send, Check,
-  Camera, QrCode, KeyRound
+  Camera, QrCode, KeyRound, ListTodo
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -129,7 +129,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
         display: 'flex',
         flexDirection: 'column',
         gap: '20px',
-        fontFamily: "'Times New Roman', Times, serif"
+        fontFamily: 'var(--font-sans)'
       }}
     >
       {/* ── 1. HEADER TIẾN ĐỘ & THỜI KHÓA BIỂU HÔM NAY ── */}
@@ -531,6 +531,84 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
         {/* ── CỘT PHẢI (34%): ÔN TẬP, NĂNG LỰC & TRỢ LÝ AI ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
+          {/* Widget 0: Việc cần làm hôm nay (To-Do Hub - Canvas LMS standard) */}
+          <div
+            style={{
+              padding: '16px 18px',
+              borderRadius: '8px',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+                <ListTodo size={16} color="#2563EB" />
+                <span>Việc cần làm hôm nay</span>
+              </div>
+              <span style={{ fontSize: '11.5px', background: '#EFF6FF', color: '#2563EB', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+                Hôm nay
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Task 1 */}
+              <div
+                onClick={() => { soundFx.playClick(); onContinueLearning(); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563EB', marginTop: '6px', flexShrink: 0 }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#1E293B' }}>
+                    Học bài: Hàm tra cứu XLOOKUP
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B' }}>
+                    Giáo trình chuyên đề • 12 phút
+                  </div>
+                </div>
+              </div>
+
+              {/* Task 2 */}
+              <div
+                onClick={() => { soundFx.playClick(); onOpenAssignments(); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A', marginTop: '6px', flexShrink: 0 }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#1E293B' }}>
+                    Nộp file bài tập thực hành
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B' }}>
+                    Liên kết tự động Google Drive
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Widget 1: Ôn tập củng cố (Smart Review) */}
           <section id="section-review" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div

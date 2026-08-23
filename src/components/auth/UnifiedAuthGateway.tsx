@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CurriculumTrack, StudentAccount, UserProfile } from '../../types/auth';
 import {
-  User, Shield, KeyRound, ShieldAlert, BookOpen, Lock, ArrowRight, Eye, EyeOff
+  User, Shield, ShieldAlert, BookOpen, ArrowRight, Eye, EyeOff
 } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { soundFx } from '../../utils/audio';
@@ -36,6 +36,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   const [adminTrackChoice, setAdminTrackChoice] = useState<CurriculumTrack | 'all'>('all');
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   // Student Form
   const [studentCode, setStudentCode] = useState('');
@@ -53,12 +54,26 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     soundFx.playClick();
   };
 
+  const handleQuickFillStudent = () => {
+    soundFx.playClick();
+    setStudentCode('THGZ01');
+    setStudentPassword('123');
+    setSelectedTrack('office-fast-3in1');
+  };
+
+  const handleQuickFillAdmin = () => {
+    soundFx.playClick();
+    setAdminName('Thầy Quang Huy');
+    setAdminPin('admin123');
+    setAdminTrackChoice('all');
+  };
+
   const handleStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStudentError('');
 
     if (!studentCode.trim()) {
-      setStudentError('Vui lòng nhập Mã học viên hoặc Họ tên!');
+      setStudentError('Vui lòng nhập Mã học viên hoặc Email!');
       return;
     }
 
@@ -99,668 +114,678 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '32px 16px',
-        background: 'linear-gradient(180deg, #F8FAFD 0%, #F2F5FA 100%)',
-        fontFamily: "'Times New Roman', Times, serif"
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+        fontFamily: 'var(--font-sans)',
+        position: 'relative'
       }}
     >
+      {/* ── CANVAS LMS STANDARD CENTERED LOGIN CONTAINER ── */}
       <div
         style={{
           width: '100%',
-          maxWidth: '480px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
+          maxWidth: '440px',
+          background: '#FFFFFF',
+          borderRadius: '16px',
+          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.45)',
+          padding: '36px 32px 28px',
+          position: 'relative',
+          zIndex: 10
         }}
       >
-        {/* ── 1. LOGO TRỰC TIẾP BO GÓC TRÒN ── */}
-        <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
-          <img
-            src="/logo.png"
-            alt="PH - Tin Học GenZ"
+        {/* ── 1. LOGO TRƯỜNG / HỆ THỐNG Ở ĐẦU CARD (Chuẩn Canvas LMS Header Logo) ── */}
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div
             style={{
-              width: '92px',
-              height: '92px',
-              borderRadius: '20px',
-              objectFit: 'cover',
-              display: 'block'
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '12px'
             }}
-          />
-        </div>
-
-        {/* ── 2. PHẦN THƯƠNG HIỆU & TIÊU ĐỀ ── */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          >
+            <img
+              src="/logo.png"
+              alt="PH - Tin Học GenZ"
+              style={{
+                height: '64px',
+                width: 'auto',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
           <h1
             style={{
-              fontSize: '26px',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
+              fontSize: '19px',
+              fontWeight: 800,
               color: '#0F172A',
-              margin: '0 0 6px',
-              lineHeight: 1.25
+              margin: '0 0 4px',
+              letterSpacing: '-0.02em'
             }}
           >
             PH - TIN HỌC GENZ
           </h1>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: '13px',
               color: '#64748B',
               margin: 0,
-              fontWeight: 400,
-              lineHeight: 1.4
+              fontWeight: 500
             }}
           >
-            Hệ thống Đào tạo & Khảo thí Tin học
+            Cổng Đăng nhập Quản lý Học tập LMS
           </p>
         </div>
 
-        {/* ── 3. CARD LOGIN (MODERN UNIVERSITY PORTAL) ── */}
+        {/* ── 2. ROLE TABS (Học viên / Giảng viên) ── */}
         <div
           style={{
-            width: '100%',
-            background: '#FFFFFF',
-            border: '1px solid #E5EAF2',
-            borderRadius: '10px',
-            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)',
-            padding: '28px 32px'
+            display: 'flex',
+            borderBottom: '2px solid #F1F5F9',
+            marginBottom: '22px'
           }}
         >
-          {/* ── 4. ROLE TABS (HỌC VIÊN / GIẢNG VIÊN - THANH LỊCH VỚI UNDERLINE) ── */}
-          <div
+          <button
+            type="button"
+            onClick={() => {
+              setRole('student');
+              setStudentError('');
+              soundFx.playClick();
+            }}
             style={{
+              flex: 1,
+              padding: '10px 0',
+              border: 'none',
+              background: 'transparent',
+              borderBottom: role === 'student' ? '2px solid #2563EB' : '2px solid transparent',
+              marginBottom: '-2px',
+              color: role === 'student' ? '#2563EB' : '#64748B',
+              fontWeight: role === 'student' ? 700 : 600,
+              fontSize: '14px',
               display: 'flex',
-              borderBottom: '1px solid #E2E8F0',
-              marginBottom: '24px'
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
             }}
           >
-            <button
-              type="button"
-              onClick={() => {
-                setRole('student');
-                setStudentError('');
-                soundFx.playClick();
-              }}
-              style={{
-                flex: 1,
-                padding: '10px 0 12px',
-                border: 'none',
-                background: 'transparent',
-                borderBottom: role === 'student' ? '2px solid #315BE8' : '2px solid transparent',
-                color: role === 'student' ? '#315BE8' : '#64748B',
-                fontWeight: role === 'student' ? 600 : 500,
-                fontSize: '14.5px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <User size={17} color={role === 'student' ? '#315BE8' : '#8492A6'} />
-              <span>Học viên</span>
-            </button>
+            <User size={16} />
+            <span>Học viên</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setRole('admin');
-                setAdminError('');
-                soundFx.playClick();
-              }}
-              style={{
-                flex: 1,
-                padding: '10px 0 12px',
-                border: 'none',
-                background: 'transparent',
-                borderBottom: role === 'admin' ? '2px solid #315BE8' : '2px solid transparent',
-                color: role === 'admin' ? '#315BE8' : '#64748B',
-                fontWeight: role === 'admin' ? 600 : 500,
-                fontSize: '14.5px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Shield size={17} color={role === 'admin' ? '#315BE8' : '#8492A6'} />
-              <span>Giảng viên</span>
-            </button>
-          </div>
-
-          {/* ── 5. FORM HỌC VIÊN ── */}
-          {role === 'student' && (
-            <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {/* Chương trình đào tạo */}
-              <div>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#334155',
-                    marginBottom: '8px'
-                  }}
-                >
-                  <BookOpen size={17} color="#8492A6" />
-                  <span>Chương trình đào tạo</span>
-                </label>
-                <select
-                  value={selectedTrack}
-                  onChange={e => handleTrackChange(e.target.value as CurriculumTrack)}
-                  style={{
-                    width: '100%',
-                    height: '48px',
-                    borderRadius: '7px',
-                    background: '#FFFFFF',
-                    border: '1px solid #D8DEE9',
-                    color: '#0F172A',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    padding: '0 14px',
-                    outline: 'none',
-                    cursor: 'pointer',
-                    transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-                  }}
-                  onFocus={e => {
-                    e.currentTarget.style.borderColor = '#3563E9';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(53, 99, 233, 0.08)';
-                  }}
-                  onBlur={e => {
-                    e.currentTarget.style.borderColor = '#D8DEE9';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  {TRACK_LIST.map(t => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Mã học viên hoặc họ tên */}
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#334155',
-                    marginBottom: '8px'
-                  }}
-                >
-                  Mã học viên hoặc họ tên
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <User
-                    size={18}
-                    color="#8492A6"
-                    style={{
-                      position: 'absolute',
-                      left: '14px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    required
-                    placeholder="VD: THGZ01 hoặc Nguyễn Văn An"
-                    value={studentCode}
-                    onChange={e => setStudentCode(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: '48px',
-                      borderRadius: '7px',
-                      background: '#FFFFFF',
-                      border: '1px solid #D8DEE9',
-                      color: '#0F172A',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      padding: '0 14px 0 42px',
-                      outline: 'none',
-                      transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-                    }}
-                    onFocus={e => {
-                      e.currentTarget.style.borderColor = '#3563E9';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(53, 99, 233, 0.08)';
-                    }}
-                    onBlur={e => {
-                      e.currentTarget.style.borderColor = '#D8DEE9';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Mật khẩu & Quên mật khẩu */}
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px'
-                  }}
-                >
-                  <label
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: '#334155'
-                    }}
-                  >
-                    Mật khẩu
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setIsForgotModalOpen(true)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#315BE8',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      padding: 0
-                    }}
-                  >
-                    Quên mật khẩu?
-                  </button>
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <KeyRound
-                    size={18}
-                    color="#8492A6"
-                    style={{
-                      position: 'absolute',
-                      left: '14px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Nhập mật khẩu"
-                    value={studentPassword}
-                    onChange={e => setStudentPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: '48px',
-                      borderRadius: '7px',
-                      background: '#FFFFFF',
-                      border: '1px solid #D8DEE9',
-                      color: '#0F172A',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      padding: '0 40px 0 42px',
-                      outline: 'none',
-                      transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-                    }}
-                    onFocus={e => {
-                      e.currentTarget.style.borderColor = '#3563E9';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(53, 99, 233, 0.08)';
-                    }}
-                    onBlur={e => {
-                      e.currentTarget.style.borderColor = '#D8DEE9';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#8492A6',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '6px', fontWeight: 400 }}>
-                  Mật khẩu mặc định dành cho tài khoản mới: <span style={{ fontWeight: 600, color: '#334155' }}>123</span>
-                </div>
-              </div>
-
-              {/* Thông báo lỗi */}
-              {studentError && (
-                <div
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '7px',
-                    background: '#FEF2F2',
-                    border: '1px solid #FCA5A5',
-                    color: '#B91C1C',
-                    fontSize: '13px',
-                    lineHeight: 1.4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <ShieldAlert size={16} style={{ flexShrink: 0 }} />
-                  <span>{studentError}</span>
-                </div>
-              )}
-
-              {/* Nút Submit Đăng nhập */}
-              <button
-                type="submit"
-                style={{
-                  width: '100%',
-                  height: '48px',
-                  borderRadius: '7px',
-                  background: '#315BE8',
-                  color: '#FFFFFF',
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  marginTop: '4px',
-                  boxShadow: '0 1px 3px rgba(49, 91, 232, 0.2)',
-                  transition: 'background-color 0.15s ease'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#274CCB')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#315BE8')}
-              >
-                <span>Đăng nhập</span>
-                <ArrowRight size={16} />
-              </button>
-            </form>
-          )}
-
-          {/* ── 6. FORM GIẢNG VIÊN ── */}
-          {role === 'admin' && (
-            <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {/* Họ tên giảng viên */}
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#334155',
-                    marginBottom: '8px'
-                  }}
-                >
-                  Họ tên giảng viên
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <User
-                    size={18}
-                    color="#8492A6"
-                    style={{
-                      position: 'absolute',
-                      left: '14px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    required
-                    placeholder="VD: Thầy Quang Huy / Thầy Đức Nam"
-                    value={adminName}
-                    onChange={e => setAdminName(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: '48px',
-                      borderRadius: '7px',
-                      background: '#FFFFFF',
-                      border: '1px solid #D8DEE9',
-                      color: '#0F172A',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      padding: '0 14px 0 42px',
-                      outline: 'none',
-                      transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-                    }}
-                    onFocus={e => {
-                      e.currentTarget.style.borderColor = '#3563E9';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(53, 99, 233, 0.08)';
-                    }}
-                    onBlur={e => {
-                      e.currentTarget.style.borderColor = '#D8DEE9';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Mật khẩu giảng viên & Quên mật khẩu */}
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px'
-                  }}
-                >
-                  <label
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: '#334155'
-                    }}
-                  >
-                    Mật khẩu giảng viên
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setIsForgotModalOpen(true)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#315BE8',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      padding: 0
-                    }}
-                  >
-                    Quên mật khẩu?
-                  </button>
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <Lock
-                    size={18}
-                    color="#8492A6"
-                    style={{
-                      position: 'absolute',
-                      left: '14px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="Nhập mật khẩu"
-                    value={adminPin}
-                    onChange={e => setAdminPin(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: '48px',
-                      borderRadius: '7px',
-                      background: '#FFFFFF',
-                      border: '1px solid #D8DEE9',
-                      color: '#0F172A',
-                      fontSize: '14px',
-                      padding: '0 40px 0 42px',
-                      outline: 'none',
-                      transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-                    }}
-                    onFocus={e => {
-                      e.currentTarget.style.borderColor = '#3563E9';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(53, 99, 233, 0.08)';
-                    }}
-                    onBlur={e => {
-                      e.currentTarget.style.borderColor = '#D8DEE9';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#8492A6',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '6px', fontWeight: 400 }}>
-                  Mật khẩu mặc định giảng viên: <span style={{ fontWeight: 600, color: '#334155' }}>123</span> (hoặc admin123)
-                </div>
-              </div>
-
-              {/* Phân hệ quản lý giảng dạy */}
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#334155',
-                    marginBottom: '8px'
-                  }}
-                >
-                  Phân hệ quản lý giảng dạy
-                </label>
-                <select
-                  value={adminTrackChoice}
-                  onChange={e => setAdminTrackChoice(e.target.value as any)}
-                  style={{
-                    width: '100%',
-                    height: '48px',
-                    borderRadius: '7px',
-                    background: '#FFFFFF',
-                    border: '1px solid #D8DEE9',
-                    color: '#0F172A',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    padding: '0 14px',
-                    outline: 'none',
-                    cursor: 'pointer',
-                    transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-                  }}
-                  onFocus={e => {
-                    e.currentTarget.style.borderColor = '#3563E9';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(53, 99, 233, 0.08)';
-                  }}
-                  onBlur={e => {
-                    e.currentTarget.style.borderColor = '#D8DEE9';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  <option value="all">Toàn bộ 10 phân hệ đào tạo</option>
-                  {TRACK_LIST.map(t => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Lỗi đăng nhập */}
-              {adminError && (
-                <div
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '7px',
-                    background: '#FEF2F2',
-                    border: '1px solid #FCA5A5',
-                    color: '#B91C1C',
-                    fontSize: '13px',
-                    lineHeight: 1.4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <ShieldAlert size={16} style={{ flexShrink: 0 }} />
-                  <span>{adminError}</span>
-                </div>
-              )}
-
-              {/* Nút Submit Giảng viên */}
-              <button
-                type="submit"
-                style={{
-                  width: '100%',
-                  height: '48px',
-                  borderRadius: '7px',
-                  background: '#315BE8',
-                  color: '#FFFFFF',
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  marginTop: '4px',
-                  boxShadow: '0 1px 3px rgba(49, 91, 232, 0.2)',
-                  transition: 'background-color 0.15s ease'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#274CCB')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#315BE8')}
-              >
-                <span>Đăng nhập</span>
-                <ArrowRight size={16} />
-              </button>
-            </form>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              setRole('admin');
+              setAdminError('');
+              soundFx.playClick();
+            }}
+            style={{
+              flex: 1,
+              padding: '10px 0',
+              border: 'none',
+              background: 'transparent',
+              borderBottom: role === 'admin' ? '2px solid #2563EB' : '2px solid transparent',
+              marginBottom: '-2px',
+              color: role === 'admin' ? '#2563EB' : '#64748B',
+              fontWeight: role === 'admin' ? 700 : 600,
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Shield size={16} />
+            <span>Giảng viên</span>
+          </button>
         </div>
 
-        {/* ── 7. FOOTER TỐI GIẢN CHÍNH QUY ── */}
-        <div style={{ marginTop: '24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '12.5px', color: '#64748B', fontWeight: 500 }}>
-            © 2026 PH Tin Học GenZ
-          </div>
-          <div style={{ fontSize: '12px', color: '#98A2B3', marginTop: '2px' }}>
-            Hệ thống đào tạo trực tuyến
+        {/* ── 3. FORM HỌC VIÊN (Canvas Form Standard) ── */}
+        {role === 'student' && (
+          <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Phân hệ đào tạo */}
+            <div>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  marginBottom: '6px'
+                }}
+              >
+                <BookOpen size={15} color="#2563EB" />
+                <span>Chương trình đào tạo</span>
+              </label>
+              <select
+                value={selectedTrack}
+                onChange={e => handleTrackChange(e.target.value as CurriculumTrack)}
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  background: '#F8FAFC',
+                  border: '1.5px solid #CBD5E1',
+                  color: '#0F172A',
+                  fontSize: '13.5px',
+                  fontWeight: 500,
+                  padding: '0 12px',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.15s ease'
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = '#2563EB')}
+                onBlur={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
+              >
+                {TRACK_LIST.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Email / Mã học viên */}
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  marginBottom: '6px'
+                }}
+              >
+                Mã học viên hoặc Email
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="VD: THGZ01 hoặc nguyenvana@..."
+                value={studentCode}
+                onChange={e => setStudentCode(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  border: '1.5px solid #CBD5E1',
+                  color: '#0F172A',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  padding: '0 14px',
+                  outline: 'none',
+                  transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = '#2563EB';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = '#CBD5E1';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  marginBottom: '6px'
+                }}
+              >
+                Mật khẩu
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Nhập mật khẩu"
+                  value={studentPassword}
+                  onChange={e => setStudentPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    height: '44px',
+                    borderRadius: '8px',
+                    background: '#FFFFFF',
+                    border: '1.5px solid #CBD5E1',
+                    color: '#0F172A',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    padding: '0 40px 0 14px',
+                    outline: 'none',
+                    transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+                  }}
+                  onFocus={e => {
+                    e.currentTarget.style.borderColor = '#2563EB';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                  }}
+                  onBlur={e => {
+                    e.currentTarget.style.borderColor = '#CBD5E1';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Canvas Action Row: Stay signed in + Forgot Password + Submit */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginTop: '4px'
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '13px',
+                    color: '#475569',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                  />
+                  <span>Duy trì đăng nhập</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsForgotModalOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#2563EB',
+                    fontSize: '12.5px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    padding: 0,
+                    textAlign: 'left'
+                  }}
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
+
+              {/* Log In Button (Right side, classic Canvas style) */}
+              <button
+                type="submit"
+                style={{
+                  minWidth: '120px',
+                  height: '42px',
+                  borderRadius: '8px',
+                  background: '#2563EB',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                  transition: 'background-color 0.15s ease'
+                }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1D4ED8')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2563EB')}
+              >
+                <span>Đăng nhập</span>
+                <ArrowRight size={15} />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {studentError && (
+              <div
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  background: '#FEF2F2',
+                  border: '1px solid #FCA5A5',
+                  color: '#B91C1C',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginTop: '6px'
+                }}
+              >
+                <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+                <span>{studentError}</span>
+              </div>
+            )}
+          </form>
+        )}
+
+        {/* ── 4. FORM GIẢNG VIÊN ── */}
+        {role === 'admin' && (
+          <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  marginBottom: '6px'
+                }}
+              >
+                Họ tên giảng viên
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="VD: Thầy Quang Huy / Thầy Đức Nam"
+                value={adminName}
+                onChange={e => setAdminName(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  border: '1.5px solid #CBD5E1',
+                  color: '#0F172A',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  padding: '0 14px',
+                  outline: 'none',
+                  transition: 'border-color 0.15s ease'
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = '#2563EB')}
+                onBlur={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  marginBottom: '6px'
+                }}
+              >
+                Mật khẩu quản trị (PIN)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Nhập mật khẩu PIN"
+                  value={adminPin}
+                  onChange={e => setAdminPin(e.target.value)}
+                  style={{
+                    width: '100%',
+                    height: '44px',
+                    borderRadius: '8px',
+                    background: '#FFFFFF',
+                    border: '1.5px solid #CBD5E1',
+                    color: '#0F172A',
+                    fontSize: '14px',
+                    padding: '0 40px 0 14px',
+                    outline: 'none',
+                    transition: 'border-color 0.15s ease'
+                  }}
+                  onFocus={e => (e.currentTarget.style.borderColor = '#2563EB')}
+                  onBlur={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  marginBottom: '6px'
+                }}
+              >
+                Phân hệ quản lý giảng dạy
+              </label>
+              <select
+                value={adminTrackChoice}
+                onChange={e => setAdminTrackChoice(e.target.value as any)}
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  background: '#F8FAFC',
+                  border: '1.5px solid #CBD5E1',
+                  color: '#0F172A',
+                  fontSize: '13.5px',
+                  fontWeight: 500,
+                  padding: '0 12px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">Toàn bộ 10 phân hệ đào tạo</option>
+                {TRACK_LIST.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: '4px'
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setIsForgotModalOpen(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#2563EB',
+                  fontSize: '12.5px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                Quên mật khẩu?
+              </button>
+
+              <button
+                type="submit"
+                style={{
+                  minWidth: '120px',
+                  height: '42px',
+                  borderRadius: '8px',
+                  background: '#2563EB',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)'
+                }}
+              >
+                <span>Đăng nhập</span>
+                <ArrowRight size={15} />
+              </button>
+            </div>
+
+            {adminError && (
+              <div
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  background: '#FEF2F2',
+                  border: '1px solid #FCA5A5',
+                  color: '#B91C1C',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginTop: '6px'
+                }}
+              >
+                <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+                <span>{adminError}</span>
+              </div>
+            )}
+          </form>
+        )}
+
+        {/* ── 5. QUICK DEMO FILL BUTTONS ── */}
+        <div
+          style={{
+            marginTop: '24px',
+            paddingTop: '16px',
+            borderTop: '1px solid #F1F5F9',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            fontSize: '12px'
+          }}
+        >
+          <span style={{ color: '#64748B', fontWeight: 500 }}>Tài khoản thử nghiệm:</span>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={handleQuickFillStudent}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                color: '#2563EB',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Học viên (THGZ01)
+            </button>
+            <button
+              type="button"
+              onClick={handleQuickFillAdmin}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                background: '#F1F5F9',
+                border: '1px solid #CBD5E1',
+                color: '#475569',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Giảng viên
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Modal Quên mật khẩu */}
+      {/* ── 6. CANVAS LMS FOOTER LINKS ── */}
+      <footer
+        style={{
+          marginTop: '20px',
+          textAlign: 'center',
+          color: '#94A3B8',
+          fontSize: '12.5px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '6px',
+          zIndex: 10
+        }}
+      >
+        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+          <a
+            href="#"
+            onClick={e => { e.preventDefault(); soundFx.playClick(); setIsForgotModalOpen(true); }}
+            style={{ color: '#CBD5E1', textDecoration: 'none', transition: 'color 0.15s ease' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#FFFFFF')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#CBD5E1')}
+          >
+            Trợ giúp học vụ
+          </a>
+          <span>•</span>
+          <span style={{ color: '#94A3B8' }}>PH - Tin Học GenZ LMS</span>
+        </div>
+        <div style={{ fontSize: '11.5px', color: '#64748B' }}>
+          Hệ thống Quản lý Học tập & Khảo thí Trực tuyến
+        </div>
+      </footer>
+
+      {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
