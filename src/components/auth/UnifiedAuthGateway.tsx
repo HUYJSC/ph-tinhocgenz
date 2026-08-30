@@ -11,12 +11,14 @@ interface UnifiedAuthGatewayProps {
   onStudentLogin: (studentCode: string, password: string, selectedTrack: CurriculumTrack) => { success: boolean; user?: UserProfile; message?: string };
   onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string };
   onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
+  onBackToLanding?: () => void; // [BA FIX] Allow returning to landing page
 }
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   onStudentLogin,
   onAdminLogin,
-  onResetPassword
+  onResetPassword,
+  onBackToLanding
 }) => {
   const [role, setRole] = useState<'student' | 'admin'>('student');
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
@@ -51,7 +53,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   const handleQuickFillAdmin = () => {
     soundFx.playClick();
     setAdminName('Thầy Quang Huy');
-    setAdminPin('admin123');
+    setAdminPin('admin123'); // [NOTE] Update to admin@phedu2026 in production
     setAdminTrackChoice('all');
   };
 
@@ -119,6 +121,24 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
           zIndex: 10
         }}
       >
+        {/* [BA FIX] Back to landing page */}
+        {onBackToLanding && (
+          <button
+            onClick={onBackToLanding}
+            style={{
+              position: 'absolute', top: '12px', left: '12px',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#64748b', fontSize: '0.8rem', fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: '4px',
+              padding: '6px 10px', borderRadius: '8px', transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#334155'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#64748b'; }}
+          >
+            ← Trang chủ
+          </button>
+        )}
+
         {/* ── 1. LOGO TRƯỜNG / HỆ THỐNG Ở ĐẦU CARD (To rõ, sắc nét chuẩn thương hiệu) ── */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div

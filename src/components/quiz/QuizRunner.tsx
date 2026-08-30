@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import { useQuizEngine, QuizMode } from '../../hooks/useQuizEngine';
 import { QuestionCard } from './QuestionCard';
-import { Timer, ArrowLeft, ArrowRight, Flag, Send, Grid, AlertCircle, X } from 'lucide-react';
+import { Timer, ArrowLeft, ArrowRight, Flag, Send, Grid, AlertCircle, AlertTriangle, X } from 'lucide-react';
+import { soundFx } from '../../utils/audio';
 
 interface QuizRunnerProps {
   quiz: Quiz;
@@ -11,6 +12,7 @@ interface QuizRunnerProps {
   onExit: () => void;
   bookmarkedQuestionIds: string[];
   onToggleBookmark: (questionId: string) => void;
+  userId?: string; // [BA FIX] for autosave scoping
 }
 
 export function formatTime(seconds: number): string {
@@ -25,7 +27,8 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
   onFinish,
   onExit,
   bookmarkedQuestionIds,
-  onToggleBookmark
+  onToggleBookmark,
+  userId
 }) => {
   const {
     currentIndex,
@@ -35,7 +38,9 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
     revealedHints,
     flaggedQuestions,
     remainingSeconds,
+    isSubmitted,
     answeredCount,
+    wasRestored,
     setAnswer,
     goToQuestion,
     nextQuestion,
@@ -43,10 +48,32 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
     toggleFlag,
     revealHint,
     submitQuiz
-  } = useQuizEngine({ quiz, mode, onFinish });
+  } = useQuizEngine({ quiz, mode, onFinish, userId });
 
   const [showDrawer, setShowDrawer] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
+  const [showRestoredBanner, setShowRestoredBanner] = useState(wasRestored);
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showTabWarning, setShowTabWarning] = useState(false);
+
+  // [EXAM INTEGRITY] Detect when student leaves the exam tab
+  useEffect(() => {
+    if (mode !== 'exam' || isSubmitted) return;
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        soundFx.playIncorrect();
+        setTabSwitchCount(prev => {
+          const next = prev + 1;
+          setShowTabWarning(true);
+          return next;
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [mode, isSubmitted]);
 
   if (!currentQuestion) {
     return <div>Không tìm thấy câu hỏi</div>;
@@ -54,7 +81,12 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
 
   const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
   const isLastQuestion = currentIndex === totalQuestions - 1;
-  const isUrgent = mode === 'exam' && quiz.timeLimitMinutes > 0 && remainingSeconds < 60;
+  const isUrgent = mode === 'exam' && quiz.timeLimitMinutes > 0 && remainingSeconds < 120;
+  const unansweredQuestions = quiz.questions
+    .map((q, idx) => ({ q, idx }))
+    .filter(({ q }) => answers[q.id] === undefined || answers[q.id] === '');
+  const unansweredCount = unansweredQuestions.length;
+
 
   const handleConfirmSubmit = () => {
     setShowConfirmSubmit(false);
@@ -63,6 +95,76 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
 
   return (
     <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', padding: '16px' }}>
+      {/* [EXAM INTEGRITY] Tab switch warning */}
+      {showTabWarning && (
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.15)',
+          border: '1.5px solid #ef4444',
+          borderRadius: 'var(--radius-md)',
+          padding: '10px 16px',
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px',
+          animation: 'pulseGlow 1.5s infinite'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444', fontWeight: 600, fontSize: '0.84rem' }}>
+            <AlertTriangle size={17} />
+            <span>⚠️ Cảnh báo giám sát thi: Bạn vừa rời khỏi cửa sổ làm bài (Lần {tabSwitchCount}/3). Vui lòng tập trung để kết quả thi được công nhận!</span>
+          </div>
+          <button
+            onClick={() => setShowTabWarning(false)}
+            style={{
+              background: '#ef4444', border: 'none', color: '#fff',
+              padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem',
+              fontWeight: 700, cursor: 'pointer', flexShrink: 0
+            }}
+          >
+            Đã hiểu
+          </button>
+        </div>
+      )}
+
+      {/* [BA FIX] Autosave recovery banner */}
+      {showRestoredBanner && (
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.15)',
+          border: '1px solid rgba(16, 185, 129, 0.4)',
+          borderRadius: 'var(--radius-md)',
+          padding: '10px 16px',
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px'
+        }}>
+          <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>
+            ✅ Đã khôi phục bài thi từ lần làm trước. Tiến độ và câu trả lời của bạn được giữ nguyên.
+          </span>
+          <button
+            onClick={() => setShowRestoredBanner(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#10b981', fontSize: '18px', lineHeight: 1 }}
+          >×</button>
+        </div>
+      )}
+
+      {/* [BA FIX] Unanswered warning banner for exam mode */}
+      {mode === 'exam' && unansweredCount > 0 && unansweredCount <= 5 && (
+        <div style={{
+          background: 'rgba(245, 158, 11, 0.12)',
+          border: '1px solid rgba(245, 158, 11, 0.4)',
+          borderRadius: 'var(--radius-md)',
+          padding: '8px 16px',
+          marginBottom: '12px',
+          fontSize: '0.82rem',
+          color: '#f59e0b',
+          fontWeight: 600
+        }}>
+          ⚠️ Còn {unansweredCount} câu chưa trả lời: câu số {unansweredQuestions.map(u => u.idx + 1).join(', ')}
+        </div>
+      )}
+
       {/* Top Header Bar */}
       <div
         className="card"
@@ -353,21 +455,70 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
             </div>
 
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>Xác nhận nộp bài?</h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.5 }}>
-              Bạn đã trả lời <b>{answeredCount}</b> trên tổng số <b>{totalQuestions}</b> câu hỏi.
-              {answeredCount < totalQuestions && (
-                <span style={{ color: '#f59e0b', display: 'block', marginTop: '6px' }}>
-                  ⚠️ Còn {totalQuestions - answeredCount} câu chưa chọn đáp án!
-                </span>
+
+            {/* Summary */}
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '16px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10b981' }}>{answeredCount}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Đã trả lời</div>
+              </div>
+              {unansweredCount > 0 && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f59e0b' }}>{unansweredCount}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Chưa làm</div>
+                </div>
               )}
-            </p>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{totalQuestions}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Tổng số</div>
+              </div>
+            </div>
+
+            {/* Unanswered questions list */}
+            {unansweredCount > 0 && (
+              <div style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: 'var(--radius-md)',
+                padding: '10px 14px',
+                marginBottom: '16px',
+                textAlign: 'left'
+              }}>
+                <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700, marginBottom: '8px' }}>
+                  ⚠️ Câu chưa trả lời — click để quay lại:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {unansweredQuestions.map(({ q, idx }) => (
+                    <button
+                      key={q.id}
+                      onClick={() => {
+                        setShowConfirmSubmit(false);
+                        goToQuestion(idx);
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'rgba(245, 158, 11, 0.15)',
+                        border: '1px solid rgba(245, 158, 11, 0.4)',
+                        color: '#f59e0b',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Câu {idx + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <button onClick={() => setShowConfirmSubmit(false)} className="btn btn-secondary">
                 Làm tiếp
               </button>
               <button onClick={handleConfirmSubmit} className="btn btn-primary" style={{ background: 'var(--accent-gradient-emerald)' }}>
-                Nộp bài
+                ✓ Nộp bài ngay
               </button>
             </div>
           </div>

@@ -29,7 +29,13 @@ const requiredFiles = [
   'src/components/layout/Header.tsx',
   'src/components/layout/Sidebar.tsx',
   'src/components/dashboard/StudentOnePageDashboard.tsx',
+  'src/components/landing/LandingPage.tsx',
+  'src/components/practice/PracticeBySkill.tsx',
   'src/components/quiz/QuizRunner.tsx',
+  'src/components/quiz/QuizResult.tsx',
+  'src/services/weakSkillService.ts',
+  'src/services/recommendationService.ts',
+  'src/types/skill.ts',
   'dist/index.html',
   'dist/assets'
 ];
@@ -83,8 +89,25 @@ const dashboardContent = fs.readFileSync('src/components/dashboard/StudentOnePag
 assert(dashboardContent.includes('Việc cần làm hôm nay'), 'Có Widget To-Do Hub theo chuẩn Canvas LMS');
 assert(dashboardContent.includes('var(--font-sans)'), 'Đã chuẩn hóa font chữ sans-serif hiện đại');
 
-// 6. Test Production Build bundle
-console.log('\n📦 NHÓM 6: Kiểm tra gói đóng gói phân phối (Vite Dist)');
+// 6. Test Landing Page & Practice by Skill
+console.log('\n🌟 NHÓM 6: Kiểm tra Landing Page & Luyện tập theo kỹ năng');
+const landingContent = fs.readFileSync('src/components/landing/LandingPage.tsx', 'utf8');
+assert(landingContent.includes('PH DIGITAL EDUCATION'), 'Landing Page có tên thương hiệu PH DIGITAL EDUCATION');
+assert(landingContent.includes('Kiểm tra trình độ miễn phí'), 'Landing Page có CTA kiểm tra trình độ');
+
+const practiceContent = fs.readFileSync('src/components/practice/PracticeBySkill.tsx', 'utf8');
+assert(practiceContent.includes('groupQuestionsBySkill'), 'PracticeBySkill gom nhóm câu hỏi theo skillId');
+assert(practiceContent.includes('initialSkillId'), 'PracticeBySkill hỗ trợ chọn nhanh skill ban đầu');
+
+// 7. Test Exam Integrity & Autosave
+console.log('\n🛡️ NHÓM 7: Kiểm tra An ninh Khảo thí & Giám sát thi');
+const quizRunnerContent = fs.readFileSync('src/components/quiz/QuizRunner.tsx', 'utf8');
+assert(quizRunnerContent.includes('visibilitychange'), 'QuizRunner có event listener phát hiện rời tab thi');
+assert(quizRunnerContent.includes('Cảnh báo giám sát thi'), 'QuizRunner có banner cảnh báo gian lận khi rời tab');
+assert(quizRunnerContent.includes('showRestoredBanner'), 'QuizRunner có tính năng khôi phục bài thi từ Autosave');
+
+// 8. Test Production Build bundle
+console.log('\n📦 NHÓM 8: Kiểm tra gói đóng gói phân phối (Vite Dist)');
 const distHtml = fs.readFileSync('dist/index.html', 'utf8');
 assert(distHtml.includes('<!DOCTYPE html>'), 'Tệp index.html trong dist hợp lệ');
 assert(distHtml.includes('/assets/'), 'Có đường dẫn nạp assets CSS/JS');

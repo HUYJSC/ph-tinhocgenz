@@ -41,6 +41,8 @@ import { QuizMode } from './hooks/useQuizEngine';
 import { CurriculumTrack } from './types/auth';
 import { AcademicNoticeModal } from './components/modals/AcademicNoticeModal';
 import { AcademicFeedbackModal } from './components/modals/AcademicFeedbackModal';
+import { LandingPage } from './components/landing/LandingPage';
+import { PracticeBySkill } from './components/practice/PracticeBySkill';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
@@ -123,6 +125,11 @@ export function App() {
     }
   });
 
+  // [BA FIX] Track whether guest has clicked through to auth
+  const [showAuthGateway, setShowAuthGateway] = useState<boolean>(() => {
+    try { return localStorage.getItem('phtgz_show_auth') === 'true'; } catch { return false; }
+  });
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
@@ -139,6 +146,7 @@ export function App() {
   const [selectedCertificate, setSelectedCertificate] = useState<DigitalCertificate | null>(null);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [practiceSkillId, setPracticeSkillId] = useState<string | undefined>(undefined);
 
   // Sync auth name to storage stats
   useEffect(() => {
@@ -204,6 +212,15 @@ export function App() {
     setShowAITutorDrawer(true);
   };
 
+  // Open Practice by Skill tab (with optional preselected skill)
+  const handleOpenPracticeSkill = (skillId?: string) => {
+    setPracticeSkillId(skillId);
+    setActiveQuiz(null);
+    setLatestAttempt(null);
+    setActiveTab('practice_skill');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Complete diagnostic onboarding
   const handleCompleteOnboarding = (result: DiagnosticResult) => {
     try {
@@ -267,8 +284,20 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 1. UNIFIED AUTH GATEWAY (Mandatory screen when not authenticated)
+  // 1. NOT authenticated: show Landing Page for guests, Auth Gateway when they click CTA
   if (!isSessionActive) {
+    if (!showAuthGateway) {
+      return (
+        <div className={`app-container ${theme}`}>
+          <LandingPage
+            onGetStarted={() => {
+              setShowAuthGateway(true);
+              try { localStorage.setItem('phtgz_show_auth', 'true'); } catch { }
+            }}
+          />
+        </div>
+      );
+    }
     return (
       <div className={`app-container ${theme}`}>
         <UnifiedAuthGateway
@@ -276,6 +305,10 @@ export function App() {
           onStudentLogin={handleStudentUnifiedLogin}
           onAdminLogin={handleAdminUnifiedLogin}
           onResetPassword={resetUserPassword}
+          onBackToLanding={() => {
+            setShowAuthGateway(false);
+            try { localStorage.removeItem('phtgz_show_auth'); } catch { }
+          }}
         />
       </div>
     );
@@ -359,6 +392,7 @@ export function App() {
               onExit={handleExitQuiz}
               bookmarkedQuestionIds={stats.bookmarkedQuestionIds}
               onToggleBookmark={toggleBookmark}
+              userId={user.id}
             />
           )}
 
@@ -370,6 +404,7 @@ export function App() {
               studentName={user.name}
               onRetry={handleRetryQuiz}
               onGoHome={handleExitQuiz}
+              onPracticeSkill={handleOpenPracticeSkill}
             />
           )}
 
@@ -408,6 +443,7 @@ export function App() {
                   onOpenAssignments={() => setActiveTab('assignments')}
                   onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
                   onOpenQRScanner={() => setShowCameraScanner(true)}
+                  onOpenPracticeSkill={handleOpenPracticeSkill}
                 />
               )}
 
@@ -416,6 +452,18 @@ export function App() {
                 <LearningPathRoadmap
                   currentUser={user}
                   onStartNodePractice={(_node) => handleLaunchTrackQuiz('practice')}
+                />
+              )}
+
+              {/* Practice By Skill Tab */}
+              {activeTab === 'practice_skill' && (
+                <PracticeBySkill
+                  quizzes={allQuizzes}
+                  initialSkillId={practiceSkillId}
+                  onBack={() => {
+                    setPracticeSkillId(undefined);
+                    setActiveTab('dashboard');
+                  }}
                 />
               )}
 

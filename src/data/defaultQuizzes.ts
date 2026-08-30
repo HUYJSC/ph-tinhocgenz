@@ -22,7 +22,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Phím `Ctrl + J` (Justify) căn đều hai lề văn bản. `Ctrl + E` căn giữa, `Ctrl + L` căn trái, `Ctrl + R` căn phải.',
         hint: 'Chữ J viết tắt của Justify.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-paragraph-format',
+        topicId: 'topic-word-formatting',
+        subjectId: 'subject-mos-word',
+        difficulty: 'easy'
       },
       {
         id: 'fast3in1-q2',
@@ -32,7 +36,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Hàm `AVERAGE(number1, [number2], ...)` trả về giá trị trung bình cộng của các đối số.',
         hint: 'Hàm tiếng Anh nghĩa là trung bình.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-basic-func',
+        topicId: 'topic-excel-formula',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'easy'
       },
       {
         id: 'fast3in1-q3',
@@ -42,7 +50,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Phím `F5` bắt đầu trình chiếu từ slide đầu tiên. `Shift + F5` trình chiếu từ slide hiện hành.',
         hint: 'Phím chức năng F ở hàng đầu bàn phím.',
-        points: 10
+        points: 10,
+        skillId: 'skill-ppt-slideshow',
+        topicId: 'topic-ppt-presentation',
+        subjectId: 'subject-mos-ppt',
+        difficulty: 'easy'
       }
     ]
   },
@@ -68,7 +80,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Trong hệ nhị phân tin học, 1 GB = 1024 MB = 1,048,576 KB.',
         hint: 'Lũy thừa 2^10 = 1024.',
-        points: 10
+        points: 10,
+        skillId: 'skill-hardware-storage',
+        topicId: 'topic-computer-hardware',
+        subjectId: 'subject-cc-cntt',
+        difficulty: 'easy'
       },
       {
         id: 'ccbasic-q2',
@@ -78,7 +94,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: [0, 1, 2],
         explanation: 'Bàn phím, chuột và máy quét đưa dữ liệu vào máy tính. Máy in là thiết bị đầu ra (Output).',
         hint: 'Máy in là thiết bị xuất ra giấy.',
-        points: 15
+        points: 15,
+        skillId: 'skill-hardware-io-devices',
+        topicId: 'topic-computer-hardware',
+        subjectId: 'subject-cc-cntt',
+        difficulty: 'easy'
       },
       {
         id: 'ccbasic-q3',
@@ -87,7 +107,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: true,
         explanation: 'Đúng. Mật khẩu phức tạp giúp chống lại các cuộc tấn công Brute-force và rò rỉ dữ liệu.',
         hint: 'Nguyên tắc an toàn thông tin.',
-        points: 10
+        points: 10,
+        skillId: 'skill-security-password',
+        topicId: 'topic-information-security',
+        subjectId: 'subject-cc-cntt',
+        difficulty: 'easy'
       }
     ]
   },
@@ -113,7 +137,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Cặp hàm `INDEX` và `MATCH` tra cứu linh hoạt ở bất kỳ cột nào sang trái hoặc sang phải, không bị giới hạn cột đầu tiên như VLOOKUP.',
         hint: 'Hàm INDEX lấy giá trị theo hàng/cột kết hợp MATCH tìm vị trí.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-index-match',
+        topicId: 'topic-excel-advanced-lookup',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'hard'
       },
       {
         id: 'ccadv-q2',
@@ -123,7 +151,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Tính năng `Mail Merge` (Trộn thư) tạo hàng loạt thư mời, bảng điểm, hợp đồng từ file danh sách Excel.',
         hint: 'Tab Mailings trong Word.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-mail-merge',
+        topicId: 'topic-word-advanced',
+        subjectId: 'subject-mos-word',
+        difficulty: 'hard'
       }
     ]
   },
@@ -149,7 +181,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Quy định chuẩn văn bản hành chính nhà nước sử dụng phông chữ Times New Roman, bảng mã Unicode.',
         hint: 'Font chữ có chân phổ biến nhất.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-admin-doc',
+        topicId: 'topic-word-formatting',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'we-basic-q2',
@@ -159,7 +195,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Tính năng `Freeze Panes` trong tab View giúp cố định dòng/cột tiêu đề khi cuộn trang.',
         hint: 'View -> Freeze Panes.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-view-tools',
+        topicId: 'topic-excel-data-management',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'medium'
       }
     ]
   },
@@ -185,7 +225,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: '`Section Break (Next Page)` chia văn bản thành các phân vùng độc lập, cho phép đổi trang ngang/dọc, đổi Header/Footer riêng biệt.',
         hint: 'Ngắt phân đoạn Section.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-section-break',
+        topicId: 'topic-word-advanced',
+        subjectId: 'subject-mos-word',
+        difficulty: 'hard'
       },
       {
         id: 'we-adv-q2',
@@ -195,7 +239,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Đầu tiên bỏ thuộc tính Locked ở các ô nhập liệu, sau đó vào Review -> Protect Sheet để khóa toàn bộ công thức còn lại.',
         hint: 'Unlock ô nhập trước, sau đó Protect Sheet.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-protect-sheet',
+        topicId: 'topic-excel-advanced-tools',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'hard'
       }
     ]
   },
@@ -226,7 +274,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Công thức Prompt chuẩn: [Vai trò] + [Bối cảnh] + [Yêu cầu chi tiết] + [Mẫu định dạng mong muốn] giúp AI đưa ra kết quả sát thực tế nhất.',
         hint: 'Cấu trúc Prompt chuyên nghiệp RCTF.',
-        points: 10
+        points: 10,
+        skillId: 'skill-ai-prompting',
+        topicId: 'topic-ai-tools',
+        subjectId: 'subject-ai-office',
+        difficulty: 'medium'
       },
       {
         id: 'ai-q2',
@@ -236,7 +288,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: [0, 1, 2],
         explanation: 'Gamma, Copilot và Tome là các công cụ AI hàng đầu giúp thiết kế slide tự động. WinRAR là phần mềm nén tệp.',
         hint: 'WinRAR không phải là AI.',
-        points: 15
+        points: 15,
+        skillId: 'skill-ai-presentation-tools',
+        topicId: 'topic-ai-tools',
+        subjectId: 'subject-ai-office',
+        difficulty: 'medium'
       }
     ]
   },
@@ -262,7 +318,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Hàm `SUMIFS` tính tổng với nhiều điều kiện (tài khoản, từ ngày, đến ngày).',
         hint: 'Hàm SUM có chữ S ở cuối cho nhiều điều kiện.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-sumifs',
+        topicId: 'topic-excel-formula',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'hard'
       },
       {
         id: 'acc-q2',
@@ -272,7 +332,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Cấu trúc `IFERROR(biểu_thức, 0)` bắt lỗi và thay thế bằng 0 giúp các công thức cộng tổng phía sau không bị lỗi dây chuyền.',
         hint: 'Hàm IFERROR.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-iferror',
+        topicId: 'topic-excel-formula',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'hard'
       }
     ]
   },
@@ -298,7 +362,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Ký tự `^p` trong mục Special của Find and Replace đại diện cho dấu ngắt đoạn (Paragraph mark). Thay thế `^p^p` thành `^p` sẽ xóa các dòng trống liên tiếp.',
         hint: 'Ký tự mũ ^ kết hợp với chữ p (Paragraph).',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-find-replace',
+        topicId: 'topic-word-editing',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q2',
@@ -308,7 +376,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Trong Word, `Alt + Ctrl + R` chèn ký tự ®, `Alt + Ctrl + C` chèn ©, và `Alt + Ctrl + T` chèn ™.',
         hint: 'Tổ hợp phím Alt + Ctrl kết hợp với chữ cái đầu của từ.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-special-chars',
+        topicId: 'topic-word-editing',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q3',
@@ -318,7 +390,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Nhấp đúp chuột (Double-click) vào biểu tượng Format Painter sẽ kích hoạt chế độ sao chép định dạng ghim cho đến khi nhấn phím Esc.',
         hint: 'Thao tác click 2 lần liên tiếp.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-format-painter',
+        topicId: 'topic-word-formatting',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q4',
@@ -328,7 +404,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Tổ hợp phím `Ctrl + Shift + Enter` chèn ngắt cột (Column Break), đưa nội dung sang đầu cột kế tiếp.',
         hint: 'Thêm phím Shift vào tổ hợp ngắt trang Ctrl + Enter.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-columns',
+        topicId: 'topic-word-page-layout',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q5',
@@ -338,7 +418,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Section Break (Next Page) phân chia tài liệu thành các phân vùng độc lập, cho phép thiết lập lề, hướng giấy Landscape và Header/Footer riêng biệt.',
         hint: 'Ngắt phân vùng Section.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-section-break',
+        topicId: 'topic-word-page-layout',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q6',
@@ -348,7 +432,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Tùy chọn `Keep with next` khóa đoạn văn hiện tại luôn nằm cùng 1 trang với đoạn văn tiếp sau nó.',
         hint: 'Giữ cùng với đoạn kế tiếp (next).',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-paragraph-format',
+        topicId: 'topic-word-formatting',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q7',
@@ -358,7 +446,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Nhấn `Ctrl + Spacebar` sẽ xóa toàn bộ Character Formatting thủ công, khôi phục văn bản về thiết lập gốc của Style.',
         hint: 'Ctrl kết hợp phím cách dài nhất bàn phím.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-styles',
+        topicId: 'topic-word-formatting',
+        subjectId: 'subject-mos-word',
+        difficulty: 'medium'
       },
       {
         id: 'mos-w-q8',
@@ -368,7 +460,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Tab `References > nhóm Citations & Bibliography` quản lý nguồn trích dẫn, tác giả và tự động tạo trang tài liệu tham khảo theo chuẩn quốc tế.',
         hint: 'Tab tham chiếu References.',
-        points: 10
+        points: 10,
+        skillId: 'skill-word-references',
+        topicId: 'topic-word-advanced',
+        subjectId: 'subject-mos-word',
+        difficulty: 'hard'
       }
     ]
   },
@@ -394,7 +490,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Nhấn phím `F4` để tự động thêm ký hiệu `$` khóa dòng và cột cố định.',
         hint: 'Phím F4.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-cell-reference',
+        topicId: 'topic-excel-formula',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'easy'
       },
       {
         id: 'e6-q2',
@@ -404,7 +504,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Vì điều kiện 8 >= 5 là TRUE, hàm IF trả về giá trị nhánh đúng là "Đậu".',
         hint: '8 lớn hơn 5.',
-        points: 10
+        points: 10,
+        skillId: 'skill-excel-if-func',
+        topicId: 'topic-excel-formula',
+        subjectId: 'subject-mos-excel',
+        difficulty: 'easy'
       }
     ]
   },
@@ -430,7 +534,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: '`Slide Master` (View -> Slide Master) là trang mẫu quản lý định dạng gốc cho toàn bộ bài thuyết trình.',
         hint: 'View -> Slide Master.',
-        points: 10
+        points: 10,
+        skillId: 'skill-ppt-slide-master',
+        topicId: 'topic-ppt-design',
+        subjectId: 'subject-mos-ppt',
+        difficulty: 'easy'
       },
       {
         id: 'ppt6-q2',
@@ -440,7 +548,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
         correctAnswer: 0,
         explanation: 'Hiệu ứng `Morph` trong tab Transitions nhận diện các đối tượng giống nhau giữa 2 slide và biến đổi chuyển động liền mạch.',
         hint: 'Chuyển cảnh Morph.',
-        points: 10
+        points: 10,
+        skillId: 'skill-ppt-animation',
+        topicId: 'topic-ppt-animation',
+        subjectId: 'subject-mos-ppt',
+        difficulty: 'easy'
       }
     ]
   }

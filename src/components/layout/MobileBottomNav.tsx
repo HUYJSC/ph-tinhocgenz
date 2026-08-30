@@ -25,7 +25,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     }
   };
 
-  const HUB_LEARN_TABS: ActiveTab[] = ['dashboard', 'learning_path', 'quizzes', 'flashcards', 'smart_review', 'bookmarks'];
+  const HUB_LEARN_TABS: ActiveTab[] = ['dashboard', 'learning_path', 'quizzes', 'practice_skill', 'flashcards', 'smart_review', 'bookmarks'];
   const HUB_CLASS_TABS: ActiveTab[] = ['attendance', 'schedule', 'assignments'];
   const HUB_CRED_TABS: ActiveTab[] = ['analytics'];
 

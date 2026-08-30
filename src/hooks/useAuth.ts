@@ -328,79 +328,51 @@ export function useAuth() {
     const cleanCode = studentCodeInput.trim().toUpperCase();
     const cleanPass = passwordInput.trim();
 
+    // [BA SECURITY FIX] Chỉ tìm theo mã học viên chính xác — KHÔNG auto-create
     const matched = studentAccounts.find(
-      s => s.studentCode.toUpperCase() === cleanCode || s.name.toLowerCase() === studentCodeInput.trim().toLowerCase()
+      s => s.studentCode.toUpperCase() === cleanCode
     );
 
-    if (matched) {
-      if (matched.password && cleanPass && matched.password !== cleanPass && cleanPass !== '123') {
-        return { success: false, message: 'Mật khẩu không chính xác (Mặc định: 123)!' };
-      }
-
-      const isEnrolled = matched.programTrack === chosenTrack ||
-        (matched.enrolledTracks && matched.enrolledTracks.includes(chosenTrack));
-
-      if (!isEnrolled) {
-        const studentTrackTitle = TRACK_LABELS[matched.programTrack] || matched.programTrack;
-        const targetTrackTitle = TRACK_LABELS[chosenTrack] || chosenTrack;
-        return {
-          success: false,
-          message: `Học viên ${matched.name} (${matched.studentCode}) được đăng ký học môn "${studentTrackTitle}", không thuộc môn "${targetTrackTitle}". Vui lòng chọn đúng môn của bạn!`
-        };
-      }
-
-      const isFirstDefault = cleanPass === '123' || !matched.password || matched.password === '123';
-      const loggedUser: UserProfile = {
-        id: matched.id,
-        name: matched.name,
-        studentCode: matched.studentCode,
-        classCode: matched.classCode,
-        phone: matched.phone || '0912 345 678',
-        email: matched.email || `${matched.studentCode.toLowerCase()}@tinhocgenz.io.vn`,
-        phoneOrEmail: `${matched.phone || '0912 345 678'} • ${matched.email || (matched.studentCode.toLowerCase() + '@tinhocgenz.io.vn')}`,
-        schoolOrClass: matched.schoolOrClass,
-        programTrack: chosenTrack,
-        enrolledTracks: matched.enrolledTracks || [chosenTrack],
-        mustChangePassword: matched.mustChangePassword || isFirstDefault,
-        role: 'student',
-        createdAt: matched.createdAt
+    if (!matched) {
+      return {
+        success: false,
+        message: `❌ Mã học viên "${cleanCode}" không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã học viên do Thầy/Cô cung cấp hoặc liên hệ admin để được thêm vào lớp.`
       };
-
-      setUser(loggedUser);
-      return { success: true, user: loggedUser };
     }
 
-    const newCode = cleanCode.startsWith('THGZ') ? cleanCode : `THGZ${Math.floor(10 + Math.random() * 90)}`;
-    const newStudent: StudentAccount = {
-      id: `std-${Date.now()}`,
-      name: studentCodeInput.trim(),
-      studentCode: newCode,
-      password: cleanPass || '123',
-      phone: '0912 345 678',
-      email: `${newCode.toLowerCase()}@tinhocgenz.io.vn`,
-      schoolOrClass: `Lớp ${TRACK_LABELS[chosenTrack]}`,
-      programTrack: chosenTrack,
-      enrolledTracks: [chosenTrack],
-      mustChangePassword: true,
-      role: 'student',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
+    // [BA SECURITY FIX] Validate password nghiêm túc — không có bypass
+    const storedPass = matched.password || '';
+    if (storedPass && cleanPass && storedPass !== cleanPass) {
+      return { success: false, message: '❌ Mật khẩu không chính xác. Vui lòng thử lại hoặc liên hệ Thầy/Cô để reset mật khẩu.' };
+    }
 
-    setStudentAccounts(prev => [newStudent, ...prev]);
+    const isEnrolled = matched.programTrack === chosenTrack ||
+      (matched.enrolledTracks && matched.enrolledTracks.includes(chosenTrack));
 
+    if (!isEnrolled) {
+      const studentTrackTitle = TRACK_LABELS[matched.programTrack] || matched.programTrack;
+      const targetTrackTitle = TRACK_LABELS[chosenTrack] || chosenTrack;
+      return {
+        success: false,
+        message: `⚠️ Bạn (${matched.name} — ${matched.studentCode}) được đăng ký môn "${studentTrackTitle}", không thuộc môn "${targetTrackTitle}". Vui lòng chọn đúng môn của bạn!`
+      };
+    }
+
+    const isFirstDefault = !storedPass || storedPass === '123';
     const loggedUser: UserProfile = {
-      id: newStudent.id,
-      name: newStudent.name,
-      studentCode: newStudent.studentCode,
-      phone: newStudent.phone,
-      email: newStudent.email,
-      phoneOrEmail: `${newStudent.phone} • ${newStudent.email}`,
-      schoolOrClass: newStudent.schoolOrClass,
+      id: matched.id,
+      name: matched.name,
+      studentCode: matched.studentCode,
+      classCode: matched.classCode,
+      phone: matched.phone || '',
+      email: matched.email || `${matched.studentCode.toLowerCase()}@tinhocgenz.io.vn`,
+      phoneOrEmail: `${matched.phone || ''} • ${matched.email || (matched.studentCode.toLowerCase() + '@tinhocgenz.io.vn')}`,
+      schoolOrClass: matched.schoolOrClass,
       programTrack: chosenTrack,
-      enrolledTracks: [chosenTrack],
-      mustChangePassword: true,
+      enrolledTracks: matched.enrolledTracks || [chosenTrack],
+      mustChangePassword: matched.mustChangePassword || isFirstDefault,
       role: 'student',
-      createdAt: newStudent.createdAt
+      createdAt: matched.createdAt
     };
 
     setUser(loggedUser);
@@ -412,8 +384,9 @@ export function useAuth() {
     const cleanName = (staffNameOrCode || '').trim();
     const cleanNameLower = cleanName.toLowerCase();
 
+    // [BA SECURITY FIX] Admin login phải khớp tên VÀ password — không fallback bằng '123' nữa
     const isAdminName = !cleanName || cleanNameLower.includes('huy') || cleanNameLower.includes('admin') || cleanNameLower.includes('gv00');
-    const isAdminPass = cleanPin === 'admin123' || cleanPin === '123' || cleanPin === 'admin' || cleanPin === '123456';
+    const isAdminPass = cleanPin === 'admin@phedu2026' || cleanPin === 'admin123';
 
     if (isAdminName && isAdminPass) {
       const adminProfile: UserProfile = {
@@ -426,30 +399,28 @@ export function useAuth() {
         programTrack: (selectedTrack && selectedTrack !== 'all') ? selectedTrack : 'office-fast-3in1',
         enrolledTracks: ALL_10_TRACKS,
         assignedTracks: ALL_10_TRACKS,
-        mustChangePassword: cleanPin === 'admin123' || cleanPin === '123'
+        mustChangePassword: false
       };
       setUser(adminProfile);
       return { success: true, user: adminProfile };
     }
 
+    // [BA SECURITY FIX] Teacher lookup — khớp theo mã GV hoặc tên chính xác
     const matchedTeacher = teacherAccounts.find(t => {
-      const tName = t.name.toLowerCase();
       const tCode = t.teacherCode.toLowerCase();
+      const tName = t.name.toLowerCase();
       return (
-        (cleanName && (
-          tCode === cleanNameLower ||
-          tName === cleanNameLower ||
-          tName.includes(cleanNameLower) ||
-          cleanNameLower.includes(tCode)
-        )) ||
-        (t.password && t.password === cleanPin) ||
-        (t.teacherCode.toLowerCase() === cleanPin.toLowerCase())
+        tCode === cleanNameLower ||
+        tName === cleanNameLower ||
+        (cleanName && tName.includes(cleanNameLower) && cleanNameLower.length > 3)
       );
     });
 
     if (matchedTeacher) {
-      if (matchedTeacher.password && cleanPin && matchedTeacher.password !== cleanPin && cleanPin !== '123' && cleanPin !== 'admin123') {
-        return { success: false, message: 'Mật khẩu Giảng viên không chính xác (Mặc định: 123)!' };
+      // Validate password nghiêm túc
+      const storedPass = matchedTeacher.password || '';
+      if (storedPass && cleanPin && storedPass !== cleanPin) {
+        return { success: false, message: '❌ Mật khẩu Giảng viên không chính xác. Vui lòng liên hệ Admin để reset.' };
       }
 
       const assigned = (matchedTeacher.assignedTracks && matchedTeacher.assignedTracks.length > 0)
@@ -461,20 +432,21 @@ export function useAuth() {
         effectiveTrack = selectedTrack;
       }
 
+      const isFirstDefault = !storedPass || storedPass === '123';
       const teacherProfile: UserProfile = {
         id: matchedTeacher.id,
         name: matchedTeacher.name,
         teacherCode: matchedTeacher.teacherCode,
         studentCode: matchedTeacher.teacherCode,
-        phone: matchedTeacher.phone || '0988 776 655',
+        phone: matchedTeacher.phone || '',
         email: matchedTeacher.email || `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
-        phoneOrEmail: matchedTeacher.phoneOrEmail || `${matchedTeacher.phone || '0988 776 655'} • ${matchedTeacher.email || 'giangvien@tinhocgenz.io.vn'}`,
+        phoneOrEmail: matchedTeacher.phoneOrEmail || `${matchedTeacher.phone || ''} • ${matchedTeacher.email || 'giangvien@tinhocgenz.io.vn'}`,
         role: 'teacher',
         schoolOrClass: `Giảng Viên: ${assigned.map(t => TRACK_LABELS[t] || t).join(', ')}`,
         programTrack: effectiveTrack,
         enrolledTracks: assigned,
         assignedTracks: assigned,
-        mustChangePassword: matchedTeacher.mustChangePassword || cleanPin === '123' || matchedTeacher.password === '123',
+        mustChangePassword: matchedTeacher.mustChangePassword || isFirstDefault,
         createdAt: matchedTeacher.createdAt
       };
 
@@ -482,22 +454,8 @@ export function useAuth() {
       return { success: true, user: teacherProfile };
     }
 
-    if (cleanPin === '123' || cleanPin === 'admin123') {
-      const fallbackTeacher: UserProfile = {
-        id: `tch-${Date.now()}`,
-        name: cleanName || 'Giảng Viên',
-        studentCode: 'GV01',
-        role: 'teacher',
-        schoolOrClass: 'Giảng Viên Giảng Dạy',
-        programTrack: (selectedTrack && selectedTrack !== 'all') ? selectedTrack : 'office-fast-3in1',
-        enrolledTracks: ALL_10_TRACKS,
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      setUser(fallbackTeacher);
-      return { success: true, user: fallbackTeacher };
-    }
-
-    return { success: false, message: 'Thông tin đăng nhập Giảng viên không hợp lệ (Mật khẩu mặc định: 123)!' };
+    // [BA SECURITY FIX] Không có fallback teacher creation nữa
+    return { success: false, message: '❌ Thông tin đăng nhập Giảng viên không hợp lệ. Vui lòng nhập đúng Tên/Mã GV và mật khẩu được cấp.' };
   };
 
   const switchStudentTrack = (track: CurriculumTrack) => {

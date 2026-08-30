@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { UserProfile, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import { MasteryService } from '../../services/masteryService';
 import { SmartReviewService } from '../../services/smartReviewService';
+import { WeakSkillService } from '../../services/weakSkillService';
+import { RecommendationService } from '../../services/recommendationService';
 import { ClassScheduleItem } from '../../types/schedule';
 import {
   Play, BookOpen, RotateCcw, Award,
   Calendar, Layers, BookmarkCheck, ArrowRight, Bot, Send,
   Camera, ListTodo, Flame, Clock, TrendingUp,
-  FileText, ExternalLink
+  FileText, ExternalLink, AlertTriangle, Dumbbell
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -24,6 +26,7 @@ interface StudentOnePageDashboardProps {
   onOpenAssignments: () => void;
   onOpenAITutor: (prompt?: string) => void;
   onOpenQRScanner?: () => void;
+  onOpenPracticeSkill?: (skillId?: string) => void;
 }
 
 export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = ({
@@ -38,7 +41,8 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   onOpenBookmarks,
   onOpenAssignments,
   onOpenAITutor,
-  onOpenQRScanner
+  onOpenQRScanner,
+  onOpenPracticeSkill
 }) => {
   const track: CurriculumTrack = currentUser.programTrack || 'office-fast-3in1';
   const trackName = TRACK_LABELS[track] || 'Tin học Văn phòng Cấp tốc';
@@ -46,6 +50,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   const [masteryScore, setMasteryScore] = useState(72);
   const [dueReviewCount, setDueReviewCount] = useState(5);
   const [aiInputText, setAiInputText] = useState('');
+  const [weakSkillsData, setWeakSkillsData] = useState<ReturnType<typeof RecommendationService.generateDashboardRecommendations>>([]);
 
   // Lịch học hôm nay
   const todayStr = new Date().toISOString().split('T')[0];
@@ -57,7 +62,20 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
 
     const dueReviews = SmartReviewService.getDueReviews(currentUser.id);
     setDueReviewCount(dueReviews.length > 0 ? dueReviews.length : 5);
+
+    // [BA Section 15] Detect weak skills from mastery records
+    try {
+      const masteryData = JSON.parse(localStorage.getItem(`phtgz_mastery_${currentUser.id}`) || '{}');
+      const masteryRecords = Object.values(masteryData).filter((r: any) => r.skillId) as any[];
+      if (masteryRecords.length > 0) {
+        const recordsMap: Record<string, any> = {};
+        masteryRecords.forEach((r: any) => { if (r.skillId) recordsMap[r.skillId] = r; });
+        const weak = WeakSkillService.detectFromMasteryRecords(recordsMap);
+        setWeakSkillsData(RecommendationService.generateDashboardRecommendations(weak));
+      }
+    } catch {}
   }, [currentUser.id, track]);
+
 
   const handleAiSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,6 +387,63 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
               <span>Học ngay</span>
             </button>
           </div>
+
+          {/* [BA Section 16] VIỆC CẦN LÀM TIẾP THEO / Weak Skills widget */}
+          {weakSkillsData.length > 0 && (
+            <div style={{
+              background: 'var(--bg-card, #fff)',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              borderRadius: '16px',
+              padding: '20px 24px',
+              boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertTriangle size={16} color="#ef4444" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary, #0f172a)' }}>Kỹ năng cần cải thiện</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #94a3b8)' }}>Dựa trên lịch sử luyện tập của bạn</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {weakSkillsData.slice(0, 3).map((rec, i) => (
+                  <div key={i} style={{
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    background: rec.severity === 'critical' ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)',
+                    border: `1px solid ${rec.severity === 'critical' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px'
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '2px' }}>{rec.skillName}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary, #475569)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rec.description}</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        soundFx.playClick();
+                        if (onOpenPracticeSkill) {
+                          onOpenPracticeSkill(rec.skillId);
+                        } else {
+                          onStartMiniTest();
+                        }
+                      }}
+                      style={{
+                        padding: '6px 14px', borderRadius: '8px', flexShrink: 0,
+                        background: rec.severity === 'critical' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                        border: `1px solid ${rec.severity === 'critical' ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)'}`,
+                        color: rec.severity === 'critical' ? '#ef4444' : '#d97706',
+                        fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '4px'
+                      }}
+                    >
+                      <Dumbbell size={13} /> Luyện
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Module Grid: 2 Cards song song */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>

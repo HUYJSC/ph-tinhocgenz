@@ -3,7 +3,7 @@ import {
   Home, BookOpen, Layers, BookmarkCheck,
   Calendar, GitBranch, RotateCcw, Bot,
   ShieldAlert, Shield, FileText, QrCode,
-  ChevronDown, GraduationCap
+  ChevronDown, GraduationCap, Target
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -11,6 +11,7 @@ export type ActiveTab =
   | 'dashboard'
   | 'learning_path'
   | 'quizzes'
+  | 'practice_skill'
   | 'smart_review'
   | 'assignments'
   | 'attendance'
@@ -71,9 +72,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Ôn luyện & Củng cố',
       icon: RotateCcw,
       items: [
-        { id: 'smart_review', label: 'Ôn câu sai thông minh',  icon: RotateCcw },
-        { id: 'flashcards',   label: 'Thẻ ghi nhớ kiến thức', icon: Layers },
-        { id: 'bookmarks',    label: 'Câu hỏi đã đánh dấu',   icon: BookmarkCheck, count: bookmarkCount }
+        { id: 'practice_skill', label: 'Luyện tập theo kỹ năng', icon: Target },
+        { id: 'smart_review',  label: 'Ôn câu sai thông minh',  icon: RotateCcw },
+        { id: 'flashcards',    label: 'Thẻ ghi nhớ kiến thức', icon: Layers },
+        { id: 'bookmarks',     label: 'Câu hỏi đã đánh dấu',   icon: BookmarkCheck, count: bookmarkCount }
       ]
     },
     {

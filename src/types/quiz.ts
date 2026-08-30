@@ -32,6 +32,11 @@ export interface Question {
   explanation: string;
   hint?: string;
   points: number;
+  // [BA Skill Taxonomy] — Section 10 & 5
+  skillId?: string;     // e.g. 'skill-vlookup', 'skill-if-func'
+  topicId?: string;     // e.g. 'topic-excel-formula'
+  subjectId?: string;   // e.g. 'subject-mos-excel'
+  difficulty?: 'easy' | 'medium' | 'hard'; // để tính score mô hình
 }
 
 export interface Quiz {

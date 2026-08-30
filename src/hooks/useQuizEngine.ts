@@ -2,26 +2,66 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Quiz, Question, QuestionResult, QuizAttempt } from '../types/quiz';
 import { soundFx } from '../utils/audio';
 
+// [BA FIX] Autosave key generator for exam recovery
+const getAutosaveKey = (quizId: string, userId?: string) =>
+  `phtgz_exam_autosave_${quizId}_${userId || 'anon'}`;
+
+export interface AutosaveState {
+  quizId: string;
+  answers: Record<string, any>;
+  currentIndex: number;
+  flaggedQuestions: Record<string, boolean>;
+  savedAt: string;
+  startTime: number;
+}
+
 export type QuizMode = 'exam' | 'practice' | 'flashcards';
 
 interface UseQuizEngineProps {
   quiz: Quiz;
   mode: QuizMode;
   onFinish: (attempt: QuizAttempt) => void;
+  userId?: string; // for autosave scoping
 }
 
-export function useQuizEngine({ quiz, mode, onFinish }: UseQuizEngineProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+export function useQuizEngine({ quiz, mode, onFinish, userId }: UseQuizEngineProps) {
+  // [BA FIX] Try to restore autosave state for exam mode
+  const autosaveKey = getAutosaveKey(quiz.id, userId);
+  const savedState: AutosaveState | null = (() => {
+    if (mode !== 'exam') return null;
+    try {
+      const raw = localStorage.getItem(autosaveKey);
+      if (!raw) return null;
+      const parsed: AutosaveState = JSON.parse(raw);
+      // Only restore if same quiz and saved within 3 hours
+      if (parsed.quizId === quiz.id) {
+        const age = Date.now() - new Date(parsed.savedAt).getTime();
+        if (age < 3 * 60 * 60 * 1000) return parsed;
+      }
+    } catch { }
+    return null;
+  })();
+
+  const [currentIndex, setCurrentIndex] = useState(savedState?.currentIndex || 0);
+  const [answers, setAnswers] = useState<Record<string, any>>(savedState?.answers || {});
   const [revealedHints, setRevealedHints] = useState<Record<string, boolean>>({});
-  const [flaggedQuestions, setFlaggedQuestions] = useState<Record<string, boolean>>({});
+  const [flaggedQuestions, setFlaggedQuestions] = useState<Record<string, boolean>>(savedState?.flaggedQuestions || {});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [startTime] = useState<number>(Date.now());
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(
-    quiz.timeLimitMinutes > 0 ? quiz.timeLimitMinutes * 60 : 0
-  );
+  const [wasRestored] = useState(!!savedState); // notify UI that we restored
+  const [startTime] = useState<number>(savedState?.startTime || Date.now());
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(() => {
+    if (quiz.timeLimitMinutes <= 0) return 0;
+    if (savedState) {
+      // Calculate remaining time accounting for time already elapsed
+      const elapsed = Math.floor((Date.now() - savedState.startTime) / 1000);
+      const total = quiz.timeLimitMinutes * 60;
+      return Math.max(0, total - elapsed);
+    }
+    return quiz.timeLimitMinutes * 60;
+  });
   const [questionTimeSpents, setQuestionTimeSpents] = useState<Record<string, number>>({});
   const lastQuestionSwitchTime = useRef<number>(Date.now());
+
 
   const currentQuestion: Question | undefined = quiz.questions[currentIndex];
 
@@ -78,6 +118,11 @@ export function useQuizEngine({ quiz, mode, onFinish }: UseQuizEngineProps) {
   }, [currentQuestion]);
 
   // Submit quiz function
+  // [BA FIX] Clear autosave data on submit
+  const clearAutosave = useCallback(() => {
+    try { localStorage.removeItem(autosaveKey); } catch { }
+  }, [autosaveKey]);
+
   const submitQuiz = useCallback(() => {
     if (isSubmitted) return;
     recordQuestionTime();
@@ -125,7 +170,30 @@ export function useQuizEngine({ quiz, mode, onFinish }: UseQuizEngineProps) {
     };
 
     onFinish(attempt);
-  }, [isSubmitted, recordQuestionTime, quiz, answers, isQuestionCorrect, questionTimeSpents, startTime, mode, onFinish]);
+    clearAutosave(); // [BA FIX] Clear saved state after successful submit
+  }, [isSubmitted, recordQuestionTime, quiz, answers, isQuestionCorrect, questionTimeSpents, startTime, mode, onFinish, clearAutosave]);
+
+
+  // [BA FIX] Autosave every 30 seconds in exam mode
+  useEffect(() => {
+    if (mode !== 'exam' || isSubmitted) return;
+    const save = () => {
+      try {
+        const state: AutosaveState = {
+          quizId: quiz.id,
+          answers,
+          currentIndex,
+          flaggedQuestions,
+          savedAt: new Date().toISOString(),
+          startTime
+        };
+        localStorage.setItem(autosaveKey, JSON.stringify(state));
+      } catch { }
+    };
+    save(); // immediate save on change
+    const interval = setInterval(save, 30_000);
+    return () => clearInterval(interval);
+  }, [mode, isSubmitted, answers, currentIndex, flaggedQuestions, quiz.id, autosaveKey, startTime]);
 
   // Timer countdown for Exam mode
   useEffect(() => {
@@ -211,6 +279,7 @@ export function useQuizEngine({ quiz, mode, onFinish }: UseQuizEngineProps) {
     remainingSeconds,
     isSubmitted,
     answeredCount,
+    wasRestored,   // [BA FIX] true if state was recovered from autosave
     setAnswer,
     goToQuestion,
     nextQuestion,

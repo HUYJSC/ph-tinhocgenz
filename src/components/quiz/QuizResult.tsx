@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import confetti from 'canvas-confetti';
-import { Trophy, CheckCircle2, XCircle, RotateCcw, Home, Award, ChevronDown, ChevronUp, Share2, Check, Download } from 'lucide-react';
+import { Trophy, CheckCircle2, XCircle, RotateCcw, Home, Award, ChevronDown, ChevronUp, Share2, Check, Download, BarChart3, AlertTriangle, BookOpen, Dumbbell } from 'lucide-react';
 import { formatTime } from './QuizRunner';
 import { soundFx } from '../../utils/audio';
+import { WeakSkillService } from '../../services/weakSkillService';
 
 interface QuizResultProps {
   quiz: Quiz;
@@ -11,6 +12,7 @@ interface QuizResultProps {
   studentName: string;
   onRetry: () => void;
   onGoHome: () => void;
+  onPracticeSkill?: (skillId: string) => void;
 }
 
 export const QuizResult: React.FC<QuizResultProps> = ({
@@ -18,11 +20,18 @@ export const QuizResult: React.FC<QuizResultProps> = ({
   attempt,
   studentName,
   onRetry,
-  onGoHome
+  onGoHome,
+  onPracticeSkill
 }) => {
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
   const [showCertificate, setShowCertificate] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showSkillBreakdown, setShowSkillBreakdown] = useState(true);
+
+  // [BA Section 13 & 15] Compute skill breakdown and detect weak skills
+  const skillBreakdown = useMemo(() => WeakSkillService.computeSkillBreakdown(quiz, attempt), [quiz, attempt]);
+  const weakSkills = useMemo(() => WeakSkillService.detectFromAttempt(quiz, attempt), [quiz, attempt]);
+  const hasSkillData = skillBreakdown.some(s => !s.skillId.startsWith('no-skill-'));
 
   useEffect(() => {
     if (attempt.percentage >= 60) {
@@ -188,9 +197,96 @@ export const QuizResult: React.FC<QuizResultProps> = ({
         </div>
       </div>
 
+      {/* [BA Section 13] SKILL BREAKDOWN SECTION */}
+      {hasSkillData && (
+        <div className="card" style={{ marginBottom: '24px', padding: '20px 24px', borderRadius: 'var(--radius-xl)' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showSkillBreakdown ? '20px' : 0, cursor: 'pointer' }}
+            onClick={() => setShowSkillBreakdown(prev => !prev)}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(79,110,247,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
+                <BarChart3 size={18} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '1rem' }}>Phân tích kết quả theo kỹ năng</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{skillBreakdown.length} kỹ năng được phân tích</div>
+              </div>
+            </div>
+            {showSkillBreakdown ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </div>
+
+          {showSkillBreakdown && (
+            <div>
+              {/* Skill bars */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: weakSkills.length > 0 ? '20px' : 0 }}>
+                {skillBreakdown.map(skill => {
+                  const color = skill.status === 'strong' ? '#10b981' : skill.status === 'average' ? '#f59e0b' : '#ef4444';
+                  const label = skill.status === 'strong' ? 'Tốt ✅' : skill.status === 'average' ? 'Trung bình ⚠️' : 'Cần cải thiện 💪';
+                  return (
+                    <div key={skill.skillId}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{skill.skillName}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '8px' }}>{skill.topicName}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '0.75rem', color: color, fontWeight: 700 }}>{label}</span>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>{skill.correctCount}/{skill.totalQuestions} ({skill.accuracy}%)</span>
+                        </div>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', borderRadius: '4px', background: 'var(--bg-secondary)', overflow: 'hidden' }}>
+                        <div style={{ width: `${skill.accuracy}%`, height: '100%', background: color, borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* [BA Section 15] Weak Skill Recommendations */}
+              {weakSkills.length > 0 && (
+                <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-lg)', padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <AlertTriangle size={16} color="#ef4444" />
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#ef4444' }}>Kỹ năng cần cải thiện</span>
+                  </div>
+                  {weakSkills.slice(0, 3).map(ws => (
+                    <div key={ws.skillId} style={{ marginBottom: '12px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(239,68,68,0.06)' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '3px' }}>{ws.skillName}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>{ws.reason}</div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          onClick={() => {
+                            soundFx.playClick();
+                            if (onPracticeSkill) {
+                              onPracticeSkill(ws.skillId);
+                            } else {
+                              onRetry();
+                            }
+                          }}
+                          style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Dumbbell size={13} /> Luyện lại
+                        </button>
+                        <button
+                          onClick={() => { soundFx.playClick(); onGoHome(); }}
+                          style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', background: 'rgba(79,110,247,0.1)', border: '1px solid rgba(79,110,247,0.3)', color: 'var(--accent-primary)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <BookOpen size={13} /> Xem bài học
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Question by Question Review Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Xem lại chi tiết đáp án & lời giải</h2>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Xem lại chi tiết đáp án &amp; lời giải</h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={expandAll} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
             Mở tất cả

@@ -28,7 +28,7 @@ interface HeaderProps {
 }
 
 // ── Unified Hub Definitions for Student View ──
-const HUB_LEARN_TABS: ActiveTab[] = ['dashboard', 'learning_path', 'quizzes', 'flashcards', 'smart_review', 'bookmarks'];
+const HUB_LEARN_TABS: ActiveTab[] = ['dashboard', 'learning_path', 'quizzes', 'practice_skill', 'flashcards', 'smart_review', 'bookmarks'];
 const HUB_CLASS_TABS: ActiveTab[] = ['attendance', 'schedule', 'assignments'];
 
 
@@ -47,12 +47,13 @@ const HUB_DEFS: { id: HubId; label: string; icon: React.ReactNode; defaultTab: A
     icon: <BookOpen size={15} />,
     defaultTab: 'dashboard',
     subItems: [
-      { id: 'dashboard',     label: 'Tổng quan học tập' },
-      { id: 'learning_path', label: 'Lộ trình cá nhân hóa' },
-      { id: 'quizzes',       label: 'Ngân hàng đề thi MOS/IC3' },
-      { id: 'flashcards',    label: 'Thẻ ghi nhớ kiến thức' },
-      { id: 'smart_review',  label: 'Ôn câu sai Spaced Repetition' },
-      { id: 'bookmarks',     label: 'Câu hỏi đã đánh dấu' },
+      { id: 'dashboard',      label: 'Tổng quan học tập' },
+      { id: 'learning_path',  label: 'Lộ trình cá nhân hóa' },
+      { id: 'quizzes',        label: 'Ngân hàng đề thi MOS/IC3' },
+      { id: 'practice_skill', label: 'Luyện tập theo kỹ năng' },
+      { id: 'flashcards',     label: 'Thẻ ghi nhớ kiến thức' },
+      { id: 'smart_review',   label: 'Ôn câu sai Spaced Repetition' },
+      { id: 'bookmarks',      label: 'Câu hỏi đã đánh dấu' },
     ]
   },
   {
