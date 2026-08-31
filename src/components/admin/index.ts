@@ -3,3 +3,4 @@ export { AttendanceManager } from './AttendanceManager';
 export { TeacherAssignmentManager } from './TeacherAssignmentManager';
 export { EarlyWarningDashboard } from './EarlyWarningDashboard';
 export { TeacherAcademicPortal } from './TeacherAcademicPortal';
+export { StandaloneAdminApp } from './StandaloneAdminApp';

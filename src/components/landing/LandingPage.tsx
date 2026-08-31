@@ -288,9 +288,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           {/* Logo & Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img
-              src="/LogoPH.png"
-              alt="PH DIGITAL EDUCATION Logo"
-              style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+              src="/logo-icon.png"
+              alt="PH DIGITAL EDUCATION Icon"
+              style={{ height: '36px', width: '36px', objectFit: 'contain' }}
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = '/logo.png';
               }}
@@ -1304,9 +1304,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
                 <img
-                  src="/LogoPH.png"
+                  src="/logo-icon.png"
                   alt="Logo PH"
-                  style={{ height: '38px', width: 'auto', objectFit: 'contain' }}
+                  style={{ height: '36px', width: '36px', objectFit: 'contain' }}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                 />
                 <span style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>

@@ -121,35 +121,96 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
       <div style={{ height: '52px', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9' }}>
         {/* Left: Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ height: '38px', maxWidth: '200px', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
+          <div style={{ height: '38px', maxWidth: '220px', display: 'flex', alignItems: 'center' }}>
+            <img src="/logo-horizontal.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
           </div>
           <div style={{ height: '18px', width: '1px', background: '#E2E8F0' }} />
-          <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', letterSpacing: '0.03em' }}>GIẢNG VIÊN / QUẢN TRỊ</span>
-          <a
-            href="/admin"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSelectTab('admin');
-            }}
-            style={{
-              fontSize: '11px',
-              fontWeight: 700,
-              color: activeTab === 'admin' ? '#1D4ED8' : '#475569',
-              background: activeTab === 'admin' ? '#DBEAFE' : '#F1F5F9',
-              padding: '2px 8px',
-              borderRadius: '6px',
-              border: `1px solid ${activeTab === 'admin' ? '#93C5FD' : '#E2E8F0'}`,
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              transition: 'all 0.15s ease'
-            }}
-            title="Truy cập trực tiếp Cổng Quản Trị Hệ Thống /admin"
-          >
-            🔒 /admin
-          </a>
+          {currentUser.role === 'admin' ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', background: '#FEF3C7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #FDE68A', letterSpacing: '0.02em' }}>
+                QUẢN TRỊ VIÊN
+              </span>
+              <a
+                href="/admin"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSelectTab('admin');
+                }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: activeTab === 'admin' ? '#1D4ED8' : '#475569',
+                  background: activeTab === 'admin' ? '#DBEAFE' : '#F1F5F9',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  border: `1px solid ${activeTab === 'admin' ? '#93C5FD' : '#E2E8F0'}`,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Cổng Quản Trị Hệ Thống /admin"
+              >
+                🔒 /admin
+              </a>
+              <a
+                href="/teacher"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSelectTab('schedule');
+                }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: activeTab === 'schedule' ? '#1D4ED8' : '#475569',
+                  background: activeTab === 'schedule' ? '#DBEAFE' : '#F1F5F9',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  border: `1px solid ${activeTab === 'schedule' ? '#93C5FD' : '#E2E8F0'}`,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Bàn làm việc Giảng viên /teacher"
+              >
+                /teacher
+              </a>
+              <a
+                href="/student"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSelectTab('dashboard');
+                }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: activeTab === 'dashboard' ? '#1D4ED8' : '#475569',
+                  background: activeTab === 'dashboard' ? '#DBEAFE' : '#F1F5F9',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  border: `1px solid ${activeTab === 'dashboard' ? '#93C5FD' : '#E2E8F0'}`,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Xem giao diện Học viên /student"
+              >
+                /student
+              </a>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#1D4ED8', background: '#DBEAFE', padding: '3px 8px', borderRadius: '6px', border: '1px solid #BFDBFE', letterSpacing: '0.02em' }}>
+                GIẢNG VIÊN ĐỨNG LỚP
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#1D4ED8', background: '#EFF6FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #DBEAFE' }}>
+                /teacher
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Right: AI + Notices + Bell + User */}

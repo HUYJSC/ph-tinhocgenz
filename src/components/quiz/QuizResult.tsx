@@ -466,7 +466,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                 }}
               >
                 <img
-                  src="/logo.png"
+                  src="/logo-icon.png"
                   alt="PH Digital Education"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px' }}
                 />

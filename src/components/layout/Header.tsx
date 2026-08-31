@@ -139,8 +139,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '52px', width: '100%' }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
-          <div style={{ height: '38px', maxWidth: '200px', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
+          <div style={{ height: '38px', maxWidth: '220px', display: 'flex', alignItems: 'center' }}>
+            <img src="/logo-horizontal.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
           </div>
 
           {/* ── HUB NAVIGATION (Desktop) ── */}

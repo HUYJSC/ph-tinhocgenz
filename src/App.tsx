@@ -14,7 +14,7 @@ import { FlashcardDeck } from './components/flashcards/FlashcardDeck';
 import { Dashboard } from './components/analytics/Dashboard';
 import { QuizCreator } from './components/creator/QuizCreator';
 import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions';
-import { AdminPortal, AttendanceManager, TeacherAcademicPortal } from './components/admin';
+import { AdminPortal, AttendanceManager, TeacherAcademicPortal, StandaloneAdminApp } from './components/admin';
 import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
 import { StudentAttendanceDashboard } from './components/attendance/StudentAttendanceDashboard';
 import { ScheduleCalendar } from './components/schedule/ScheduleCalendar';
@@ -44,11 +44,26 @@ import { PracticeBySkill } from './components/practice/PracticeBySkill';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
-const isAdminPath = () => {
-  if (typeof window === 'undefined') return false;
+export type AppRoute = 'landing' | 'student' | 'teacher' | 'academic' | 'admin' | 'verify';
+
+export const getAppRoute = (): { route: AppRoute; param?: string } => {
+  if (typeof window === 'undefined') return { route: 'landing' };
   const p = window.location.pathname.toLowerCase();
   const h = window.location.hash.toLowerCase();
-  return p.includes('admin') || h.includes('admin');
+  if (p.includes('/admin') || h.includes('admin')) return { route: 'admin' };
+  if (p.includes('/teacher') || h.includes('teacher')) return { route: 'teacher' };
+  if (p.includes('/academic') || h.includes('academic')) return { route: 'academic' };
+  if (p.includes('/student') || h.includes('student')) return { route: 'student' };
+  if (p.includes('/verify') || h.includes('verify')) {
+    const parts = p.split('/verify/');
+    return { route: 'verify', param: parts[1] ? parts[1].replace(/\/$/, '') : '' };
+  }
+  return { route: 'landing' };
+};
+
+const isAdminPath = () => {
+  const { route } = getAppRoute();
+  return route === 'admin' || route === 'teacher' || route === 'academic';
 };
 
 export function App() {
@@ -149,16 +164,32 @@ export function App() {
     return 'dashboard';
   });
 
-  // SPA Browser history synchronization between / and /admin
+  // SPA Browser history synchronization across all routes
   useEffect(() => {
     const handlePopState = () => {
-      const onAdmin = isAdminPath();
-      if (onAdmin) {
+      const { route, param } = getAppRoute();
+      if (route === 'admin') {
         if (isSessionActive && isStaff) {
           setActiveTab('admin');
         } else if (!isSessionActive) {
           setShowAuthGateway(true);
         }
+      } else if (route === 'teacher' || route === 'academic') {
+        if (isSessionActive) {
+          setActiveTab('admin');
+        } else {
+          setShowAuthGateway(true);
+        }
+      } else if (route === 'student') {
+        if (isSessionActive) {
+          setActiveTab('dashboard');
+        } else {
+          setShowAuthGateway(true);
+        }
+      } else if (route === 'verify') {
+        const allCerts = CertificateService.getAllCertificates();
+        const matched = param ? allCerts.find((c: DigitalCertificate) => c.certificateId.toLowerCase() === param.toLowerCase()) : allCerts[0];
+        if (matched) setVerifyCert(matched);
       } else {
         if (!isSessionActive) {
           setShowAuthGateway(false);
@@ -171,21 +202,55 @@ export function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [isSessionActive, isStaff, activeTab]);
 
-  // Navigate tab with URL synchronization for /admin
+  const isSuperAdmin = user.role === 'admin';
+
+  // RBAC Client Guard & Redirect enforcement
+  useEffect(() => {
+    if (!isSessionActive) return;
+    const { route } = getAppRoute();
+    if (user.role === 'student') {
+      if (route === 'admin' || route === 'teacher' || route === 'academic') {
+        window.history.replaceState(null, '', '/student');
+        setActiveTab('dashboard');
+      }
+    } else if (user.role === 'teacher') {
+      if (route === 'admin') {
+        window.history.replaceState(null, '', '/teacher');
+        setActiveTab('admin');
+      }
+    }
+  }, [isSessionActive, user.role]);
+
+  // Navigate tab with URL synchronization across separated roles
   const handleNavigateTab = (newTab: ActiveTab) => {
     setActiveTab(newTab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (typeof window !== 'undefined') {
-      const isControlTab = newTab === 'admin' || (isStaff && (newTab === 'schedule' || newTab === 'assignments' || newTab === 'early_warning' || newTab === 'attendance'));
-      if (isControlTab) {
-        if (!window.location.pathname.toLowerCase().includes('admin')) {
-          window.history.pushState(null, '', '/admin');
-        }
-      } else if (window.location.pathname.toLowerCase().includes('admin')) {
-        window.history.pushState(null, '', '/');
+      let targetPath = '/';
+      if (newTab === 'admin') {
+        targetPath = '/admin';
+      } else if (newTab === 'schedule' || newTab === 'assignments' || newTab === 'attendance' || newTab === 'early_warning') {
+        targetPath = isSuperAdmin ? '/admin' : '/teacher';
+      } else if (isSessionActive) {
+        targetPath = '/student';
+      }
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState(null, '', targetPath);
       }
     }
   };
+
+  const [verifyCert, setVerifyCert] = useState<DigitalCertificate | null>(null);
+
+  // Initial route handler for /verify
+  useEffect(() => {
+    const { route, param } = getAppRoute();
+    if (route === 'verify') {
+      const allCerts = CertificateService.getAllCertificates();
+      const matched = param ? allCerts.find((c: DigitalCertificate) => c.certificateId.toLowerCase() === param.toLowerCase()) : allCerts[0];
+      if (matched) setVerifyCert(matched);
+    }
+  }, []);
 
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
@@ -348,6 +413,61 @@ export function App() {
     setActiveTab('quizzes');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // 0. DEDICATED STANDALONE ADMIN ROUTE (/admin)
+  const isCurrentlyOnAdmin = getAppRoute().route === 'admin' || (typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin'));
+  if (isCurrentlyOnAdmin) {
+    return (
+      <StandaloneAdminApp
+        currentUser={user}
+        isSessionActive={isSessionActive}
+        quizzes={allQuizzes}
+        attempts={stats.history}
+        studentAccounts={studentAccounts}
+        teacherAccounts={teacherAccounts}
+        schedules={schedules}
+        assignments={assignments}
+        submissions={submissions}
+        notifications={notifications}
+        googleDriveConfig={googleDriveConfig}
+        onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
+        onCreateAssignment={createAssignment}
+        onDeleteAssignment={deleteAssignment}
+        onToggleOpen={toggleAssignmentOpen}
+        onGradeSubmission={gradeSubmission}
+        onMarkNotificationAsRead={markNotificationAsRead}
+        onAddQuiz={addCustomQuiz}
+        onDeleteCustomQuiz={deleteCustomQuiz}
+        onNavigateToCreator={() => {
+          setActiveTab('creator');
+        }}
+        onCreateStudentAccount={createStudentAccount}
+        onUpdateStudentAccount={updateStudentAccount}
+        onDeleteStudentAccount={deleteStudentAccount}
+        onCreateTeacherAccount={createTeacherAccount}
+        onUpdateTeacherAccount={updateTeacherAccount}
+        onDeleteTeacherAccount={deleteTeacherAccount}
+        onCreateSchedule={createSchedule}
+        onUpdateSchedule={updateSchedule}
+        onDeleteSchedule={deleteSchedule}
+        onLoginAsAdmin={(pass, name) => {
+          const res = loginAsStaff(pass, name, 'all');
+          if (res.success && res.user) {
+            setIsSessionActive(true);
+            try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+          }
+          return res;
+        }}
+        onLogout={handleLogout}
+        onBackToStudentPortal={() => {
+          if (typeof window !== 'undefined') {
+            window.history.pushState(null, '', '/');
+          }
+          setActiveTab('dashboard');
+        }}
+      />
+    );
+  }
 
   // 1. NOT authenticated: show Landing Page for guests, Auth Gateway when they click CTA
   if (!isSessionActive) {
@@ -802,6 +922,19 @@ export function App() {
         studentName={user.name}
         studentCode={user.studentCode || 'THGZ01'}
       />
+
+      {/* Public Digital Certificate Verification Portal */}
+      {verifyCert && (
+        <CertificateVerificationModal
+          certificate={verifyCert}
+          onClose={() => {
+            setVerifyCert(null);
+            if (window.location.pathname.includes('verify')) {
+              window.history.pushState(null, '', isSessionActive ? '/student' : '/');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
