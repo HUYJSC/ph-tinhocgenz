@@ -193,29 +193,36 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               <ArrowLeft size={14} /> Quay lại Trang chủ
             </button>
 
-            {/* Brand Logo & Title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
-              <img
-                src="/LogoPH.png"
-                alt="PH DIGITAL EDUCATION"
-                style={{
-                  height: '46px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  background: '#FFFFFF',
-                  padding: '6px 10px',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
-              />
-              <div>
-                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', margin: 0 }}>
-                  PH DIGITAL EDUCATION
-                </h1>
-                <span style={{ fontSize: '11px', color: '#DBEAFE', fontWeight: 700, letterSpacing: '0.04em' }}>
-                  CỔNG KHẢO THÍ & HỌC TẬP LMS
-                </span>
+            {/* Official Seamless White Logo & Portal Badge */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+                <img
+                  src="/logo-dark.png"
+                  alt="PH DIGITAL EDUCATION"
+                  style={{
+                    height: '52px',
+                    width: 'auto',
+                    maxWidth: '240px',
+                    objectFit: 'contain'
+                  }}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/LogoPH.png'; }}
+                />
+              </div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 12px',
+                borderRadius: '9999px',
+                background: 'rgba(255, 255, 255, 0.12)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#BFDBFE',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase'
+              }}>
+                CỔNG KHẢO THÍ & HỌC TẬP LMS
               </div>
             </div>
 
