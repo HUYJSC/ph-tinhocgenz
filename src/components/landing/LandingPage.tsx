@@ -32,7 +32,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Trọn bộ kỹ năng tin học văn phòng thực chiến và luyện thi bao đỗ chứng chỉ quốc tế Certiport.',
     duration: '10 - 12 buổi',
     badge: 'Phổ biến nhất',
-    color: '#3b82f6',
+    color: '#2563EB',
     highlights: ['Luyện sát đề Certiport 2026', 'Cam kết bao đỗ 100%', 'Kèm 1:1 giải đáp bài tập']
   },
   {
@@ -44,7 +44,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Làm chủ các hàm tìm kiếm XLOOKUP, INDEX-MATCH, PivotTable, Dashboard động và xử lý dữ liệu lớn.',
     duration: '6 buổi',
     badge: 'Bán chạy',
-    color: '#10b981',
+    color: '#059669',
     highlights: ['Hàm logic & tra cứu nâng cao', 'Vẽ biểu đồ động chuyên nghiệp', 'Tự động hóa báo cáo']
   },
   {
@@ -56,7 +56,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Soạn thảo văn bản chuẩn hành chính, mục lục tự động, trộn thư Mail Merge và định dạng luận văn chuẩn đẹp.',
     duration: '6 buổi',
     badge: 'Căn bản',
-    color: '#2563eb',
+    color: '#1D4ED8',
     highlights: ['Heading Styles chuẩn đề thi', 'Quản lý Section & Header/Footer', 'Trộn thư nâng cao']
   },
   {
@@ -68,7 +68,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Tư duy bố cục slide hiện đại, Slide Master, kỹ xảo hoạt ảnh Morph mượt mà và thuyết trình tự tin.',
     duration: '6 buổi',
     badge: 'Sáng tạo',
-    color: '#f97316',
+    color: '#EA580C',
     highlights: ['Slide Master đồng bộ thương hiệu', 'Kỹ thuật Morph & Zoom 3D', 'Xuất bản video Full HD']
   },
   {
@@ -80,7 +80,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Chuẩn tin học số toàn cầu của Certiport bao gồm Máy tính căn bản, Ứng dụng số và Cuộc sống trực tuyến.',
     duration: '8 buổi',
     badge: 'Quốc tế',
-    color: '#8b5cf6',
+    color: '#7C3AED',
     highlights: ['An toàn mạng & Điện toán đám mây', 'Phần mềm văn phòng trực tuyến', 'Đủ điều kiện tốt nghiệp Đại học']
   },
   {
@@ -92,7 +92,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Chứng chỉ chuẩn đầu ra bắt buộc cho sinh viên các trường Đại học, Cao đẳng trên toàn quốc.',
     duration: '6 buổi',
     badge: 'Chuẩn đầu ra',
-    color: '#06b6d4',
+    color: '#0284C7',
     highlights: ['6 Module chuẩn Thông tư 03', 'Thực hành máy tính Windows', 'Bao đỗ 100%']
   },
   {
@@ -104,7 +104,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Dành cho sinh viên và nhân sự cần chứng chỉ thi công chức, viên chức và xét nâng ngạch chuyên môn.',
     duration: '6 buổi',
     badge: 'Nâng cao',
-    color: '#e11d48',
+    color: '#E11D48',
     highlights: ['Macro & VBA cơ bản', 'Bảo mật cơ sở dữ liệu', 'Định dạng tài liệu phức tạp']
   },
   {
@@ -116,7 +116,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Tăng tốc 300% hiệu suất làm việc với ChatGPT, Claude, Microsoft Copilot trong Word, Excel và PowerPoint.',
     duration: '5 buổi',
     badge: 'Đón đầu 2026',
-    color: '#a855f7',
+    color: '#9333EA',
     highlights: ['Prompt Engineering thực chiến', 'Tự động viết hàm Excel bằng AI', 'Tạo slide thuyết trình trong 3 phút']
   },
   {
@@ -128,7 +128,7 @@ const ALL_TRACKS: TrackItem[] = [
     desc: 'Lập sổ nhật ký chung, bảng lương, báo cáo tài chính và phiếu thu chi tự động chuẩn quy định thuế.',
     duration: '8 buổi',
     badge: 'Nghề nghiệp',
-    color: '#059669',
+    color: '#047857',
     highlights: ['Sổ sách kế toán tự động', 'Hàm tài chính & khấu hao', 'Kỹ thuật lọc báo cáo động']
   }
 ];
@@ -138,31 +138,31 @@ const LEARNING_STEPS = [
     step: '01',
     title: 'Kiểm tra trình độ đầu vào (Diagnostic Test)',
     desc: 'Hệ thống tự động chấm điểm bài test 15 phút, vẽ biểu đồ Radar phân tích điểm mạnh, điểm yếu theo từng hàm và kỹ năng.',
-    color: '#3b82f6'
+    color: '#2563EB'
   },
   {
     step: '02',
     title: 'Nhận lộ trình cá nhân hóa (AI Pathway)',
     desc: 'Thuật toán tự động thiết kế lộ trình tinh gọn, chỉ tập trung vào các kỹ năng còn thiếu hụt giúp tiết kiệm 50% thời gian.',
-    color: '#8b5cf6'
+    color: '#7C3AED'
   },
   {
     step: '03',
     title: 'Học lý thuyết thực chiến & Làm bài mẫu',
     desc: 'Học qua các tình huống văn phòng thực tế, xem video giải chi tiết các bẫy thi thường gặp trong đề thi Certiport.',
-    color: '#10b981'
+    color: '#059669'
   },
   {
     step: '04',
     title: 'Thi thử bấm giờ sát 99% đề thật',
     desc: 'Làm bài thi trên phòng thi trực tuyến với đồng hồ đếm ngược, tự động lưu bài từng giây và mô phỏng chính xác giao diện thi thật.',
-    color: '#f59e0b'
+    color: '#D97706'
   },
   {
     step: '05',
     title: 'Ôn luyện câu sai & Cấp chứng nhận QR',
     desc: 'Tính năng Smart Review tự động gom các câu làm sai để nhắc ôn lại theo chu kỳ khoa học Spaced Repetition, đảm bảo thi đỗ 1000/1000.',
-    color: '#ef4444'
+    color: '#DC2626'
   }
 ];
 
@@ -171,37 +171,37 @@ const FEATURES = [
     icon: <Brain size={24} />,
     title: 'Chẩn đoán năng lực bằng AI',
     desc: 'Phân tích chính xác từng kỹ năng con (VLOOKUP, PivotTable, Slide Master, Mail Merge) để chỉ ra điểm cần cải thiện ngay.',
-    color: '#3b82f6'
+    color: '#2563EB'
   },
   {
     icon: <Shield size={24} />,
     title: 'Đề thi sát 99% đề thật Certiport',
     desc: 'Ngân hàng 500+ câu hỏi cập nhật mới nhất năm 2026, bấm giờ chuẩn xác và tự động sao lưu câu trả lời không sợ rớt mạng.',
-    color: '#10b981'
+    color: '#059669'
   },
   {
     icon: <Zap size={24} />,
     title: 'Smart Review (Spaced Repetition)',
     desc: 'Thuật toán lặp lại ngắt quãng thông minh giúp não bộ ghi nhớ lâu các công thức và phím tắt quan trọng.',
-    color: '#f59e0b'
+    color: '#D97706'
   },
   {
     icon: <BarChart3 size={24} />,
     title: 'Radar Chart Năng Lực Trực Quan',
     desc: 'Theo dõi sự tiến bộ hàng ngày qua biểu đồ radar nhiều chiều, đo lường độ thành thạo kỹ năng từ 0% đến 100%.',
-    color: '#8b5cf6'
+    color: '#7C3AED'
   },
   {
     icon: <Award size={24} />,
     title: 'Chứng nhận điện tử QR Verifiable',
     desc: 'Hoàn thành khóa học được cấp chứng nhận điện tử có mã QR xác minh công khai, nâng tầm CV xin việc.',
-    color: '#ec4899'
+    color: '#DB2777'
   },
   {
     icon: <Globe size={24} />,
     title: 'Học mọi lúc trên Web & Mobile PWA',
     desc: 'Giao diện tối ưu hoàn hảo cho máy tính, máy tính bảng và điện thoại. Cài đặt trực tiếp như ứng dụng di động.',
-    color: '#06b6d4'
+    color: '#0284C7'
   }
 ];
 
@@ -255,14 +255,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
     <div style={{
       width: '100%',
       minHeight: '100vh',
-      background: '#070B14',
-      color: '#F8FAFC',
+      background: '#F8FAFC',
+      color: '#0F172A',
       fontFamily: 'var(--font-sans)',
       overflowX: 'hidden',
       position: 'relative'
     }}>
 
-      {/* 1. TOP NAVIGATION BAR (FULL-WIDTH GLASSMORPHISM) */}
+      {/* 1. TOP NAVIGATION BAR (LUMINOUS GLASSMORPHISM) */}
       <header style={{
         position: 'fixed',
         top: 0,
@@ -270,15 +270,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         right: 0,
         width: '100%',
         zIndex: 999,
-        background: scrollY > 20 ? 'rgba(7, 11, 20, 0.88)' : 'transparent',
+        background: scrollY > 20 ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(16px)',
-        borderBottom: scrollY > 20 ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+        boxShadow: scrollY > 20 ? '0 4px 20px -2px rgba(0, 0, 0, 0.05)' : 'none',
         transition: 'all 0.3s ease'
       }}>
         <div style={{
           maxWidth: '1280px',
           margin: '0 auto',
-          padding: '12px 20px',
+          padding: '14px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -289,7 +290,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <img
               src="/LogoPH.png"
               alt="PH DIGITAL EDUCATION Logo"
-              style={{ height: '38px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = '/logo.png';
               }}
@@ -299,16 +300,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 fontSize: '15px',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
-                color: '#FFFFFF',
+                color: '#0F172A',
                 lineHeight: 1.2
               }}>
                 PH DIGITAL EDUCATION
               </span>
               <span style={{
-                fontSize: '10px',
+                fontSize: '10.5px',
                 fontWeight: 600,
                 letterSpacing: '0.04em',
-                color: '#94A3B8',
+                color: '#2563EB',
                 lineHeight: 1
               }}>
                 Information Technology • IC3 • MOS
@@ -317,36 +318,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           </div>
 
           {/* Center Links (Desktop) */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '24px' }} className="hide-sm">
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '28px' }} className="hide-sm">
             <button
               onClick={() => scrollToSection('tracks')}
-              style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#38BDF8')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+              style={{ background: 'none', border: 'none', color: '#475569', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#2563EB')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Chương trình đào tạo
             </button>
             <button
               onClick={() => scrollToSection('roadmap')}
-              style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#38BDF8')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+              style={{ background: 'none', border: 'none', color: '#475569', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#2563EB')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Lộ trình 5 bước
             </button>
             <button
               onClick={() => scrollToSection('features')}
-              style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#38BDF8')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+              style={{ background: 'none', border: 'none', color: '#475569', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#2563EB')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Tính năng nổi bật
             </button>
             <button
               onClick={() => scrollToSection('reviews')}
-              style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#38BDF8')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+              style={{ background: 'none', border: 'none', color: '#475569', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#2563EB')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Cam kết đầu ra
             </button>
@@ -357,23 +358,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <button
               onClick={onGetStarted}
               style={{
-                padding: '8px 18px',
+                padding: '8px 20px',
                 borderRadius: '9999px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: '#F8FAFC',
-                fontSize: '13px',
+                border: '1.5px solid #CBD5E1',
+                background: '#FFFFFF',
+                color: '#0F172A',
+                fontSize: '13.5px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.borderColor = '#2563EB';
+                e.currentTarget.style.color = '#2563EB';
+                e.currentTarget.style.background = '#EFF6FF';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.borderColor = '#CBD5E1';
+                e.currentTarget.style.color = '#0F172A';
+                e.currentTarget.style.background = '#FFFFFF';
               }}
             >
               Đăng nhập
@@ -381,18 +384,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <button
               onClick={onGetStarted}
               style={{
-                padding: '8px 20px',
+                padding: '8px 22px',
                 borderRadius: '9999px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)',
+                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
                 color: '#FFFFFF',
-                fontSize: '13px',
+                fontSize: '13.5px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
@@ -404,24 +407,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
       </header>
 
-      {/* 2. HERO SECTION (BALANCED 2-COLUMN MODERN EDTECH LAYOUT) */}
+      {/* 2. HERO SECTION (BRIGHT & AIRY MODERN EDTECH DESIGN) */}
       <section style={{
         position: 'relative',
-        padding: '120px 20px 70px',
+        padding: '130px 20px 80px',
         width: '100%',
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        background: 'radial-gradient(ellipse 80% 60% at 50% -20%, rgba(37, 99, 235, 0.25), transparent 70%), #070B14',
+        background: 'linear-gradient(180deg, #EDF4FF 0%, #F8FAFC 60%, #FFFFFF 100%)',
         overflow: 'hidden'
       }}>
-        {/* Subtle background tech grid */}
+        {/* Ambient Subtle Glow */}
         <div style={{
           position: 'absolute',
-          inset: 0,
-          opacity: 0.08,
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
+          top: '-10%',
+          left: '20%',
+          width: '500px',
+          height: '500px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(191, 219, 254, 0.5) 0%, transparent 70%)',
+          filter: 'blur(60px)',
           pointerEvents: 'none'
         }} />
 
@@ -431,7 +437,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           width: '100%',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '40px',
+          gap: '48px',
           alignItems: 'center',
           position: 'relative',
           zIndex: 10
@@ -443,18 +449,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '6px 14px',
+              padding: '6px 16px',
               borderRadius: '9999px',
-              background: 'rgba(37, 99, 235, 0.15)',
-              border: '1px solid rgba(59, 130, 246, 0.35)',
-              color: '#60A5FA',
+              background: '#EFF6FF',
+              border: '1px solid #BFDBFE',
+              color: '#1D4ED8',
               fontSize: '12px',
               fontWeight: 700,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
               marginBottom: '20px'
             }}>
-              <Zap size={14} />
+              <Zap size={14} color="#F59E0B" />
               Nền tảng học & khảo thí Tin học thông minh 2026
             </div>
 
@@ -462,14 +468,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <h1 style={{
               fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)',
               fontWeight: 900,
-              lineHeight: 1.15,
-              color: '#FFFFFF',
+              lineHeight: 1.18,
+              color: '#0F172A',
               letterSpacing: '-0.03em',
               marginBottom: '20px'
             }}>
               Học Tin học theo{' '}
               <span style={{
-                background: 'linear-gradient(135deg, #38BDF8 0%, #3B82F6 60%, #818CF8 100%)',
+                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 50%, #4F46E5 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 display: 'inline-block'
@@ -482,20 +488,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             {/* Subtitle */}
             <p style={{
               fontSize: 'clamp(0.95rem, 1.4vw, 1.1rem)',
-              color: '#94A3B8',
+              color: '#475569',
               lineHeight: 1.7,
-              marginBottom: '32px',
+              marginBottom: '34px',
               maxWidth: '560px'
             }}>
               Kiểm tra trình độ đầu vào miễn phí • Nhận lộ trình cá nhân hóa • Luyện đề thi sát 99% đề thật Certiport • Phân tích kỹ năng yếu và cam kết bao đỗ chứng chỉ MOS, IC3 GS6 & CNTT 100%.
             </p>
 
-            {/* Primary & Secondary Action CTAs */}
+            {/* Action CTAs */}
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '44px', width: '100%' }}>
               <button
                 onClick={onGetStarted}
                 style={{
-                  padding: '14px 28px',
+                  padding: '14px 30px',
                   borderRadius: '9999px',
                   border: 'none',
                   background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
@@ -506,16 +512,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '10px',
-                  boxShadow: '0 8px 24px rgba(37, 99, 235, 0.45)',
+                  boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)',
                   transition: 'all 0.25s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 12px 28px rgba(37, 99, 235, 0.6)';
+                  e.currentTarget.style.boxShadow = '0 12px 28px rgba(37, 99, 235, 0.5)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.45)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.35)';
                 }}
               >
                 <Play size={18} fill="white" />
@@ -525,26 +531,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <button
                 onClick={() => scrollToSection('tracks')}
                 style={{
-                  padding: '14px 24px',
+                  padding: '14px 26px',
                   borderRadius: '9999px',
-                  border: '1px solid rgba(255, 255, 255, 0.16)',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  color: '#E2E8F0',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
                   fontSize: '14px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                  e.currentTarget.style.background = '#F8FAFC';
+                  e.currentTarget.style.borderColor = '#94A3B8';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.16)';
+                  e.currentTarget.style.background = '#FFFFFF';
+                  e.currentTarget.style.borderColor = '#CBD5E1';
                 }}
               >
                 Xem 10 chương trình học <ArrowRight size={15} />
@@ -557,73 +564,59 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '16px',
               paddingTop: '24px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              borderTop: '1px solid #E2E8F0',
               width: '100%'
             }}>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#F8FAFC', lineHeight: 1.1 }}>10+</div>
-                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px', fontWeight: 500 }}>Chương trình</div>
+                <div style={{ fontSize: '26px', fontWeight: 900, color: '#0F172A', lineHeight: 1.1 }}>10+</div>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px', fontWeight: 600 }}>Chương trình</div>
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#38BDF8', lineHeight: 1.1 }}>500+</div>
-                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px', fontWeight: 500 }}>Đề thi & bài tập</div>
+                <div style={{ fontSize: '26px', fontWeight: 900, color: '#2563EB', lineHeight: 1.1 }}>500+</div>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px', fontWeight: 600 }}>Đề thi & bài tập</div>
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#10B981', lineHeight: 1.1 }}>100%</div>
-                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px', fontWeight: 500 }}>Cam kết bao đỗ</div>
+                <div style={{ fontSize: '26px', fontWeight: 900, color: '#059669', lineHeight: 1.1 }}>100%</div>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px', fontWeight: 600 }}>Cam kết bao đỗ</div>
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#F59E0B', lineHeight: 1.1 }}>PWA</div>
-                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px', fontWeight: 500 }}>Web & Mobile</div>
+                <div style={{ fontSize: '26px', fontWeight: 900, color: '#D97706', lineHeight: 1.1 }}>PWA</div>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px', fontWeight: 600 }}>Web & Mobile</div>
               </div>
             </div>
           </div>
 
           {/* RIGHT COLUMN: INTERACTIVE CERTIPORT ASSESSMENT SIMULATION CARD */}
           <div style={{ position: 'relative', width: '100%', maxWidth: '540px', margin: '0 auto' }}>
-            {/* Ambient Backlight Glow */}
-            <div style={{
-              position: 'absolute',
-              width: '320px',
-              height: '320px',
-              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%)',
-              top: '-30px',
-              right: '-20px',
-              filter: 'blur(50px)',
-              pointerEvents: 'none'
-            }} />
-
             {/* Floating Badge 1 (Top-Right) */}
             <div style={{
               position: 'absolute',
               top: '-18px',
               right: '10px',
               zIndex: 20,
-              background: 'rgba(15, 23, 42, 0.95)',
-              border: '1px solid rgba(245, 158, 11, 0.4)',
+              background: '#FFFFFF',
+              border: '1px solid #FDE68A',
               borderRadius: '12px',
               padding: '8px 14px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-              backdropFilter: 'blur(8px)'
+              boxShadow: '0 8px 20px rgba(245, 158, 11, 0.15)'
             }}>
-              <Award size={18} color="#F59E0B" />
+              <Award size={18} color="#D97706" />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: '#F8FAFC' }}>Chuẩn Certiport 2026</span>
-                <span style={{ fontSize: '9px', color: '#F59E0B', fontWeight: 600 }}>Dự đoán: 980 / 1000 Điểm</span>
+                <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>Chuẩn Certiport 2026</span>
+                <span style={{ fontSize: '10px', color: '#D97706', fontWeight: 700 }}>Dự đoán: 980 / 1000 Điểm</span>
               </div>
             </div>
 
             {/* Main Interactive Card */}
             <div style={{
-              background: 'rgba(15, 23, 42, 0.85)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
               borderRadius: '24px',
               padding: '28px',
-              boxShadow: '0 24px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(37, 99, 235, 0.15)',
-              backdropFilter: 'blur(20px)',
+              boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.03)',
               position: 'relative'
             }}>
               {/* Card Header with Live Indicator */}
@@ -632,7 +625,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 paddingBottom: '16px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                borderBottom: '1px solid #F1F5F9',
                 marginBottom: '20px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -641,9 +634,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                     height: '8px',
                     borderRadius: '50%',
                     background: '#10B981',
-                    boxShadow: '0 0 10px #10B981'
+                    boxShadow: '0 0 8px #10B981'
                   }} />
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#34D399', letterSpacing: '0.04em' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#059669', letterSpacing: '0.04em' }}>
                     ĐANG DIỄN RA CA THI THỬ
                   </span>
                 </div>
@@ -651,12 +644,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: 'rgba(255, 255, 255, 0.06)',
+                  background: '#F1F5F9',
                   padding: '4px 10px',
                   borderRadius: '9999px',
                   fontSize: '12px',
-                  color: '#94A3B8',
-                  fontFamily: 'var(--font-mono)'
+                  color: '#475569',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 600
                 }}>
                   <Clock size={13} /> 38:45
                 </div>
@@ -667,8 +661,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 <span style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: '#38BDF8',
-                  background: 'rgba(56, 189, 248, 0.12)',
+                  color: '#1D4ED8',
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
                   padding: '3px 8px',
                   borderRadius: '6px',
                   textTransform: 'uppercase'
@@ -676,9 +671,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   MOS Excel 2019/365 • Hàm Nâng Cao
                 </span>
                 <p style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#F1F5F9',
+                  fontSize: '14.5px',
+                  fontWeight: 700,
+                  color: '#0F172A',
                   lineHeight: 1.5,
                   marginTop: '10px'
                 }}>
@@ -702,8 +697,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                       style={{
                         padding: '12px 14px',
                         borderRadius: '12px',
-                        background: isSelected ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                        border: isSelected ? '1.5px solid #10B981' : '1px solid rgba(255, 255, 255, 0.08)',
+                        background: isSelected ? '#ECFDF5' : '#F8FAFC',
+                        border: isSelected ? '2px solid #10B981' : '1px solid #E2E8F0',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -716,8 +711,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                           width: '24px',
                           height: '24px',
                           borderRadius: '6px',
-                          background: isSelected ? '#10B981' : 'rgba(255, 255, 255, 0.08)',
-                          color: isSelected ? '#FFFFFF' : '#94A3B8',
+                          background: isSelected ? '#10B981' : '#E2E8F0',
+                          color: isSelected ? '#FFFFFF' : '#475569',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -726,12 +721,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                         }}>
                           {opt.key}
                         </span>
-                        <span style={{ fontSize: '13px', color: isSelected ? '#FFFFFF' : '#CBD5E1', fontWeight: isSelected ? 600 : 400 }}>
+                        <span style={{ fontSize: '13.5px', color: isSelected ? '#065F46' : '#334155', fontWeight: isSelected ? 700 : 500 }}>
                           {opt.text}
                         </span>
                       </div>
                       {isSelected && opt.isCorrect && (
-                        <span style={{ fontSize: '11px', color: '#34D399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '11.5px', color: '#059669', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Check size={14} /> Chính xác
                         </span>
                       )}
@@ -742,13 +737,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
               {/* Explanatory Snippet */}
               <div style={{
-                background: 'rgba(59, 130, 246, 0.08)',
-                border: '1px dashed rgba(59, 130, 246, 0.3)',
+                background: '#EFF6FF',
+                border: '1px dashed #93C5FD',
                 borderRadius: '12px',
                 padding: '12px 14px',
-                fontSize: '12px',
-                color: '#93C5FD',
-                lineHeight: 1.5
+                fontSize: '12.5px',
+                color: '#1E40AF',
+                lineHeight: 1.55
               }}>
                 <strong>💡 Giải thích từ Giảng viên MOS Master:</strong> XLOOKUP là hàm thế hệ mới, không yêu cầu cột tìm kiếm nằm đầu tiên và tích hợp sẵn tham số xử lý lỗi #N/A.
               </div>
@@ -757,22 +752,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <div style={{
                 marginTop: '16px',
                 paddingTop: '14px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                borderTop: '1px solid #F1F5F9',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between'
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>TỶ LỆ LÀM CHỦ KỸ NĂNG</span>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#34D399' }}>94% • Đạt chuẩn Xuất Sắc</span>
+                  <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>TỶ LỆ LÀM CHỦ KỸ NĂNG</span>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#059669' }}>94% • Đạt chuẩn Xuất Sắc</span>
                 </div>
                 <button
                   onClick={onGetStarted}
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#38BDF8',
-                    fontSize: '12px',
+                    color: '#2563EB',
+                    fontSize: '12.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     display: 'flex',
@@ -791,20 +786,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               bottom: '-16px',
               left: '10px',
               zIndex: 20,
-              background: 'rgba(15, 23, 42, 0.95)',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
+              background: '#FFFFFF',
+              border: '1px solid #BFDBFE',
               borderRadius: '12px',
               padding: '8px 14px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-              backdropFilter: 'blur(8px)'
+              boxShadow: '0 8px 20px rgba(37, 99, 235, 0.12)'
             }}>
-              <Sparkles size={16} color="#38BDF8" />
+              <Sparkles size={16} color="#2563EB" />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: '#F8FAFC' }}>AI Smart Review</span>
-                <span style={{ fontSize: '9px', color: '#94A3B8', fontWeight: 500 }}>Tự động gom câu sai để ôn lại</span>
+                <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>AI Smart Review</span>
+                <span style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>Tự động gom câu sai để ôn lại</span>
               </div>
             </div>
           </div>
@@ -812,28 +806,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* 3. SECTION: 10 CHƯƠNG TRÌNH ĐÀO TẠO THỰC CHIẾN (#tracks) */}
-      <section id="tracks" style={{ padding: '90px 20px', background: '#090E1A', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section id="tracks" style={{ padding: '90px 20px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           {/* Section Heading */}
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <span style={{
-              fontSize: '11px',
+              fontSize: '11.5px',
               fontWeight: 800,
-              color: '#38BDF8',
+              color: '#2563EB',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              background: 'rgba(56, 189, 248, 0.1)',
-              padding: '4px 12px',
+              background: '#EFF6FF',
+              border: '1px solid #BFDBFE',
+              padding: '4px 14px',
               borderRadius: '9999px',
               display: 'inline-block',
               marginBottom: '12px'
             }}>
               HỆ THỐNG 10 CHƯƠNG TRÌNH ĐÀO TẠO CHUYÊN SÂU
             </span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: '14px' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '14px' }}>
               Chọn Lộ Trình Phù Hợp Với Mục Tiêu Của Bạn
             </h2>
-            <p style={{ fontSize: '15px', color: '#94A3B8', maxWidth: '640px', margin: '0 auto' }}>
+            <p style={{ fontSize: '15px', color: '#64748B', maxWidth: '640px', margin: '0 auto' }}>
               Từ tin học đại trà, chuẩn đầu ra Đại học đến chứng chỉ quốc tế MOS, IC3 GS6 và ứng dụng AI thực chiến 2026.
             </p>
           </div>
@@ -850,14 +845,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 key={tab.key}
                 onClick={() => setActiveCategory(tab.key as any)}
                 style={{
-                  padding: '8px 20px',
+                  padding: '8px 22px',
                   borderRadius: '9999px',
-                  border: activeCategory === tab.key ? '1px solid #3B82F6' : '1px solid rgba(255,255,255,0.1)',
-                  background: activeCategory === tab.key ? 'rgba(37, 99, 235, 0.2)' : 'rgba(255,255,255,0.03)',
-                  color: activeCategory === tab.key ? '#60A5FA' : '#94A3B8',
-                  fontSize: '13px',
+                  border: activeCategory === tab.key ? '1px solid #2563EB' : '1px solid #CBD5E1',
+                  background: activeCategory === tab.key ? '#2563EB' : '#FFFFFF',
+                  color: activeCategory === tab.key ? '#FFFFFF' : '#475569',
+                  fontSize: '13.5px',
                   fontWeight: 600,
                   cursor: 'pointer',
+                  boxShadow: activeCategory === tab.key ? '0 4px 12px rgba(37, 99, 235, 0.25)' : '0 1px 3px rgba(0,0,0,0.03)',
                   transition: 'all 0.2s'
                 }}
               >
@@ -876,41 +872,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <div
                 key={t.id}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '20px',
-                  padding: '24px',
+                  padding: '26px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   transition: 'all 0.25s',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.borderColor = t.color;
-                  e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.4), 0 0 20px ${t.color}25`;
+                  e.currentTarget.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.08)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = '#E2E8F0';
+                  e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)';
                 }}
               >
                 {/* Top Accent Strip */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: t.color }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: t.color }} />
 
                 <div>
                   {/* Header row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <span style={{ fontSize: '26px' }}>{t.icon}</span>
+                    <span style={{ fontSize: '28px' }}>{t.icon}</span>
                     <span style={{
-                      fontSize: '11px',
+                      fontSize: '11.5px',
                       fontWeight: 700,
                       color: t.color,
-                      background: `${t.color}15`,
-                      border: `1px solid ${t.color}35`,
+                      background: '#F1F5F9',
+                      border: `1px solid #E2E8F0`,
                       padding: '3px 10px',
                       borderRadius: '9999px'
                     }}>
@@ -918,18 +915,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                     </span>
                   </div>
 
-                  <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF', marginBottom: '8px', lineHeight: 1.3 }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px', lineHeight: 1.35 }}>
                     {t.name}
                   </h3>
-                  <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.6, marginBottom: '18px' }}>
+                  <p style={{ fontSize: '13.5px', color: '#64748B', lineHeight: 1.6, marginBottom: '18px' }}>
                     {t.desc}
                   </p>
 
                   {/* Highlights */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                     {t.highlights.map((hl, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#CBD5E1' }}>
-                        <CheckCircle2 size={14} color={t.color} />
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#334155' }}>
+                        <CheckCircle2 size={15} color={t.color} />
                         {hl}
                       </div>
                     ))}
@@ -939,13 +936,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 {/* Footer row with CTA */}
                 <div style={{
                   paddingTop: '16px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderTop: '1px solid #F1F5F9',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}>
-                  <span style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={13} /> {t.duration}
+                  <span style={{ fontSize: '12.5px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                    <Clock size={14} /> {t.duration}
                   </span>
                   <button
                     onClick={onGetStarted}
@@ -953,7 +950,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                       background: 'none',
                       border: 'none',
                       color: t.color,
-                      fontSize: '13px',
+                      fontSize: '13.5px',
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
@@ -972,27 +969,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* 4. SECTION: LỘ TRÌNH HỌC TẬP 5 BƯỚC (#roadmap) */}
-      <section id="roadmap" style={{ padding: '90px 20px', background: '#070B14' }}>
+      <section id="roadmap" style={{ padding: '90px 20px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <span style={{
-              fontSize: '11px',
+              fontSize: '11.5px',
               fontWeight: 800,
-              color: '#10B981',
+              color: '#059669',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              background: 'rgba(16, 185, 129, 0.1)',
-              padding: '4px 12px',
+              background: '#ECFDF5',
+              border: '1px solid #A7F3D0',
+              padding: '4px 14px',
               borderRadius: '9999px',
               display: 'inline-block',
               marginBottom: '12px'
             }}>
               PHƯƠNG PHÁP ĐÀO TẠO KHOA HỌC
             </span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: '14px' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '14px' }}>
               Quy Trình 5 Bước Chinh Phục Điểm Tuyệt Đối
             </h2>
-            <p style={{ fontSize: '15px', color: '#94A3B8', maxWidth: '640px', margin: '0 auto' }}>
+            <p style={{ fontSize: '15px', color: '#64748B', maxWidth: '640px', margin: '0 auto' }}>
               Loại bỏ việc học vẹt lan man. Bạn chỉ học chính xác những gì mình còn thiếu để đạt chứng chỉ nhanh nhất.
             </p>
           </div>
@@ -1002,8 +1000,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <div
                 key={s.step}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.5)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '16px',
                   padding: '24px',
                   display: 'flex',
@@ -1013,38 +1011,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = s.color;
-                  e.currentTarget.style.background = 'rgba(15, 23, 42, 0.85)';
+                  e.currentTarget.style.background = '#FFFFFF';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.05)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.background = 'rgba(15, 23, 42, 0.5)';
+                  e.currentTarget.style.borderColor = '#E2E8F0';
+                  e.currentTarget.style.background = '#F8FAFC';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 <div style={{
                   width: '48px',
                   height: '48px',
                   borderRadius: '14px',
-                  background: `${s.color}15`,
+                  background: '#EFF6FF',
                   border: `2px solid ${s.color}40`,
                   color: s.color,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '16px',
+                  fontSize: '17px',
                   fontWeight: 900,
                   flexShrink: 0
                 }}>
                   {s.step}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     {s.title}
                   </h3>
-                  <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
                     {s.desc}
                   </p>
                 </div>
-                <div style={{ color: '#475569', alignSelf: 'center' }}>
+                <div style={{ color: '#94A3B8', alignSelf: 'center' }}>
                   <ChevronRight size={20} />
                 </div>
               </div>
@@ -1054,27 +1054,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* 5. SECTION: TẠI SAO CHỌN PH DIGITAL EDUCATION? (#features) */}
-      <section id="features" style={{ padding: '90px 20px', background: '#090E1A', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section id="features" style={{ padding: '90px 20px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <span style={{
-              fontSize: '11px',
+              fontSize: '11.5px',
               fontWeight: 800,
-              color: '#8B5CF6',
+              color: '#7C3AED',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              background: 'rgba(139, 92, 246, 0.1)',
-              padding: '4px 12px',
+              background: '#F5F3FF',
+              border: '1px solid #DDD6FE',
+              padding: '4px 14px',
               borderRadius: '9999px',
               display: 'inline-block',
               marginBottom: '12px'
             }}>
               ƯU THẾ CÔNG NGHỆ KHẢO THÍ VƯỢT TRỘI
             </span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: '14px' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '14px' }}>
               Tại Sao Học Viên Chọn PH Digital Education?
             </h2>
-            <p style={{ fontSize: '15px', color: '#94A3B8', maxWidth: '640px', margin: '0 auto' }}>
+            <p style={{ fontSize: '15px', color: '#64748B', maxWidth: '640px', margin: '0 auto' }}>
               Hệ thống kết hợp giữa giảng viên MOS Master giàu kinh nghiệm và nền tảng trí tuệ nhân tạo hỗ trợ học tập 24/7.
             </p>
           </div>
@@ -1088,30 +1089,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <div
                 key={idx}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '20px',
                   padding: '28px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '14px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = f.color;
                   e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.borderColor = '#E2E8F0';
                   e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)';
                 }}
               >
                 <div style={{
                   width: '46px',
                   height: '46px',
                   borderRadius: '12px',
-                  background: `${f.color}15`,
-                  border: `1px solid ${f.color}35`,
+                  background: '#EFF6FF',
                   color: f.color,
                   display: 'flex',
                   alignItems: 'center',
@@ -1119,10 +1122,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 }}>
                   {f.icon}
                 </div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A' }}>
                   {f.title}
                 </h3>
-                <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.6 }}>
+                <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
                   {f.desc}
                 </p>
               </div>
@@ -1132,27 +1135,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* 6. SECTION: CẢM NHẬN HỌC VIÊN & CHỨNG CHỈ THẬT (#reviews) */}
-      <section id="reviews" style={{ padding: '90px 20px', background: '#070B14' }}>
+      <section id="reviews" style={{ padding: '90px 20px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <span style={{
-              fontSize: '11px',
+              fontSize: '11.5px',
               fontWeight: 800,
-              color: '#F59E0B',
+              color: '#D97706',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              background: 'rgba(245, 158, 11, 0.1)',
-              padding: '4px 12px',
+              background: '#FFFBEB',
+              border: '1px solid #FDE68A',
+              padding: '4px 14px',
               borderRadius: '9999px',
               display: 'inline-block',
               marginBottom: '12px'
             }}>
               KẾT QUẢ ĐÀO TẠO THỰC TẾ
             </span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: '14px' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '14px' }}>
               Học Viên Nói Gì Về PH Digital Education?
             </h2>
-            <p style={{ fontSize: '15px', color: '#94A3B8', maxWidth: '640px', margin: '0 auto' }}>
+            <p style={{ fontSize: '15px', color: '#64748B', maxWidth: '640px', margin: '0 auto' }}>
               Hàng ngàn sinh viên HUTECH, UEH, UFM, Bách Khoa và nhân sự doanh nghiệp đã đạt chứng chỉ điểm cao ngay lần thi đầu tiên.
             </p>
           </div>
@@ -1167,14 +1171,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <div
                 key={t.name}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '20px',
                   padding: '28px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '16px'
+                  gap: '16px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
                 }}
               >
                 <div>
@@ -1183,7 +1188,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                       <Star key={i} size={16} fill="#F59E0B" color="#F59E0B" />
                     ))}
                   </div>
-                  <p style={{ fontSize: '14px', color: '#E2E8F0', lineHeight: 1.7, fontStyle: 'italic', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '14px', color: '#334155', lineHeight: 1.7, fontStyle: 'italic', marginBottom: '16px' }}>
                     "{t.quote}"
                   </p>
                 </div>
@@ -1193,17 +1198,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   paddingTop: '14px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+                  borderTop: '1px solid #E2E8F0'
                 }}>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF' }}>{t.name}</div>
-                    <div style={{ fontSize: '12px', color: '#94A3B8' }}>{t.school}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>{t.name}</div>
+                    <div style={{ fontSize: '12px', color: '#64748B' }}>{t.school}</div>
                   </div>
                   <span style={{
-                    fontSize: '11px',
+                    fontSize: '11.5px',
                     fontWeight: 700,
-                    color: '#34D399',
-                    background: 'rgba(16, 185, 129, 0.12)',
+                    color: '#059669',
+                    background: '#ECFDF5',
+                    border: '1px solid #A7F3D0',
                     padding: '4px 10px',
                     borderRadius: '8px'
                   }}>
@@ -1216,20 +1222,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
           {/* CTA Banner inside Section */}
           <div style={{
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%), rgba(15, 23, 42, 0.9)',
-            border: '1px solid rgba(99, 132, 251, 0.3)',
+            background: 'linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%)',
             borderRadius: '24px',
-            padding: '40px 30px',
+            padding: '44px 30px',
             textAlign: 'center',
             maxWidth: '900px',
             margin: '0 auto',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: '0 15px 35px -5px rgba(37, 99, 235, 0.4)'
           }}>
-            <h3 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 800, color: '#FFFFFF', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 900, color: '#FFFFFF', marginBottom: '12px' }}>
               Sẵn Sàng Chinh Phục Chứng Chỉ Quốc Tế?
             </h3>
-            <p style={{ fontSize: '15px', color: '#CBD5E1', maxWidth: '580px', margin: '0 auto 28px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '15px', color: '#DBEAFE', maxWidth: '580px', margin: '0 auto 28px', lineHeight: 1.6 }}>
               Bắt đầu với bài kiểm tra năng lực đầu vào miễn phí 100%. Nhận kết quả chẩn đoán và lộ trình học cá nhân hóa ngay hôm nay.
             </p>
             <button
@@ -1238,19 +1244,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 padding: '16px 36px',
                 borderRadius: '9999px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)',
-                color: '#FFFFFF',
+                background: '#FFFFFF',
+                color: '#1D4ED8',
                 fontSize: '15px',
-                fontWeight: 700,
+                fontWeight: 800,
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
-                boxShadow: '0 8px 24px rgba(37, 99, 235, 0.5)',
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
                 transition: 'all 0.2s'
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
             >
-              <Play size={18} fill="white" /> Kiểm tra trình độ miễn phí ngay
+              <Play size={18} fill="#1D4ED8" /> Kiểm tra trình độ miễn phí ngay
             </button>
           </div>
         </div>
@@ -1259,8 +1267,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       {/* 7. FOOTER */}
       <footer style={{
         padding: '50px 20px 30px',
-        background: '#04070E',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+        background: '#F1F5F9',
+        borderTop: '1px solid #E2E8F0'
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{
@@ -1275,27 +1283,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 <img
                   src="/LogoPH.png"
                   alt="Logo PH"
-                  style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+                  style={{ height: '38px', width: 'auto', objectFit: 'contain' }}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                 />
-                <span style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF' }}>
+                <span style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>
                   PH DIGITAL EDUCATION
                 </span>
               </div>
-              <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.7, marginBottom: '14px' }}>
+              <p style={{ fontSize: '13.5px', color: '#64748B', lineHeight: 1.7, marginBottom: '14px' }}>
                 Hệ sinh thái đào tạo Tin học Văn phòng Thực chiến & Luyện thi Chứng chỉ Quốc tế MOS, IC3 GS6 chuẩn Certiport. Cam kết chuẩn đầu ra Đại học bao đỗ 100%.
               </p>
-              <div style={{ fontSize: '12px', color: '#64748B' }}>
-                Hotline / Zalo: <strong style={{ color: '#38BDF8' }}>033.229.8065</strong>
+              <div style={{ fontSize: '12.5px', color: '#475569' }}>
+                Hotline / Zalo: <strong style={{ color: '#2563EB' }}>033.229.8065</strong>
               </div>
             </div>
 
             {/* Col 2 */}
             <div>
-              <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF', marginBottom: '14px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A', marginBottom: '14px' }}>
                 Chương Trình Đào Tạo
               </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#94A3B8' }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#64748B' }}>
                 <li>Luyện thi MOS Excel 2019 / 365</li>
                 <li>Luyện thi MOS Word & PowerPoint</li>
                 <li>Chứng chỉ Tin học Quốc tế IC3 GS6</li>
@@ -1306,10 +1314,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
             {/* Col 3 */}
             <div>
-              <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF', marginBottom: '14px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A', marginBottom: '14px' }}>
                 Tính Năng Nổi Bật
               </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#94A3B8' }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#64748B' }}>
                 <li>Kiểm tra trình độ đầu vào miễn phí</li>
                 <li>Phòng thi trực tuyến tự động lưu bài</li>
                 <li>Smart Review ôn luyện câu sai</li>
@@ -1321,13 +1329,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
           <div style={{
             paddingTop: '20px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            borderTop: '1px solid #CBD5E1',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
             gap: '12px',
-            fontSize: '12px',
+            fontSize: '12.5px',
             color: '#64748B'
           }}>
             <div>

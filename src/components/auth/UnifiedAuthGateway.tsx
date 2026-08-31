@@ -120,7 +120,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     <div style={{
       minHeight: '100vh',
       width: '100%',
-      background: 'radial-gradient(ellipse 90% 70% at 50% -10%, rgba(37, 99, 235, 0.22), transparent 70%), #070B14',
+      background: 'linear-gradient(135deg, #EEF4FF 0%, #F8FAFC 50%, #E0F2FE 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -130,25 +130,14 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
       overflowX: 'hidden'
     }}>
 
-      {/* Background tech grid */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        opacity: 0.05,
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-        pointerEvents: 'none'
-      }} />
-
       {/* Main Dual-Column Master Card Container */}
       <div style={{
         width: '100%',
-        maxWidth: '1060px',
-        background: 'rgba(15, 23, 42, 0.85)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderRadius: '28px',
-        boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(37, 99, 235, 0.12)',
-        backdropFilter: 'blur(20px)',
+        maxWidth: '1040px',
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '24px',
+        boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.02)',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         overflow: 'hidden',
@@ -158,13 +147,12 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
 
         {/* LEFT COLUMN: BRAND SHOWCASE & CREDIBILITY */}
         <div style={{
-          background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 60%, rgba(15, 43, 72, 0.95) 100%)',
+          background: 'linear-gradient(160deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%)',
           padding: '40px 36px',
-          borderRight: '1px solid rgba(255, 255, 255, 0.08)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          position: 'relative'
+          color: '#FFFFFF'
         }}>
           {/* Back button */}
           <div>
@@ -178,10 +166,10 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 }
               }}
               style={{
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                color: '#CBD5E1',
-                padding: '8px 14px',
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#FFFFFF',
+                padding: '8px 16px',
                 borderRadius: '9999px',
                 fontSize: '12.5px',
                 fontWeight: 600,
@@ -193,12 +181,10 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 marginBottom: '32px'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
-                e.currentTarget.style.color = '#FFFFFF';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
-                e.currentTarget.style.color = '#CBD5E1';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
               }}
             >
               <ArrowLeft size={14} /> Quay lại Trang chủ
@@ -210,13 +196,13 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 src="/LogoPH.png"
                 alt="PH DIGITAL EDUCATION"
                 style={{
-                  height: '48px',
+                  height: '46px',
                   width: 'auto',
                   objectFit: 'contain',
                   background: '#FFFFFF',
                   padding: '6px 10px',
                   borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                 }}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
               />
@@ -224,21 +210,21 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', margin: 0 }}>
                   PH DIGITAL EDUCATION
                 </h1>
-                <span style={{ fontSize: '11px', color: '#38BDF8', fontWeight: 700, letterSpacing: '0.04em' }}>
+                <span style={{ fontSize: '11px', color: '#DBEAFE', fontWeight: 700, letterSpacing: '0.04em' }}>
                   CỔNG KHẢO THÍ & HỌC TẬP LMS
                 </span>
               </div>
             </div>
 
-            <p style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.65, marginBottom: '32px' }}>
+            <p style={{ fontSize: '13.5px', color: '#DBEAFE', lineHeight: 1.65, marginBottom: '32px' }}>
               Hệ thống quản lý học tập thông minh, luyện thi sát format đề thi Certiport 2026 và theo dõi lộ trình tiến bộ của học viên.
             </p>
 
             {/* Feature Pills */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgba(255, 255, 255, 0.12)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '14px',
                 padding: '14px 16px',
                 display: 'flex',
@@ -249,8 +235,8 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   width: '32px',
                   height: '32px',
                   borderRadius: '8px',
-                  background: 'rgba(37, 99, 235, 0.2)',
-                  color: '#60A5FA',
+                  background: '#FFFFFF',
+                  color: '#2563EB',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -259,18 +245,18 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   <Award size={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', marginBottom: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF', marginBottom: '2px' }}>
                     Khảo Thí Chuẩn Certiport
                   </div>
-                  <div style={{ fontSize: '12px', color: '#94A3B8', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: '12px', color: '#DBEAFE', lineHeight: 1.5 }}>
                     Ngân hàng 500+ đề thi thật MOS Excel, Word, PPT và IC3 GS6 bấm giờ tự động.
                   </div>
                 </div>
               </div>
 
               <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgba(255, 255, 255, 0.12)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '14px',
                 padding: '14px 16px',
                 display: 'flex',
@@ -281,8 +267,8 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   width: '32px',
                   height: '32px',
                   borderRadius: '8px',
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  color: '#34D399',
+                  background: '#FFFFFF',
+                  color: '#059669',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -291,10 +277,10 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   <Sparkles size={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', marginBottom: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF', marginBottom: '2px' }}>
                     AI Chẩn Đoán Lỗ Hổng Năng Lực
                   </div>
-                  <div style={{ fontSize: '12px', color: '#94A3B8', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: '12px', color: '#DBEAFE', lineHeight: 1.5 }}>
                     Phân tích điểm yếu từng hàm và kiến nghị lộ trình khắc phục với Smart Review.
                   </div>
                 </div>
@@ -306,14 +292,14 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
           <div style={{
             marginTop: '32px',
             paddingTop: '18px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             fontSize: '11.5px',
-            color: '#64748B'
+            color: '#BFDBFE'
           }}>
-            <Shield size={14} color="#10B981" />
+            <Shield size={14} color="#A7F3D0" />
             <span>Mã hóa SSL 256-bit • Đăng nhập an toàn SSO • LMS 2026</span>
           </div>
         </div>
@@ -331,14 +317,14 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
             <div style={{ marginBottom: '24px' }}>
               <h2 style={{
                 fontSize: '22px',
-                fontWeight: 800,
+                fontWeight: 900,
                 color: '#0F172A',
                 letterSpacing: '-0.02em',
                 marginBottom: '6px'
               }}>
                 Đăng nhập Cổng LMS
               </h2>
-              <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>
+              <p style={{ fontSize: '13.5px', color: '#64748B', margin: 0 }}>
                 Chọn vai trò và nhập thông tin để truy cập bài học và phòng thi
               </p>
             </div>
@@ -362,7 +348,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   border: 'none',
                   background: role === 'student' ? '#FFFFFF' : 'transparent',
                   color: role === 'student' ? '#2563EB' : '#64748B',
-                  fontSize: '13px',
+                  fontSize: '13.5px',
                   fontWeight: role === 'student' ? 700 : 500,
                   cursor: 'pointer',
                   display: 'flex',
@@ -386,7 +372,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   border: 'none',
                   background: role === 'admin' ? '#FFFFFF' : 'transparent',
                   color: role === 'admin' ? '#2563EB' : '#64748B',
-                  fontSize: '13px',
+                  fontSize: '13.5px',
                   fontWeight: role === 'admin' ? 700 : 500,
                   cursor: 'pointer',
                   display: 'flex',
@@ -443,8 +429,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                       fontWeight: 600,
                       padding: '0 12px',
                       outline: 'none',
-                      cursor: 'pointer',
-                      transition: 'border-color 0.2s'
+                      cursor: 'pointer'
                     }}
                   >
                     {TRACK_LIST.map(t => (
@@ -460,30 +445,27 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   <label htmlFor="student-code" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
                     <User size={14} color="#2563EB" /> Mã học viên hoặc Email
                   </label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      id="student-code"
-                      name="username"
-                      autoComplete="username"
-                      type="text"
-                      value={studentCode}
-                      onChange={e => { setStudentCode(e.target.value); setStudentError(''); }}
-                      placeholder="VD: THGZ01 hoặc học viên@gmail.com"
-                      style={{
-                        width: '100%',
-                        height: '44px',
-                        borderRadius: '12px',
-                        background: '#F8FAFC',
-                        border: '1.5px solid #CBD5E1',
-                        color: '#0F172A',
-                        fontSize: '13.5px',
-                        padding: '0 14px',
-                        outline: 'none',
-                        transition: 'border-color 0.2s',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+                  <input
+                    id="student-code"
+                    name="username"
+                    autoComplete="username"
+                    type="text"
+                    value={studentCode}
+                    onChange={e => { setStudentCode(e.target.value); setStudentError(''); }}
+                    placeholder="VD: THGZ01 hoặc học viên@gmail.com"
+                    style={{
+                      width: '100%',
+                      height: '44px',
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: '1.5px solid #CBD5E1',
+                      color: '#0F172A',
+                      fontSize: '13.5px',
+                      padding: '0 14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
                 </div>
 
                 {/* Password */}
@@ -499,7 +481,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                         background: 'none',
                         border: 'none',
                         color: '#2563EB',
-                        fontSize: '12px',
+                        fontSize: '12.5px',
                         fontWeight: 600,
                         cursor: 'pointer',
                         padding: 0
@@ -527,7 +509,6 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                         fontSize: '13.5px',
                         padding: '0 42px 0 14px',
                         outline: 'none',
-                        transition: 'border-color 0.2s',
                         boxSizing: 'border-box'
                       }}
                     />
@@ -555,7 +536,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   </div>
                 </div>
 
-                {/* Remember Me checkbox */}
+                {/* Remember Me */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
                     type="checkbox"
@@ -586,11 +567,9 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
                 >
                   <span>Đăng nhập học tập</span>
                   <ArrowRight size={16} />
@@ -721,7 +700,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)'
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
                   }}
                 >
                   <span>Đăng nhập Giảng viên</span>
@@ -749,7 +728,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 onClick={handleQuickFillStudent}
                 style={{
                   flex: 1,
-                  padding: '7px 12px',
+                  padding: '8px 12px',
                   borderRadius: '8px',
                   background: '#EFF6FF',
                   border: '1px solid #BFDBFE',
@@ -763,7 +742,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   gap: '4px'
                 }}
               >
-                <GraduationCap size={13} /> Học viên (THGZ01)
+                <GraduationCap size={14} /> Học viên (THGZ01)
               </button>
 
               <button
@@ -771,7 +750,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                 onClick={handleQuickFillAdmin}
                 style={{
                   flex: 1,
-                  padding: '7px 12px',
+                  padding: '8px 12px',
                   borderRadius: '8px',
                   background: '#F8FAFC',
                   border: '1px solid #CBD5E1',
@@ -785,7 +764,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   gap: '4px'
                 }}
               >
-                <Shield size={13} /> Giảng viên
+                <Shield size={14} /> Giảng viên
               </button>
             </div>
           </div>
