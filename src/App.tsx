@@ -14,9 +14,8 @@ import { FlashcardDeck } from './components/flashcards/FlashcardDeck';
 import { Dashboard } from './components/analytics/Dashboard';
 import { QuizCreator } from './components/creator/QuizCreator';
 import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions';
-import { AdminPortal } from './components/admin/AdminPortal';
+import { AdminPortal, AttendanceManager, TeacherAcademicPortal } from './components/admin';
 import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
-import { AttendanceManager } from './components/attendance/AttendanceManager';
 import { StudentAttendanceDashboard } from './components/attendance/StudentAttendanceDashboard';
 import { ScheduleCalendar } from './components/schedule/ScheduleCalendar';
 import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
@@ -27,7 +26,6 @@ import { UserProfileModal } from './components/auth/UserProfileModal';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
 import { StudentOnePageDashboard } from './components/dashboard/StudentOnePageDashboard';
 import { TeacherAcademicHeader } from './components/layout/TeacherAcademicHeader';
-import { TeacherAcademicPortal } from './components/teacher/TeacherAcademicPortal';
 import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
 import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
 import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
@@ -45,6 +43,13 @@ import { LandingPage } from './components/landing/LandingPage';
 import { PracticeBySkill } from './components/practice/PracticeBySkill';
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
+
+const isAdminPath = () => {
+  if (typeof window === 'undefined') return false;
+  const p = window.location.pathname.toLowerCase();
+  const h = window.location.hash.toLowerCase();
+  return p.includes('admin') || h.includes('admin');
+};
 
 export function App() {
   const {
@@ -128,20 +133,60 @@ export function App() {
   // [BA FIX] Track whether guest has clicked through to auth or accessed /admin
   const [showAuthGateway, setShowAuthGateway] = useState<boolean>(() => {
     try {
+      if (isAdminPath()) return true;
       if (typeof window !== 'undefined') {
         const p = window.location.pathname.toLowerCase();
-        if (p.includes('admin') || p.includes('login') || p.includes('auth')) return true;
+        if (p.includes('login') || p.includes('auth')) return true;
       }
       return localStorage.getItem('phtgz_show_auth') === 'true';
     } catch { return false; }
   });
 
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin')) {
+    if (isAdminPath()) {
       return 'admin';
     }
     return 'dashboard';
   });
+
+  // SPA Browser history synchronization between / and /admin
+  useEffect(() => {
+    const handlePopState = () => {
+      const onAdmin = isAdminPath();
+      if (onAdmin) {
+        if (isSessionActive && isStaff) {
+          setActiveTab('admin');
+        } else if (!isSessionActive) {
+          setShowAuthGateway(true);
+        }
+      } else {
+        if (!isSessionActive) {
+          setShowAuthGateway(false);
+        } else if (activeTab === 'admin') {
+          setActiveTab('dashboard');
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isSessionActive, isStaff, activeTab]);
+
+  // Navigate tab with URL synchronization for /admin
+  const handleNavigateTab = (newTab: ActiveTab) => {
+    setActiveTab(newTab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      const isControlTab = newTab === 'admin' || (isStaff && (newTab === 'schedule' || newTab === 'assignments' || newTab === 'early_warning' || newTab === 'attendance'));
+      if (isControlTab) {
+        if (!window.location.pathname.toLowerCase().includes('admin')) {
+          window.history.pushState(null, '', '/admin');
+        }
+      } else if (window.location.pathname.toLowerCase().includes('admin')) {
+        window.history.pushState(null, '', '/');
+      }
+    }
+  };
+
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
@@ -185,6 +230,9 @@ export function App() {
       setActiveTab('dashboard');
       try {
         localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
+        if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin')) {
+          window.history.pushState(null, '', '/');
+        }
       } catch (e) {}
     }
     return res;
@@ -198,9 +246,12 @@ export function App() {
         switchStudentTrack(selectedTrack);
       }
       setIsSessionActive(true);
-      setActiveTab('dashboard');
+      setActiveTab('admin');
       try {
         localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
+        if (typeof window !== 'undefined' && !window.location.pathname.toLowerCase().includes('admin')) {
+          window.history.pushState(null, '', '/admin');
+        }
       } catch (e) {}
     }
     return res;
@@ -214,6 +265,9 @@ export function App() {
     setActiveTab('dashboard');
     try {
       localStorage.removeItem(SESSION_ACTIVE_KEY);
+      if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin')) {
+        window.history.pushState(null, '', '/');
+      }
     } catch (e) {}
   };
 
@@ -341,12 +395,12 @@ export function App() {
           <TeacherAcademicHeader
             currentUser={user}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleNavigateTab}
             theme={theme}
             toggleTheme={toggleTheme}
             unreadNotificationCount={unreadNotificationCount}
             onLogout={handleLogout}
-            onOpenNotifications={() => setActiveTab('assignments')}
+            onOpenNotifications={() => handleNavigateTab('assignments')}
             onOpenProfileModal={() => setShowProfileModal(true)}
             onOpenChangePassword={() => setShowChangePasswordModal(true)}
             onOpenInstallModal={() => setShowInstallModal(true)}
@@ -361,11 +415,11 @@ export function App() {
             totalPoints={stats.totalPoints}
             currentUser={user}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleNavigateTab}
             isAdmin={false}
             unreadNotificationCount={unreadNotificationCount}
             onLogout={handleLogout}
-            onOpenNotifications={() => setActiveTab('assignments')}
+            onOpenNotifications={() => handleNavigateTab('assignments')}
             onOpenProfileModal={() => setShowProfileModal(true)}
             onOpenChangePassword={() => setShowChangePasswordModal(true)}
             onOpenInstallModal={() => setShowInstallModal(true)}
@@ -379,7 +433,7 @@ export function App() {
         {activeTab !== 'dashboard' && !activeQuiz && (
           <div style={{ maxWidth: isStaff ? '1100px' : '860px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => handleNavigateTab('dashboard')}
               style={{
                 background: 'none',
                 border: 'none',
@@ -517,7 +571,7 @@ export function App() {
                   onMarkNotificationAsRead={markNotificationAsRead}
                   onAddQuiz={addCustomQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
-                  onNavigateToCreator={() => setActiveTab('creator')}
+                  onNavigateToCreator={() => handleNavigateTab('creator')}
                   onCreateStudentAccount={createStudentAccount}
                   onUpdateStudentAccount={updateStudentAccount}
                   onDeleteStudentAccount={deleteStudentAccount}
@@ -533,7 +587,7 @@ export function App() {
                     activeTab === 'assignments' ? 'grading_assignments' :
                     activeTab === 'early_warning' ? 'early_warning' : 'overview'
                   }
-                  onNavigateToAttendance={() => setActiveTab('attendance')}
+                  onNavigateToAttendance={() => handleNavigateTab('attendance')}
                   currentUser={user}
                 />
               )}
@@ -556,7 +610,7 @@ export function App() {
                   onCreateSchedule={createSchedule}
                   onUpdateSchedule={updateSchedule}
                   onDeleteSchedule={deleteSchedule}
-                  onNavigateToAttendance={() => setActiveTab('attendance')}
+                  onNavigateToAttendance={() => handleNavigateTab('attendance')}
                 />
               )}
 
@@ -613,7 +667,7 @@ export function App() {
               {activeTab === 'creator' && isStaff && (
                 <QuizCreator
                   onAddQuiz={addCustomQuiz}
-                  onSuccessNavigate={() => setActiveTab('admin')}
+                  onSuccessNavigate={() => handleNavigateTab('admin')}
                 />
               )}
 

@@ -126,6 +126,30 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
           </div>
           <div style={{ height: '18px', width: '1px', background: '#E2E8F0' }} />
           <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', letterSpacing: '0.03em' }}>GIẢNG VIÊN / QUẢN TRỊ</span>
+          <a
+            href="/admin"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSelectTab('admin');
+            }}
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              color: activeTab === 'admin' ? '#1D4ED8' : '#475569',
+              background: activeTab === 'admin' ? '#DBEAFE' : '#F1F5F9',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: `1px solid ${activeTab === 'admin' ? '#93C5FD' : '#E2E8F0'}`,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+            title="Truy cập trực tiếp Cổng Quản Trị Hệ Thống /admin"
+          >
+            🔒 /admin
+          </a>
         </div>
 
         {/* Right: AI + Notices + Bell + User */}

@@ -3,9 +3,9 @@ import { Quiz, QuizAttempt } from '../../types/quiz';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../../types/auth';
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
 import { ClassScheduleItem } from '../../types/schedule';
-import { TeacherAssignmentManager } from '../assignment/TeacherAssignmentManager';
+import { TeacherAssignmentManager } from './TeacherAssignmentManager';
 import { ScheduleCalendar } from '../schedule/ScheduleCalendar';
-import { EarlyWarningDashboard } from '../teacher/EarlyWarningDashboard';
+import { EarlyWarningDashboard } from './EarlyWarningDashboard';
 import {
   Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
@@ -701,6 +701,55 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {/* 1. OVERVIEW TAB */}
       {activeSubTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Quick Domain Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            color: '#ffffff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Shield size={20} color="#93C5FD" />
+              </div>
+              <div>
+                <div style={{ fontSize: '11.5px', color: '#BFDBFE', fontWeight: 600 }}>CỔNG QUẢN TRỊ TRỰC TIẾP CHÍNH THỨC</div>
+                <div style={{ fontSize: '14.5px', fontWeight: 800, letterSpacing: '0.01em', wordBreak: 'break-all' }}>
+                  https://hoctructuyen.tinhocgenz.io.vn/admin
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText('https://hoctructuyen.tinhocgenz.io.vn/admin');
+                soundFx.playClick();
+                alert('✓ Đã sao chép đường dẫn: https://hoctructuyen.tinhocgenz.io.vn/admin');
+              }}
+              style={{
+                background: '#ffffff',
+                border: 'none',
+                color: '#1D4ED8',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+              }}
+            >
+              <Copy size={14} /> Sao chép link /admin
+            </button>
+          </div>
+
           {/* Key Metrics Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
             <div className="card" style={{ padding: '18px', borderLeft: '4px solid #2563eb' }}>
