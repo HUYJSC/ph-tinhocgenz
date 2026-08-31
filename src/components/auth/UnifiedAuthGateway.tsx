@@ -8,6 +8,7 @@ import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { soundFx } from '../../utils/audio';
 
 interface UnifiedAuthGatewayProps {
+  initialRole?: 'student' | 'admin';
   studentAccounts?: StudentAccount[];
   onStudentLogin: (studentCode: string, password: string, selectedTrack: CurriculumTrack) => { success: boolean; user?: UserProfile; message?: string };
   onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string };
@@ -16,12 +17,19 @@ interface UnifiedAuthGatewayProps {
 }
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
+  initialRole,
   onStudentLogin,
   onAdminLogin,
   onResetPassword,
   onBackToLanding
 }) => {
-  const [role, setRole] = useState<'student' | 'admin'>('student');
+  const [role, setRole] = useState<'student' | 'admin'>(() => {
+    if (initialRole) return initialRole;
+    if (typeof window !== 'undefined' && (window.location.pathname.toLowerCase().includes('admin') || window.location.hash.toLowerCase().includes('admin'))) {
+      return 'admin';
+    }
+    return 'student';
+  });
   const [selectedTrack, setSelectedTrack] = useState<CurriculumTrack>('office-fast-3in1');
   const [adminTrackChoice, setAdminTrackChoice] = useState<CurriculumTrack | 'all'>('all');
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);

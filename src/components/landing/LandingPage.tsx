@@ -355,6 +355,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <a
+              href="/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/admin');
+                onGetStarted();
+              }}
+              style={{
+                color: '#64748B',
+                fontSize: '13px',
+                fontWeight: 600,
+                textDecoration: 'none',
+                padding: '6px 10px',
+                borderRadius: '8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                cursor: 'pointer'
+              }}
+              title="Cổng Quản Trị (/admin)"
+            >
+              <Shield size={14} /> <span className="hide-sm">Admin</span>
+            </a>
             <button
               onClick={onGetStarted}
               style={{
@@ -1341,8 +1364,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <div>
               © {new Date().getFullYear()} PH DIGITAL EDUCATION (tinhocgenz.io.vn). All rights reserved.
             </div>
-            <div>
-              Đào tạo Online toàn quốc • Hỗ trợ học viên 24/7
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span>Đào tạo Online toàn quốc • Hỗ trợ 24/7</span>
+              <span>•</span>
+              <a
+                href="/admin"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.history.pushState({}, '', '/admin');
+                  onGetStarted();
+                }}
+                style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}
+              >
+                🔒 Cổng Quản Trị (/admin)
+              </a>
             </div>
           </div>
         </div>

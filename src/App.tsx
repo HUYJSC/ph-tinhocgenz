@@ -125,12 +125,23 @@ export function App() {
     }
   });
 
-  // [BA FIX] Track whether guest has clicked through to auth
+  // [BA FIX] Track whether guest has clicked through to auth or accessed /admin
   const [showAuthGateway, setShowAuthGateway] = useState<boolean>(() => {
-    try { return localStorage.getItem('phtgz_show_auth') === 'true'; } catch { return false; }
+    try {
+      if (typeof window !== 'undefined') {
+        const p = window.location.pathname.toLowerCase();
+        if (p.includes('admin') || p.includes('login') || p.includes('auth')) return true;
+      }
+      return localStorage.getItem('phtgz_show_auth') === 'true';
+    } catch { return false; }
   });
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin')) {
+      return 'admin';
+    }
+    return 'dashboard';
+  });
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [activeMode, setActiveMode] = useState<QuizMode>('exam');
   const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
@@ -301,13 +312,19 @@ export function App() {
     return (
       <div className="auth-page-wrapper" style={{ display: "block", width: "100%", minHeight: "100vh", margin: 0, padding: 0, background: "#F8FAFC" }}>
         <UnifiedAuthGateway
+          initialRole={typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin') ? 'admin' : undefined}
           studentAccounts={studentAccounts}
           onStudentLogin={handleStudentUnifiedLogin}
           onAdminLogin={handleAdminUnifiedLogin}
           onResetPassword={resetUserPassword}
           onBackToLanding={() => {
             setShowAuthGateway(false);
-            try { localStorage.removeItem('phtgz_show_auth'); } catch { }
+            try {
+              localStorage.removeItem('phtgz_show_auth');
+              if (window.location.pathname.toLowerCase().includes('admin')) {
+                window.history.pushState({}, '', '/');
+              }
+            } catch { }
           }}
         />
       </div>
