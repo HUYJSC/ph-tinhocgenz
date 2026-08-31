@@ -41,6 +41,17 @@ export interface StudentAccount {
   programTrack: CurriculumTrack;
   enrolledTracks: CurriculumTrack[];
   assignedTeacherId?: string;
+  birthYear?: number;
+  age?: number;
+  parentName?: string;
+  parentPhone?: string;
+  parentZalo?: string;
+  reminderSettings?: {
+    daily: boolean;
+    weekly: boolean;
+    monthly: boolean;
+    preferredTime?: string;
+  };
   mustChangePassword?: boolean;
   role: 'student';
   createdAt: string;

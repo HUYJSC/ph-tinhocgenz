@@ -6,12 +6,13 @@ import { ClassScheduleItem } from '../../types/schedule';
 import { TeacherAssignmentManager } from './TeacherAssignmentManager';
 import { ScheduleCalendar } from '../schedule/ScheduleCalendar';
 import { EarlyWarningDashboard } from './EarlyWarningDashboard';
+import { ZaloNotificationManager } from './ZaloNotificationManager';
 import { EarlyWarningService } from '../../services/earlyWarningService';
 import {
   Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
-  Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock
+  Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -22,6 +23,7 @@ export type AdminPortalSubTab =
   | 'student_directory'
   | 'teachers'
   | 'early_warning'
+  | 'zalo_notifications'
   | 'exams'
   | 'question_bank'
   | 'meet_hub'
@@ -636,6 +638,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           { id: 'student_directory', label: 'Hồ sơ học viên', count: studentAccounts.length, icon: Users },
           ...(isSuperAdmin ? [{ id: 'teachers', label: 'Giảng viên', count: teacherAccounts.length, icon: UserCheck }] : []),
           { id: 'early_warning', label: 'Cảnh báo học vụ', count: EarlyWarningService.evaluateAllStudents(studentAccounts).filter(s => s.riskLevel === 'CRITICAL' || s.riskLevel === 'HIGH').length || undefined, isAlert: true, icon: AlertTriangle },
+          { id: 'zalo_notifications', label: 'Tổng đài Zalo AI', count: studentAccounts.length || undefined, icon: Bot },
           ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Phòng Google Meet', count: meetHubRooms.length, icon: Video }] : []),
           { id: 'exams', label: 'Kho đề thi', count: totalQuizzes, icon: BookOpen },
           { id: 'question_bank', label: 'Ngân hàng câu hỏi', count: totalQuestions, icon: FileSpreadsheet },
@@ -719,6 +722,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {activeSubTab === 'early_warning' && (
         <EarlyWarningDashboard
           studentAccounts={studentAccounts}
+        />
+      )}
+
+      {/* ── 0D. TỔNG ĐÀI ZALO AI & NHẮC NHỞ ĐỊNH KỲ (PHÂN THEO ĐỘ TUỔI) ── */}
+      {activeSubTab === 'zalo_notifications' && (
+        <ZaloNotificationManager
+          studentAccounts={studentAccounts}
+          onUpdateStudent={onUpdateStudentAccount}
         />
       )}
 

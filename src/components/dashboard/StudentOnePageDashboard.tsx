@@ -9,9 +9,10 @@ import {
   Play, BookOpen, RotateCcw, Award,
   Calendar, Layers, BookmarkCheck, ArrowRight, Bot, Send,
   Camera, ListTodo, Flame, Clock, TrendingUp,
-  FileText, ExternalLink, AlertTriangle, Dumbbell
+  FileText, ExternalLink, AlertTriangle, Dumbbell, Bell, CheckCircle2
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { AiZaloNotificationService } from '../../services/aiZaloNotificationService';
 
 interface StudentOnePageDashboardProps {
   currentUser: UserProfile;
@@ -936,6 +937,63 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
               </button>
             </form>
           </div>
+
+          {/* Widget 5: Lịch Nhắc Nhở Học Tập & Báo Cáo Định Kỳ Zalo AI */}
+          {(() => {
+            const studentAge = AiZaloNotificationService.calculateStudentAge(currentUser as any);
+            const isAdult = studentAge >= 25;
+            return (
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  boxShadow: '0 4px 16px -2px rgba(2, 132, 199, 0.08)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14.5px', fontWeight: 700, color: '#0369A1' }}>
+                    <Bell size={17} />
+                    <span>Lịch Nhắc Nhở & Báo Cáo AI</span>
+                  </div>
+                  <span style={{ fontSize: '11px', background: '#0284C7', color: '#FFFFFF', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                    Zalo ZNS
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '12.5px', color: '#0C4A6E', lineHeight: 1.5 }}>
+                  {isAdult ? (
+                    <span>
+                      🎯 <strong>Chế độ Người lớn ({studentAge} tuổi):</strong> Báo cáo tiến độ và gợi ý tự động hóa được gửi <strong>trực tiếp đến Zalo của bạn</strong>. Tôn trọng quyền tự chủ công việc, không gửi phụ huynh.
+                    </span>
+                  ) : (
+                    <span>
+                      👨‍👩‍👧 <strong>Kênh đồng hành ({studentAge} tuổi):</strong> Báo cáo kết quả tuần và nhắc nhở ca phụ đạo được gửi đến <strong>Phụ huynh</strong> qua Zalo để cùng hỗ trợ bạn hoàn thành mục tiêu.
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: '#075985' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckCircle2 size={13} color="#0284C7" />
+                    <span><strong>Hằng ngày (19:00):</strong> Nhắc bài tập & giữ Streak {streak} ngày</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckCircle2 size={13} color="#0284C7" />
+                    <span><strong>Hằng tuần (Chủ nhật):</strong> Bản tin phân tích kỹ năng yếu</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckCircle2 size={13} color="#0284C7" />
+                    <span><strong>Hằng tháng (Ngày 01):</strong> Đánh giá cột mốc thi MOS/IC3</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
         </div>
 

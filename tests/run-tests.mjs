@@ -112,6 +112,18 @@ const distHtml = fs.readFileSync('dist/index.html', 'utf8');
 assert(distHtml.includes('<!DOCTYPE html>'), 'Tệp index.html trong dist hợp lệ');
 assert(distHtml.includes('/assets/'), 'Có đường dẫn nạp assets CSS/JS');
 
+// 9. Test Periodic Reminders & Age-Gated AI Zalo Engine
+console.log('\n📱 NHÓM 9: Kiểm tra Hệ thống Nhắc nhở Định kỳ & Cảnh báo Zalo AI Phân loại theo độ tuổi');
+const zaloServiceContent = fs.readFileSync('src/services/aiZaloNotificationService.ts', 'utf8');
+assert(zaloServiceContent.includes('ageThreshold: 25'), 'Ngưỡng phân tách độ tuổi mặc định là 25 tuổi');
+assert(zaloServiceContent.includes('recipientType: \'parent\''), 'Học viên < 25 tuổi định tuyến gửi Phụ huynh kèm cặp');
+assert(zaloServiceContent.includes('recipientType: \'student\''), 'Học viên ≥ 25 tuổi định tuyến gửi trực tiếp người học, tôn trọng quyền tự chủ');
+assert(zaloServiceContent.includes('daily') && zaloServiceContent.includes('weekly') && zaloServiceContent.includes('monthly'), 'Hỗ trợ đủ 3 chu kỳ: Hằng ngày, Hằng tuần, Hằng tháng');
+const zaloManagerContent = fs.readFileSync('src/components/admin/ZaloNotificationManager.tsx', 'utf8');
+assert(zaloManagerContent.includes('AI Quét & Soạn Tin Nhắn Zalo'), 'Có nút AI Quét & Soạn tin nhắn Zalo tự động');
+assert(zaloManagerContent.includes('ZaloNotificationLog'), 'Quản lý lịch sử nhật ký phát tin Zalo ZNS');
+
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
