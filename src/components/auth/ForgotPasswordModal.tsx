@@ -1,57 +1,299 @@
-import React, { useState } from 'react';
-import { HelpCircle, Lock, User, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Lock, User, AlertCircle, CheckCircle2, X,
+  Mail, Send, ArrowRight, ShieldCheck, KeyRound, Clock,
+  RefreshCw, Copy, Check, Eye, EyeOff, Sparkles
+} from 'lucide-react';
+import { AccountRecoveryService, RecoveryEmailLog } from '../../services/accountRecoveryService';
+import { INITIAL_STUDENT_ACCOUNTS } from '../../hooks/useAuth';
+import { StudentAccount, TeacherAccount } from '../../types/auth';
+import { soundFx } from '../../utils/audio';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   onResetPassword: (identifier: string, newPass: string) => { success: boolean; message?: string };
+  studentAccounts?: StudentAccount[];
+  teacherAccounts?: TeacherAccount[];
 }
+
+type RecoveryStep = 'find_account' | 'enter_otp' | 'new_password' | 'success';
 
 export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   isOpen,
   onClose,
-  onResetPassword
+  onResetPassword,
+  studentAccounts,
+  teacherAccounts
 }) => {
+  const [step, setStep] = useState<RecoveryStep>('find_account');
   const [identifier, setIdentifier] = useState('');
+  const [targetAccount, setTargetAccount] = useState<{
+    name: string;
+    code: string;
+    email: string;
+    role: 'student' | 'teacher';
+    classOrSchool?: string;
+  } | null>(null);
+
+  // OTP State
+  const [otpInput, setOtpInput] = useState('');
+  const [countdown, setCountdown] = useState(600); // 10 minutes in seconds
+  const [emailLog, setEmailLog] = useState<RecoveryEmailLog | null>(null);
+  const [copiedOtp, setCopiedOtp] = useState(false);
+
+  // New Password State
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+
+  // Status & Feedback
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset states on open/close
+  useEffect(() => {
+    if (isOpen) {
+      setStep('find_account');
+      setIdentifier('');
+      setTargetAccount(null);
+      setOtpInput('');
+      setCountdown(600);
+      setEmailLog(null);
+      setNewPassword('');
+      setConfirmPassword('');
+      setErrorMsg('');
+      setSuccessMsg('');
+    }
+  }, [isOpen]);
+
+  // Countdown timer for Step 2
+  useEffect(() => {
+    let timer: any;
+    if (step === 'enter_otp' && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [step, countdown]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Format seconds to mm:ss
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Helper: Find account in passed lists or fallback
+  const findAccountByIdentifier = (idStr: string) => {
+    const clean = idStr.trim().toLowerCase();
+    if (!clean) return null;
+
+    // Load available accounts
+    let allStudents: StudentAccount[] = studentAccounts || [];
+    if (allStudents.length === 0) {
+      try {
+        const localStudents = localStorage.getItem('phtgz_student_accounts');
+        allStudents = localStudents ? JSON.parse(localStudents) : INITIAL_STUDENT_ACCOUNTS;
+      } catch {
+        allStudents = INITIAL_STUDENT_ACCOUNTS;
+      }
+    }
+
+    const matchedStudent = allStudents.find(s =>
+      s.studentCode.toLowerCase() === clean ||
+      s.name.toLowerCase() === clean ||
+      (s.email && s.email.toLowerCase() === clean) ||
+      (s.phone && s.phone.replace(/\s/g, '').includes(clean.replace(/\s/g, '')))
+    );
+
+    if (matchedStudent) {
+      return {
+        name: matchedStudent.name,
+        code: matchedStudent.studentCode,
+        email: matchedStudent.email || `${matchedStudent.studentCode.toLowerCase()}@student.tinhocgenz.edu.vn`,
+        role: 'student' as const,
+        classOrSchool: matchedStudent.schoolOrClass
+      };
+    }
+
+    // Check teacher accounts
+    let allTeachers: TeacherAccount[] = teacherAccounts || [];
+    if (allTeachers.length === 0) {
+      try {
+        const localTeachers = localStorage.getItem('phtgz_teacher_accounts');
+        if (localTeachers) allTeachers = JSON.parse(localTeachers);
+      } catch {}
+    }
+
+    const matchedTeacher = allTeachers.find(t =>
+      t.teacherCode.toLowerCase() === clean ||
+      t.name.toLowerCase() === clean ||
+      (t.email && t.email.toLowerCase() === clean) ||
+      (t.phone && t.phone.includes(clean))
+    );
+
+    if (matchedTeacher) {
+      return {
+        name: matchedTeacher.name,
+        code: matchedTeacher.teacherCode,
+        email: matchedTeacher.email || `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
+        role: 'teacher' as const,
+        classOrSchool: 'Giảng viên Trung tâm'
+      };
+    }
+
+    // Fallback if user entered a valid-looking email or student code
+    if (clean.includes('@')) {
+      return {
+        name: 'Học viên Tin học GenZ',
+        code: clean.split('@')[0].toUpperCase(),
+        email: clean,
+        role: 'student' as const,
+        classOrSchool: 'Học viên đã đăng ký'
+      };
+    }
+
+    return null;
+  };
+
+  // STEP 1: Handle Send OTP via Email
+  const handleFindAndSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
     if (!identifier.trim()) {
-      setErrorMsg('Vui lòng nhập Mã học viên, Mã giảng viên, SĐT hoặc Email!');
+      setErrorMsg('Vui lòng nhập Mã học viên hoặc Email đã đăng ký!');
+      soundFx.playClick();
       return;
     }
 
-    if (!newPassword || newPassword.length < 3) {
-      setErrorMsg('Mật khẩu mới phải có ít nhất 3 ký tự!');
+    const account = findAccountByIdentifier(identifier);
+    if (!account) {
+      setErrorMsg('Không tìm thấy tài khoản phù hợp với thông tin đã nhập. Vui lòng kiểm tra lại!');
+      soundFx.playClick();
+      return;
+    }
+
+    setTargetAccount(account);
+    setIsSubmitting(true);
+    soundFx.playClick();
+
+    setTimeout(() => {
+      const recovery = AccountRecoveryService.initiateRecovery(
+        account.code,
+        account.name,
+        account.email,
+        account.role
+      );
+
+      setIsSubmitting(false);
+      if (recovery.success) {
+        setEmailLog(recovery.emailLog);
+        setStep('enter_otp');
+        setCountdown(600);
+        setSuccessMsg(`Mã xác nhận gồm 6 chữ số đã được gửi tự động đến email ${AccountRecoveryService.maskEmail(account.email)}!`);
+        soundFx.playCorrect();
+      } else {
+        setErrorMsg('Không thể khởi tạo mã OTP, vui lòng thử lại sau!');
+      }
+    }, 600);
+  };
+
+  // STEP 2: Handle Verify OTP
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!otpInput || otpInput.trim().length !== 6) {
+      setErrorMsg('Vui lòng nhập đúng đủ 6 chữ số mã xác nhận!');
+      soundFx.playClick();
+      return;
+    }
+
+    const res = AccountRecoveryService.verifyOtp(otpInput);
+    if (res.success) {
+      soundFx.playCorrect();
+      setSuccessMsg(res.message);
+      setStep('new_password');
+    } else {
+      soundFx.playClick();
+      setErrorMsg(res.message);
+    }
+  };
+
+  // Resend OTP
+  const handleResendOtp = () => {
+    if (!targetAccount) return;
+    soundFx.playClick();
+    const recovery = AccountRecoveryService.initiateRecovery(
+      targetAccount.code,
+      targetAccount.name,
+      targetAccount.email,
+      targetAccount.role
+    );
+    if (recovery.success) {
+      setEmailLog(recovery.emailLog);
+      setCountdown(600);
+      setOtpInput('');
+      setSuccessMsg('Đã cấp và gửi lại mã xác nhận mới tới email của bạn!');
+      soundFx.playCorrect();
+    }
+  };
+
+  // Copy simulated OTP for fast testing
+  const handleCopyOtp = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedOtp(true);
+    soundFx.playClick();
+    setTimeout(() => setCopiedOtp(false), 1500);
+  };
+
+  // STEP 3: Handle Set New Password
+  const handleSaveNewPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!newPassword || newPassword.length < 6) {
+      setErrorMsg('Mật khẩu mới phải có tối thiểu 6 ký tự!');
+      soundFx.playClick();
+      return;
+    }
+
+    if (newPassword === '123' || newPassword === 'admin123') {
+      setErrorMsg('Vui lòng không đặt lại mật khẩu mặc định (123). Hãy chọn mật khẩu bảo mật riêng của bạn!');
+      soundFx.playClick();
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setErrorMsg('Mật khẩu xác nhận không trùng khớp!');
+      soundFx.playClick();
       return;
     }
 
-    const res = onResetPassword(identifier.trim(), newPassword);
+    if (!targetAccount) return;
+
+    setIsSubmitting(true);
+    const res = onResetPassword(targetAccount.code, newPassword);
+    setIsSubmitting(false);
+
     if (res.success) {
-      setSuccessMsg(res.message || 'Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.');
+      AccountRecoveryService.clearSession();
+      setStep('success');
+      soundFx.playCorrect();
       setTimeout(() => {
-        setSuccessMsg('');
-        setIdentifier('');
-        setNewPassword('');
-        setConfirmPassword('');
         onClose();
       }, 2000);
     } else {
-      setErrorMsg(res.message || 'Không tìm thấy thông tin tài khoản hợp lệ!');
+      soundFx.playClick();
+      setErrorMsg(res.message || 'Không thể cập nhật mật khẩu, vui lòng thử lại!');
     }
   };
 
@@ -60,7 +302,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'var(--bg-overlay)',
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         zIndex: 1200,
@@ -75,164 +317,512 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         className="card animate-slide-up"
         style={{
           width: '100%',
-          maxWidth: '420px',
-          background: 'var(--bg-card)',
+          maxWidth: '460px',
+          background: '#FFFFFF',
           borderRadius: '24px',
-          padding: '24px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          border: '1px solid var(--border-color)',
+          padding: '28px',
+          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+          border: '1px solid #E2E8F0',
           position: 'relative'
         }}
         onClick={e => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="btn btn-ghost"
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '16px',
+            top: '18px',
+            right: '18px',
             padding: '6px',
-            borderRadius: '50%'
+            borderRadius: '50%',
+            background: '#F1F5F9',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#64748B'
           }}
+          title="Đóng"
         >
           <X size={18} />
         </button>
 
-        {/* Modal Header */}
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        {/* Modal Top Branding & Icon */}
+        <div style={{ textAlign: 'center', marginBottom: '22px' }}>
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
-            background: 'rgba(245, 158, 11, 0.12)',
-            color: '#f59e0b',
+            width: '52px',
+            height: '52px',
+            borderRadius: '16px',
+            background: '#EFF6FF',
+            color: '#2563EB',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '10px'
+            marginBottom: '12px',
+            border: '1px solid #BFDBFE'
           }}>
-            <HelpCircle size={24} />
+            {step === 'enter_otp' ? (
+              <Mail size={26} />
+            ) : step === 'new_password' ? (
+              <KeyRound size={26} />
+            ) : step === 'success' ? (
+              <CheckCircle2 size={26} color="#10B981" />
+            ) : (
+              <ShieldCheck size={26} />
+            )}
           </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            Quên Mật Khẩu
+
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+            {step === 'enter_otp'
+              ? 'Nhập Mã Xác Nhận Email'
+              : step === 'new_password'
+              ? 'Thiết Lập Mật Khẩu Mới'
+              : step === 'success'
+              ? 'Khôi Phục Thành Công'
+              : 'Tự Khôi Phục Tài Khoản'}
           </h3>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            Nhập Mã số (HV/GV), SĐT hoặc Email để đặt lại mật khẩu mới
+
+          <p style={{ fontSize: '13px', color: '#64748B', margin: '6px 0 0', lineHeight: 1.5 }}>
+            {step === 'enter_otp'
+              ? `Hệ thống đã tự động gửi mã bảo mật 6 chữ số đến hộp thư của bạn.`
+              : step === 'new_password'
+              ? `Tài khoản ${targetAccount?.name} (${targetAccount?.code}) đã được xác thực an toàn.`
+              : step === 'success'
+              ? 'Mật khẩu tài khoản của bạn đã được cập nhật thành công!'
+              : 'Hệ thống sẽ tự động sinh mã xác nhận OTP và gửi đến Email của bạn để xác thực.'}
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {errorMsg && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 12px',
-              borderRadius: '10px',
-              background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
-              color: '#ef4444',
-              fontSize: '0.8rem',
-              fontWeight: 600
-            }}>
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
+        {/* Error / Feedback Banner */}
+        {errorMsg && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            background: '#FEF2F2',
+            border: '1px solid #FECACA',
+            color: '#DC2626',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            marginBottom: '16px'
+          }}>
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
-          {successMsg && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 12px',
-              borderRadius: '10px',
-              background: 'rgba(16, 185, 129, 0.08)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              color: '#10b981',
-              fontSize: '0.8rem',
-              fontWeight: 700
-            }}>
-              <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-              <span>{successMsg}</span>
-            </div>
-          )}
+        {successMsg && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            background: '#ECFDF5',
+            border: '1px solid #A7F3D0',
+            color: '#059669',
+            fontSize: '12.5px',
+            fontWeight: 700,
+            marginBottom: '16px'
+          }}>
+            <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+            <span>{successMsg}</span>
+          </div>
+        )}
 
-          {/* Identifier Input */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-              Mã Học Viên / Mã GV / SĐT / Email
-            </label>
-            <div style={{ position: 'relative' }}>
-              <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        {/* ── BƯỚC 1: TÌM KIẾM TÀI KHOẢN & GỬI OTP EMAIL ── */}
+        {step === 'find_account' && (
+          <form onSubmit={handleFindAndSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                Mã học viên hoặc Email đăng ký
+              </label>
+              <div style={{ position: 'relative' }}>
+                <User size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input
+                  type="text"
+                  placeholder="Ví dụ: THGZ01 hoặc email@gmail.com"
+                  value={identifier}
+                  onChange={e => { setIdentifier(e.target.value); setErrorMsg(''); }}
+                  style={{
+                    width: '100%',
+                    height: '44px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    fontSize: '13.5px',
+                    paddingLeft: '38px',
+                    paddingRight: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  autoFocus
+                  required
+                />
+              </div>
+              <p style={{ fontSize: '11.5px', color: '#64748B', margin: '6px 0 0' }}>
+                💡 Gợi ý nhanh cho học viên khóa mới: Nhập mã <strong>THGZ01</strong>, <strong>THGZ02</strong>...
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  flex: 1,
+                  height: '44px',
+                  borderRadius: '12px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '13.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  flex: 2,
+                  height: '44px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                  color: '#FFFFFF',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
+                }}
+              >
+                <span>{isSubmitting ? 'Đang kiểm tra...' : 'Gửi Mã Xác Nhận Qua Email'}</span>
+                <Send size={15} />
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* ── BƯỚC 2: NHẬP MÃ OTP 6 SỐ TỰ ĐỘNG GỬI ── */}
+        {step === 'enter_otp' && targetAccount && (
+          <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Account & Email Summary Box */}
+            <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '12px 14px', border: '1px solid #E2E8F0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                  {targetAccount.name} ({targetAccount.code})
+                </span>
+                <span style={{ fontSize: '11px', background: '#DBEAFE', color: '#1E40AF', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                  {targetAccount.role === 'student' ? 'Học viên' : 'Giảng viên'}
+                </span>
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Mail size={13} color="#2563EB" />
+                <span>Email nhận mã: <strong>{AccountRecoveryService.maskEmail(targetAccount.email)}</strong></span>
+              </div>
+            </div>
+
+            {/* Quick OTP Preview (Development & Practical Test Simulator) */}
+            {emailLog && (
+              <div style={{
+                background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+                border: '1px dashed #3B82F6',
+                borderRadius: '12px',
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={16} color="#2563EB" />
+                  <div style={{ fontSize: '12px', color: '#1E40AF' }}>
+                    Mã xác nhận của bạn: <strong style={{ fontSize: '14px', letterSpacing: '2px', color: '#1D4ED8' }}>{emailLog.otpCode}</strong>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyOtp(emailLog.otpCode)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: '#FFFFFF',
+                    border: '1px solid #BFDBFE',
+                    color: '#2563EB',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedOtp ? <Check size={13} color="#10B981" /> : <Copy size={13} />}
+                  <span>{copiedOtp ? 'Đã chép' : 'Dán mã'}</span>
+                </button>
+              </div>
+            )}
+
+            {/* OTP Input Field */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12.5px', fontWeight: 700, color: '#334155' }}>
+                  Mã OTP 6 chữ số
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: countdown > 60 ? '#2563EB' : '#EF4444', fontWeight: 700 }}>
+                  <Clock size={13} />
+                  <span>{formatTime(countdown)}</span>
+                </div>
+              </div>
               <input
                 type="text"
-                placeholder="VD: THGZ01, GV04, 0988776655..."
-                value={identifier}
-                onChange={e => setIdentifier(e.target.value)}
-                style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', minHeight: '40px', borderRadius: '10px' }}
-                required
+                maxLength={6}
+                value={otpInput}
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setOtpInput(val);
+                  setErrorMsg('');
+                }}
+                placeholder="------"
+                style={{
+                  width: '100%',
+                  height: '52px',
+                  borderRadius: '12px',
+                  border: '2px solid #3B82F6',
+                  background: '#FFFFFF',
+                  fontSize: '24px',
+                  fontWeight: 800,
+                  textAlign: 'center',
+                  letterSpacing: '10px',
+                  color: '#1D4ED8',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+                autoFocus
               />
             </div>
-          </div>
 
-          {/* New Password */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-              Mật khẩu mới muốn đặt
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                type="password"
-                placeholder="Nhập mật khẩu mới..."
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', minHeight: '40px', borderRadius: '10px' }}
-                required
-              />
+            {/* Countdown / Resend Action */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#2563EB',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                <RefreshCw size={13} />
+                <span>Chưa nhận được email? Gửi lại mã mới</span>
+              </button>
             </div>
-          </div>
 
-          {/* Confirm New Password */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-              Xác nhận mật khẩu mới
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                type="password"
-                placeholder="Nhập lại mật khẩu mới..."
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', minHeight: '40px', borderRadius: '10px' }}
-                required
-              />
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setStep('find_account')}
+                style={{
+                  flex: 1,
+                  height: '44px',
+                  borderRadius: '12px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '13.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Quay Lại
+              </button>
+              <button
+                type="submit"
+                style={{
+                  flex: 2,
+                  height: '44px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
+                }}
+              >
+                <span>Xác Thực Mã OTP</span>
+                <ArrowRight size={16} />
+              </button>
             </div>
-          </div>
+          </form>
+        )}
 
-          {/* Buttons */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-secondary"
-              style={{ flex: 1, padding: '10px', borderRadius: '10px' }}
-            >
-              Hủy Bỏ
-            </button>
+        {/* ── BƯỚC 3: THIẾT LẬP MẬT KHẨU MỚI ── */}
+        {step === 'new_password' && targetAccount && (
+          <form onSubmit={handleSaveNewPassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ background: '#ECFDF5', borderRadius: '12px', padding: '10px 14px', border: '1px solid #A7F3D0', color: '#059669', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <CheckCircle2 size={16} />
+              <span>Đã xác minh email thành công. Mời bạn đặt mật khẩu mới:</span>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                Mật khẩu mới (Tối thiểu 6 ký tự)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input
+                  type={showNewPass ? 'text' : 'password'}
+                  placeholder="Nhập mật khẩu mới..."
+                  value={newPassword}
+                  onChange={e => { setNewPassword(e.target.value); setErrorMsg(''); }}
+                  style={{
+                    width: '100%',
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    fontSize: '13.5px',
+                    paddingLeft: '38px',
+                    paddingRight: '42px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  autoFocus
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPass(!showNewPass)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                >
+                  {showNewPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                Xác nhận mật khẩu mới
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input
+                  type={showConfirmPass ? 'text' : 'password'}
+                  placeholder="Nhập lại mật khẩu mới..."
+                  value={confirmPassword}
+                  onChange={e => { setConfirmPassword(e.target.value); setErrorMsg(''); }}
+                  style={{
+                    width: '100%',
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    fontSize: '13.5px',
+                    paddingLeft: '38px',
+                    paddingRight: '42px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPass(!showConfirmPass)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                >
+                  {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit button */}
             <button
               type="submit"
-              className="btn btn-primary"
-              style={{ flex: 2, padding: '10px', fontWeight: 700, borderRadius: '10px' }}
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                height: '44px',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: '#FFFFFF',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+                marginTop: '6px'
+              }}
             >
-              Xác Nhận Đổi Mật Khẩu
+              {isSubmitting ? 'Đang lưu...' : 'Lưu Mật Khẩu & Đăng Nhập'}
             </button>
+          </form>
+        )}
+
+        {/* ── BƯỚC 4: THÀNH CÔNG ── */}
+        {step === 'success' && (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: '#ECFDF5',
+              color: '#10B981',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '16px'
+            }}>
+              <Check size={36} />
+            </div>
+            <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A', margin: '0 0 8px' }}>
+              Đặt Lại Mật Khẩu Thành Công!
+            </h4>
+            <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.5, margin: 0 }}>
+              Bạn có thể sử dụng mật khẩu mới để đăng nhập ngay bây giờ.
+            </p>
           </div>
-        </form>
+        )}
       </div>
     </div>
   );

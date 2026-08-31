@@ -123,6 +123,22 @@ const zaloManagerContent = fs.readFileSync('src/components/admin/ZaloNotificatio
 assert(zaloManagerContent.includes('AI Quét & Soạn Tin Nhắn Zalo'), 'Có nút AI Quét & Soạn tin nhắn Zalo tự động');
 assert(zaloManagerContent.includes('ZaloNotificationLog'), 'Quản lý lịch sử nhật ký phát tin Zalo ZNS');
 
+// 10. Test First-time Password Change & Self-Recovery via Email OTP
+console.log('\n🔑 NHÓM 10: Kiểm tra Đổi mật khẩu lần đầu chuẩn SEC & Tự khôi phục tài khoản qua Email OTP');
+const changePassContent = fs.readFileSync('src/components/auth/ChangePasswordModal.tsx', 'utf8');
+assert(!changePassContent.includes('(Mặc định: 123)'), 'Đã xóa hoàn toàn nhãn lộ mật khẩu mặc định (Mặc định: 123)');
+assert(changePassContent.includes('length < 6'), 'Nâng cấp tiêu chuẩn mật khẩu tối thiểu 6 ký tự');
+assert(changePassContent.includes('showOldPass') && changePassContent.includes('showNewPass') && changePassContent.includes('showConfirmPass'), 'Có nút mắt Hiện/Ẩn riêng biệt cho từng trường');
+assert(changePassContent.includes('Gợi ý mật khẩu mạnh'), 'Có nút AI/Công cụ gợi ý mật khẩu mạnh an toàn');
+
+const recoveryServiceContent = fs.readFileSync('src/services/accountRecoveryService.ts', 'utf8');
+assert(recoveryServiceContent.includes('generateRandomOtp'), 'Có hàm tự động sinh mã xác nhận OTP 6 số ngẫu nhiên');
+assert(recoveryServiceContent.includes('maskEmail'), 'Có hàm che giấu địa chỉ email bảo vệ thông tin cá nhân');
+assert(recoveryServiceContent.includes('MAX_OTP_ATTEMPTS'), 'Có cơ chế giới hạn lần thử chống Brute-force');
+
+const forgotModalContent = fs.readFileSync('src/components/auth/ForgotPasswordModal.tsx', 'utf8');
+assert(forgotModalContent.includes('enter_otp') && forgotModalContent.includes('new_password'), 'ForgotPasswordModal hỗ trợ quy trình Wizard đa bước qua Email OTP');
+assert(forgotModalContent.includes('countdown'), 'Có bộ đếm ngược thời gian hết hạn mã xác nhận');
 
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);

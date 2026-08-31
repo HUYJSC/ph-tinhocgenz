@@ -18,6 +18,7 @@ interface UnifiedAuthGatewayProps {
 
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   initialRole,
+  studentAccounts,
   onStudentLogin,
   onAdminLogin,
   onResetPassword,
@@ -744,6 +745,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
         onResetPassword={onResetPassword || (() => ({ success: false, message: 'Tính năng chưa sẵn sàng' }))}
+        studentAccounts={studentAccounts}
       />
     </div>
   );
