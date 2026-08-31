@@ -193,34 +193,41 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               <ArrowLeft size={14} /> Quay lại Trang chủ
             </button>
 
-            {/* Brand Logo & Title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
-              <div style={{
-                background: '#FFFFFF',
-                padding: '6px 12px',
-                borderRadius: '14px',
-                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <img
-                  src="/LogoPH.png"
-                  alt="PH DIGITAL EDUCATION"
-                  style={{
-                    height: '52px',
-                    width: 'auto',
-                    objectFit: 'contain'
-                  }}
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
-                />
-              </div>
+            {/* Brand Logo & Title - Pure Transparent, High-Contrast White & Gold (Bật Tông) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
+              <img
+                src="/LogoPH-mark-light.png"
+                alt="PH DIGITAL EDUCATION"
+                style={{
+                  height: '62px',
+                  width: '62px',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 4px 14px rgba(0, 0, 0, 0.35))',
+                  flexShrink: 0
+                }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/LogoPH.png'; }}
+              />
               <div>
-                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', margin: 0, lineHeight: 1.25 }}>
+                <h1 style={{
+                  fontSize: '20px',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  letterSpacing: '-0.02em',
+                  margin: 0,
+                  lineHeight: 1.2,
+                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+                }}>
                   PH DIGITAL EDUCATION
                 </h1>
-                <span style={{ fontSize: '11.5px', color: '#BFDBFE', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                <span style={{
+                  display: 'inline-block',
+                  marginTop: '4px',
+                  fontSize: '11.5px',
+                  color: '#FDE047',
+                  fontWeight: 800,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase'
+                }}>
                   CỔNG KHẢO THÍ & HỌC TẬP LMS
                 </span>
               </div>
