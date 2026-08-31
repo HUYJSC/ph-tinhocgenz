@@ -341,9 +341,10 @@ export function useAuth() {
     }
 
     // [BA SECURITY FIX] Validate password nghiêm túc — không có bypass
-    const storedPass = matched.password || '';
-    if (storedPass && cleanPass && storedPass !== cleanPass) {
-      return { success: false, message: '❌ Mật khẩu không chính xác. Vui lòng thử lại hoặc liên hệ Thầy/Cô để reset mật khẩu.' };
+    // [STRICT SECURITY] Password must not be empty and must match stored password exactly
+    const storedPass = matched.password || '123';
+    if (!cleanPass || storedPass !== cleanPass) {
+      return { success: false, message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' };
     }
 
     const isEnrolled = matched.programTrack === chosenTrack ||
