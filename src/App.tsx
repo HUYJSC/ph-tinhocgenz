@@ -288,7 +288,7 @@ export function App() {
   if (!isSessionActive) {
     if (!showAuthGateway) {
       return (
-        <div className={`app-container ${theme}`}>
+        <div className="landing-page-wrapper" style={{ display: "block", width: "100%", minHeight: "100vh", margin: 0, padding: 0, background: "#070B14" }}>
           <LandingPage
             onGetStarted={() => {
               setShowAuthGateway(true);
@@ -299,7 +299,7 @@ export function App() {
       );
     }
     return (
-      <div className={`app-container ${theme}`}>
+      <div className="auth-page-wrapper" style={{ display: "block", width: "100%", minHeight: "100vh", margin: 0, padding: 0, background: "#070B14" }}>
         <UnifiedAuthGateway
           studentAccounts={studentAccounts}
           onStudentLogin={handleStudentUnifiedLogin}
