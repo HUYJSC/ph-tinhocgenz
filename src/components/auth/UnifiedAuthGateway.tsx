@@ -193,36 +193,36 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               <ArrowLeft size={14} /> Quay lại Trang chủ
             </button>
 
-            {/* Official Seamless White Logo & Portal Badge */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+            {/* Brand Logo & Title */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
+              <div style={{
+                background: '#FFFFFF',
+                padding: '6px 12px',
+                borderRadius: '14px',
+                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
                 <img
-                  src="/logo-dark.png"
+                  src="/LogoPH.png"
                   alt="PH DIGITAL EDUCATION"
                   style={{
                     height: '52px',
                     width: 'auto',
-                    maxWidth: '240px',
                     objectFit: 'contain'
                   }}
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/LogoPH.png'; }}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                 />
               </div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 12px',
-                borderRadius: '9999px',
-                background: 'rgba(255, 255, 255, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: '#BFDBFE',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase'
-              }}>
-                CỔNG KHẢO THÍ & HỌC TẬP LMS
+              <div>
+                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', margin: 0, lineHeight: 1.25 }}>
+                  PH DIGITAL EDUCATION
+                </h1>
+                <span style={{ fontSize: '11.5px', color: '#BFDBFE', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  CỔNG KHẢO THÍ & HỌC TẬP LMS
+                </span>
               </div>
             </div>
 
