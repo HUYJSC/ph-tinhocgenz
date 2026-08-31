@@ -175,7 +175,6 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </div>
           </div>
 
-          {/* Section 1: Actions */}
           <button
             onClick={() => handleAction(onOpenProfile)}
             className="btn-dropdown-item"
@@ -184,6 +183,22 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             <User size={15} color="var(--brand)" />
             <span>Hồ sơ cá nhân</span>
           </button>
+
+          {currentUser.role === 'admin' && (
+            <button
+              onClick={() => handleAction(() => { window.location.href = '/admin'; })}
+              className="btn-dropdown-item"
+              style={{
+                ...dropdownItemStyle,
+                color: '#b45309',
+                background: 'rgba(245, 158, 11, 0.08)',
+                fontWeight: 700
+              }}
+            >
+              <Shield size={15} color="#d97706" />
+              <span>Cổng Quản Trị (/admin)</span>
+            </button>
+          )}
 
           {onOpenChangePassword && (
             <button

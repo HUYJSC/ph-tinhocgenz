@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Bot, FileText, BookOpen, ClipboardList, Settings2, ChevronDown } from 'lucide-react';
+import { Bell, Bot, FileText, BookOpen, ClipboardList, Settings2, ChevronDown, GraduationCap } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { ActiveTab } from './Sidebar';
@@ -119,98 +119,32 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
     >
       {/* ── TẦNG 1: THƯƠNG HIỆU & CONTROLS ── */}
       <div style={{ height: '52px', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9' }}>
-        {/* Left: Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ height: '38px', maxWidth: '220px', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-horizontal.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
+        {/* Left: Brand Identity & Portal Scope (SEC & UI/UX Master Clean) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ height: '38px', display: 'flex', alignItems: 'center' }}>
+            <img src="/logo-horizontal.png" alt="PH DIGITAL EDUCATION" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           </div>
-          <div style={{ height: '18px', width: '1px', background: '#E2E8F0' }} />
-          {currentUser.role === 'admin' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', background: '#FEF3C7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #FDE68A', letterSpacing: '0.02em' }}>
-                QUẢN TRỊ VIÊN
-              </span>
-              <a
-                href="/admin"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSelectTab('admin');
-                }}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: activeTab === 'admin' ? '#1D4ED8' : '#475569',
-                  background: activeTab === 'admin' ? '#DBEAFE' : '#F1F5F9',
-                  padding: '2px 8px',
-                  borderRadius: '6px',
-                  border: `1px solid ${activeTab === 'admin' ? '#93C5FD' : '#E2E8F0'}`,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.15s ease'
-                }}
-                title="Cổng Quản Trị Hệ Thống /admin"
-              >
-                🔒 /admin
-              </a>
-              <a
-                href="/teacher"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSelectTab('schedule');
-                }}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: activeTab === 'schedule' ? '#1D4ED8' : '#475569',
-                  background: activeTab === 'schedule' ? '#DBEAFE' : '#F1F5F9',
-                  padding: '2px 8px',
-                  borderRadius: '6px',
-                  border: `1px solid ${activeTab === 'schedule' ? '#93C5FD' : '#E2E8F0'}`,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Bàn làm việc Giảng viên /teacher"
-              >
-                /teacher
-              </a>
-              <a
-                href="/student"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSelectTab('dashboard');
-                }}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: activeTab === 'dashboard' ? '#1D4ED8' : '#475569',
-                  background: activeTab === 'dashboard' ? '#DBEAFE' : '#F1F5F9',
-                  padding: '2px 8px',
-                  borderRadius: '6px',
-                  border: `1px solid ${activeTab === 'dashboard' ? '#93C5FD' : '#E2E8F0'}`,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Xem giao diện Học viên /student"
-              >
-                /student
-              </a>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#1D4ED8', background: '#DBEAFE', padding: '3px 8px', borderRadius: '6px', border: '1px solid #BFDBFE', letterSpacing: '0.02em' }}>
-                GIẢNG VIÊN ĐỨNG LỚP
-              </span>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: '#1D4ED8', background: '#EFF6FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #DBEAFE' }}>
-                /teacher
-              </span>
-            </div>
-          )}
+          <div style={{ height: '22px', width: '1px', background: '#E2E8F0' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              style={{
+                fontSize: '11.5px',
+                fontWeight: 800,
+                color: '#1E40AF',
+                background: '#EFF6FF',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                border: '1px solid #BFDBFE',
+                letterSpacing: '0.04em',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <GraduationCap size={13} color="#2563EB" />
+              <span>HỌC VỤ & GIẢNG DẠY</span>
+            </span>
+          </div>
         </div>
 
         {/* Right: AI + Notices + Bell + User */}
