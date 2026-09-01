@@ -1,19 +1,22 @@
-// PH DIGITAL EDUCATION Service Worker
-const CACHE_NAME = 'ph-eduquest-v1';
-const ASSETS_TO_CACHE = [
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v2)
+const CACHE_NAME = 'ph-eduquest-v2';
+const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
-  '/LogoPH.png',
+  '/logo.png',
   '/icon-192.png',
-  '/icon.png'
+  '/icon.png',
+  '/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('[SW] Pre-cache warning:', err);
+      });
     })
   );
   self.skipWaiting();
@@ -32,14 +35,34 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+
+  // Không cache các endpoint API backend trực tiếp
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
+      // Stale-While-Revalidate cho static assets (JS, CSS, hình ảnh, font chữ)
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Fallback khi offline cho navigation
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+        });
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

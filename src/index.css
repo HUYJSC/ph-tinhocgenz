@@ -656,4 +656,29 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ── 9. WCAG 2.1 AA ACCESSIBILITY & MOBILE TOUCH TARGET STANDARDS ── */
+@media (pointer: coarse) {
+  button,
+  .btn,
+  .mobile-bottom-nav button,
+  .interactive-touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand, #2563eb);
+  outline-offset: 2px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 

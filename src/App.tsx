@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useAppStorage } from './hooks/useLocalStorage';
 import { useAuth } from './hooks/useAuth';
 import { useAssignmentStorage } from './hooks/useAssignmentStorage';
@@ -7,40 +7,52 @@ import { useScheduleStorage } from './hooks/useScheduleStorage';
 import { Header } from './components/layout/Header';
 import { type ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
-import { QuizCatalog } from './components/quiz/QuizCatalog';
-import { QuizRunner } from './components/quiz/QuizRunner';
-import { QuizResult } from './components/quiz/QuizResult';
-import { FlashcardDeck } from './components/flashcards/FlashcardDeck';
-import { Dashboard } from './components/analytics/Dashboard';
-import { QuizCreator } from './components/creator/QuizCreator';
-import { BookmarkedQuestions } from './components/bookmarks/BookmarkedQuestions';
-import { AdminPortal, AttendanceManager, TeacherAcademicPortal, StandaloneAdminApp } from './components/admin';
-import { StudentAssignmentView } from './components/assignment/StudentAssignmentView';
-import { StudentAttendanceDashboard } from './components/attendance/StudentAttendanceDashboard';
-import { ScheduleCalendar } from './components/schedule/ScheduleCalendar';
-import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
-import { CameraQRScanner } from './components/attendance/CameraQRScanner';
-import { UnifiedAuthGateway } from './components/auth/UnifiedAuthGateway';
-import { PWAInstallModal } from './components/ui/PWAInstallModal';
-import { UserProfileModal } from './components/auth/UserProfileModal';
-import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
-import { StudentOnePageDashboard } from './components/dashboard/StudentOnePageDashboard';
 import { TeacherAcademicHeader } from './components/layout/TeacherAcademicHeader';
-import { LearningPathRoadmap } from './components/learning-path/LearningPathRoadmap';
-import { SmartReviewModal } from './components/smart-review/SmartReviewModal';
-import { AITutorDrawer } from './components/ai-tutor/AITutorDrawer';
-import { DiagnosticOnboardingModal } from './components/onboarding/DiagnosticOnboardingModal';
-import { CertificateVerificationModal } from './components/certificates/CertificateVerificationModal';
-import { DigitalCertificate, DiagnosticResult } from './types/edtech';
+import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
 import { CertificateService } from './services/certificateService';
 import { AnalyticsService } from './services/analyticsService';
-import { Quiz, QuizAttempt } from './types/quiz';
-import { QuizMode } from './hooks/useQuizEngine';
-import { CurriculumTrack } from './types/auth';
-import { AcademicNoticeModal } from './components/modals/AcademicNoticeModal';
-import { AcademicFeedbackModal } from './components/modals/AcademicFeedbackModal';
-import { LandingPage } from './components/landing/LandingPage';
-import { PracticeBySkill } from './components/practice/PracticeBySkill';
+import type { DigitalCertificate, DiagnosticResult } from './types/edtech';
+import type { Quiz, QuizAttempt } from './types/quiz';
+import type { QuizMode } from './hooks/useQuizEngine';
+import type { CurriculumTrack } from './types/auth';
+
+// ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
+const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
+const UnifiedAuthGateway = lazy(() => import('./components/auth/UnifiedAuthGateway').then(m => ({ default: m.UnifiedAuthGateway })));
+const StudentOnePageDashboard = lazy(() => import('./components/dashboard/StudentOnePageDashboard').then(m => ({ default: m.StudentOnePageDashboard })));
+const StandaloneAdminApp = lazy(() => import('./components/admin/StandaloneAdminApp').then(m => ({ default: m.StandaloneAdminApp })));
+const TeacherAcademicPortal = lazy(() => import('./components/admin/TeacherAcademicPortal').then(m => ({ default: m.TeacherAcademicPortal })));
+const AdminPortal = lazy(() => import('./components/admin/AdminPortal').then(m => ({ default: m.AdminPortal })));
+const AttendanceManager = lazy(() => import('./components/admin/AttendanceManager').then(m => ({ default: m.AttendanceManager })));
+const PracticeBySkill = lazy(() => import('./components/practice/PracticeBySkill').then(m => ({ default: m.PracticeBySkill })));
+const QuizRunner = lazy(() => import('./components/quiz/QuizRunner').then(m => ({ default: m.QuizRunner })));
+const QuizResult = lazy(() => import('./components/quiz/QuizResult').then(m => ({ default: m.QuizResult })));
+const QuizCatalog = lazy(() => import('./components/quiz/QuizCatalog').then(m => ({ default: m.QuizCatalog })));
+const QuizCreator = lazy(() => import('./components/creator/QuizCreator').then(m => ({ default: m.QuizCreator })));
+const BookmarkedQuestions = lazy(() => import('./components/bookmarks/BookmarkedQuestions').then(m => ({ default: m.BookmarkedQuestions })));
+const FlashcardDeck = lazy(() => import('./components/flashcards/FlashcardDeck').then(m => ({ default: m.FlashcardDeck })));
+const Dashboard = lazy(() => import('./components/analytics/Dashboard').then(m => ({ default: m.Dashboard })));
+const LearningPathRoadmap = lazy(() => import('./components/learning-path/LearningPathRoadmap').then(m => ({ default: m.LearningPathRoadmap })));
+const StudentAssignmentView = lazy(() => import('./components/assignment/StudentAssignmentView').then(m => ({ default: m.StudentAssignmentView })));
+const StudentAttendanceDashboard = lazy(() => import('./components/attendance/StudentAttendanceDashboard').then(m => ({ default: m.StudentAttendanceDashboard })));
+const ScheduleCalendar = lazy(() => import('./components/schedule/ScheduleCalendar').then(m => ({ default: m.ScheduleCalendar })));
+const CameraQRScanner = lazy(() => import('./components/attendance/CameraQRScanner').then(m => ({ default: m.CameraQRScanner })));
+const PWAInstallModal = lazy(() => import('./components/ui/PWAInstallModal').then(m => ({ default: m.PWAInstallModal })));
+const UserProfileModal = lazy(() => import('./components/auth/UserProfileModal').then(m => ({ default: m.UserProfileModal })));
+const ChangePasswordModal = lazy(() => import('./components/auth/ChangePasswordModal').then(m => ({ default: m.ChangePasswordModal })));
+const SmartReviewModal = lazy(() => import('./components/smart-review/SmartReviewModal').then(m => ({ default: m.SmartReviewModal })));
+const AITutorDrawer = lazy(() => import('./components/ai-tutor/AITutorDrawer').then(m => ({ default: m.AITutorDrawer })));
+const DiagnosticOnboardingModal = lazy(() => import('./components/onboarding/DiagnosticOnboardingModal').then(m => ({ default: m.DiagnosticOnboardingModal })));
+const CertificateVerificationModal = lazy(() => import('./components/certificates/CertificateVerificationModal').then(m => ({ default: m.CertificateVerificationModal })));
+const AcademicNoticeModal = lazy(() => import('./components/modals/AcademicNoticeModal').then(m => ({ default: m.AcademicNoticeModal })));
+const AcademicFeedbackModal = lazy(() => import('./components/modals/AcademicFeedbackModal').then(m => ({ default: m.AcademicFeedbackModal })));
+
+export const PageLoadingFallback = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px', color: '#2563eb' }}>
+    <div style={{ width: '40px', height: '40px', border: '3px solid rgba(37,99,235,0.15)', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <div style={{ fontSize: '14px', fontWeight: 500, color: '#64748b' }}>Đang nạp phân hệ PH EDU...</div>
+  </div>
+);
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
@@ -53,7 +65,7 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
   if (p.includes('/admin') || h.includes('admin')) return { route: 'admin' };
   if (p.includes('/teacher') || h.includes('teacher')) return { route: 'teacher' };
   if (p.includes('/academic') || h.includes('academic')) return { route: 'academic' };
-  if (p.includes('/student') || h.includes('student')) return { route: 'student' };
+  if (p.includes('/app') || p.includes('/student') || h.includes('app') || h.includes('student')) return { route: 'student' };
   if (p.includes('/verify') || h.includes('verify')) {
     const parts = p.split('/verify/');
     return { route: 'verify', param: parts[1] ? parts[1].replace(/\/$/, '') : '' };
@@ -418,54 +430,56 @@ export function App() {
   const isCurrentlyOnAdmin = getAppRoute().route === 'admin' || (typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin'));
   if (isCurrentlyOnAdmin) {
     return (
-      <StandaloneAdminApp
-        currentUser={user}
-        isSessionActive={isSessionActive}
-        quizzes={allQuizzes}
-        attempts={stats.history}
-        studentAccounts={studentAccounts}
-        teacherAccounts={teacherAccounts}
-        schedules={schedules}
-        assignments={assignments}
-        submissions={submissions}
-        notifications={notifications}
-        googleDriveConfig={googleDriveConfig}
-        onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
-        onCreateAssignment={createAssignment}
-        onDeleteAssignment={deleteAssignment}
-        onToggleOpen={toggleAssignmentOpen}
-        onGradeSubmission={gradeSubmission}
-        onMarkNotificationAsRead={markNotificationAsRead}
-        onAddQuiz={addCustomQuiz}
-        onDeleteCustomQuiz={deleteCustomQuiz}
-        onNavigateToCreator={() => {
-          setActiveTab('creator');
-        }}
-        onCreateStudentAccount={createStudentAccount}
-        onUpdateStudentAccount={updateStudentAccount}
-        onDeleteStudentAccount={deleteStudentAccount}
-        onCreateTeacherAccount={createTeacherAccount}
-        onUpdateTeacherAccount={updateTeacherAccount}
-        onDeleteTeacherAccount={deleteTeacherAccount}
-        onCreateSchedule={createSchedule}
-        onUpdateSchedule={updateSchedule}
-        onDeleteSchedule={deleteSchedule}
-        onLoginAsAdmin={(pass, name) => {
-          const res = loginAsStaff(pass, name, 'all');
-          if (res.success && res.user) {
-            setIsSessionActive(true);
-            try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
-          }
-          return res;
-        }}
-        onLogout={handleLogout}
-        onBackToStudentPortal={() => {
-          if (typeof window !== 'undefined') {
-            window.history.pushState(null, '', '/');
-          }
-          setActiveTab('dashboard');
-        }}
-      />
+      <Suspense fallback={<PageLoadingFallback />}>
+        <StandaloneAdminApp
+          currentUser={user}
+          isSessionActive={isSessionActive}
+          quizzes={allQuizzes}
+          attempts={stats.history}
+          studentAccounts={studentAccounts}
+          teacherAccounts={teacherAccounts}
+          schedules={schedules}
+          assignments={assignments}
+          submissions={submissions}
+          notifications={notifications}
+          googleDriveConfig={googleDriveConfig}
+          onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
+          onCreateAssignment={createAssignment}
+          onDeleteAssignment={deleteAssignment}
+          onToggleOpen={toggleAssignmentOpen}
+          onGradeSubmission={gradeSubmission}
+          onMarkNotificationAsRead={markNotificationAsRead}
+          onAddQuiz={addCustomQuiz}
+          onDeleteCustomQuiz={deleteCustomQuiz}
+          onNavigateToCreator={() => {
+            setActiveTab('creator');
+          }}
+          onCreateStudentAccount={createStudentAccount}
+          onUpdateStudentAccount={updateStudentAccount}
+          onDeleteStudentAccount={deleteStudentAccount}
+          onCreateTeacherAccount={createTeacherAccount}
+          onUpdateTeacherAccount={updateTeacherAccount}
+          onDeleteTeacherAccount={deleteTeacherAccount}
+          onCreateSchedule={createSchedule}
+          onUpdateSchedule={updateSchedule}
+          onDeleteSchedule={deleteSchedule}
+          onLoginAsAdmin={(pass, name) => {
+            const res = loginAsStaff(pass, name, 'all');
+            if (res.success && res.user) {
+              setIsSessionActive(true);
+              try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+            }
+            return res;
+          }}
+          onLogout={handleLogout}
+          onBackToStudentPortal={() => {
+            if (typeof window !== 'undefined') {
+              window.history.pushState(null, '', '/');
+            }
+            setActiveTab('dashboard');
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -474,33 +488,37 @@ export function App() {
     if (!showAuthGateway) {
       return (
         <div className="landing-page-wrapper" style={{ display: "block", width: "100%", minHeight: "100vh", margin: 0, padding: 0, background: "#F8FAFC" }}>
-          <LandingPage
-            onGetStarted={() => {
-              setShowAuthGateway(true);
-              try { localStorage.setItem('phtgz_show_auth', 'true'); } catch { }
-            }}
-          />
+          <Suspense fallback={<PageLoadingFallback />}>
+            <LandingPage
+              onGetStarted={() => {
+                setShowAuthGateway(true);
+                try { localStorage.setItem('phtgz_show_auth', 'true'); } catch { }
+              }}
+            />
+          </Suspense>
         </div>
       );
     }
     return (
       <div className="auth-page-wrapper" style={{ display: "block", width: "100%", minHeight: "100vh", margin: 0, padding: 0, background: "#F8FAFC" }}>
-        <UnifiedAuthGateway
-          initialRole={typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin') ? 'admin' : undefined}
-          studentAccounts={studentAccounts}
-          onStudentLogin={handleStudentUnifiedLogin}
-          onAdminLogin={handleAdminUnifiedLogin}
-          onResetPassword={resetUserPassword}
-          onBackToLanding={() => {
-            setShowAuthGateway(false);
-            try {
-              localStorage.removeItem('phtgz_show_auth');
-              if (window.location.pathname.toLowerCase().includes('admin')) {
-                window.history.pushState({}, '', '/');
-              }
-            } catch { }
-          }}
-        />
+        <Suspense fallback={<PageLoadingFallback />}>
+          <UnifiedAuthGateway
+            initialRole={typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin') ? 'admin' : undefined}
+            studentAccounts={studentAccounts}
+            onStudentLogin={handleStudentUnifiedLogin}
+            onAdminLogin={handleAdminUnifiedLogin}
+            onResetPassword={resetUserPassword}
+            onBackToLanding={() => {
+              setShowAuthGateway(false);
+              try {
+                localStorage.removeItem('phtgz_show_auth');
+                if (window.location.pathname.toLowerCase().includes('admin')) {
+                  window.history.pushState({}, '', '/');
+                }
+              } catch { }
+            }}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -574,8 +592,9 @@ export function App() {
 
         {/* Content Router */}
         <div style={{ flex: 1, padding: 0 }}>
-          {/* 1. Quiz is running */}
-          {activeQuiz && !latestAttempt && (
+          <Suspense fallback={<PageLoadingFallback />}>
+            {/* 1. Quiz is running */}
+            {activeQuiz && !latestAttempt && (
             <QuizRunner
               quiz={activeQuiz}
               mode={activeMode}
@@ -800,6 +819,7 @@ export function App() {
               )}
             </>
           )}
+          </Suspense>
         </div>
       </main>
 
@@ -830,7 +850,8 @@ export function App() {
       )}
 
       {/* ── 2026 EDTECH FLOATING AI & MODALS ── */}
-      <AITutorDrawer
+      <Suspense fallback={null}>
+        <AITutorDrawer
         isOpen={showAITutorDrawer}
         initialPrompt={aiTutorPrompt}
         onClose={() => setShowAITutorDrawer(false)}
@@ -935,6 +956,7 @@ export function App() {
           }}
         />
       )}
+      </Suspense>
     </div>
   );
 }
