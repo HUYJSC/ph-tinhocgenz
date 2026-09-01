@@ -25,7 +25,6 @@ dist-ssr
 .vercel
 .netlify
 .env*
-.github/
 
 # Python & Backend
 __pycache__/
