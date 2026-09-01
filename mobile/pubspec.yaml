@@ -1,0 +1,54 @@
+name: ph_digital_education
+description: "PH DIGITAL EDUCATION — Ứng dụng Học tập, Khảo thí và Điểm danh Tin học Trực tuyến"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management (BLoC)
+  flutter_bloc: ^8.1.3
+  equatable: ^2.0.5
+
+  # Networking & HTTP (Dio)
+  dio: ^5.4.1
+
+  # Local Storage & Offline Cache (Hive)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Hardware: Camera Native QR Scanner & Permissions
+  mobile_scanner: ^5.1.0
+  permission_handler: ^11.3.1
+
+  # Security & Biometrics
+  local_auth: ^2.1.8
+  flutter_secure_storage: ^9.0.0
+
+  # Deep Linking & App Links
+  app_links: ^6.1.1
+
+  # Push Notifications
+  firebase_core: ^2.27.0
+  firebase_messaging: ^14.7.19
+
+  # UI Icons & Styling
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  bloc_test: ^9.1.5
+  mocktail: ^1.0.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
