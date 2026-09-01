@@ -1287,97 +1287,147 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
       </section>
 
-      {/* 7. FOOTER */}
+      {/* 7. FOOTER CHUẨN 4 CỘT HIỆN ĐẠI (SECTION I SPECIFICATION) */}
       <footer style={{
-        padding: '50px 20px 30px',
-        background: '#F1F5F9',
-        borderTop: '1px solid #E2E8F0'
+        padding: '64px 24px 32px',
+        background: '#0F172A',
+        color: '#E2E8F0',
+        borderTop: '1px solid #1E293B'
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          {/* Main 4-Column Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
             gap: '40px',
-            marginBottom: '40px'
+            marginBottom: '48px'
           }}>
-            {/* Col 1 */}
+            {/* CỘT 1: VỀ PH DIGITAL EDUCATION */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <img
                   src="/logo-icon.png"
-                  alt="Logo PH"
-                  style={{ height: '36px', width: '36px', objectFit: 'contain' }}
+                  alt="Logo PH DIGITAL EDUCATION"
+                  style={{ height: '40px', width: '40px', objectFit: 'contain', borderRadius: '8px', background: '#FFFFFF', padding: '3px' }}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                 />
-                <span style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>
-                  PH DIGITAL EDUCATION
-                </span>
+                <div>
+                  <span style={{ fontSize: '16px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.01em', display: 'block' }}>
+                    PH DIGITAL EDUCATION
+                  </span>
+                  <span style={{ fontSize: '11.5px', color: '#38BDF8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Học Viện Tin Học & Khảo Thí Quốc Tế
+                  </span>
+                </div>
               </div>
-              <p style={{ fontSize: '13.5px', color: '#64748B', lineHeight: 1.7, marginBottom: '14px' }}>
-                Hệ sinh thái đào tạo Tin học Văn phòng Thực chiến & Luyện thi Chứng chỉ Quốc tế MOS, IC3 GS6 chuẩn Certiport. Cam kết chuẩn đầu ra Đại học bao đỗ 100%.
+              <p style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.7, marginBottom: '16px' }}>
+                Hệ sinh thái đào tạo Tin Học Văn Phòng Thực Chiến và Luyện thi chứng chỉ quốc tế MOS, IC3 GS6 chuẩn Certiport & Chứng chỉ CNTT Quốc gia theo Thông tư 03/2014/TT-BTTTT.
               </p>
-              <div style={{ fontSize: '12.5px', color: '#475569' }}>
-                Hotline / Zalo: <strong style={{ color: '#2563EB' }}>033.229.8065</strong>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '6px', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.25)', fontSize: '12px', color: '#38BDF8', fontWeight: 600 }}>
+                <span>🛡️</span> Cam kết chuẩn đầu ra • Bao đỗ 100%
               </div>
             </div>
 
-            {/* Col 2 */}
+            {/* CỘT 2: 10 CHƯƠNG TRÌNH ĐÀO TẠO */}
             <div>
-              <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A', marginBottom: '14px' }}>
+              <h4 style={{ fontSize: '14.5px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                 Chương Trình Đào Tạo
               </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#64748B' }}>
-                <li>Luyện thi MOS Excel 2019 / 365</li>
-                <li>Luyện thi MOS Word & PowerPoint</li>
-                <li>Chứng chỉ Tin học Quốc tế IC3 GS6</li>
-                <li>Chứng chỉ CNTT Cơ bản & Nâng cao</li>
-                <li>Ứng dụng AI vào Công việc Văn phòng</li>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '13px', color: '#94A3B8' }}>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>1. Tin Học Văn Phòng Cấp Tốc 3in1</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>2. Luyện Thi CC CNTT Cơ Bản</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>3. Luyện Thi CC CNTT Nâng Cao</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>4. CNTT Cơ Bản Word + Excel</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>5. CNTT Nâng Cao Word + Excel</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>6. Ứng Dụng AI Vào Công Việc Văn Phòng</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>7. Excel Kế Toán & Quản Trị Tài Chính</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>8. Kỹ Năng Word Chuẩn Doanh Nghiệp</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>9. Kỹ Năng Excel Thực Chiến 6 Buổi</a></li>
+                <li><a href="#tracks" onClick={() => scrollToSection('tracks')} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>10. Thiết Kế Slide PowerPoint Pro</a></li>
               </ul>
             </div>
 
-            {/* Col 3 */}
+            {/* CỘT 3: HỖ TRỢ HỌC VIÊN */}
             <div>
-              <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A', marginBottom: '14px' }}>
-                Tính Năng Nổi Bật
+              <h4 style={{ fontSize: '14.5px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                Hỗ Trợ Học Viên
               </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#64748B' }}>
-                <li>Kiểm tra trình độ đầu vào miễn phí</li>
-                <li>Phòng thi trực tuyến tự động lưu bài</li>
-                <li>Smart Review ôn luyện câu sai</li>
-                <li>Radar chẩn đoán năng lực kỹ năng</li>
-                <li>Cấp chứng nhận điện tử xác minh QR</li>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#94A3B8' }}>
+                <li>
+                  <a href="/verify" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
+                    📜 Tra cứu Chứng chỉ số SHA-256
+                  </a>
+                </li>
+                <li>
+                  <a href="#guide" onClick={onGetStarted} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
+                    📂 Hướng dẫn nộp bài tập Google Drive
+                  </a>
+                </li>
+                <li>
+                  <a href="#rules" onClick={onGetStarted} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
+                    ⚖️ Quy chế thi & Giám sát chống gian lận
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" onClick={() => scrollToSection('faq')} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
+                    ❓ Câu hỏi thường gặp (FAQ)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://zalo.me/0332298065" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
+                    💬 Hỗ trợ học vụ & Kỹ thuật Zalo 1-1
+                  </a>
+                </li>
               </ul>
+            </div>
+
+            {/* CỘT 4: THÔNG TIN LIÊN HỆ & MẠNG XÃ HỘI */}
+            <div>
+              <h4 style={{ fontSize: '14.5px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                Thông Tin Liên Hệ
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px', color: '#94A3B8', lineHeight: 1.6 }}>
+                <div>
+                  <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Hotline / Tuyển sinh:</span>
+                  <a href="tel:0332298065" style={{ color: '#38BDF8', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}>033.229.8065</a>
+                </div>
+                <div>
+                  <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Zalo Official Account:</span>
+                  <span style={{ color: '#F1F5F9', fontWeight: 600 }}>PH Digital Education</span>
+                </div>
+                <div>
+                  <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Email Học vụ:</span>
+                  <a href="mailto:support@tinhocgenz.io.vn" style={{ color: '#E2E8F0', textDecoration: 'none' }}>support@tinhocgenz.io.vn</a>
+                </div>
+                <div>
+                  <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Thời gian hỗ trợ:</span>
+                  <span style={{ color: '#F1F5F9' }}>08:00 – 21:30 (Thứ 2 – Chủ Nhật)</span>
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Bottom Copyright Strip — STRICTLY ZERO /admin LINKS */}
           <div style={{
-            paddingTop: '20px',
-            borderTop: '1px solid #CBD5E1',
+            paddingTop: '24px',
+            borderTop: '1px solid #1E293B',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '12px',
-            fontSize: '12.5px',
+            gap: '16px',
+            fontSize: '12px',
             color: '#64748B'
           }}>
             <div>
-              © {new Date().getFullYear()} PH DIGITAL EDUCATION (tinhocgenz.io.vn). All rights reserved.
+              © {new Date().getFullYear()} PH DIGITAL EDUCATION (tinhocgenz.io.vn). Bảo lưu mọi quyền.
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span>Đào tạo Online toàn quốc • Hỗ trợ 24/7</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <span>Đào tạo Trực tuyến Toàn Quốc</span>
               <span>•</span>
-              <a
-                href="/admin"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.history.pushState({}, '', '/admin');
-                  onGetStarted();
-                }}
-                style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}
-              >
-                🔒 Cổng Quản Trị (/admin)
-              </a>
+              <span>Bảo mật dữ liệu chuẩn ISO/IEC 27001</span>
+              <span>•</span>
+              <a href="#privacy" onClick={onGetStarted} style={{ color: '#94A3B8', textDecoration: 'none' }}>Điều khoản & Bảo mật</a>
             </div>
           </div>
         </div>

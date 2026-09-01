@@ -823,10 +823,13 @@ export function App() {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation — 3-Hub model + Continue CTA */}
-      {!activeQuiz && !isStaff && (
+      {/* Mobile Bottom Navigation — 5-Tab model for both Student & Teacher */}
+      {!activeQuiz && (
         <MobileBottomNav
           activeTab={activeTab}
+          isStaff={isStaff}
+          onNavigateTab={handleNavigateTab}
+          onOpenProfile={() => setShowProfileModal(true)}
           onNavigateLearn={() => {
             setActiveTab('dashboard');
             window.scrollTo({ top: 0, behavior: 'smooth' });
