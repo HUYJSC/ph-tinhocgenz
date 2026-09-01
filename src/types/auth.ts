@@ -67,7 +67,7 @@ export interface TeacherAccount {
   password?: string;
   assignedTracks: CurriculumTrack[];
   mustChangePassword?: boolean;
-  role: 'teacher';
+  role: 'teacher' | 'admin';
   createdAt: string;
 }
 

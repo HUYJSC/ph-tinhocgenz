@@ -34,6 +34,10 @@ const MAX_OTP_ATTEMPTS = 5;
 const STORAGE_KEY = 'phtgz_recovery_session';
 const EMAIL_LOGS_KEY = 'phtgz_recovery_email_logs';
 
+// Private in-memory storage (prevents DevTools plaintext OTP inspection)
+let _memorySession: RecoveryOtpSession | null = null;
+let _memoryEmailLogs: RecoveryEmailLog[] = [];
+
 export class AccountRecoveryService {
   /**
    * Che giấu địa chỉ email để bảo mật thông tin (Information Masking)
@@ -65,8 +69,13 @@ export class AccountRecoveryService {
     rawEmail?: string,
     role: 'student' | 'teacher' = 'student'
   ): { success: boolean; session: RecoveryOtpSession; emailLog: RecoveryEmailLog } {
+    // Clean up any legacy plaintext keys from localStorage
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(EMAIL_LOGS_KEY);
+    } catch {}
+
     const cleanId = identifier.trim();
-    // Resolve email: use rawEmail if provided or derive professional academic email
     const targetEmail = (rawEmail && rawEmail.includes('@'))
       ? rawEmail.trim().toLowerCase()
       : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`;
@@ -86,12 +95,8 @@ export class AccountRecoveryService {
       isVerified: false
     };
 
-    // Save session
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } catch (e) {
-      console.warn('Cannot persist recovery session to localStorage', e);
-    }
+    // Store strictly in memory to eliminate client-side token exposure
+    _memorySession = session;
 
     // Build Email dispatch record
     const emailLog: RecoveryEmailLog = {
@@ -134,32 +139,24 @@ export class AccountRecoveryService {
       `
     };
 
-    // Save email log for instant UI simulation
-    try {
-      const logs = this.getEmailLogs();
-      logs.unshift(emailLog);
-      localStorage.setItem(EMAIL_LOGS_KEY, JSON.stringify(logs.slice(0, 10)));
-    } catch (e) {}
+    _memoryEmailLogs.unshift(emailLog);
+    if (_memoryEmailLogs.length > 10) {
+      _memoryEmailLogs = _memoryEmailLogs.slice(0, 10);
+    }
 
     return { success: true, session, emailLog };
   }
 
   /**
-   * Lấy phiên khôi phục hiện tại
+   * Lấy phiên khôi phục hiện tại (in-memory)
    */
   static getActiveSession(): RecoveryOtpSession | null {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) return null;
-      const session: RecoveryOtpSession = JSON.parse(data);
-      if (Date.now() > session.expiresAt) {
-        this.clearSession();
-        return null;
-      }
-      return session;
-    } catch (e) {
+    if (!_memorySession) return null;
+    if (Date.now() > _memorySession.expiresAt) {
+      this.clearSession();
       return null;
     }
+    return _memorySession;
   }
 
   /**
@@ -186,9 +183,7 @@ export class AccountRecoveryService {
 
     if (session.otpCode !== cleanOtp) {
       session.attempts += 1;
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-      } catch (e) {}
+      _memorySession = session;
       const remaining = MAX_OTP_ATTEMPTS - session.attempts;
       return {
         success: false,
@@ -198,9 +193,7 @@ export class AccountRecoveryService {
 
     // Success
     session.isVerified = true;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } catch (e) {}
+    _memorySession = session;
 
     return {
       success: true,
@@ -213,20 +206,17 @@ export class AccountRecoveryService {
    * Hủy phiên sau khi đã hoàn tất đổi mật khẩu thành công
    */
   static clearSession(): void {
+    _memorySession = null;
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(EMAIL_LOGS_KEY);
     } catch (e) {}
   }
 
   /**
-   * Lấy lịch sử email giả lập đã phát
+   * Lấy lịch sử email giả lập đã phát (từ bộ nhớ an toàn)
    */
   static getEmailLogs(): RecoveryEmailLog[] {
-    try {
-      const data = localStorage.getItem(EMAIL_LOGS_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch (e) {
-      return [];
-    }
+    return _memoryEmailLogs;
   }
 }

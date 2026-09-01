@@ -7,8 +7,8 @@ import { AdminPortal, AdminPortalSubTab } from './AdminPortal';
 import {
   Shield, Users, UserCheck, Calendar, CheckSquare, BookOpen,
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
-  ExternalLink, Sparkles, Key, Menu, X, ChevronRight,
-  Database, Server, BarChart3, Bot
+  ExternalLink, Key, Menu, X, ChevronRight,
+  Server, BarChart3, Bot
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -73,7 +73,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const isAdmin = isSessionActive && currentUser.role === 'admin';
 
   // Admin Login State
-  const [adminUsername, setAdminUsername] = useState('ADMIN');
+  const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -87,16 +87,6 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
       setLoginError(res.message || 'Mật khẩu quản trị không chính xác.');
       soundFx.playIncorrect();
     } else {
-      soundFx.playCorrect();
-    }
-  };
-
-  // Quick Demo Login Handler
-  const handleQuickAdminLogin = () => {
-    setAdminUsername('Thầy Huy (Giảng Viên Trưởng)');
-    setAdminPassword('admin@phedu2026');
-    const res = onLoginAsAdmin('admin@phedu2026', 'Thầy Huy (Giảng Viên Trưởng)');
-    if (res.success) {
       soundFx.playCorrect();
     }
   };
@@ -204,7 +194,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                   type="text"
                   value={adminUsername}
                   onChange={(e) => setAdminUsername(e.target.value)}
-                  placeholder="Ví dụ: ADMIN hoặc Thầy Huy"
+                  placeholder="Nhập mã cán bộ hoặc tài khoản quản trị..."
                   required
                   style={{
                     width: '100%',
@@ -275,54 +265,6 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               <span>Đăng Nhập Cổng Quản Trị</span>
             </button>
           </form>
-
-          {/* Quick Access Helper */}
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <div style={{ fontSize: '0.76rem', color: '#94a3b8', marginBottom: '8px', textAlign: 'center' }}>
-              Truy cập nhanh môi trường phát triển:
-            </div>
-            <button
-              onClick={handleQuickAdminLogin}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px dashed rgba(255, 255, 255, 0.2)',
-                color: '#f59e0b',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
-            >
-              <Sparkles size={14} />
-              <span>Đăng nhập Super Admin (Thầy Huy)</span>
-            </button>
-          </div>
-
-          {/* Django Backend Link */}
-          <div style={{ marginTop: '16px', textAlign: 'center' }}>
-            <a
-              href="https://tinhocgenz.io.vn/admin"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontSize: '0.78rem',
-                color: '#38bdf8',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <Database size={13} />
-              <span>Mở Cổng Django Admin Backend (tinhocgenz.io.vn/admin) ↗</span>
-            </a>
-          </div>
         </div>
 
         {/* Footer Notice */}

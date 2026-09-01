@@ -18,7 +18,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '20:30',
     shift: 'evening',
     room: 'Phòng LAB 01 (Tầng 2)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-we01-live',
     lessonNumber: 1,
     totalLessons: 3,
     notes: 'Mang theo tài liệu Word mẫu và chuẩn bị câu hỏi thực hành.',
@@ -38,7 +37,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '20:30',
     shift: 'evening',
     room: 'Phòng LAB 01 (Tầng 2)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-we01-live',
     lessonNumber: 2,
     totalLessons: 3,
     notes: 'Thực hành các hàm VLOOKUP, IF lồng, SUMIFS, PivotTable.',
@@ -58,7 +56,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '20:30',
     shift: 'evening',
     room: 'Phòng LAB 01 (Tầng 2)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-we01-live',
     lessonNumber: 3,
     totalLessons: 3,
     notes: 'Kiểm tra cuối khóa và trao chứng chỉ hoàn thành.',
@@ -80,7 +77,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '16:00',
     shift: 'afternoon',
     room: 'Phòng LAB 02 (Tầng 3)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-mosw-room',
     lessonNumber: 1,
     totalLessons: 6,
     notes: 'Theo chuẩn đề thi Certiport MO-100 Objective 2.1.',
@@ -100,7 +96,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '16:00',
     shift: 'afternoon',
     room: 'Phòng LAB 02 (Tầng 3)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-mosw-room',
     lessonNumber: 2,
     totalLessons: 6,
     notes: 'Thực hành Word_2-2 và Format Painter.',
@@ -120,7 +115,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '16:00',
     shift: 'afternoon',
     room: 'Phòng LAB 02 (Tầng 3)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-mosw-room',
     lessonNumber: 3,
     totalLessons: 6,
     notes: 'Thiết lập trang ngang Landscape độc lập.',
@@ -142,7 +136,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '10:00',
     shift: 'morning',
     room: 'Phòng LAB 03 (Tầng 4)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-ccn01-room',
     lessonNumber: 1,
     totalLessons: 6,
     notes: 'Chuẩn bị dữ liệu bảng tra cứu lớn.',
@@ -162,7 +155,6 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     endTime: '10:00',
     shift: 'morning',
     room: 'Phòng LAB 03 (Tầng 4)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-kt01-room',
     lessonNumber: 1,
     totalLessons: 6,
     notes: 'Thiết lập bảng cân đối số phát sinh.',
@@ -183,8 +175,7 @@ export const INITIAL_SCHEDULE_DATA: ClassScheduleItem[] = [
     startTime: '08:00',
     endTime: '10:00',
     shift: 'morning',
-    room: 'Trực Tuyến (Google Meet Toàn Khóa)',
-    onlineMeetingUrl: 'https://meet.google.com/tgz-ai01-live',
+    room: 'Trực Tuyến (Phòng Học Bảo Mật)',
     lessonNumber: 1,
     totalLessons: 5,
     notes: 'Thực hành tạo macro tự động hóa bằng AI.',
@@ -199,23 +190,7 @@ export function useScheduleStorage() {
       const saved = localStorage.getItem(SCHEDULE_STORAGE_KEY);
       if (saved) {
         const parsed: ClassScheduleItem[] = JSON.parse(saved);
-        // Automatic cleanup: Migrate any outdated duplicate "sja-vcpy-rsu" links to class-specific unique links
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasDuplicateOldMeet = parsed.some(s => s.onlineMeetingUrl?.includes('sja-vcpy-rsu'));
-          if (hasDuplicateOldMeet) {
-            const cleaned = parsed.map(s => {
-              if (s.onlineMeetingUrl?.includes('sja-vcpy-rsu')) {
-                const codeSlug = (s.classCode || 'room').toLowerCase().replace(/[^a-z0-9]/g, '');
-                return {
-                  ...s,
-                  onlineMeetingUrl: `https://meet.google.com/tgz-${codeSlug}-live`
-                };
-              }
-              return s;
-            });
-            localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(cleaned));
-            return cleaned;
-          }
           return parsed;
         }
       }

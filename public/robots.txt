@@ -1,7 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /academic/
 Disallow: /api/
+Disallow: /app/
 
 Sitemap: https://hoctructuyen.tinhocgenz.io.vn/sitemap.xml
 

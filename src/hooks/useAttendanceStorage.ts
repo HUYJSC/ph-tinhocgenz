@@ -22,16 +22,16 @@ const ALL_10_TRACK_KEYS: CurriculumTrack[] = [
 
 // Teacher-to-Class mappings
 export const TRACK_CLASS_CODES: Record<CurriculumTrack, { classCode: string; defaultTeacherId: string; defaultTeacherName: string; room: string; meetUrl: string }> = {
-  'office-fast-3in1': { classCode: 'K26-WE01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'cc-cntt-basic':    { classCode: 'K26-CC01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'cc-cntt-advanced': { classCode: 'K26-CCN01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'cntt-basic-we':    { classCode: 'K26-WE-CB', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'cntt-adv-we':      { classCode: 'K26-WENC01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'ai-office':        { classCode: 'K26-AI01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'excel-accounting': { classCode: 'K26-KT01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'word-6b':          { classCode: 'K26-W01', defaultTeacherId: 'tch-04', defaultTeacherName: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'excel-6b':         { classCode: 'K26-EX01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' },
-  'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/sja-vcpy-rsu' }
+  'office-fast-3in1': { classCode: 'K26-WE01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' },
+  'cc-cntt-basic':    { classCode: 'K26-CC01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' },
+  'cc-cntt-advanced': { classCode: 'K26-CCN01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
+  'cntt-basic-we':    { classCode: 'K26-WE-CB', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
+  'cntt-adv-we':      { classCode: 'K26-WENC01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
+  'ai-office':        { classCode: 'K26-AI01', defaultTeacherId: 'tch-03', defaultTeacherName: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: '' },
+  'excel-accounting': { classCode: 'K26-KT01', defaultTeacherId: 'tch-02', defaultTeacherName: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
+  'word-6b':          { classCode: 'K26-W01', defaultTeacherId: 'tch-04', defaultTeacherName: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
+  'excel-6b':         { classCode: 'K26-EX01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
+  'ppt-6b':           { classCode: 'K26-PPT01', defaultTeacherId: 'tch-01', defaultTeacherName: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' }
 };
 
 // Deterministic 6-digit rolling PIN generator (Default: 300 seconds / 5 minutes)
@@ -68,7 +68,7 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
         defaultTeacherId: 'tch-03',
         defaultTeacherName: 'Thầy Quang Huy',
         room: 'Phòng LAB 01',
-        meetUrl: 'https://meet.google.com/ph-tinhocgenz-lab01'
+        meetUrl: ''
       };
 
       // Filter students strictly enrolled in this track/class

@@ -35,7 +35,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   const [adminTrackChoice, setAdminTrackChoice] = useState<CurriculumTrack | 'all'>('all');
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Student Form
   const [studentCode, setStudentCode] = useState('');
@@ -243,7 +243,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
             </div>
 
             <p style={{ fontSize: '13.5px', color: '#DBEAFE', lineHeight: 1.65, marginBottom: '34px' }}>
-              Cổng xác thực một lần (SSO) an toàn. Vui lòng chọn đúng cổng truy cập dành cho Học viên hoặc Giảng viên để tiếp tục.
+              Cổng xác thực đào tạo an toàn. Vui lòng đăng nhập bằng tài khoản được cấp để tiếp tục.
             </p>
 
             {/* Feature Highlights */}
@@ -326,7 +326,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
             color: '#BFDBFE'
           }}>
             <Shield size={14} color="#A7F3D0" />
-            <span>Mã hóa SSL 256-bit • Đăng nhập an toàn SSO • LMS 2026</span>
+            <span>Hệ thống đào tạo & khảo thí Tin học Quốc tế • PH Digital Education</span>
           </div>
         </div>
 
