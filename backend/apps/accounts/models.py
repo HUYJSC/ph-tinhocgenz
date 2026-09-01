@@ -43,11 +43,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     school_or_class = models.CharField("Đơn vị / Lớp", max_length=255, blank=True, default="")
     program_track = models.CharField("Chương trình đào tạo", max_length=50, blank=True, default="office-fast-3in1")
     
-    # Security Flags
+    # Thông tin phụ huynh và độ tuổi (phục vụ Zalo AI < 25 tuổi)
+    birth_year = models.IntegerField("Năm sinh", null=True, blank=True)
+    parent_name = models.CharField("Họ tên phụ huynh", max_length=150, blank=True, default="")
+    parent_phone = models.CharField("SĐT phụ huynh", max_length=30, blank=True, default="")
+    parent_zalo = models.CharField("Zalo phụ huynh", max_length=30, blank=True, default="")
+
+    # Security & Soft Delete Flags
     must_change_password = models.BooleanField("Bắt buộc đổi mật khẩu", default=False)
     is_active = models.BooleanField("Đang kích hoạt", default=True)
     is_staff = models.BooleanField("Quyền truy cập admin", default=False)
-    date_joined = models.DateTimeField("Ngày tham gia", default=timezone.now)
+    is_deleted = models.BooleanField("Đã xóa mềm", default=False, db_index=True)
+    date_joined = models.DateTimeField("Ngày tham gia", default=timezone.now, db_index=True)
+    updated_at = models.DateTimeField("Cập nhật cuối", auto_now=True)
 
     objects = UserManager()
 
@@ -61,3 +69,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.username} — {self.full_name} ({self.get_role_display()})"
+
+    def soft_delete(self):
+        self.is_deleted = True
+        self.is_active = False
+        self.save(update_fields=["is_deleted", "is_active", "updated_at"])

@@ -1,9 +1,10 @@
 import uuid
 from django.db import models
 from django.conf import settings
+from apps.common.models import BaseModel
 from apps.courses.models import Course
 
-class Question(models.Model):
+class Question(BaseModel):
     class Difficulty(models.TextChoices):
         EASY = "easy", "Cơ bản"
         MEDIUM = "medium", "Trung bình"
@@ -17,7 +18,6 @@ class Question(models.Model):
     correct_answer_id = models.CharField("Mã đáp án đúng", max_length=20)
     explanation = models.TextField("Giải thích đáp án", blank=True, default="")
     difficulty = models.CharField("Độ khó", max_length=20, choices=Difficulty.choices, default=Difficulty.MEDIUM)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Câu hỏi khảo thí"
@@ -26,7 +26,7 @@ class Question(models.Model):
     def __str__(self):
         return f"[{self.skill_id}] {self.content[:60]}..."
 
-class Exam(models.Model):
+class Exam(BaseModel):
     id = models.CharField(max_length=100, primary_key=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="exams")
     title = models.CharField("Tiêu đề đề thi", max_length=255)
@@ -42,12 +42,12 @@ class Exam(models.Model):
     def __str__(self):
         return f"{self.title} ({self.course.code})"
 
-class ExamAttempt(models.Model):
+class ExamAttempt(BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="attempts")
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="exam_attempts")
-    started_at = models.DateTimeField(auto_now_add=True)
-    submitted_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField("Bắt đầu làm bài", auto_now_add=True)
+    submitted_at = models.DateTimeField("Nộp bài lúc", null=True, blank=True)
     score = models.IntegerField("Số câu đúng", default=0)
     total_questions = models.IntegerField("Tổng số câu", default=0)
     percentage = models.FloatField("Tỷ lệ %", default=0.0)
@@ -59,3 +59,6 @@ class ExamAttempt(models.Model):
         verbose_name = "Lượt thi học viên"
         verbose_name_plural = "Danh sách lượt thi"
         ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"{self.student.username} - {self.exam.title} ({self.percentage}%)"

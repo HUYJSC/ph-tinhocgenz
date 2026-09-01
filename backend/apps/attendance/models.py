@@ -1,20 +1,21 @@
 import uuid
 from django.db import models
 from django.conf import settings
-from apps.courses.models import Course
+from apps.common.models import BaseModel
+from apps.courses.models import Course, ClassGroup
 
-class AttendanceSession(models.Model):
+class AttendanceSession(BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="attendance_sessions")
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="hosted_sessions")
     class_code = models.CharField("Mã lớp học", max_length=50, db_index=True)
+    class_group = models.ForeignKey(ClassGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="sessions")
     session_title = models.CharField("Chủ đề buổi học", max_length=255)
     session_number = models.IntegerField("Buổi số", default=1)
     session_date = models.DateField("Ngày học")
     is_open = models.BooleanField("Đang mở điểm danh", default=True)
-    pin_code = models.CharField("Mã PIN 4 số", max_length=10, default="1234")
+    pin_code = models.CharField("Mã PIN điểm danh", max_length=10, default="1234")
     qr_token = models.CharField("Token QR động", max_length=100, blank=True, default="")
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Ca điểm danh"
@@ -24,7 +25,7 @@ class AttendanceSession(models.Model):
     def __str__(self):
         return f"[{self.class_code}] Buổi {self.session_number}: {self.session_title}"
 
-class AttendanceRecord(models.Model):
+class AttendanceRecord(BaseModel):
     class Status(models.TextChoices):
         PRESENT = "present", "Có mặt"
         ABSENT = "absent", "Vắng mặt"

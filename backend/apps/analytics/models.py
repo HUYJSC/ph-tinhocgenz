@@ -1,8 +1,9 @@
 import uuid
 from django.db import models
 from django.conf import settings
+from apps.common.models import BaseModel
 
-class AcademicWarning(models.Model):
+class AcademicWarning(BaseModel):
     class RiskLevel(models.TextChoices):
         LOW = "LOW", "Thấp"
         MEDIUM = "MEDIUM", "Trung bình"
@@ -15,8 +16,6 @@ class AcademicWarning(models.Model):
     reasons = models.JSONField("Lý do cảnh báo", default=list)
     is_resolved = models.BooleanField("Đã xử lý", default=False)
     resolution_notes = models.TextField("Ghi chú xử lý", blank=True, default="")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Cảnh báo học vụ"
@@ -27,7 +26,30 @@ class AcademicWarning(models.Model):
         return f"[{self.risk_level}] {self.student.full_name} ({self.student.username})"
 
 
-class ZaloNotificationLog(models.Model):
+class StudentReminder(BaseModel):
+    """
+    Cài đặt nhắc nhở học tập cá nhân hóa và Zalo AI thông minh.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reminder_setting")
+    daily = models.BooleanField("Nhắc nhở hằng ngày", default=True)
+    weekly = models.BooleanField("Nhắc nhở hằng tuần", default=True)
+    monthly = models.BooleanField("Nhắc nhở hằng tháng", default=True)
+    preferred_time = models.CharField("Giờ nhận tin ưu tiên", max_length=10, default="19:00")
+    parent_name = models.CharField("Họ tên phụ huynh", max_length=150, blank=True, default="")
+    parent_phone = models.CharField("Số điện thoại phụ huynh", max_length=30, blank=True, default="")
+    parent_zalo = models.CharField("Zalo phụ huynh", max_length=30, blank=True, default="")
+    birth_year = models.IntegerField("Năm sinh", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Cài đặt nhắc nhở"
+        verbose_name_plural = "Danh sách Cài đặt nhắc nhở"
+
+    def __str__(self):
+        return f"Cài đặt nhắc nhở: {self.student.username}"
+
+
+class ZaloNotificationLog(BaseModel):
     class RecipientType(models.TextChoices):
         PARENT = "parent", "Phụ huynh (< 25 tuổi)"
         STUDENT = "student", "Học viên (≥ 25 tuổi - Tự chủ)"
@@ -45,7 +67,6 @@ class ZaloNotificationLog(models.Model):
     cycle = models.CharField("Chu kỳ", max_length=20, choices=Cycle.choices, default=Cycle.WEEKLY)
     ai_generated_message = models.TextField("Tin nhắn sinh bởi AI")
     status = models.CharField("Trạng thái", max_length=20, default="sent")
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Nhật ký Zalo AI"
