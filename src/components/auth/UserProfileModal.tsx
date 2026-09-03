@@ -140,7 +140,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>SỐ ĐIỆN THOẠI</div>
               <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {currentUser.phone || (currentUser.role === 'admin' ? '0988 999 888' : isStaff ? '0988 776 655' : '0912 345 678')}
+                {currentUser.phone || (currentUser.role === 'admin' ? '0332 298 065' : isStaff ? '0988 776 655' : '0912 345 678')}
               </div>
             </div>
           </div>
@@ -153,7 +153,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>GMAIL / EMAIL LIÊN HỆ</div>
               <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {currentUser.email || (currentUser.role === 'admin' ? 'admin@tinhocgenz.io.vn' : isStaff ? 'quanghuy@tinhocgenz.io.vn' : `${currentUser.studentCode?.toLowerCase() || 'hocvien'}@tinhocgenz.io.vn`)}
+                {currentUser.email || (currentUser.role === 'admin' ? 'hdh.hutech@gmail.com' : isStaff ? 'quanghuy@tinhocgenz.io.vn' : `${currentUser.studentCode?.toLowerCase() || 'hocvien'}@tinhocgenz.io.vn`)}
               </div>
             </div>
           </div>

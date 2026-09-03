@@ -57,10 +57,10 @@ export class AccountRecoveryService {
 
   /**
    * Che giấu số điện thoại để bảo mật thông tin (Phone Masking)
-   * Ví dụ: 0988999888 -> 0988****888
+   * Ví dụ: 0332298065 -> 0332****065
    */
   static maskPhone(phone: string): string {
-    if (!phone) return '0988****888';
+    if (!phone) return '0332****065';
     const clean = phone.replace(/\s+/g, '');
     if (clean.length < 7) return `${clean.slice(0, 3)}****`;
     return `${clean.slice(0, 4)}****${clean.slice(-3)}`;
@@ -94,8 +94,8 @@ export class AccountRecoveryService {
     const cleanId = identifier.trim();
     const targetEmail = (rawEmail && rawEmail.includes('@'))
       ? rawEmail.trim().toLowerCase()
-      : (role === 'admin' ? 'admin@tinhocgenz.io.vn' : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`);
-    const targetPhone = rawPhone ? rawPhone.trim() : '0988999888';
+      : (role === 'admin' ? 'hdh.hutech@gmail.com' : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`);
+    const targetPhone = rawPhone ? rawPhone.trim() : '0332298065';
 
     const otp = this.generateRandomOtp();
     const now = Date.now();

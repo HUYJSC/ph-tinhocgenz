@@ -139,7 +139,7 @@
                                           ▼
                ┌─────────────────────────────────────────────────────────┐
                │ 2. Nhập định danh: Mã tài khoản (ADMIN01/admin),       │
-               │    Gmail (admin@tinhocgenz.io.vn) hoặc SĐT (0988999888) │
+               │    Gmail (hdh.hutech@gmail.com) hoặc SĐT (0332298065)   │
                └──────────────────────────┬──────────────────────────────┘
                                           │
                                           ▼
@@ -147,7 +147,7 @@
                    │ 3. Chọn Kênh Nhận Mã Xác Nhận OTP:            │
                    ├──────────────────────┬────────────────────────┤
                    │  📧 Hộp thư Gmail    │  📱 SĐT / SMS / Zalo   │
-                   │  (ad***n@...io.vn)   │  (0988****888)         │
+                   │  (hd***h@gmail.com)  │  (0332****065)         │
                    └──────────────────────┴────────────────────────┘
                                           │
                                           ▼
@@ -176,5 +176,5 @@
 ### Chi Tiết Cấu Hình Thông Tin Khôi Phục:
 | Phân Vùng Hệ Thống | Cổng Quản Trị | Trường Định Danh Bắt Buộc | Kênh Khôi Phục Hỗ Trợ |
 |:---|:---|:---|:---|
-| 🏢 **Website Chính (Next.js / Django)** | `https://tinhocgenz.io.vn/admin` | `email` (Gmail), `phone` (SĐT) | Django Password Reset qua Email OTP + SMS Gateway |
-| 🎓 **Cổng Học Vụ LMS (React / Vite SPA)** | `https://hoctructuyen.tinhocgenz.io.vn/admin` | `email` (`admin@tinhocgenz.io.vn`), `phone` (`0988999888`) | Modal Wizard khôi phục trực tiếp qua Gmail OTP & SĐT SMS |
+| 🏢 **Website Chính (Next.js / Django)** | `https://tinhocgenz.io.vn/admin` | `email` (Gmail: `hdh.hutech@gmail.com`), `phone` (SĐT: `0332298065`) | Django Password Reset qua Email OTP + SMS Gateway |
+| 🎓 **Cổng Học Vụ LMS (React / Vite SPA)** | `https://hoctructuyen.tinhocgenz.io.vn/admin` | `email` (`hdh.hutech@gmail.com`), `phone` (`0332298065`) | Modal Wizard khôi phục trực tiếp qua Gmail OTP & SĐT SMS |

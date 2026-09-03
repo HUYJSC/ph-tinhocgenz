@@ -228,8 +228,8 @@ def run_migration():
         username="ADMIN",
         defaults={
             "full_name": "Thầy Huy (Giảng Viên Trưởng)",
-            "email": "admin@tinhocgenz.io.vn",
-            "phone": "0988999888",
+            "email": "hdh.hutech@gmail.com",
+            "phone": "0332298065",
             "role": User.Role.ADMIN,
             "is_staff": True,
             "is_superuser": True
