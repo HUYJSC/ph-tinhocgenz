@@ -8,7 +8,7 @@ import {
   Shield, Users, UserCheck, Calendar, CheckSquare, BookOpen,
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
   ExternalLink, Key, Menu, X, ChevronRight,
-  Server, BarChart3, Bot
+  Server, BarChart3, Bot, Eye, EyeOff
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -75,6 +75,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   // Admin Login State
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>('overview');
@@ -215,24 +216,46 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '6px' }}>
                 Mật khẩu xác thực Quản trị
               </label>
-              <input
-                type="password"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Nhập mã PIN hoặc mật khẩu admin..."
-                required
-                style={{
-                  width: '100%',
-                  padding: '11px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  color: '#ffffff',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="Nhập mã PIN hoặc mật khẩu admin..."
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '11px 42px 11px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    color: '#ffffff',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px'
+                  }}
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             {loginError && (
