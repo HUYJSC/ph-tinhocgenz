@@ -63,7 +63,7 @@
       ]
     },
     {
-      "source": "/(admin|academic|api)(.*)",
+      "source": "/(admin|academic|api|teacher|student|hoc-vien|giang-vien)(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

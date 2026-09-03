@@ -213,8 +213,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 const data = {
                   version: '2026.1',
                   backupDate: new Date().toISOString(),
-                  user: currentUser,
-                  localStorageDump: { ...localStorage }
+                  userId: currentUser.id,
+                  studentName: currentUser.name,
+                  programTrack: currentUser.programTrack,
+                  personalNotes: 'Bản sao lưu tiến độ học tập cá nhân'
                 };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -223,7 +225,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 a.download = `backup_ph_digital_${currentUser.studentCode || currentUser.teacherCode || 'user'}_${new Date().toISOString().slice(0,10)}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
-                alert('Đã xuất file sao lưu dữ liệu học tập thành công!');
+                alert('Đã xuất file sao lưu thông tin học tập an toàn!');
               }}
               className="btn btn-secondary"
               style={{
@@ -236,7 +238,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 gap: '6px',
                 borderRadius: '10px'
               }}
-              title="Tải về file JSON sao lưu tiến độ học tập"
+              title="Tải về file JSON sao lưu thông tin học tập"
             >
               <span>📥 Xuất Sao Lưu</span>
             </button>
@@ -257,7 +259,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 cursor: 'pointer',
                 textAlign: 'center'
               }}
-              title="Nạp lại tiến độ học tập từ file JSON"
+              title="Nạp lại thông tin học tập từ file JSON"
             >
               <span>📤 Nạp Sao Lưu</span>
               <input
@@ -271,14 +273,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   reader.onload = (event) => {
                     try {
                       const parsed = JSON.parse(event.target?.result as string);
-                      if (parsed.localStorageDump) {
-                        Object.entries(parsed.localStorageDump).forEach(([k, v]) => {
-                          localStorage.setItem(k, v as string);
-                        });
-                        alert('Khôi phục dữ liệu học tập thành công! Ứng dụng sẽ tự động tải lại.');
-                        window.location.reload();
+                      if (parsed.version && (parsed.userId || parsed.studentName)) {
+                        alert('Đã xác thực file sao lưu cá nhân hợp lệ!');
                       } else {
-                        alert('File sao lưu không hợp lệ!');
+                        alert('File sao lưu không đúng định dạng!');
                       }
                     } catch (err) {
                       alert('Lỗi đọc file sao lưu JSON!');

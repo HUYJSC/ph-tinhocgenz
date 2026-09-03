@@ -122,8 +122,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
 
   // Master Google Meet Hub State (Admin Only) - Synced with schedules
-  const [masterMeetUrlInput, setMasterMeetUrlInput] = useState('https://meet.google.com/tgz-master-live');
+  const [masterMeetUrlInput, setMasterMeetUrlInput] = useState('');
   const [copiedMeetIndex, setCopiedMeetIndex] = useState<number | null>(null);
+
   const [meetHubRooms, setMeetHubRooms] = useState(() => {
     const saved = localStorage.getItem('phtinhocgenz_admin_meet_rooms_v3');
     if (saved) {
@@ -133,16 +134,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       } catch (e) {}
     }
     return [
-      { track: 'office-fast-3in1', classCode: 'K26-WE01', className: '1. Word, Excel, PowerPoint (3b/môn)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/tgz-we01-live' },
-      { track: 'cc-cntt-basic', classCode: 'K26-CC01', className: '2. CC CNTT Cơ bản (6 buổi)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/tgz-cc01-live' },
-      { track: 'cc-cntt-advanced', classCode: 'K26-CCN01', className: '3. CC CNTT Nâng cao (6 buổi)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/tgz-ccn01-room' },
-      { track: 'cntt-basic-we', classCode: 'K26-WE-CB', className: '4. CNTT Cơ bản: Word + Excel (10-12b)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/tgz-wecb-room' },
-      { track: 'cntt-adv-we', classCode: 'K26-WENC01', className: '5. CNTT Nâng Cao: Word + Excel (10-12b)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/tgz-wenc-room' },
-      { track: 'ai-office', classCode: 'K26-AI01', className: '6. Ứng dụng AI vào công việc Văn phòng (5b)', teacher: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: 'https://meet.google.com/tgz-ai01-live' },
-      { track: 'excel-accounting', classCode: 'K26-KT01', className: '7. Excel cho Kế toán', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: 'https://meet.google.com/tgz-kt01-room' },
-      { track: 'word-6b', classCode: 'K26-MOSW01', className: '8. Kỹ năng soạn thảo Word (6 buổi)', teacher: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/tgz-mosw-room' },
-      { track: 'excel-6b', classCode: 'K26-EX01', className: '9. Xử lý bảng tính Excel (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: 'https://meet.google.com/tgz-ex01-live' },
-      { track: 'ppt-6b', classCode: 'K26-PPT01', className: '10. Thiết kế PowerPoint (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: 'https://meet.google.com/tgz-ppt01-live' }
+      { track: 'office-fast-3in1', classCode: 'K26-WE01', className: '1. Word, Excel, PowerPoint (3b/môn)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' },
+      { track: 'cc-cntt-basic', classCode: 'K26-CC01', className: '2. CC CNTT Cơ bản (6 buổi)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' },
+      { track: 'cc-cntt-advanced', classCode: 'K26-CCN01', className: '3. CC CNTT Nâng cao (6 buổi)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
+      { track: 'cntt-basic-we', classCode: 'K26-WE-CB', className: '4. CNTT Cơ bản: Word + Excel (10-12b)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
+      { track: 'cntt-adv-we', classCode: 'K26-WENC01', className: '5. CNTT Nâng Cao: Word + Excel (10-12b)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
+      { track: 'ai-office', classCode: 'K26-AI01', className: '6. Ứng dụng AI vào công việc Văn phòng (5b)', teacher: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: '' },
+      { track: 'excel-accounting', classCode: 'K26-KT01', className: '7. Excel cho Kế toán', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
+      { track: 'word-6b', classCode: 'K26-MOSW01', className: '8. Kỹ năng soạn thảo Word (6 buổi)', teacher: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
+      { track: 'excel-6b', classCode: 'K26-EX01', className: '9. Xử lý bảng tính Excel (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
+      { track: 'ppt-6b', classCode: 'K26-PPT01', className: '10. Thiết kế PowerPoint (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' }
     ];
   });
 
@@ -2134,27 +2135,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <span>🎲 Tự Động Sinh 10 Link Meet Độc Lập</span>
                 </button>
 
-                <a
-                  href="https://meet.google.com/sja-vcpy-rsu"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-primary"
-                  style={{
-                    padding: '10px 18px',
-                    fontSize: '0.84rem',
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    borderRadius: '10px',
-                    background: '#2563EB',
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
-                  }}
-                >
-                  <Video size={16} />
-                  <span>Phòng Họp Tổng (Admin & Thanh Tra)</span>
-                  <ExternalLink size={13} />
-                </a>
+                {masterMeetUrlInput && (
+                  <a
+                    href={masterMeetUrlInput}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-primary"
+                    style={{
+                      padding: '10px 18px',
+                      fontSize: '0.84rem',
+                      fontWeight: 800,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      borderRadius: '10px',
+                      background: '#2563EB',
+                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
+                    }}
+                  >
+                    <Video size={16} />
+                    <span>Vào Phòng Họp Chung</span>
+                    <ExternalLink size={13} />
+                  </a>
+                )}
               </div>
             </div>
 
@@ -2174,7 +2177,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   required
                   value={masterMeetUrlInput}
                   onChange={e => setMasterMeetUrlInput(e.target.value)}
-                  placeholder="https://meet.google.com/sja-vcpy-rsu"
+                  placeholder="https://meet.google.com/xyz-abcd-efg"
                   style={{
                     flex: 1,
                     minWidth: '280px',

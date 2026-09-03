@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("role", User.Role.ADMIN)
+        extra_fields.setdefault("role", User.Role.SUPER_ADMIN)
         return self.create_user(username, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -28,6 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         TEACHER = "teacher", "Giảng viên"
         ACADEMIC = "academic", "Giáo vụ học vụ"
         ADMIN = "admin", "Quản trị hệ thống"
+        SUPER_ADMIN = "super_admin", "Quản trị viên cấp cao"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField("Mã tài khoản", max_length=50, unique=True, db_index=True)

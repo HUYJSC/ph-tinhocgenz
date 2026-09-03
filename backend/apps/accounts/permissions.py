@@ -3,13 +3,22 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class IsAdmin(BasePermission):
-    """Quyền truy cập dành riêng cho Quản trị viên (Super Admin)."""
+class IsSuperAdmin(BasePermission):
+    """Quyền truy cập tối thượng dành riêng cho Super Admin."""
     def has_permission(self, request, view):
         return bool(
             request.user and
             request.user.is_authenticated and
-            (request.user.role == User.Role.ADMIN or request.user.is_superuser)
+            (request.user.role == User.Role.SUPER_ADMIN or request.user.is_superuser)
+        )
+
+class IsAdmin(BasePermission):
+    """Quyền truy cập dành cho Quản trị viên hoặc Super Admin."""
+    def has_permission(self, request, view):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user.role in [User.Role.ADMIN, User.Role.SUPER_ADMIN] or request.user.is_superuser)
         )
 
 class IsTeacherOrAdmin(BasePermission):
@@ -18,7 +27,7 @@ class IsTeacherOrAdmin(BasePermission):
         return bool(
             request.user and
             request.user.is_authenticated and
-            request.user.role in [User.Role.TEACHER, User.Role.ADMIN]
+            (request.user.role in [User.Role.TEACHER, User.Role.ADMIN, User.Role.SUPER_ADMIN] or request.user.is_superuser)
         )
 
 class IsAcademicOrAdmin(BasePermission):
@@ -27,7 +36,7 @@ class IsAcademicOrAdmin(BasePermission):
         return bool(
             request.user and
             request.user.is_authenticated and
-            request.user.role in [User.Role.ACADEMIC, User.Role.ADMIN]
+            (request.user.role in [User.Role.ACADEMIC, User.Role.ADMIN, User.Role.SUPER_ADMIN] or request.user.is_superuser)
         )
 
 class IsStudent(BasePermission):
@@ -48,7 +57,7 @@ class IsOwnerOrStaff(BasePermission):
             return False
 
         # Staff luôn có toàn quyền
-        if request.user.role in [User.Role.TEACHER, User.Role.ACADEMIC, User.Role.ADMIN] or request.user.is_superuser:
+        if request.user.role in [User.Role.TEACHER, User.Role.ACADEMIC, User.Role.ADMIN, User.Role.SUPER_ADMIN] or request.user.is_superuser:
             return True
 
         # Nếu đối tượng chính là User

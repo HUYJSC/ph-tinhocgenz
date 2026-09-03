@@ -79,8 +79,8 @@ assert(TRACK_LIST.includes('ai-office'), 'Chương trình ứng dụng AI vào V
 console.log('\n🔐 NHÓM 4: Kiểm tra tính năng Cổng Xác thực (Auth Gateway)');
 const authContent = fs.readFileSync('src/components/auth/UnifiedAuthGateway.tsx', 'utf8');
 assert(authContent.includes('setShowPassword(!showPassword)'), 'Có nút Hiện/Ẩn mật khẩu (Show/Hide toggle)');
-assert(authContent.includes('handleQuickFillStudent'), 'Có nút đăng nhập nhanh học viên (THGZ01)');
-assert(authContent.includes('handleQuickFillAdmin'), 'Có nút đăng nhập nhanh giảng viên');
+assert(!authContent.includes('handleQuickFillStudent'), 'Đã xóa bỏ hàm đăng nhập nhanh học viên (P0 Security Lockdown)');
+assert(!authContent.includes('handleQuickFillAdmin'), 'Đã xóa bỏ hàm đăng nhập nhanh quản trị viên (P0 Security Lockdown)');
 assert(authContent.includes('EyeOff') && authContent.includes('Eye'), 'Có icon Eye & EyeOff của Lucide');
 
 // 5. Test Dashboard To-Do Hub

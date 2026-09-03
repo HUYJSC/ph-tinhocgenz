@@ -233,6 +233,23 @@ export function App() {
     }
   }, [isSessionActive, user.role]);
 
+  // Dynamic SEO Meta Guard: Enforce noindex on admin, staff, and authenticated routes
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const { route } = getAppRoute();
+    let metaRobots = document.querySelector('meta[name="robots"]');
+    if (!metaRobots) {
+      metaRobots = document.createElement('meta');
+      metaRobots.setAttribute('name', 'robots');
+      document.head.appendChild(metaRobots);
+    }
+    if (route === 'admin' || route === 'teacher' || route === 'academic' || route === 'student' || isSessionActive) {
+      metaRobots.setAttribute('content', 'noindex, nofollow, noarchive');
+    } else {
+      metaRobots.setAttribute('content', 'index, follow');
+    }
+  }, [isSessionActive, activeTab]);
+
   // Navigate tab with URL synchronization across separated roles
   const handleNavigateTab = (newTab: ActiveTab) => {
     setActiveTab(newTab);

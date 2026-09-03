@@ -53,24 +53,6 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     soundFx.playClick();
   };
 
-  // Internal test handlers (preserved for automated test suite)
-  const handleQuickFillStudent = () => {
-    setStudentCode('THGZ01');
-    setStudentPassword('123');
-    setSelectedTrack('office-fast-3in1');
-    setStudentError('');
-  };
-
-  const handleQuickFillAdmin = () => {
-    setAdminName('Thầy Quang Huy');
-    setAdminPin('admin123');
-    setAdminTrackChoice('all');
-    setAdminError('');
-  };
-
-  // Prevent TS6133 unused var without rendering to UI
-  void { handleQuickFillStudent, handleQuickFillAdmin };
-
   // STRICT VALIDATION: Correct credentials enter, wrong credentials are completely rejected
   const handleStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
