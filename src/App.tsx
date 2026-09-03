@@ -56,13 +56,15 @@ export const PageLoadingFallback = () => (
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
-export type AppRoute = 'landing' | 'student' | 'teacher' | 'academic' | 'admin' | 'verify';
+export type AppRoute = 'landing' | 'student' | 'teacher' | 'academic' | 'admin' | 'verify' | 'attendance' | 'schedule';
 
 export const getAppRoute = (): { route: AppRoute; param?: string } => {
   if (typeof window === 'undefined') return { route: 'landing' };
   const p = window.location.pathname.toLowerCase();
   const h = window.location.hash.toLowerCase();
-  if (p.includes('/admin') || h.includes('admin')) return { route: 'admin' };
+  if (p === '/admin' || p === '/admin/' || h === '#admin' || h === '#/admin') return { route: 'admin' };
+  if (p.startsWith('/attendance') || h.includes('attendance')) return { route: 'attendance' };
+  if (p.startsWith('/schedule') || h.includes('schedule')) return { route: 'schedule' };
   if (p.includes('/teacher') || h.includes('teacher')) return { route: 'teacher' };
   if (p.includes('/academic') || h.includes('academic')) return { route: 'academic' };
   if (p.includes('/app') || p.includes('/student') || h.includes('app') || h.includes('student')) return { route: 'student' };
@@ -214,8 +216,6 @@ export function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [isSessionActive, isStaff, activeTab]);
 
-  const isSuperAdmin = user.role === 'admin';
-
   // RBAC Client Guard & Redirect enforcement
   useEffect(() => {
     if (!isSessionActive) return;
@@ -258,8 +258,16 @@ export function App() {
       let targetPath = '/';
       if (newTab === 'admin') {
         targetPath = '/admin';
-      } else if (newTab === 'schedule' || newTab === 'assignments' || newTab === 'attendance' || newTab === 'early_warning') {
-        targetPath = isSuperAdmin ? '/admin' : '/teacher';
+      } else if (newTab === 'attendance') {
+        targetPath = '/attendance';
+      } else if (newTab === 'schedule') {
+        targetPath = '/schedule';
+      } else if (newTab === 'assignments') {
+        targetPath = isStaff ? '/teacher' : '/student';
+      } else if (newTab === 'early_warning') {
+        targetPath = isStaff ? '/teacher' : '/student';
+      } else if (isStaff) {
+        targetPath = '/teacher';
       } else if (isSessionActive) {
         targetPath = '/student';
       }
@@ -271,13 +279,17 @@ export function App() {
 
   const [verifyCert, setVerifyCert] = useState<DigitalCertificate | null>(null);
 
-  // Initial route handler for /verify
+  // Initial route handler for /verify, /attendance, /schedule
   useEffect(() => {
     const { route, param } = getAppRoute();
     if (route === 'verify') {
       const allCerts = CertificateService.getAllCertificates();
       const matched = param ? allCerts.find((c: DigitalCertificate) => c.certificateId.toLowerCase() === param.toLowerCase()) : allCerts[0];
       if (matched) setVerifyCert(matched);
+    } else if (route === 'attendance') {
+      setActiveTab('attendance');
+    } else if (route === 'schedule') {
+      setActiveTab('schedule');
     }
   }, []);
 
@@ -444,7 +456,8 @@ export function App() {
   };
 
   // 0. DEDICATED STANDALONE ADMIN ROUTE (/admin)
-  const isCurrentlyOnAdmin = getAppRoute().route === 'admin' || (typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin'));
+  const isExplicitAdminUrl = typeof window !== 'undefined' && (window.location.pathname.toLowerCase() === '/admin' || window.location.pathname.toLowerCase() === '/admin/' || window.location.hash.toLowerCase().includes('admin'));
+  const isCurrentlyOnAdmin = isExplicitAdminUrl && activeTab !== 'attendance' && activeTab !== 'schedule' && activeTab !== 'assignments';
   if (isCurrentlyOnAdmin) {
     return (
       <Suspense fallback={<PageLoadingFallback />}>
@@ -758,8 +771,8 @@ export function App() {
                 />
               )}
 
-              {/* Student Schedule Calendar */}
-              {!isStaff && activeTab === 'schedule' && (
+              {/* Class Schedule & Teaching Calendar */}
+              {activeTab === 'schedule' && (
                 <ScheduleCalendar
                   currentUser={user}
                   schedules={schedules}
