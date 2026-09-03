@@ -9,7 +9,7 @@ import { EarlyWarningDashboard } from './EarlyWarningDashboard';
 import { ZaloNotificationManager } from './ZaloNotificationManager';
 import { EarlyWarningService } from '../../services/earlyWarningService';
 import {
-  Shield, BookOpen, Users, BarChart3, PlusCircle, Trash2,
+  BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
   Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot
@@ -537,103 +537,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
-      {/* Header Banner */}
-      <div
-        className="card"
-        style={{
-          padding: '22px 24px',
-          background: isSuperAdmin
-            ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.09) 0%, rgba(245, 158, 11, 0.04) 100%)'
-            : 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: '20px',
-          border: isSuperAdmin ? '1px solid rgba(245, 158, 11, 0.28)' : '1px solid rgba(37, 99, 235, 0.25)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '12px',
-              background: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '3px',
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.12)',
-              border: '1.5px solid rgba(37, 99, 235, 0.18)'
-            }}
-          >
-            <img src="/logo-icon.png" alt="PH Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-                {isSuperAdmin ? 'Cổng Quản Trị Hệ Thống' : 'Cổng Khảo Thí & Giảng Dạy'}
-              </h2>
-              <span
-                style={{
-                  fontSize: '0.72rem',
-                  background: isSuperAdmin ? '#d97706' : '#2563eb',
-                  color: '#fff',
-                  padding: '2px 8px',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '3px'
-                }}
-              >
-                {isSuperAdmin ? <Shield size={11} /> : <GraduationCap size={11} />}
-                <span>{isSuperAdmin ? '👑 ADMIN TOÀN QUYỀN' : '👨‍🏫 GIẢNG VIÊN'}</span>
-              </span>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-              {isSuperAdmin
-                ? `Quản trị viên: ${currentUser.name} • Toàn quyền 10 phân hệ khóa học`
-                : `Giảng viên: ${currentUser.name} • Quản lý các phân hệ được phân công`}
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={exportGradebookExcel}
-            className="btn btn-secondary"
-            style={{
-              padding: '8px 14px',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              background: 'rgba(16, 185, 129, 0.08)',
-              color: '#059669'
-            }}
-            title="Xuất bảng điểm toàn bộ học viên sang file Excel (.CSV UTF-8 chuẩn)"
-          >
-            <FileSpreadsheet size={16} />
-            <span>Xuất Bảng Điểm Excel</span>
-          </button>
-
-          <button
-            onClick={onNavigateToCreator}
-            className="btn btn-primary"
-            style={{ padding: '8px 16px', fontSize: '0.82rem', fontWeight: 800 }}
-          >
-            <PlusCircle size={16} />
-            <span>Soạn Đề Thi Mới</span>
-          </button>
-        </div>
-      </div>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '8px 16px' }} className="animate-slide-up">
 
       {/* Sub Tabs Navigation - Hidden when Left Sidebar is already present to eliminate UI duplication */}
       {!hideInternalNav && (
@@ -765,9 +669,49 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </p>
             </div>
 
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-              <Clock size={13} color="var(--accent-primary)" />
-              <span>Đồng bộ: <strong>Thời gian thực</strong></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={exportGradebookExcel}
+                className="btn btn-secondary"
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  color: '#059669',
+                  cursor: 'pointer'
+                }}
+                title="Xuất bảng điểm toàn bộ học viên sang file Excel (.CSV UTF-8 chuẩn)"
+              >
+                <FileSpreadsheet size={15} />
+                <span>Xuất Bảng Điểm Excel</span>
+              </button>
+
+              <button
+                onClick={onNavigateToCreator}
+                className="btn btn-primary"
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <PlusCircle size={15} />
+                <span>Soạn Đề Thi Mới</span>
+              </button>
+
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                <Clock size={13} color="var(--accent-primary)" />
+                <span>Đồng bộ: <strong>Thời gian thực</strong></span>
+              </div>
             </div>
           </div>
 
