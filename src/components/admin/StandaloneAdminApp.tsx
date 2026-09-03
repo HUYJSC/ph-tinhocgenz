@@ -8,7 +8,7 @@ import {
   Shield, Users, UserCheck, Calendar, CheckSquare, BookOpen,
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
   ExternalLink, Key, Menu, X, ChevronRight,
-  Server, BarChart3, Bot, Eye, EyeOff
+  Server, BarChart3, Bot, Eye, EyeOff, GraduationCap
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -355,15 +355,30 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           }}>
             {sidebarOpen ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img src="/logo-dark.png" alt="PH Digital Education" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+                  flexShrink: 0
+                }}>
+                  <GraduationCap size={20} color="#ffffff" />
+                </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#f59e0b', letterSpacing: '0.04em' }}>ADMIN PORTAL</div>
-                  <div style={{ fontSize: '10px', color: '#64748b' }}>Phân Hệ Quản Trị</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>PH EDUCATION</span>
+                    <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)' }}>LMS</span>
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Cổng Quản Trị Học Vụ</div>
                 </div>
               </div>
             ) : (
               <div style={{ width: '100%', textAlign: 'center' }}>
-                <Shield size={24} color="#f59e0b" />
+                <GraduationCap size={22} color="#3b82f6" />
               </div>
             )}
 
@@ -408,31 +423,36 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: sidebarOpen ? 'space-between' : 'center',
-                        padding: '10px 12px',
-                        marginBottom: '4px',
-                        borderRadius: '8px',
+                        padding: '9px 12px',
+                        marginBottom: '3px',
+                        borderRadius: '10px',
                         border: 'none',
-                        background: isActive ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' : 'transparent',
+                        background: isActive
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : 'transparent',
                         color: isActive ? '#ffffff' : '#94a3b8',
                         fontWeight: isActive ? 700 : 500,
                         fontSize: '0.84rem',
                         cursor: 'pointer',
-                        transition: 'all 0.15s'
+                        transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: isActive ? '0 4px 14px rgba(37, 99, 235, 0.35)' : 'none',
+                        textAlign: 'left'
                       }}
                       title={item.label}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Icon size={18} color={isActive ? '#ffffff' : '#64748b'} />
+                        <Icon size={17} color={isActive ? '#ffffff' : '#64748b'} />
                         {sidebarOpen && <span>{item.label}</span>}
                       </div>
                       {sidebarOpen && item.badge && (
                         <span style={{
-                          background: isActive ? 'rgba(255,255,255,0.25)' : '#1e293b',
-                          color: isActive ? '#ffffff' : '#f59e0b',
-                          padding: '1px 6px',
+                          background: isActive ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.06)',
+                          color: isActive ? '#ffffff' : '#94a3b8',
+                          padding: '1px 7px',
                           borderRadius: '9999px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          border: isActive ? 'none' : '1px solid rgba(255, 255, 255, 0.08)'
                         }}>
                           {item.badge}
                         </span>
@@ -453,23 +473,24 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: sidebarOpen ? 'space-between' : 'center',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                background: 'rgba(56, 189, 248, 0.08)',
-                border: '1px solid rgba(56, 189, 248, 0.2)',
+                padding: '9px 12px',
+                borderRadius: '10px',
+                background: 'rgba(56, 189, 248, 0.06)',
+                border: '1px solid rgba(56, 189, 248, 0.18)',
                 color: '#38bdf8',
                 fontSize: '0.82rem',
                 fontWeight: 600,
                 textDecoration: 'none',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                transition: 'all 0.15s ease'
               }}
               title="Mở Cổng Django Admin"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Server size={18} color="#38bdf8" />
+                <Server size={17} color="#38bdf8" />
                 {sidebarOpen && <span>Django Admin Live</span>}
               </div>
-              {sidebarOpen && <ExternalLink size={14} />}
+              {sidebarOpen && <ExternalLink size={13} />}
             </a>
           </nav>
         </div>
@@ -479,15 +500,28 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           {sidebarOpen ? (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
-                  H
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  color: '#fff',
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
+                  flexShrink: 0
+                }}>
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'A'}
                 </div>
-                <div style={{ overflow: 'hidden' }}>
+                <div style={{ overflow: 'hidden', flex: 1 }}>
                   <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    {currentUser.name}
+                    {currentUser.name || 'Quản Trị Viên'}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: 600 }}>
-                    Super Admin
+                  <div style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                    <span>Super Admin</span>
                   </div>
                 </div>
               </div>
@@ -554,21 +588,22 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
         {/* Topbar */}
         <header style={{
-          height: '56px',
+          height: '60px',
           padding: '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'var(--bg-card, #ffffff)',
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--border-color, #e2e8f0)',
           position: 'sticky',
           top: 0,
           zIndex: 40
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem' }}>
-            <span style={{ color: 'var(--text-muted, #64748b)' }}>Cổng Quản Trị</span>
+            <span style={{ color: 'var(--text-muted, #64748b)', fontWeight: 500 }}>Cổng Quản Trị</span>
             <ChevronRight size={14} color="#94a3b8" />
-            <span style={{ fontWeight: 700, color: 'var(--text-primary, #0f172a)' }}>
+            <span style={{ fontWeight: 800, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.01em' }}>
               {(menuSections.flatMap((s: MenuSection) => s.items).find((i: MenuItem) => i.id === activeSubTab)?.label) || 'Bảng Điều Khiển'}
             </span>
           </div>
@@ -579,15 +614,22 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '4px 10px',
+              padding: '4px 12px',
               borderRadius: '9999px',
-              background: '#ecfdf5',
-              border: '1px solid #a7f3d0',
-              color: '#047857',
+              background: 'rgba(16, 185, 129, 0.08)',
+              border: '1px solid rgba(16, 185, 129, 0.22)',
+              color: '#059669',
               fontSize: '0.74rem',
               fontWeight: 700
             }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+              <span style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: '#10b981',
+                display: 'inline-block',
+                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2)'
+              }} />
               <span>Production Live</span>
             </div>
 
@@ -595,17 +637,19 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
             <button
               onClick={onBackToStudentPortal}
               style={{
-                background: 'transparent',
+                background: 'var(--bg-card, #ffffff)',
                 border: '1px solid var(--border-color, #e2e8f0)',
                 color: 'var(--text-secondary, #475569)',
-                padding: '6px 12px',
-                borderRadius: '6px',
+                padding: '6px 14px',
+                borderRadius: '8px',
                 fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '6px',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+                transition: 'all 0.15s ease'
               }}
             >
               <span>Xem Website Học Viên</span>

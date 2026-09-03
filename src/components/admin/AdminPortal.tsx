@@ -12,7 +12,7 @@ import {
   BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
-  Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot
+  Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -655,17 +655,42 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         />
       )}
 
-      {/* 1. OVERVIEW TAB */}
+      {/* 1. OVERVIEW TAB - EDTECH COMMAND CENTER */}
       {activeSubTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Operational Header Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          {/* EdTech Command Header Bar */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px',
+            padding: '20px 24px',
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)'
+          }}>
             <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                Trung Tâm Điều Hành Học Vụ & Khảo Thí
-              </h2>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                Hệ thống dữ liệu học viên, ca học và ngân hàng đề thi chuẩn hóa • 10 Chương trình đào tạo
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary, #0f172a)', margin: 0, letterSpacing: '-0.01em' }}>
+                  Trung Tâm Điều Hành Học Vụ & Khảo Thí
+                </h2>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  color: '#2563eb',
+                  border: '1px solid rgba(37, 99, 235, 0.25)',
+                  letterSpacing: '0.02em'
+                }}>
+                  EDTECH LMS 2026
+                </span>
+              </div>
+              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary, #64748b)', margin: 0 }}>
+                Hệ thống dữ liệu học vụ, khảo thí thời gian thực • 10 Chương trình chuẩn quốc tế
               </p>
             </div>
 
@@ -674,20 +699,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 onClick={exportGradebookExcel}
                 className="btn btn-secondary"
                 style={{
-                  padding: '7px 12px',
-                  fontSize: '0.8rem',
+                  padding: '9px 16px',
+                  fontSize: '0.82rem',
                   fontWeight: 700,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  gap: '7px',
+                  border: '1px solid rgba(16, 185, 129, 0.35)',
                   background: 'rgba(16, 185, 129, 0.08)',
                   color: '#059669',
-                  cursor: 'pointer'
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
                 }}
                 title="Xuất bảng điểm toàn bộ học viên sang file Excel (.CSV UTF-8 chuẩn)"
               >
-                <FileSpreadsheet size={15} />
+                <FileSpreadsheet size={16} />
                 <span>Xuất Bảng Điểm Excel</span>
               </button>
 
@@ -695,42 +722,92 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 onClick={onNavigateToCreator}
                 className="btn btn-primary"
                 style={{
-                  padding: '7px 14px',
-                  fontSize: '0.8rem',
+                  padding: '9px 18px',
+                  fontSize: '0.82rem',
                   fontWeight: 800,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '7px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
                   cursor: 'pointer'
                 }}
               >
-                <PlusCircle size={15} />
+                <PlusCircle size={16} />
                 <span>Soạn Đề Thi Mới</span>
               </button>
 
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                <Clock size={13} color="var(--accent-primary)" />
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--bg-primary, #f8fafc)',
+                padding: '7px 12px',
+                borderRadius: '10px',
+                border: '1px solid var(--border-color, #e2e8f0)',
+                fontSize: '0.78rem',
+                color: 'var(--text-secondary, #64748b)',
+                fontWeight: 600
+              }}>
+                <Clock size={14} color="#2563eb" />
                 <span>Đồng bộ: <strong>Thời gian thực</strong></span>
               </div>
             </div>
           </div>
 
-          {/* Key Metrics Cards with Drill-down & Explicit Empty States */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+          {/* Key Metrics Cards with Modern EdTech Surfaces & Squircle Icons */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
             {/* 1. Học viên */}
             <div
               className="card"
-              onClick={() => { setActiveSubTab('student_directory'); soundFx.playClick(); }}
-              style={{ padding: '18px', borderLeft: '4px solid #2563eb', cursor: 'pointer', transition: 'transform 0.15s ease' }}
+              onClick={() => { handleSelectSubTab('student_directory'); soundFx.playClick(); }}
+              style={{
+                padding: '22px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color, #e2e8f0)',
+                background: 'var(--bg-card, #ffffff)',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '12px'
+              }}
               title="Nhấn để xem Danh sách Học viên chi tiết"
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tổng Số Học Viên</span>
-                <Users size={16} color="#2563eb" />
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600, letterSpacing: '0.02em' }}>
+                  TỔNG SỐ HỌC VIÊN
+                </span>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#2563eb'
+                }}>
+                  <Users size={19} />
+                </div>
               </div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{studentAccounts.length}</div>
-              <div style={{ fontSize: '0.74rem', color: '#2563eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span>Đã cấp mã đăng nhập • Xem chi tiết →</span>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.02em' }}>
+                {studentAccounts.length}
+              </div>
+              <div style={{
+                fontSize: '0.74rem',
+                color: '#2563eb',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                paddingTop: '8px',
+                borderTop: '1px solid var(--border-color, #f1f5f9)'
+              }}>
+                <span>✓ Đã cấp mã đăng nhập • Xem chi tiết →</span>
               </div>
             </div>
 
@@ -738,96 +815,300 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {isSuperAdmin && (
               <div
                 className="card"
-                onClick={() => { setActiveSubTab('teachers'); soundFx.playClick(); }}
-                style={{ padding: '18px', borderLeft: '4px solid #d97706', cursor: 'pointer', transition: 'transform 0.15s ease' }}
+                onClick={() => { handleSelectSubTab('teachers'); soundFx.playClick(); }}
+                style={{
+                  padding: '22px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  background: 'var(--bg-card, #ffffff)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '12px'
+                }}
                 title="Nhấn để xem Danh sách Giảng viên chi tiết"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Giảng Viên Đứng Lớp</span>
-                  <UserCheck size={16} color="#d97706" />
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600, letterSpacing: '0.02em' }}>
+                    GIẢNG VIÊN ĐỨNG LỚP
+                  </span>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'rgba(217, 119, 6, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#d97706'
+                  }}>
+                    <UserCheck size={19} />
+                  </div>
                 </div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{teacherAccounts.length}</div>
-                <div style={{ fontSize: '0.74rem', color: '#d97706', fontWeight: 600 }}>Phụ trách 10 chương trình →</div>
+                <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.02em' }}>
+                  {teacherAccounts.length}
+                </div>
+                <div style={{
+                  fontSize: '0.74rem',
+                  color: '#d97706',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  paddingTop: '8px',
+                  borderTop: '1px solid var(--border-color, #f1f5f9)'
+                }}>
+                  <span>★ Phụ trách 10 chương trình →</span>
+                </div>
               </div>
             )}
 
             {/* 3. Kho đề thi & câu hỏi */}
             <div
               className="card"
-              onClick={() => { setActiveSubTab('exams'); soundFx.playClick(); }}
-              style={{ padding: '18px', borderLeft: '4px solid #10b981', cursor: 'pointer', transition: 'transform 0.15s ease' }}
+              onClick={() => { handleSelectSubTab('exams'); soundFx.playClick(); }}
+              style={{
+                padding: '22px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color, #e2e8f0)',
+                background: 'var(--bg-card, #ffffff)',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '12px'
+              }}
               title="Nhấn để mở Kho Đề Thi"
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Kho Đề Thi & Khảo Thí</span>
-                <BookOpen size={16} color="#10b981" />
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600, letterSpacing: '0.02em' }}>
+                  KHO ĐỀ THI & KHẢO THÍ
+                </span>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#10b981'
+                }}>
+                  <BookOpen size={19} />
+                </div>
               </div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{totalQuizzes}</div>
-              <div style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 600 }}>{totalQuestions} câu hỏi chuẩn quốc tế →</div>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.02em' }}>
+                {totalQuizzes}
+              </div>
+              <div style={{
+                fontSize: '0.74rem',
+                color: '#10b981',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                paddingTop: '8px',
+                borderTop: '1px solid var(--border-color, #f1f5f9)'
+              }}>
+                <span>⚡ {totalQuestions} câu hỏi chuẩn quốc tế →</span>
+              </div>
             </div>
 
             {/* 4. Tỷ lệ đạt chuẩn */}
             <div
               className="card"
-              onClick={() => { setActiveSubTab('grading_assignments'); soundFx.playClick(); }}
-              style={{ padding: '18px', borderLeft: '4px solid #8b5cf6', cursor: 'pointer', transition: 'transform 0.15s ease' }}
+              onClick={() => { handleSelectSubTab('grading_assignments'); soundFx.playClick(); }}
+              style={{
+                padding: '22px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color, #e2e8f0)',
+                background: 'var(--bg-card, #ffffff)',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '12px'
+              }}
               title="Nhấn để xem Bảng Chấm Điểm & Khảo Thí"
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tỷ Lệ Đạt Chuẩn (≥70%)</span>
-                <GraduationCap size={16} color="#8b5cf6" />
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600, letterSpacing: '0.02em' }}>
+                  TỶ LỆ ĐẠT CHUẨN (≥70%)
+                </span>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: 'rgba(139, 92, 246, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#8b5cf6'
+                }}>
+                  <GraduationCap size={19} />
+                </div>
               </div>
               {attempts.length > 0 ? (
                 <>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0' }}>{passRate}%</div>
-                  <div style={{ fontSize: '0.74rem', color: '#8b5cf6', fontWeight: 600 }}>Điểm TB: {avgScore}% ({attempts.length} lượt thi)</div>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.02em' }}>
+                    {passRate}%
+                  </div>
+                  <div style={{
+                    fontSize: '0.74rem',
+                    color: '#8b5cf6',
+                    fontWeight: 600,
+                    paddingTop: '8px',
+                    borderTop: '1px solid var(--border-color, #f1f5f9)'
+                  }}>
+                    <span>Điểm TB: {avgScore}% ({attempts.length} lượt thi)</span>
+                  </div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-muted)', margin: '8px 0 4px' }}>Chưa có bài nộp</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Sẵn sàng tính điểm khi học viên nộp bài</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-muted, #94a3b8)', margin: '4px 0' }}>
+                    Chưa có bài nộp
+                  </div>
+                  <div style={{
+                    fontSize: '0.74rem',
+                    color: 'var(--text-secondary, #64748b)',
+                    paddingTop: '8px',
+                    borderTop: '1px solid var(--border-color, #f1f5f9)'
+                  }}>
+                    <span>Sẵn sàng tính điểm khi học viên nộp bài</span>
+                  </div>
                 </>
               )}
             </div>
           </div>
 
-          {/* Structured Curriculum Tracks Summary */}
-          <div className="card" style={{ padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                <Sparkles size={18} color="#d97706" />
-                <span>10 Chương Trình Đào Tạo Chuẩn Hóa Tại PH Digital Education</span>
-              </h3>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Cam kết chuẩn đầu ra Certiport & Bộ GD&ĐT</span>
+          {/* Structured Curriculum Tracks Summary - EdTech Course Cards */}
+          <div style={{
+            padding: '24px',
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  background: 'rgba(217, 119, 6, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#d97706'
+                }}>
+                  <Sparkles size={17} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.01em' }}>
+                    10 Chương Trình Đào Tạo Chuẩn Hóa Tại PH Digital Education
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary, #64748b)', margin: '2px 0 0' }}>
+                    Khung năng lực số chuẩn quốc tế Certiport (MOS, IC3 GS6) & Bộ Giáo Dục - Đào Tạo
+                  </p>
+                </div>
+              </div>
+              <span style={{
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                color: '#059669',
+                background: 'rgba(16, 185, 129, 0.1)',
+                padding: '4px 10px',
+                borderRadius: '9999px',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
+              }}>
+                100% Khóa Học Đã Kích Hoạt
+              </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', fontSize: '0.84rem' }}>
-              {ALL_TRACK_OPTIONS.map((track, idx) => {
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+              {ALL_TRACK_OPTIONS.map((track) => {
                 const trackQuizzes = quizzes.filter(q => q.category === track.id);
                 const trackStudents = studentAccounts.filter(s => s.programTrack === track.id || (s.enrolledTracks && s.enrolledTracks.includes(track.id)));
-                const borderColors = ['#2563eb', '#10b981', '#7c3aed', '#0284c7', '#ea580c', '#059669', '#d97706', '#dc2626', '#4f46e5', '#0891b2'];
-                const color = borderColors[idx % borderColors.length];
+
+                const metaConfig: Record<string, { tag: string; bg: string; color: string; icon: any }> = {
+                  'office-fast-3in1': { tag: 'MOS Cấp Tốc', bg: 'rgba(37, 99, 235, 0.08)', color: '#2563eb', icon: FileText },
+                  'cc-cntt-basic':    { tag: 'Bộ GD&ĐT Cơ Bản', bg: 'rgba(8, 145, 178, 0.08)', color: '#0891b2', icon: Globe },
+                  'cc-cntt-advanced': { tag: 'Bộ GD&ĐT Nâng Cao', bg: 'rgba(124, 58, 237, 0.08)', color: '#7c3aed', icon: Sparkles },
+                  'cntt-basic-we':    { tag: 'Word + Excel CB', bg: 'rgba(5, 150, 105, 0.08)', color: '#059669', icon: FileSpreadsheet },
+                  'cntt-adv-we':      { tag: 'Word + Excel NC', bg: 'rgba(234, 88, 12, 0.08)', color: '#ea580c', icon: TrendingUp },
+                  'ai-office':        { tag: 'AI Office 2026', bg: 'rgba(139, 92, 246, 0.08)', color: '#8b5cf6', icon: Bot },
+                  'excel-accounting': { tag: 'Kế Toán Doanh Nghiệp', bg: 'rgba(16, 185, 129, 0.08)', color: '#10b981', icon: FileSpreadsheet },
+                  'word-6b':          { tag: 'Kỹ Năng Word 365', bg: 'rgba(59, 130, 246, 0.08)', color: '#3b82f6', icon: FileText },
+                  'excel-6b':         { tag: 'Kỹ Năng Excel 365', bg: 'rgba(16, 185, 129, 0.08)', color: '#10b981', icon: FileSpreadsheet },
+                  'ppt-6b':           { tag: 'PowerPoint Design', bg: 'rgba(249, 115, 22, 0.08)', color: '#f97316', icon: Video }
+                };
+
+                const currentMeta = metaConfig[track.id] || { tag: 'Chuyên Sâu', bg: 'rgba(37, 99, 235, 0.08)', color: '#2563eb', icon: BookOpen };
+                const TrackIcon = currentMeta.icon;
 
                 return (
                   <div
                     key={track.id}
                     style={{
-                      padding: '12px 14px',
-                      background: 'var(--bg-primary)',
-                      borderRadius: 'var(--radius-md)',
-                      borderLeft: `3px solid ${color}`,
+                      padding: '16px 18px',
+                      background: 'var(--bg-primary, #f8fafc)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border-color, #e2e8f0)',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      gap: '6px'
+                      gap: '12px',
+                      transition: 'all 0.18s ease'
                     }}
                   >
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: currentMeta.bg,
+                        color: currentMeta.color,
+                        letterSpacing: '0.02em'
+                      }}>
+                        {currentMeta.tag}
+                      </span>
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        background: currentMeta.bg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: currentMeta.color
+                      }}>
+                        <TrackIcon size={15} />
+                      </div>
+                    </div>
+
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary, #0f172a)', fontSize: '0.88rem', lineHeight: 1.4 }}>
                       {track.label}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                      <span>{trackStudents.length} học viên theo học</span>
-                      <span style={{ color: color, fontWeight: 700 }}>{trackQuizzes.length} đề thi sẵn sàng</span>
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '0.74rem',
+                      color: 'var(--text-secondary, #64748b)',
+                      paddingTop: '10px',
+                      borderTop: '1px solid var(--border-color, #e2e8f0)'
+                    }}>
+                      <span>👥 {trackStudents.length} học viên</span>
+                      <span style={{ color: currentMeta.color, fontWeight: 700 }}>📝 {trackQuizzes.length} đề thi</span>
                     </div>
                   </div>
                 );
