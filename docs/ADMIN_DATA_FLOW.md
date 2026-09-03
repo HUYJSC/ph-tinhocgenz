@@ -126,3 +126,55 @@
      - Học viên < 25 tuổi: Định tuyến tin nhắn đến Zalo của Phụ huynh.
      - Học viên >= 25 tuổi: Gửi trực tiếp cho Học viên.
    - Bản tin được đẩy vào hàng đợi background, gửi qua Zalo Business API chính thức, lưu log trạng thái vào `ZaloNotificationLog`.
+
+---
+
+## 5. QUY TRÌNH TỰ KHÔI PHỤC MẬT KHẨU QUẢN TRỊ VIÊN & CÁN BỘ (ADMIN PASSWORD SELF-RECOVERY FLOW)
+
+```text
+               ┌─────────────────────────────────────────────────────────┐
+               │ 1. Admin/Cán bộ bấm "Quên mật khẩu? Lấy lại qua Gmail"  │
+               └──────────────────────────┬──────────────────────────────┘
+                                          │
+                                          ▼
+               ┌─────────────────────────────────────────────────────────┐
+               │ 2. Nhập định danh: Mã tài khoản (ADMIN01/admin),       │
+               │    Gmail (admin@tinhocgenz.io.vn) hoặc SĐT (0988999888) │
+               └──────────────────────────┬──────────────────────────────┘
+                                          │
+                                          ▼
+                   ┌───────────────────────────────────────────────┐
+                   │ 3. Chọn Kênh Nhận Mã Xác Nhận OTP:            │
+                   ├──────────────────────┬────────────────────────┤
+                   │  📧 Hộp thư Gmail    │  📱 SĐT / SMS / Zalo   │
+                   │  (ad***n@...io.vn)   │  (0988****888)         │
+                   └──────────────────────┴────────────────────────┘
+                                          │
+                                          ▼
+               ┌─────────────────────────────────────────────────────────┐
+               │ 4. Hệ thống sinh mã OTP 6 số bảo mật (TTL 10 phút)      │
+               │    - Redis Cache: key 'pwd_reset_otp_{USER}', ttl=600s │
+               │    - Giới hạn 5 lần nhập sai chống Brute-force          │
+               │    - Tự động phát mã OTP qua kênh đã chọn               │
+               └──────────────────────────┬──────────────────────────────┘
+                                          │
+                                          ▼
+               ┌─────────────────────────────────────────────────────────┐
+               │ 5. Người dùng nhập OTP 6 số + Mật khẩu mới (≥ 6 ký tự)  │
+               └──────────────────────────┬──────────────────────────────┘
+                                          │
+                                          ▼
+               ┌─────────────────────────────────────────────────────────┐
+               │ 6. Backend băm mật khẩu mới bằng Argon2id / PBKDF2      │
+               │    - Hủy bỏ phiên OTP cũ trong Cache                   │
+               │    - Ghi nhận AuditLog hành động Reset Password         │
+               │    - Mật khẩu mới có hiệu lực ngay lập tức              │
+               │    - Đồng bộ trên cả 2 cổng quản trị của hệ thống       │
+               └──────────────────────────┴──────────────────────────────┘
+```
+
+### Chi Tiết Cấu Hình Thông Tin Khôi Phục:
+| Phân Vùng Hệ Thống | Cổng Quản Trị | Trường Định Danh Bắt Buộc | Kênh Khôi Phục Hỗ Trợ |
+|:---|:---|:---|:---|
+| 🏢 **Website Chính (Next.js / Django)** | `https://tinhocgenz.io.vn/admin` | `email` (Gmail), `phone` (SĐT) | Django Password Reset qua Email OTP + SMS Gateway |
+| 🎓 **Cổng Học Vụ LMS (React / Vite SPA)** | `https://hoctructuyen.tinhocgenz.io.vn/admin` | `email` (`admin@tinhocgenz.io.vn`), `phone` (`0988999888`) | Modal Wizard khôi phục trực tiếp qua Gmail OTP & SĐT SMS |

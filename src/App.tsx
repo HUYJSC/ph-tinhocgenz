@@ -501,6 +501,7 @@ export function App() {
             }
             return res;
           }}
+          onResetPassword={resetUserPassword}
           onLogout={handleLogout}
           onBackToStudentPortal={() => {
             if (typeof window !== 'undefined') {

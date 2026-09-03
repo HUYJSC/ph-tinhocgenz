@@ -274,10 +274,12 @@ export const GUEST_USER: UserProfile = {
 
 export const DEFAULT_ADMIN_USER: UserProfile = {
   id: 'admin-01',
-  name: 'Thầy Huy (Giảng Viên Trưởng)',
+  name: 'Thầy Huy (Giảng Viên Trưởng & Quản Trị Viên)',
   email: 'admin@tinhocgenz.io.vn',
+  phone: '0988999888',
+  phoneOrEmail: '0988 999 888 • admin@tinhocgenz.io.vn',
   role: 'admin',
-  schoolOrClass: 'PH Digital Education • Ban Giảng Huấn',
+  schoolOrClass: 'PH Digital Education • Ban Quản Trị & Đào Tạo',
   enrolledTracks: ALL_10_TRACKS,
   createdAt: '2026-08-15'
 };
@@ -423,10 +425,15 @@ export function useAuth() {
     if (matchedStaff) {
       // Validate mật khẩu cán bộ / giảng viên
       const storedPass = matchedStaff.password || '';
+      let adminOverridePass = '';
+      try {
+        adminOverridePass = localStorage.getItem('phtinhocgenz_admin_password_override') || '';
+      } catch {}
       const isRoleAdmin = matchedStaff.role === 'admin' || cleanNameLower === 'admin' || cleanNameLower === 'admin01';
 
       const isValidAdminPass = isRoleAdmin && (
         cleanPin === storedPass ||
+        (Boolean(adminOverridePass) && cleanPin === adminOverridePass) ||
         cleanPin === 'Admin@PH2026!Secure' ||
         cleanPin === 'admin123' ||
         cleanPin === '123'
@@ -657,21 +664,28 @@ export function useAuth() {
       return { success: true, message: `Đã đặt lại mật khẩu cho học viên ${updated[studentIndex].name} (${updated[studentIndex].studentCode}) thành công!` };
     }
 
-    // Search in teacher accounts
+    // Search in teacher & admin accounts
     const teacherIndex = teacherAccounts.findIndex(t =>
       t.teacherCode.toLowerCase() === cleanId ||
       t.name.toLowerCase() === cleanId ||
       (t.phone && t.phone.replace(/\s/g, '').includes(cleanId.replace(/\s/g, ''))) ||
       (t.email && t.email.toLowerCase() === cleanId) ||
-      (t.phoneOrEmail && t.phoneOrEmail.toLowerCase().includes(cleanId))
+      (t.phoneOrEmail && t.phoneOrEmail.toLowerCase().includes(cleanId)) ||
+      ((cleanId === 'admin' || cleanId === 'admin01' || cleanId === 'quantri') && (t.role === 'admin' || t.teacherCode === 'ADMIN01'))
     );
 
     if (teacherIndex !== -1) {
       const updated = [...teacherAccounts];
       updated[teacherIndex] = { ...updated[teacherIndex], password: cleanNew, mustChangePassword: false };
       setTeacherAccounts(updated);
+      if (updated[teacherIndex].role === 'admin' || updated[teacherIndex].teacherCode === 'ADMIN01') {
+        try {
+          localStorage.setItem('phtinhocgenz_admin_password_override', cleanNew);
+        } catch {}
+      }
       AccountRecoveryService.clearSession();
-      return { success: true, message: `Đã đặt lại mật khẩu cho giảng viên ${updated[teacherIndex].name} (${updated[teacherIndex].teacherCode}) thành công!` };
+      const roleTitle = updated[teacherIndex].role === 'admin' ? 'Quản trị viên' : 'Giảng viên';
+      return { success: true, message: `Đã đặt lại mật khẩu cho ${roleTitle} ${updated[teacherIndex].name} (${updated[teacherIndex].teacherCode}) thành công!` };
     }
 
     return { success: false, message: 'Không tìm thấy tài khoản tương ứng với thông tin đã nhập!' };

@@ -9,9 +9,11 @@
 
 export interface RecoveryOtpSession {
   identifier: string;         // Mã HV, Email hoặc SĐT
-  accountName: string;        // Tên học viên / Giảng viên
+  accountName: string;        // Tên học viên / Giảng viên / Quản trị viên
   email: string;              // Email nhận mã
-  role: 'student' | 'teacher';
+  phone?: string;             // Số điện thoại nhận mã
+  role: 'student' | 'teacher' | 'admin';
+  deliveryMethod: 'email' | 'phone';
   otpCode: string;            // Mã xác nhận 6 số
   createdAt: number;          // Timestamp tạo
   expiresAt: number;          // Timestamp hết hạn (10 phút)
@@ -27,6 +29,7 @@ export interface RecoveryEmailLog {
   otpCode: string;
   sentAt: string;
   htmlContent: string;
+  channel?: 'email' | 'phone';
 }
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 phút hiệu lực
@@ -53,6 +56,17 @@ export class AccountRecoveryService {
   }
 
   /**
+   * Che giấu số điện thoại để bảo mật thông tin (Phone Masking)
+   * Ví dụ: 0988999888 -> 0988****888
+   */
+  static maskPhone(phone: string): string {
+    if (!phone) return '0988****888';
+    const clean = phone.replace(/\s+/g, '');
+    if (clean.length < 7) return `${clean.slice(0, 3)}****`;
+    return `${clean.slice(0, 4)}****${clean.slice(-3)}`;
+  }
+
+  /**
    * Sinh mã OTP ngẫu nhiên 6 chữ số bảo mật
    */
   static generateRandomOtp(): string {
@@ -61,13 +75,15 @@ export class AccountRecoveryService {
   }
 
   /**
-   * Khởi tạo phiên khôi phục và tự động phát email chứa mã OTP
+   * Khởi tạo phiên khôi phục và tự động phát email / SMS chứa mã OTP
    */
   static initiateRecovery(
     identifier: string,
     accountName: string,
     rawEmail?: string,
-    role: 'student' | 'teacher' = 'student'
+    rawPhone?: string,
+    role: 'student' | 'teacher' | 'admin' = 'student',
+    deliveryMethod: 'email' | 'phone' = 'email'
   ): { success: boolean; session: RecoveryOtpSession; emailLog: RecoveryEmailLog } {
     // Clean up any legacy plaintext keys from localStorage
     try {
@@ -78,7 +94,8 @@ export class AccountRecoveryService {
     const cleanId = identifier.trim();
     const targetEmail = (rawEmail && rawEmail.includes('@'))
       ? rawEmail.trim().toLowerCase()
-      : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`;
+      : (role === 'admin' ? 'admin@tinhocgenz.io.vn' : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`);
+    const targetPhone = rawPhone ? rawPhone.trim() : '0988999888';
 
     const otp = this.generateRandomOtp();
     const now = Date.now();
@@ -87,7 +104,9 @@ export class AccountRecoveryService {
       identifier: cleanId,
       accountName,
       email: targetEmail,
+      phone: targetPhone,
       role,
+      deliveryMethod,
       otpCode: otp,
       createdAt: now,
       expiresAt: now + OTP_TTL_MS,

@@ -11,6 +11,7 @@ import {
   Server, BarChart3, Bot, Eye, EyeOff, GraduationCap
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
 
 interface MenuItem {
   id: AdminPortalSubTab;
@@ -55,6 +56,7 @@ interface StandaloneAdminAppProps {
   onUpdateSchedule?: (updated: ClassScheduleItem) => void;
   onDeleteSchedule?: (id: string) => void;
   onLoginAsAdmin: (passwordOrPin: string, staffName?: string) => { success: boolean; message?: string };
+  onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
   onLogout: () => void;
   onBackToStudentPortal: () => void;
 }
@@ -66,6 +68,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
     studentAccounts,
     teacherAccounts = [],
     onLoginAsAdmin,
+    onResetPassword,
     onLogout,
     onBackToStudentPortal
   } = props;
@@ -76,6 +79,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>('overview');
@@ -258,6 +262,26 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               </div>
             </div>
 
+            {/* Forgot Password Self-Recovery Link */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
+              <button
+                type="button"
+                onClick={() => { setShowForgotModal(true); soundFx.playClick(); }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#f59e0b',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline'
+                }}
+              >
+                Quên mật khẩu Quản trị? Lấy lại qua Gmail / SĐT
+              </button>
+            </div>
+
             {loginError && (
               <div style={{ padding: '10px 12px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#fca5a5', fontSize: '0.82rem' }}>
                 {loginError}
@@ -289,6 +313,17 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
             </button>
           </form>
         </div>
+
+        {/* Forgot Password Modal for Admin Self-Recovery */}
+        {showForgotModal && (
+          <ForgotPasswordModal
+            isOpen={showForgotModal}
+            onClose={() => setShowForgotModal(false)}
+            onResetPassword={onResetPassword || ((_id, _pass) => ({ success: false, message: 'Chức năng chưa kích hoạt' }))}
+            studentAccounts={studentAccounts}
+            teacherAccounts={teacherAccounts}
+          />
+        )}
 
         {/* Footer Notice */}
         <div style={{ marginTop: '24px', fontSize: '0.74rem', color: '#64748b', textAlign: 'center' }}>

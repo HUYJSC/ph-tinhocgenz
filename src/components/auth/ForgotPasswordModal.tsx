@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Lock, User, AlertCircle, CheckCircle2, X,
-  Mail, Send, ArrowRight, ShieldCheck, KeyRound, Clock,
+  Mail, Phone, Send, ArrowRight, ShieldCheck, KeyRound, Clock,
   RefreshCw, Copy, Check, Eye, EyeOff, Sparkles
 } from 'lucide-react';
 import { AccountRecoveryService, RecoveryEmailLog } from '../../services/accountRecoveryService';
@@ -28,11 +28,13 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 }) => {
   const [step, setStep] = useState<RecoveryStep>('find_account');
   const [identifier, setIdentifier] = useState('');
+  const [deliveryChannel, setDeliveryChannel] = useState<'email' | 'phone'>('email');
   const [targetAccount, setTargetAccount] = useState<{
     name: string;
     code: string;
     email: string;
-    role: 'student' | 'teacher';
+    phone?: string;
+    role: 'student' | 'teacher' | 'admin';
     classOrSchool?: string;
   } | null>(null);
 
@@ -117,12 +119,13 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         name: matchedStudent.name,
         code: matchedStudent.studentCode,
         email: matchedStudent.email || `${matchedStudent.studentCode.toLowerCase()}@student.tinhocgenz.edu.vn`,
+        phone: matchedStudent.phone || '',
         role: 'student' as const,
         classOrSchool: matchedStudent.schoolOrClass
       };
     }
 
-    // Check teacher accounts
+    // Check teacher and admin accounts
     let allTeachers: TeacherAccount[] = teacherAccounts || [];
     if (allTeachers.length === 0) {
       try {
@@ -131,45 +134,62 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       } catch {}
     }
 
+    // Explicit Admin alias check
+    if (clean === 'admin' || clean === 'admin01' || clean === 'quantri' || clean === 'quantrivien') {
+      const adminAcc = allTeachers.find(t => t.role === 'admin' || t.teacherCode.toLowerCase() === 'admin01');
+      return {
+        name: adminAcc?.name || 'Quản Trị Viên (Thầy Huy)',
+        code: adminAcc?.teacherCode || 'ADMIN01',
+        email: adminAcc?.email || 'admin@tinhocgenz.io.vn',
+        phone: adminAcc?.phone || '0988999888',
+        role: 'admin' as const,
+        classOrSchool: 'Cổng Quản Trị Hệ Thống'
+      };
+    }
+
     const matchedTeacher = allTeachers.find(t =>
       t.teacherCode.toLowerCase() === clean ||
       t.name.toLowerCase() === clean ||
       (t.email && t.email.toLowerCase() === clean) ||
-      (t.phone && t.phone.includes(clean))
+      (t.phone && t.phone.replace(/\s/g, '').includes(clean.replace(/\s/g, ''))) ||
+      ((clean === 'admin' || clean === 'admin01') && (t.role === 'admin' || t.teacherCode === 'ADMIN01'))
     );
 
     if (matchedTeacher) {
+      const isRoleAdmin = matchedTeacher.role === 'admin' || matchedTeacher.teacherCode === 'ADMIN01';
       return {
         name: matchedTeacher.name,
         code: matchedTeacher.teacherCode,
-        email: matchedTeacher.email || `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
-        role: 'teacher' as const,
-        classOrSchool: 'Giảng viên Trung tâm'
+        email: matchedTeacher.email || (isRoleAdmin ? 'admin@tinhocgenz.io.vn' : `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`),
+        phone: matchedTeacher.phone || (isRoleAdmin ? '0988999888' : ''),
+        role: isRoleAdmin ? ('admin' as const) : ('teacher' as const),
+        classOrSchool: isRoleAdmin ? 'Cổng Quản Trị Hệ Thống' : 'Giảng viên Trung tâm'
       };
     }
 
     // Fallback if user entered a valid-looking email or student code
     if (clean.includes('@')) {
       return {
-        name: 'Học viên Tin học GenZ',
-        code: clean.split('@')[0].toUpperCase(),
+        name: clean.includes('admin') ? 'Quản Trị Viên Hệ Thống' : 'Học viên Tin học GenZ',
+        code: clean.includes('admin') ? 'ADMIN01' : clean.split('@')[0].toUpperCase(),
         email: clean,
-        role: 'student' as const,
-        classOrSchool: 'Học viên đã đăng ký'
+        phone: clean.includes('admin') ? '0988999888' : '',
+        role: clean.includes('admin') ? ('admin' as const) : ('student' as const),
+        classOrSchool: clean.includes('admin') ? 'Cổng Quản Trị Hệ Thống' : 'Học viên đã đăng ký'
       };
     }
 
     return null;
   };
 
-  // STEP 1: Handle Send OTP via Email
+  // STEP 1: Handle Send OTP via Email or Phone
   const handleFindAndSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
     if (!identifier.trim()) {
-      setErrorMsg('Vui lòng nhập Mã học viên hoặc Email đã đăng ký!');
+      setErrorMsg('Vui lòng nhập Mã tài khoản, Gmail hoặc Số điện thoại!');
       soundFx.playClick();
       return;
     }
@@ -190,7 +210,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         account.code,
         account.name,
         account.email,
-        account.role
+        account.phone,
+        account.role,
+        deliveryChannel
       );
 
       setIsSubmitting(false);
@@ -198,7 +220,10 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         setEmailLog(recovery.emailLog);
         setStep('enter_otp');
         setCountdown(600);
-        setSuccessMsg(`Mã xác nhận gồm 6 chữ số đã được gửi tự động đến email ${AccountRecoveryService.maskEmail(account.email)}!`);
+        const destinationText = deliveryChannel === 'phone'
+          ? `số điện thoại ${AccountRecoveryService.maskPhone(account.phone || '0988999888')}`
+          : `email ${AccountRecoveryService.maskEmail(account.email)}`;
+        setSuccessMsg(`Mã xác nhận 6 chữ số đã được gửi tự động đến ${destinationText}!`);
         soundFx.playCorrect();
       } else {
         setErrorMsg('Không thể khởi tạo mã OTP, vui lòng thử lại sau!');
@@ -430,18 +455,18 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           </div>
         )}
 
-        {/* ── BƯỚC 1: TÌM KIẾM TÀI KHOẢN & GỬI OTP EMAIL ── */}
+        {/* ── BƯỚC 1: TÌM KIẾM TÀI KHOẢN & GỬI OTP EMAIL / PHONE ── */}
         {step === 'find_account' && (
           <form onSubmit={handleFindAndSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                Mã học viên hoặc Email đăng ký
+                Mã tài khoản (ADMIN01 / THGZ01...), Gmail hoặc Số điện thoại
               </label>
               <div style={{ position: 'relative' }}>
                 <User size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                 <input
                   type="text"
-                  placeholder="Ví dụ: THGZ01 hoặc email@gmail.com"
+                  placeholder="Ví dụ: ADMIN01, admin, 0988999888, hoặc email@gmail.com"
                   value={identifier}
                   onChange={e => { setIdentifier(e.target.value); setErrorMsg(''); }}
                   style={{
@@ -461,8 +486,59 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 />
               </div>
               <p style={{ fontSize: '11.5px', color: '#64748B', margin: '6px 0 0' }}>
-                💡 Gợi ý nhanh cho học viên khóa mới: Nhập mã <strong>THGZ01</strong>, <strong>THGZ02</strong>...
+                💡 Quản trị viên nhập <strong>ADMIN01</strong> hoặc <strong>admin</strong> • Học viên nhập <strong>THGZ01</strong>, <strong>THGZ02</strong>...
               </p>
+            </div>
+
+            {/* Delivery Channel Selector */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                Kênh Nhận Mã OTP Bảo Mật:
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => { setDeliveryChannel('email'); soundFx.playClick(); }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: deliveryChannel === 'email' ? '2px solid #2563EB' : '1px solid #CBD5E1',
+                    background: deliveryChannel === 'email' ? '#EFF6FF' : '#FFFFFF',
+                    color: deliveryChannel === 'email' ? '#1D4ED8' : '#64748B',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Mail size={14} />
+                  <span>Hộp thư Gmail</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setDeliveryChannel('phone'); soundFx.playClick(); }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: deliveryChannel === 'phone' ? '2px solid #2563EB' : '1px solid #CBD5E1',
+                    background: deliveryChannel === 'phone' ? '#EFF6FF' : '#FFFFFF',
+                    color: deliveryChannel === 'phone' ? '#1D4ED8' : '#64748B',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Phone size={14} />
+                  <span>SĐT / SMS Zalo</span>
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
@@ -503,7 +579,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                 }}
               >
-                <span>{isSubmitting ? 'Đang kiểm tra...' : 'Gửi Mã Xác Nhận Qua Email'}</span>
+                <span>{isSubmitting ? 'Đang kiểm tra...' : `Gửi Mã Qua ${deliveryChannel === 'phone' ? 'SĐT / SMS' : 'Gmail'}`}</span>
                 <Send size={15} />
               </button>
             </div>
@@ -513,19 +589,35 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         {/* ── BƯỚC 2: NHẬP MÃ OTP 6 SỐ TỰ ĐỘNG GỬI ── */}
         {step === 'enter_otp' && targetAccount && (
           <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Account & Email Summary Box */}
+            {/* Account & Destination Summary Box */}
             <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '12px 14px', border: '1px solid #E2E8F0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
                   {targetAccount.name} ({targetAccount.code})
                 </span>
-                <span style={{ fontSize: '11px', background: '#DBEAFE', color: '#1E40AF', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
-                  {targetAccount.role === 'student' ? 'Học viên' : 'Giảng viên'}
+                <span style={{
+                  fontSize: '11px',
+                  background: targetAccount.role === 'admin' ? '#FEF3C7' : '#DBEAFE',
+                  color: targetAccount.role === 'admin' ? '#92400E' : '#1E40AF',
+                  padding: '2px 8px',
+                  borderRadius: '999px',
+                  fontWeight: 800
+                }}>
+                  {targetAccount.role === 'admin' ? '🛡️ Quản Trị Viên' : targetAccount.role === 'teacher' ? '👨‍🏫 Giảng Viên' : '🎓 Học Viên'}
                 </span>
               </div>
               <div style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Mail size={13} color="#2563EB" />
-                <span>Email nhận mã: <strong>{AccountRecoveryService.maskEmail(targetAccount.email)}</strong></span>
+                {deliveryChannel === 'phone' ? (
+                  <>
+                    <Phone size={13} color="#16A34A" />
+                    <span>SĐT nhận mã: <strong>{AccountRecoveryService.maskPhone(targetAccount.phone || '0988999888')}</strong></span>
+                  </>
+                ) : (
+                  <>
+                    <Mail size={13} color="#2563EB" />
+                    <span>Gmail nhận mã: <strong>{AccountRecoveryService.maskEmail(targetAccount.email)}</strong></span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -626,7 +718,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 }}
               >
                 <RefreshCw size={13} />
-                <span>Chưa nhận được email? Gửi lại mã mới</span>
+                <span>{deliveryChannel === 'phone' ? 'Chưa nhận được SMS? Gửi lại mã OTP mới' : 'Chưa nhận được email? Gửi lại mã OTP mới'}</span>
               </button>
             </div>
 

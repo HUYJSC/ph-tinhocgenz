@@ -42,3 +42,12 @@ class RefreshTokenSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, min_length=6, write_only=True)
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    identifier = serializers.CharField(required=True, help_text="Mã tài khoản, Gmail hoặc Số điện thoại")
+    delivery_channel = serializers.ChoiceField(choices=["email", "phone"], default="email")
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    identifier = serializers.CharField(required=True)
+    otp_code = serializers.CharField(required=True, min_length=6, max_length=6)
+    new_password = serializers.CharField(required=True, min_length=6, write_only=True)

@@ -4,7 +4,7 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ("username", "full_name", "role", "student_code", "teacher_code", "class_code", "program_track", "is_active", "date_joined")
+    list_display = ("username", "full_name", "email", "phone", "role", "student_code", "teacher_code", "class_code", "program_track", "is_active", "date_joined")
     list_filter = ("role", "is_active", "program_track", "class_code")
     search_fields = ("username", "full_name", "email", "phone", "student_code", "teacher_code")
     ordering = ("-date_joined",)

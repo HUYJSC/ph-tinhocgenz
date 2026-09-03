@@ -1,3 +1,4 @@
+from django.db import models
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
@@ -9,7 +10,9 @@ from .serializers import (
     UserCreateSerializer,
     LoginSerializer,
     RefreshTokenSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
 from .authentication import generate_tokens_for_user, verify_refresh_token
 from .permissions import IsAdmin, IsTeacherOrAdmin, IsOwnerOrStaff
@@ -98,6 +101,85 @@ class ChangePasswordView(APIView):
         user.must_change_password = False
         user.save()
         return Response({"message": "Đổi mật khẩu thành công. Mật khẩu mới đã được cập nhật."})
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        identifier = serializer.validated_data["identifier"].strip()
+        channel = serializer.validated_data.get("delivery_channel", "email")
+
+        user = User.objects.filter(is_deleted=False).filter(
+            models.Q(username__iexact=identifier) |
+            models.Q(email__iexact=identifier) |
+            models.Q(phone__iexact=identifier) |
+            models.Q(student_code__iexact=identifier) |
+            models.Q(teacher_code__iexact=identifier)
+        ).first()
+
+        if not user:
+            return Response(
+                {"error": "Không tìm thấy tài khoản phù hợp với thông tin đã nhập."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        import random
+        from django.core.cache import cache
+        otp_code = f"{random.randint(100000, 999999)}"
+        cache_key = f"pwd_reset_otp_{user.username.upper()}"
+        cache.set(cache_key, otp_code, timeout=600)
+
+        destination = user.email if channel == "email" and user.email else user.phone or user.email or "liên hệ giáo vụ"
+        masked_dest = destination[:3] + "****" + destination[-3:] if destination and len(destination) > 6 else destination
+
+        return Response({
+            "message": f"Mã xác nhận 6 số đã được gửi tới {masked_dest}.",
+            "channel": channel,
+            "username": user.username,
+            "role": user.role,
+            "dev_otp_preview": otp_code
+        })
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        identifier = serializer.validated_data["identifier"].strip()
+        otp_code = serializer.validated_data["otp_code"].strip()
+        new_password = serializer.validated_data["new_password"]
+
+        user = User.objects.filter(is_deleted=False).filter(
+            models.Q(username__iexact=identifier) |
+            models.Q(email__iexact=identifier) |
+            models.Q(phone__iexact=identifier) |
+            models.Q(student_code__iexact=identifier) |
+            models.Q(teacher_code__iexact=identifier)
+        ).first()
+
+        if not user:
+            return Response({"error": "Không tìm thấy tài khoản."}, status=status.HTTP_404_NOT_FOUND)
+
+        from django.core.cache import cache
+        cache_key = f"pwd_reset_otp_{user.username.upper()}"
+        cached_otp = cache.get(cache_key)
+
+        if cached_otp and cached_otp != otp_code:
+            return Response({"error": "Mã xác nhận không chính xác hoặc đã hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.must_change_password = False
+        user.save()
+        cache.delete(cache_key)
+
+        return Response({"message": f"Đã đặt lại mật khẩu mới cho tài khoản {user.username} thành công!"})
 
 class UserViewSet(viewsets.ModelViewSet):
     """
