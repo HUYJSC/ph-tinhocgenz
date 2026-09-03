@@ -60,6 +60,8 @@ interface AdminPortalProps {
   initialSubTab?: AdminPortalSubTab;
   onNavigateToAttendance?: () => void;
   currentUser: UserProfile;
+  hideInternalNav?: boolean;
+  onSubTabChange?: (tab: AdminPortalSubTab) => void;
 }
 
 export const ALL_TRACK_OPTIONS: { id: CurriculumTrack; label: string; short: string }[] = [
@@ -104,10 +106,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onDeleteSchedule,
   initialSubTab = 'overview',
   onNavigateToAttendance,
-  currentUser
+  currentUser,
+  hideInternalNav = false,
+  onSubTabChange
 }) => {
   const isSuperAdmin = currentUser.role === 'admin';
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
+
+  const handleSelectSubTab = (tab: AdminPortalSubTab) => {
+    setActiveSubTab(tab);
+    if (onSubTabChange) {
+      onSubTabChange(tab);
+    }
+  };
 
   // Sync initialSubTab if passed externally
   useEffect(() => {
@@ -480,7 +491,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     ];
 
     const escapeCsv = (val: any) => {
-      const str = String(val ?? '').replace(/"/g, '""');
+      let str = String(val ?? '').replace(/"/g, '""');
+      // Prevent formula injection (=, +, -, @, \t, \r)
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = "'" + str;
+      }
       return `"${str}"`;
     };
 
@@ -620,75 +635,77 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       </div>
 
-      {/* Sub Tabs Navigation - Clean Responsive Pill Grid (Zero horizontal scrollbar on Desktop) */}
-      <nav
-        aria-label="Admin Sub Navigation"
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '8px',
-          padding: '6px 0 16px',
-          borderBottom: '1px solid var(--border-color)',
-          marginBottom: '20px'
-        }}
-      >
-        {[
-          { id: 'overview', label: 'Tổng quan', icon: BarChart3 },
-          { id: 'schedules', label: 'Lịch dạy & Phòng học', count: schedules.length, icon: Calendar },
-          { id: 'grading_assignments', label: 'Khảo thí & Chấm điểm', count: assignments.length, icon: CheckSquare },
-          { id: 'student_directory', label: 'Hồ sơ học viên', count: studentAccounts.length, icon: Users },
-          ...(isSuperAdmin ? [{ id: 'teachers', label: 'Giảng viên', count: teacherAccounts.length, icon: UserCheck }] : []),
-          { id: 'early_warning', label: 'Cảnh báo học vụ', count: EarlyWarningService.evaluateAllStudents(studentAccounts).filter(s => s.riskLevel === 'CRITICAL' || s.riskLevel === 'HIGH').length || undefined, isAlert: true, icon: AlertTriangle },
-          { id: 'zalo_notifications', label: 'Tổng đài Zalo AI', count: studentAccounts.length || undefined, icon: Bot },
-          ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Phòng Google Meet', count: meetHubRooms.length, icon: Video }] : []),
-          { id: 'exams', label: 'Kho đề thi', count: totalQuizzes, icon: BookOpen },
-          { id: 'question_bank', label: 'Ngân hàng câu hỏi', count: totalQuestions, icon: FileSpreadsheet },
-          ...(isSuperAdmin ? [{ id: 'seo_center', label: 'Cấu hình SEO', icon: Globe }] : [])
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeSubTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveSubTab(tab.id as any);
-                soundFx.playClick();
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                border: `1px solid ${isActive ? 'var(--brand)' : 'var(--border-color)'}`,
-                background: isActive ? 'var(--brand)' : 'var(--bg-primary)',
-                color: isActive ? '#ffffff' : 'var(--text-primary)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.84rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Icon size={15} color={isActive ? '#ffffff' : (tab.isAlert && tab.count ? '#dc2626' : 'var(--text-secondary)')} />
-              <span>{tab.label}</span>
-              {tab.count !== undefined && (
-                <span
-                  style={{
-                    background: isActive ? 'rgba(255, 255, 255, 0.25)' : (tab.isAlert ? '#fee2e2' : 'var(--bg-tertiary)'),
-                    color: isActive ? '#ffffff' : (tab.isAlert ? '#dc2626' : 'var(--text-secondary)'),
-                    padding: '1px 6px',
-                    borderRadius: '9999px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700
-                  }}
-                >
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
+      {/* Sub Tabs Navigation - Hidden when Left Sidebar is already present to eliminate UI duplication */}
+      {!hideInternalNav && (
+        <nav
+          aria-label="Admin Sub Navigation"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px',
+            padding: '6px 0 16px',
+            borderBottom: '1px solid var(--border-color)',
+            marginBottom: '20px'
+          }}
+        >
+          {[
+            { id: 'overview', label: 'Tổng quan', icon: BarChart3 },
+            { id: 'schedules', label: 'Lịch dạy & Phòng học', count: schedules.length, icon: Calendar },
+            { id: 'grading_assignments', label: 'Khảo thí & Chấm điểm', count: assignments.length, icon: CheckSquare },
+            { id: 'student_directory', label: 'Hồ sơ học viên', count: studentAccounts.length, icon: Users },
+            ...(isSuperAdmin ? [{ id: 'teachers', label: 'Giảng viên', count: teacherAccounts.length, icon: UserCheck }] : []),
+            { id: 'early_warning', label: 'Cảnh báo học vụ', count: EarlyWarningService.evaluateAllStudents(studentAccounts).filter(s => s.riskLevel === 'CRITICAL' || s.riskLevel === 'HIGH').length || undefined, isAlert: true, icon: AlertTriangle },
+            { id: 'zalo_notifications', label: 'Tổng đài Zalo AI', count: studentAccounts.length || undefined, icon: Bot },
+            ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Phòng Google Meet', count: meetHubRooms.length, icon: Video }] : []),
+            { id: 'exams', label: 'Kho đề thi', count: totalQuizzes, icon: BookOpen },
+            { id: 'question_bank', label: 'Ngân hàng câu hỏi', count: totalQuestions, icon: FileSpreadsheet },
+            ...(isSuperAdmin ? [{ id: 'seo_center', label: 'Cấu hình SEO', icon: Globe }] : [])
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeSubTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  handleSelectSubTab(tab.id as any);
+                  soundFx.playClick();
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  border: `1px solid ${isActive ? 'var(--brand)' : 'var(--border-color)'}`,
+                  background: isActive ? 'var(--brand)' : 'var(--bg-primary)',
+                  color: isActive ? '#ffffff' : 'var(--text-primary)',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.84rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Icon size={15} color={isActive ? '#ffffff' : (tab.isAlert && tab.count ? '#dc2626' : 'var(--text-secondary)')} />
+                <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span
+                    style={{
+                      background: isActive ? 'rgba(255, 255, 255, 0.25)' : (tab.isAlert ? '#fee2e2' : 'var(--bg-tertiary)'),
+                      color: isActive ? '#ffffff' : (tab.isAlert ? '#dc2626' : 'var(--text-secondary)'),
+                      padding: '1px 6px',
+                      borderRadius: '9999px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700
+                    }}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       {/* ── 0A. THỜI KHÓA BIỂU & LỊCH DẠY SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}
       {activeSubTab === 'schedules' && (

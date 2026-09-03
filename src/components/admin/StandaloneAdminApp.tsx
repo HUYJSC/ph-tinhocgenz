@@ -596,6 +596,8 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           <AdminPortal
             {...props}
             initialSubTab={activeSubTab}
+            hideInternalNav={true}
+            onSubTabChange={(tab) => setActiveSubTab(tab)}
           />
         </main>
       </div>
