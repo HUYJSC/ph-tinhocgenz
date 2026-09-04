@@ -138,10 +138,10 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     if (clean === 'admin' || clean === 'admin01' || clean === 'quantri' || clean === 'quantrivien') {
       const adminAcc = allTeachers.find(t => t.role === 'admin' || t.teacherCode.toLowerCase() === 'admin01');
       return {
-        name: adminAcc?.name || 'Quản Trị Viên (Thầy Huy)',
+        name: adminAcc?.name || 'Ban Quản Trị Hệ Thống',
         code: adminAcc?.teacherCode || 'ADMIN01',
-        email: adminAcc?.email || 'hdh.hutech@gmail.com',
-        phone: adminAcc?.phone || '0332298065',
+        email: adminAcc?.email || 'admin@tinhocgenz.io.vn',
+        phone: adminAcc?.phone || '',
         role: 'admin' as const,
         classOrSchool: 'Cổng Quản Trị Hệ Thống'
       };
@@ -160,8 +160,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       return {
         name: matchedTeacher.name,
         code: matchedTeacher.teacherCode,
-        email: matchedTeacher.email || (isRoleAdmin ? 'hdh.hutech@gmail.com' : `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`),
-        phone: matchedTeacher.phone || (isRoleAdmin ? '0332298065' : ''),
+        email: matchedTeacher.email || (isRoleAdmin ? 'admin@tinhocgenz.io.vn' : `${matchedTeacher.teacherCode.toLowerCase()}@tinhocgenz.io.vn`),
+        phone: matchedTeacher.phone || '',
         role: isRoleAdmin ? ('admin' as const) : ('teacher' as const),
         classOrSchool: isRoleAdmin ? 'Cổng Quản Trị Hệ Thống' : 'Giảng viên Trung tâm'
       };
@@ -173,7 +173,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         name: clean.includes('admin') ? 'Quản Trị Viên Hệ Thống' : 'Học viên Tin học GenZ',
         code: clean.includes('admin') ? 'ADMIN01' : clean.split('@')[0].toUpperCase(),
         email: clean,
-        phone: clean.includes('admin') ? '0332298065' : '',
+        phone: '',
         role: clean.includes('admin') ? ('admin' as const) : ('student' as const),
         classOrSchool: clean.includes('admin') ? 'Cổng Quản Trị Hệ Thống' : 'Học viên đã đăng ký'
       };
@@ -221,7 +221,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         setStep('enter_otp');
         setCountdown(600);
         const destinationText = deliveryChannel === 'phone'
-          ? `số điện thoại ${AccountRecoveryService.maskPhone(account.phone || '0332298065')}`
+          ? `số điện thoại ${AccountRecoveryService.maskPhone(account.phone || '')}`
           : `email ${AccountRecoveryService.maskEmail(account.email)}`;
         setSuccessMsg(`Mã xác nhận 6 chữ số đã được gửi tự động đến ${destinationText}!`);
         soundFx.playCorrect();
@@ -466,7 +466,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 <User size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                 <input
                   type="text"
-                  placeholder="Ví dụ: ADMIN01, admin, 0332298065, hoặc hdh.hutech@gmail.com"
+                  placeholder="Ví dụ: ADMIN01, admin, hoặc email@tinhocgenz.io.vn"
                   value={identifier}
                   onChange={e => { setIdentifier(e.target.value); setErrorMsg(''); }}
                   style={{
@@ -610,7 +610,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 {deliveryChannel === 'phone' ? (
                   <>
                     <Phone size={13} color="#16A34A" />
-                    <span>SĐT nhận mã: <strong>{AccountRecoveryService.maskPhone(targetAccount.phone || '0332298065')}</strong></span>
+                    <span>SĐT nhận mã: <strong>{AccountRecoveryService.maskPhone(targetAccount.phone || '')}</strong></span>
                   </>
                 ) : (
                   <>

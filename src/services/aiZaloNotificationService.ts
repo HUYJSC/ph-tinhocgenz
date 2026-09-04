@@ -4,11 +4,11 @@ import {
   ZaloNotificationLog,
   ZaloDispatchConfig,
   ReminderCycle,
-  RecipientType
+  RecipientType,
+  ZaloOaStatusResponse
 } from '../types/zaloNotification';
 
 const STORAGE_KEY_CONFIG = 'ph_zalo_dispatch_config_v1';
-const STORAGE_KEY_LOGS = 'ph_zalo_notification_logs_v1';
 
 export const DEFAULT_ZALO_CONFIG: ZaloDispatchConfig = {
   ageThreshold: 25,
@@ -19,12 +19,25 @@ export const DEFAULT_ZALO_CONFIG: ZaloDispatchConfig = {
   aiToneParent: 'supportive_pedagogical',
   aiToneAdult: 'career_coach',
   zaloOaId: 'PH_DIGITAL_EDU_OFFICIAL',
-  zaloAppId: '2026_ZNS_EDTECH'
+  zaloAppId: '2026_ZBS_EDTECH'
 };
 
 export class AiZaloNotificationService {
   /**
-   * Get current configuration
+   * Che giấu số điện thoại bảo vệ thông tin riêng tư (PII)
+   * Ví dụ: 0912345678 -> 091***5678
+   */
+  static maskPhoneNumber(phone: string): string {
+    if (!phone) return '090***xxxx';
+    const clean = phone.replace(/[\s.\-()+]/g, '');
+    if (clean.length < 7) return clean;
+    const prefix = clean.substring(0, 3);
+    const suffix = clean.substring(clean.length - 4);
+    return `${prefix}***${suffix}`;
+  }
+
+  /**
+   * Lấy cấu hình phát tin
    */
   static getConfig(): ZaloDispatchConfig {
     try {
@@ -37,7 +50,7 @@ export class AiZaloNotificationService {
   }
 
   /**
-   * Save configuration
+   * Lưu cấu hình phát tin
    */
   static saveConfig(config: Partial<ZaloDispatchConfig>): ZaloDispatchConfig {
     const updated = { ...this.getConfig(), ...config };
@@ -50,15 +63,14 @@ export class AiZaloNotificationService {
   }
 
   /**
-   * Calculate student age
-   * Defaults to 21 (university student) if not specified
+   * Tính tuổi học viên dựa trên năm sinh hoặc lớp học
    */
   static calculateStudentAge(student: StudentAccount): number {
     const currentYear = new Date().getFullYear();
     if (student.age && student.age > 0) return student.age;
     if (student.birthYear && student.birthYear > 1940) return currentYear - student.birthYear;
 
-    // Smart inference based on studentCode or schoolOrClass
+    // Suy luận thông minh dựa trên thông tin trường hoặc lớp
     if (student.schoolOrClass && /đại học|dh|hutech|neu|ftu|k2|k3|sinh viên/i.test(student.schoolOrClass)) {
       return 21;
     }
@@ -70,7 +82,7 @@ export class AiZaloNotificationService {
   }
 
   /**
-   * Determine whether recipient should be Parent or Student
+   * Xác định người nhận: Phụ huynh (< 25t) hoặc Học viên (>= 25t)
    */
   static determineRecipient(student: StudentAccount, config = this.getConfig()): {
     recipientType: RecipientType;
@@ -82,7 +94,7 @@ export class AiZaloNotificationService {
     if (age < config.ageThreshold) {
       // Dưới 25 tuổi: Gửi phụ huynh
       const parentName = student.parentName || `Phụ huynh em ${student.name}`;
-      const parentPhone = student.parentPhone || student.parentZalo || student.phone || '0988.xxx.xxx';
+      const parentPhone = student.parentPhone || student.parentZalo || student.phone || '0988123456';
       return {
         recipientType: 'parent',
         recipientName: parentName,
@@ -90,16 +102,16 @@ export class AiZaloNotificationService {
       };
     }
 
-    // Từ 25 tuổi trở lên: Gửi trực tiếp cho người học, không gửi phụ huynh
+    // Từ 25 tuổi trở lên: Gửi trực tiếp người học, tôn trọng quyền tự chủ
     return {
       recipientType: 'student',
       recipientName: student.name,
-      recipientPhone: student.phone || student.email || '0909.xxx.xxx'
+      recipientPhone: student.phone || student.email || '0909123456'
     };
   }
 
   /**
-   * Generate AI Pedagogical Message tailored by Age & Cycle
+   * Tạo nội dung sư phạm gợi ý cho Template Zalo (Quy tắc AI: Đề xuất nội dung theo Template)
    */
   static generateAiMessage(
     student: StudentAccount,
@@ -112,7 +124,6 @@ export class AiZaloNotificationService {
     const trackLabel = TRACK_LABELS[student.programTrack] || 'Tin học Văn phòng Chuẩn Quốc tế';
     const weakSkillsStr = riskData.factors.slice(0, 2).join(', ');
 
-    // ── KỊCH BẢN 1: HỌC VIÊN < 25 TUỔI ➔ GỬI PHỤ HUYNH VỚI VĂN PHONG SƯ PHẠM CHU ĐÁO ──
     if (isParent) {
       const parentGreeting = student.parentName ? `Kính gửi ${student.parentName}` : `Kính gửi Quý Phụ huynh em ${student.name}`;
 
@@ -153,7 +164,6 @@ export class AiZaloNotificationService {
         `Mọi thắc mắc Quý Phụ huynh vui lòng liên hệ trực tiếp Giảng viên phụ trách qua Zalo này.`;
     }
 
-    // ── KỊCH BẢN 2: HỌC VIÊN ≥ 25 TUỔI (NGƯỜI ĐI LÀM) ➔ GỬI TRỰC TIẾP, TÔN TRỌNG QUYỀN TỰ CHỦ ──
     const studentGreeting = `Chào anh/chị ${student.name}`;
 
     if (cycle === 'daily') {
@@ -187,7 +197,8 @@ export class AiZaloNotificationService {
   }
 
   /**
-   * Scan all students and generate periodic notifications based on age & risk
+   * Quét học viên và tạo bản thảo xem trước (Preview) cho Giáo viên duyệt
+   * Trạng thái khởi tạo là 'pending', KHÔNG tự gán status='sent'
    */
   static scanAndGenerateNotifications(
     students: StudentAccount[],
@@ -202,14 +213,13 @@ export class AiZaloNotificationService {
       const age = this.calculateStudentAge(student);
       const recipient = this.determineRecipient(student, config);
 
-      // Only generate warning messages if risk is HIGH/CRITICAL, OR if it's weekly/monthly digest
       const shouldSend = cycle !== 'daily' || risk.riskLevel === 'CRITICAL' || risk.riskLevel === 'HIGH';
 
       if (shouldSend) {
         const message = this.generateAiMessage(student, cycle, risk);
 
         const log: ZaloNotificationLog = {
-          id: `zalo-${student.id}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          id: `preview-${student.id}-${cycle}-${Date.now()}`,
           studentId: student.id,
           studentName: student.name,
           studentCode: student.studentCode,
@@ -218,6 +228,7 @@ export class AiZaloNotificationService {
           recipientType: recipient.recipientType,
           recipientName: recipient.recipientName,
           recipientPhone: recipient.recipientPhone,
+          maskedPhone: this.maskPhoneNumber(recipient.recipientPhone),
           recipientZalo: student.parentZalo,
           cycle,
           riskLevel: risk.riskLevel,
@@ -227,7 +238,7 @@ export class AiZaloNotificationService {
           attendanceRate: Math.max(20, 100 - (risk.lastActiveDaysAgo * 8)),
           aiGeneratedMessage: message,
           sentAt: nowStr,
-          status: 'sent',
+          status: 'pending', // KHÔNG tự gán 'sent'
           channel: 'zalo_zns'
         };
 
@@ -235,48 +246,88 @@ export class AiZaloNotificationService {
       }
     });
 
-    // Save to historical logs
-    this.appendLogs(newLogs);
     return newLogs;
   }
 
   /**
-   * Get all notification logs
+   * Lấy trạng thái kết nối OA và lịch sử tin nhắn thực tế từ Serverless Backend
    */
-  static getLogs(): ZaloNotificationLog[] {
+  static async fetchOaStatus(): Promise<ZaloOaStatusResponse> {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_LOGS);
-      if (raw) return JSON.parse(raw);
-    } catch {
-      // Ignore
-    }
-    return [];
-  }
-
-  /**
-   * Append new logs
-   */
-  static appendLogs(newLogs: ZaloNotificationLog[]): void {
-    try {
-      const existing = this.getLogs();
-      const merged = [...newLogs, ...existing].slice(0, 200); // Keep last 200 logs
-      localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(merged));
+      const res = await fetch('/api/zalo/status');
+      if (res.ok) {
+        return await res.json();
+      }
     } catch (e) {
-      console.warn('Failed to save Zalo logs:', e);
+      console.warn('Không thể kết nối /api/zalo/status:', e);
     }
+
+    return {
+      status: 'unconfigured',
+      message: 'Chưa cấu hình API hoặc máy chủ chưa sẵn sàng.',
+      oa_id: null,
+      active_template_count: 0,
+      remaining_quota: 0,
+      last_webhook_at: null,
+      recent_logs: []
+    };
   }
 
   /**
-   * Dispatch a test simulated Zalo message
+   * Gửi tin nhắn Zalo ZBS Template Message thật qua server-side endpoint /api/zalo/send
+   * Tuyệt đối không dùng giả lập
    */
-  static dispatchSingleMessage(_log: ZaloNotificationLog): Promise<{ success: boolean; messageId: string }> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
+  static async dispatchSingleMessage(
+    log: ZaloNotificationLog,
+    authToken?: string
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const response = await fetch('/api/zalo/send', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          phone: log.recipientPhone,
+          template_id: 'PH_EDU_REMINDER_2026',
+          template_data: {
+            student_name: log.studentName,
+            recipient_name: log.recipientName,
+            cycle: log.cycle,
+            risk_level: log.riskLevel,
+            attendance_rate: `${log.attendanceRate}%`,
+            message_body: log.aiGeneratedMessage
+          },
+          tracking_id: `CLI_${Date.now()}_${log.studentId.substring(0, 8)}`,
+          student_id: log.studentId,
+          recipient_type: log.recipientType
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success && data.msg_id) {
+        return {
           success: true,
-          messageId: `ZNS_${Date.now()}_OK`
-        });
-      }, 400);
-    });
+          messageId: data.msg_id
+        };
+      }
+
+      return {
+        success: false,
+        error: data.message || data.error || 'Gửi thất bại từ Zalo OpenAPI'
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: `Lỗi kết nối máy chủ gửi Zalo: ${err.message}`
+      };
+    }
   }
 }

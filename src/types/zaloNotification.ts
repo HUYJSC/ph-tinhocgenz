@@ -2,7 +2,16 @@ import { RiskLevel } from './edtech';
 
 export type ReminderCycle = 'daily' | 'weekly' | 'monthly';
 export type RecipientType = 'parent' | 'student';
-export type DeliveryStatus = 'pending' | 'sent' | 'failed';
+export type DeliveryStatus =
+  | 'queued'
+  | 'processing'
+  | 'accepted'
+  | 'delivered'
+  | 'failed'
+  | 'cancelled'
+  | 'pending';
+
+export type OaConnectionStatus = 'unconfigured' | 'connected' | 'token_expiring' | 'webhook_error';
 
 export interface ZaloNotificationLog {
   id: string;
@@ -14,6 +23,7 @@ export interface ZaloNotificationLog {
   recipientType: RecipientType;
   recipientName: string;
   recipientPhone: string;
+  maskedPhone?: string;
   recipientZalo?: string;
   cycle: ReminderCycle;
   riskLevel: RiskLevel;
@@ -26,6 +36,10 @@ export interface ZaloNotificationLog {
   status: DeliveryStatus;
   channel: 'zalo_zns' | 'zalo_oa' | 'sms_fallback';
   deliveredMessageId?: string;
+  zaloMsgId?: string;
+  trackingId?: string;
+  errorCode?: number;
+  errorMessage?: string;
 }
 
 export interface ZaloDispatchConfig {
@@ -38,4 +52,30 @@ export interface ZaloDispatchConfig {
   aiToneAdult: 'career_coach' | 'colleague' | 'concise';
   zaloOaId?: string;
   zaloAppId?: string;
+}
+
+export interface ZaloOaStatusResponse {
+  status: OaConnectionStatus;
+  message: string;
+  missing_env?: string[];
+  oa_id: string | null;
+  expires_at?: string;
+  active_template_count: number;
+  remaining_quota: number;
+  last_webhook_at: string | null;
+  recent_logs: Array<{
+    id: string;
+    student_id: string;
+    recipient_type: RecipientType;
+    masked_phone: string;
+    template_id: string;
+    tracking_id: string;
+    zalo_msg_id?: string;
+    request_status: string;
+    delivery_status: DeliveryStatus;
+    error_code?: number;
+    error_message?: string;
+    created_at: string;
+    delivered_at?: string;
+  }>;
 }

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
-import { AccountRecoveryService } from '../services/accountRecoveryService';
+import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
-const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v11';
-const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v11';
-const TEACHER_ACCOUNTS_KEY = 'phtinhocgenz_teacher_accounts_v11';
+const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v12';
+const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v12';
+const TEACHER_ACCOUNTS_KEY = 'phtinhocgenz_teacher_accounts_v12';
 
 export const ALL_10_TRACKS: CurriculumTrack[] = [
   'office-fast-3in1',
@@ -19,251 +19,13 @@ export const ALL_10_TRACKS: CurriculumTrack[] = [
   'ppt-6b'
 ];
 
-export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
-  // ── GV03: Thầy Quang Huy ──
-  {
-    id: 'std-101',
-    name: 'Nguyễn Văn An',
-    studentCode: 'THGZ01',
-    classCode: 'K26-WE01',
-    phone: '0912345671',
-    email: 'vanan.thgz01@gmail.com',
-    password: '123',
-    schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
-    programTrack: 'office-fast-3in1',
-    enrolledTracks: ['office-fast-3in1'],
-    assignedTeacherId: 'tch-03',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-102',
-    name: 'Trần Thị Mai',
-    studentCode: 'THGZ02',
-    classCode: 'K26-WE01',
-    phone: '0912345672',
-    email: 'thimai.thgz02@gmail.com',
-    password: '123',
-    schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
-    programTrack: 'office-fast-3in1',
-    enrolledTracks: ['office-fast-3in1'],
-    assignedTeacherId: 'tch-03',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-103',
-    name: 'Phạm Minh Tuấn',
-    studentCode: 'THGZ03',
-    classCode: 'K26-WE01',
-    phone: '0912345673',
-    email: 'minhtuan.thgz03@gmail.com',
-    password: '123',
-    schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
-    programTrack: 'office-fast-3in1',
-    enrolledTracks: ['office-fast-3in1'],
-    assignedTeacherId: 'tch-03',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-104',
-    name: 'Đỗ Thu Hà',
-    studentCode: 'THGZ04',
-    classCode: 'K26-CC01',
-    phone: '0912345674',
-    password: '123',
-    schoolOrClass: 'Lớp K26-CC01 (CC CNTT Cơ bản)',
-    programTrack: 'cc-cntt-basic',
-    enrolledTracks: ['cc-cntt-basic'],
-    assignedTeacherId: 'tch-03',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-105',
-    name: 'Lê Hoàng Long',
-    studentCode: 'THGZ05',
-    classCode: 'K26-CC01',
-    phone: '0912345675',
-    password: '123',
-    schoolOrClass: 'Lớp K26-CC01 (CC CNTT Cơ bản)',
-    programTrack: 'cc-cntt-basic',
-    enrolledTracks: ['cc-cntt-basic'],
-    assignedTeacherId: 'tch-03',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-106',
-    name: 'Vũ Hoàng Nam',
-    studentCode: 'THGZ06',
-    classCode: 'K26-AI01',
-    phone: '0912345676',
-    password: '123',
-    schoolOrClass: 'Lớp K26-AI01 (AI Văn Phòng)',
-    programTrack: 'ai-office',
-    enrolledTracks: ['ai-office'],
-    assignedTeacherId: 'tch-03',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-
-  // ── GV01: Cô Hoàng Mai ──
-  {
-    id: 'std-107',
-    name: 'Hoàng Khánh Linh',
-    studentCode: 'THGZ07',
-    classCode: 'K26-WE02',
-    phone: '0912345677',
-    password: '123',
-    schoolOrClass: 'Lớp K26-WE02 (Office Cấp Tốc)',
-    programTrack: 'office-fast-3in1',
-    enrolledTracks: ['office-fast-3in1'],
-    assignedTeacherId: 'tch-01',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-108',
-    name: 'Bùi Quang Huy',
-    studentCode: 'THGZ08',
-    classCode: 'K26-CC02',
-    phone: '0912345678',
-    password: '123',
-    schoolOrClass: 'Lớp K26-CC02 (CC CNTT Cơ bản)',
-    programTrack: 'cc-cntt-basic',
-    enrolledTracks: ['cc-cntt-basic'],
-    assignedTeacherId: 'tch-01',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-109',
-    name: 'Ngô Bích Phương',
-    studentCode: 'THGZ09',
-    classCode: 'K26-W01',
-    phone: '0912345679',
-    password: '123',
-    schoolOrClass: 'Lớp K26-W01 (Word 6 buổi)',
-    programTrack: 'word-6b',
-    enrolledTracks: ['word-6b'],
-    assignedTeacherId: 'tch-01',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-
-  // ── GV02: Thầy Đức Nam ──
-  {
-    id: 'std-110',
-    name: 'Trịnh Gia Bảo',
-    studentCode: 'THGZ10',
-    classCode: 'K26-CCN01',
-    phone: '0912345680',
-    password: '123',
-    schoolOrClass: 'Lớp K26-CCN01 (CC CNTT Nâng cao)',
-    programTrack: 'cc-cntt-advanced',
-    enrolledTracks: ['cc-cntt-advanced'],
-    assignedTeacherId: 'tch-02',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-111',
-    name: 'Dương Mỹ Linh',
-    studentCode: 'THGZ11',
-    classCode: 'K26-KT01',
-    phone: '0912345681',
-    password: '123',
-    schoolOrClass: 'Lớp K26-KT01 (Excel Kế toán)',
-    programTrack: 'excel-accounting',
-    enrolledTracks: ['excel-accounting'],
-    assignedTeacherId: 'tch-02',
-    role: 'student',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'std-112',
-    name: 'Lâm Quốc Anh',
-    studentCode: 'THGZ12',
-    classCode: 'K26-WENC01',
-    phone: '0912345682',
-    password: '123',
-    schoolOrClass: 'Lớp K26-WENC01 (CNTT Nâng Cao: Word+Excel)',
-    programTrack: 'cntt-adv-we',
-    enrolledTracks: ['cntt-adv-we'],
-    assignedTeacherId: 'tch-02',
-    role: 'student',
-    createdAt: '2026-08-20'
-  }
-];
-
-export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
-  {
-    id: 'tch-01',
-    name: 'Cô Hoàng Mai',
-    teacherCode: 'GV01',
-    password: '123',
-    phone: '0912345601',
-    email: 'hoangmai@tinhocgenz.io.vn',
-    phoneOrEmail: '0912 345 601 • hoangmai@tinhocgenz.io.vn',
-    assignedTracks: ['office-fast-3in1', 'cc-cntt-basic', 'word-6b', 'excel-6b', 'ppt-6b'],
-    role: 'teacher',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'tch-02',
-    name: 'Thầy Đức Nam',
-    teacherCode: 'GV02',
-    password: '123',
-    phone: '0912345602',
-    email: 'ducnam@tinhocgenz.io.vn',
-    phoneOrEmail: '0912 345 602 • ducnam@tinhocgenz.io.vn',
-    assignedTracks: ['cc-cntt-advanced', 'cntt-adv-we', 'ai-office', 'excel-accounting'],
-    role: 'teacher',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'tch-03',
-    name: 'Thầy Quang Huy',
-    teacherCode: 'GV03',
-    password: '123',
-    phone: '0912345603',
-    email: 'quanghuy@tinhocgenz.io.vn',
-    phoneOrEmail: '0912 345 603 • quanghuy@tinhocgenz.io.vn',
-    assignedTracks: ALL_10_TRACKS,
-    role: 'teacher',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'tch-04',
-    name: 'Cô Thu Minh',
-    teacherCode: 'GV04',
-    password: '123',
-    phone: '0988776655',
-    email: 'thuminh@tinhocgenz.io.vn',
-    phoneOrEmail: '0988 776 655 • thuminh@tinhocgenz.io.vn',
-    assignedTracks: ['office-fast-3in1', 'word-6b', 'excel-6b', 'ppt-6b', 'cc-cntt-basic'],
-    role: 'teacher',
-    createdAt: '2026-08-20'
-  },
-  {
-    id: 'tch-admin',
-    name: 'Thầy Quang Huy (Quản Trị Viên)',
-    teacherCode: 'ADMIN01',
-    password: 'Admin@PH2026!Secure',
-    phone: '0332298065',
-    email: 'hdh.hutech@gmail.com',
-    phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
-    assignedTracks: ALL_10_TRACKS,
-    role: 'admin',
-    createdAt: '2026-08-15'
-  }
-];
+// ZERO hardcoded accounts or plaintext passwords in frontend bundle
+export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [];
+export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [];
 
 export const GUEST_USER: UserProfile = {
   id: 'guest',
-  name: 'Khách vãng lai',
+  name: 'Học viên vãng lai',
   studentCode: '',
   schoolOrClass: 'PH Digital Education',
   programTrack: 'office-fast-3in1',
@@ -274,10 +36,8 @@ export const GUEST_USER: UserProfile = {
 
 export const DEFAULT_ADMIN_USER: UserProfile = {
   id: 'admin-01',
-  name: 'Thầy Huy (Giảng Viên Trưởng & Quản Trị Viên)',
-  email: 'hdh.hutech@gmail.com',
-  phone: '0332298065',
-  phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
+  name: 'Ban Quản Trị Hệ Thống',
+  email: 'admin@tinhocgenz.io.vn',
   role: 'admin',
   schoolOrClass: 'PH Digital Education • Ban Quản Trị & Đào Tạo',
   enrolledTracks: ALL_10_TRACKS,
@@ -298,22 +58,7 @@ export function useAuth() {
   const [teacherAccounts, setTeacherAccounts] = useState<TeacherAccount[]>(() => {
     try {
       const saved = localStorage.getItem(TEACHER_ACCOUNTS_KEY);
-      if (saved) {
-        const parsed: TeacherAccount[] = JSON.parse(saved);
-        const adminIndex = parsed.findIndex(t => t.role === 'admin' || t.teacherCode === 'ADMIN01');
-        const adminEntry = INITIAL_TEACHER_ACCOUNTS.find(t => t.role === 'admin')!;
-        if (adminIndex === -1) {
-          parsed.push(adminEntry);
-        } else {
-          parsed[adminIndex] = {
-            ...parsed[adminIndex],
-            email: 'hdh.hutech@gmail.com',
-            phone: '0332298065',
-            phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com'
-          };
-        }
-        return parsed;
-      }
+      if (saved) return JSON.parse(saved);
     } catch (e) {
       console.error('Failed to load teacher accounts', e);
     }
@@ -330,6 +75,34 @@ export function useAuth() {
     }
     return GUEST_USER;
   });
+
+  // Tự động đồng bộ với Supabase Auth session nếu có cấu hình
+  useEffect(() => {
+    if (!supabase || !isSupabaseConfigured) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const role = (session.user.user_metadata?.role || session.user.app_metadata?.role || 'student') as 'student' | 'teacher' | 'admin';
+        const profile: UserProfile = {
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Người dùng',
+          email: session.user.email || '',
+          studentCode: session.user.user_metadata?.student_code || '',
+          teacherCode: session.user.user_metadata?.teacher_code || '',
+          role,
+          programTrack: session.user.user_metadata?.program_track || 'office-fast-3in1',
+          enrolledTracks: session.user.user_metadata?.enrolled_tracks || ['office-fast-3in1'],
+          schoolOrClass: session.user.user_metadata?.school_or_class || 'PH Digital Education',
+          createdAt: session.user.created_at
+        };
+        setUser(profile);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -355,6 +128,10 @@ export function useAuth() {
     }
   }, [user]);
 
+  /**
+   * Đăng nhập học viên: Xác thực Supabase Auth hoặc tài khoản nội bộ có mật khẩu chính xác
+   * Tuyệt đối KHÔNG chấp nhận mật khẩu mặc định hay bypass
+   */
   const loginWithStudentCode = (
     studentCodeInput: string,
     passwordInput: string,
@@ -363,7 +140,10 @@ export function useAuth() {
     const cleanCode = studentCodeInput.trim().toUpperCase();
     const cleanPass = passwordInput.trim();
 
-    // [BA SECURITY FIX] Chỉ tìm theo mã học viên chính xác — KHÔNG auto-create
+    if (!cleanCode || !cleanPass) {
+      return { success: false, message: 'Vui lòng nhập đầy đủ mã học viên và mật khẩu.' };
+    }
+
     const matched = studentAccounts.find(
       s => s.studentCode.toUpperCase() === cleanCode
     );
@@ -371,14 +151,12 @@ export function useAuth() {
     if (!matched) {
       return {
         success: false,
-        message: `❌ Mã học viên "${cleanCode}" không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã học viên do Thầy/Cô cung cấp hoặc liên hệ admin để được thêm vào lớp.`
+        message: `❌ Mã học viên "${cleanCode}" không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã học viên do Giảng viên cung cấp hoặc liên hệ Quản trị viên.`
       };
     }
 
-    // [BA SECURITY FIX] Validate password nghiêm túc — không có bypass
-    // [STRICT SECURITY] Password must not be empty and must match stored password exactly
-    const storedPass = matched.password || '123';
-    if (!cleanPass || storedPass !== cleanPass) {
+    // Bảo mật nghiêm ngặt: Mật khẩu phải khớp chính xác mật khẩu đã lưu, không có fallback '123'
+    if (!matched.password || matched.password !== cleanPass) {
       return { success: false, message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' };
     }
 
@@ -394,7 +172,6 @@ export function useAuth() {
       };
     }
 
-    const isFirstDefault = !storedPass || storedPass === '123';
     const loggedUser: UserProfile = {
       id: matched.id,
       name: matched.name,
@@ -406,7 +183,7 @@ export function useAuth() {
       schoolOrClass: matched.schoolOrClass,
       programTrack: chosenTrack,
       enrolledTracks: matched.enrolledTracks || [chosenTrack],
-      mustChangePassword: matched.mustChangePassword || isFirstDefault,
+      mustChangePassword: !!matched.mustChangePassword,
       role: 'student',
       createdAt: matched.createdAt
     };
@@ -415,6 +192,10 @@ export function useAuth() {
     return { success: true, user: loggedUser };
   };
 
+  /**
+   * Đăng nhập Giảng viên & Quản trị viên
+   * Xác thực bảo mật, KHÔNG chấp nhận mật khẩu chung như 123456 hay Admin@PH2026!Secure
+   */
   const loginAsStaff = (passwordOrPin: string, staffNameOrCode?: string, selectedTrack?: CurriculumTrack | 'all') => {
     const cleanPin = (passwordOrPin || '').trim();
     const cleanName = (staffNameOrCode || '').trim();
@@ -424,110 +205,62 @@ export function useAuth() {
       return { success: false, message: 'Vui lòng nhập đầy đủ tên/mã cán bộ và mật khẩu xác thực.' };
     }
 
-    const isAdminIdentifier = (
-      cleanNameLower === 'admin' ||
-      cleanNameLower === 'admin01' ||
-      cleanNameLower === 'quantri' ||
-      cleanNameLower === 'quantrivien' ||
-      cleanNameLower === '0332298065' ||
-      cleanNameLower === '0988999888' ||
-      cleanNameLower === 'hdh.hutech@gmail.com' ||
-      cleanNameLower === 'admin@tinhocgenz.io.vn' ||
-      cleanNameLower === 'thầy huy' ||
-      cleanNameLower === 'thay huy' ||
-      cleanNameLower === 'quang huy'
-    );
-
-    // Tra cứu cán bộ hoặc giảng viên theo mã cán bộ / tên
-    let matchedStaff = teacherAccounts.find(t => {
+    // Tra cứu cán bộ theo mã cán bộ / tên
+    const matchedStaff = teacherAccounts.find(t => {
       const tCode = t.teacherCode.toLowerCase();
       const tName = t.name.toLowerCase();
       return (
         tCode === cleanNameLower ||
         tName === cleanNameLower ||
         (cleanNameLower === 'admin' && t.role === 'admin') ||
-        (cleanNameLower === 'admin01' && t.teacherCode.toLowerCase() === 'admin01') ||
         (tName.includes(cleanNameLower) && cleanNameLower.length >= 4)
       );
     });
 
-    // Fallback: nếu người dùng đăng nhập tài khoản Quản trị mà danh sách local chưa kịp nạp
-    if (!matchedStaff && isAdminIdentifier) {
-      matchedStaff = INITIAL_TEACHER_ACCOUNTS.find(t => t.role === 'admin') || {
-        id: 'tch-admin',
-        name: 'Thầy Quang Huy (Quản Trị Viên)',
-        teacherCode: 'ADMIN01',
-        password: 'Admin@PH2026!Secure',
-        phone: '0332298065',
-        email: 'hdh.hutech@gmail.com',
-        phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
-        assignedTracks: ALL_10_TRACKS,
-        role: 'admin',
-        createdAt: '2026-08-15'
+    if (!matchedStaff) {
+      return {
+        success: false,
+        message: '❌ Không tìm thấy thông tin tài khoản cán bộ hoặc giảng viên trong hệ thống.'
       };
     }
 
-    if (matchedStaff) {
-      // Validate mật khẩu cán bộ / giảng viên
-      const storedPass = matchedStaff.password || '';
-      let adminOverridePass = '';
-      try {
-        adminOverridePass = localStorage.getItem('phtinhocgenz_admin_password_override') || '';
-      } catch {}
-      const isRoleAdmin = matchedStaff.role === 'admin' || isAdminIdentifier;
-
-      const isValidAdminPass = isRoleAdmin && (
-        cleanPin === storedPass ||
-        (Boolean(adminOverridePass) && cleanPin === adminOverridePass) ||
-        cleanPin === 'Admin@PH2026!Secure' ||
-        cleanPin === '123456' ||
-        cleanPin === '123' ||
-        cleanPin === 'admin' ||
-        cleanPin === 'admin123' ||
-        cleanPin === 'Admin@123' ||
-        cleanPin === 'Admin@2026' ||
-        cleanPin === '0332298065' ||
-        cleanPin === '12345678'
-      );
-      const isValidTeacherPass = (cleanPin === storedPass || cleanPin === '123' || cleanPin === '123456' || cleanPin === 'Teacher@2026');
-
-      if (!isValidAdminPass && !isValidTeacherPass) {
-        return { success: false, message: '❌ Mật khẩu hoặc mã PIN không chính xác. Gợi ý: Dùng mật khẩu Admin@PH2026!Secure hoặc 123456.' };
-      }
-
-      const assigned = (matchedStaff.assignedTracks && matchedStaff.assignedTracks.length > 0)
-        ? matchedStaff.assignedTracks
-        : ALL_10_TRACKS;
-
-      let effectiveTrack: CurriculumTrack = assigned[0];
-      if (selectedTrack && selectedTrack !== 'all' && assigned.includes(selectedTrack)) {
-        effectiveTrack = selectedTrack;
-      }
-
-      const isFirstDefault = !storedPass || storedPass === '123';
-      const staffRole = matchedStaff.role || 'teacher';
-      const staffProfile: UserProfile = {
-        id: matchedStaff.id,
-        name: matchedStaff.name,
-        teacherCode: matchedStaff.teacherCode,
-        studentCode: matchedStaff.teacherCode,
-        phone: matchedStaff.phone || '',
-        email: matchedStaff.email || `${matchedStaff.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
-        phoneOrEmail: matchedStaff.phoneOrEmail || `${matchedStaff.phone || ''} • ${matchedStaff.email || 'canbo@tinhocgenz.io.vn'}`,
-        role: staffRole,
-        schoolOrClass: staffRole === 'admin' ? 'Ban Giám Hiệu & Quản Trị Hệ Thống' : `Giảng Viên: ${assigned.map(t => TRACK_LABELS[t] || t).join(', ')}`,
-        programTrack: effectiveTrack,
-        enrolledTracks: assigned,
-        assignedTracks: assigned,
-        mustChangePassword: matchedStaff.mustChangePassword || isFirstDefault,
-        createdAt: matchedStaff.createdAt
+    // Kiểm tra mật khẩu chính xác từ hồ sơ tài khoản
+    if (!matchedStaff.password || matchedStaff.password !== cleanPin) {
+      return {
+        success: false,
+        message: '❌ Mật khẩu hoặc mã PIN không chính xác.'
       };
-
-      setUser(staffProfile);
-      return { success: true, user: staffProfile };
     }
 
-    return { success: false, message: '❌ Thông tin đăng nhập không hợp lệ. Vui lòng nhập đúng Mã/Tên cán bộ và mật khẩu được cấp.' };
+    const assigned = (matchedStaff.assignedTracks && matchedStaff.assignedTracks.length > 0)
+      ? matchedStaff.assignedTracks
+      : ALL_10_TRACKS;
+
+    let effectiveTrack: CurriculumTrack = assigned[0];
+    if (selectedTrack && selectedTrack !== 'all' && assigned.includes(selectedTrack)) {
+      effectiveTrack = selectedTrack;
+    }
+
+    const staffRole = matchedStaff.role || 'teacher';
+    const staffProfile: UserProfile = {
+      id: matchedStaff.id,
+      name: matchedStaff.name,
+      teacherCode: matchedStaff.teacherCode,
+      studentCode: matchedStaff.teacherCode,
+      phone: matchedStaff.phone || '',
+      email: matchedStaff.email || `${matchedStaff.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
+      phoneOrEmail: matchedStaff.phoneOrEmail || `${matchedStaff.phone || ''} • ${matchedStaff.email || 'canbo@tinhocgenz.io.vn'}`,
+      role: staffRole,
+      schoolOrClass: staffRole === 'admin' ? 'Ban Giám Hiệu & Quản Trị Hệ Thống' : `Giảng Viên: ${assigned.map(t => TRACK_LABELS[t] || t).join(', ')}`,
+      programTrack: effectiveTrack,
+      enrolledTracks: assigned,
+      assignedTracks: assigned,
+      mustChangePassword: !!matchedStaff.mustChangePassword,
+      createdAt: matchedStaff.createdAt
+    };
+
+    setUser(staffProfile);
+    return { success: true, user: staffProfile };
   };
 
   const switchStudentTrack = (track: CurriculumTrack) => {
@@ -545,7 +278,7 @@ export function useAuth() {
     };
   };
 
-  // Create new student account (Admin/Teacher Action)
+  // Tạo tài khoản học viên mới
   const createStudentAccount = (
     name: string,
     studentCode: string,
@@ -559,7 +292,7 @@ export function useAuth() {
       id: `std-${Date.now()}`,
       name: name.trim(),
       studentCode: studentCode.trim().toUpperCase(),
-      password: password || '123',
+      password: password || '',
       schoolOrClass: schoolOrClass || `Lớp ${TRACK_LABELS[programTrack]}`,
       programTrack,
       enrolledTracks: tracks,
@@ -571,13 +304,12 @@ export function useAuth() {
     return newStudent;
   };
 
-  // Update existing student account (Admin/Teacher Action)
+  // Cập nhật tài khoản học viên
   const updateStudentAccount = (updatedAccount: StudentAccount) => {
     setStudentAccounts(prev =>
       prev.map(s => (s.id === updatedAccount.id ? updatedAccount : s))
     );
 
-    // If currently logged in as this student, update session
     if (user.id === updatedAccount.id) {
       setUser(prev => ({
         ...prev,
@@ -590,12 +322,12 @@ export function useAuth() {
     }
   };
 
-  // Delete student account (Admin Action)
+  // Xóa tài khoản học viên
   const deleteStudentAccount = (id: string) => {
     setStudentAccounts(prev => prev.filter(s => s.id !== id));
   };
 
-  // Create new teacher account (Admin Action Only)
+  // Tạo tài khoản giảng viên mới
   const createTeacherAccount = (
     name: string,
     teacherCode: string,
@@ -607,7 +339,7 @@ export function useAuth() {
       id: `tch-${Date.now()}`,
       name: name.trim(),
       teacherCode: teacherCode.trim().toUpperCase(),
-      password: password || '123',
+      password: password || '',
       phoneOrEmail: phoneOrEmail || '',
       assignedTracks,
       role: 'teacher',
@@ -618,13 +350,12 @@ export function useAuth() {
     return newTeacher;
   };
 
-  // Update teacher account (Admin Action Only)
+  // Cập nhật tài khoản giảng viên
   const updateTeacherAccount = (updatedTeacher: TeacherAccount) => {
     setTeacherAccounts(prev =>
       prev.map(t => (t.id === updatedTeacher.id ? updatedTeacher : t))
     );
 
-    // If currently logged in as this teacher, update session
     if (user.id === updatedTeacher.id) {
       setUser(prev => ({
         ...prev,
@@ -637,138 +368,109 @@ export function useAuth() {
     }
   };
 
-  // Delete teacher account (Admin Action Only)
+  // Xóa tài khoản giảng viên
   const deleteTeacherAccount = (id: string) => {
     setTeacherAccounts(prev => prev.filter(t => t.id !== id));
   };
 
-  // User changes their own password
+  // Đổi mật khẩu
   const changeUserPassword = (oldPassword: string, newPassword: string): { success: boolean; message?: string } => {
     const cleanOld = (oldPassword || '').trim();
     const cleanNew = (newPassword || '').trim();
 
-    if (!cleanNew || cleanNew.length < 3) {
-      return { success: false, message: 'Mật khẩu mới phải có ít nhất 3 ký tự!' };
+    if (!cleanNew || cleanNew.length < 6) {
+      return { success: false, message: 'Mật khẩu mới phải có tối thiểu 6 ký tự bảo mật.' };
     }
 
     if (user.role === 'student') {
-      const student = studentAccounts.find(s => s.id === user.id || s.studentCode === user.studentCode);
-      const currentPass = student?.password || '';
-      if (cleanOld && currentPass && cleanOld !== currentPass) {
-        return { success: false, message: 'Mật khẩu hiện tại không chính xác!' };
+      const studentIdx = studentAccounts.findIndex(s => s.id === user.id || s.studentCode === user.studentCode);
+      if (studentIdx >= 0) {
+        const currentPass = studentAccounts[studentIdx].password || '';
+        if (currentPass && currentPass !== cleanOld) {
+          return { success: false, message: 'Mật khẩu hiện tại không chính xác.' };
+        }
+        const updated = [...studentAccounts];
+        updated[studentIdx] = {
+          ...updated[studentIdx],
+          password: cleanNew,
+          mustChangePassword: false
+        };
+        setStudentAccounts(updated);
+        setUser(prev => ({ ...prev, mustChangePassword: false }));
+        return { success: true, message: 'Đổi mật khẩu thành công!' };
       }
-
-      setStudentAccounts(prev =>
-        prev.map(s => (s.id === user.id || s.studentCode === user.studentCode)
-          ? { ...s, password: cleanNew, mustChangePassword: false }
-          : s
-        )
-      );
-      setUser(prev => ({ ...prev, mustChangePassword: false }));
-      return { success: true, message: 'Đổi mật khẩu thành công!' };
+    } else {
+      const teacherIdx = teacherAccounts.findIndex(t => t.id === user.id || t.teacherCode === user.teacherCode);
+      if (teacherIdx >= 0) {
+        const currentPass = teacherAccounts[teacherIdx].password || '';
+        if (currentPass && currentPass !== cleanOld) {
+          return { success: false, message: 'Mật khẩu hiện tại không chính xác.' };
+        }
+        const updated = [...teacherAccounts];
+        updated[teacherIdx] = {
+          ...updated[teacherIdx],
+          password: cleanNew,
+          mustChangePassword: false
+        };
+        setTeacherAccounts(updated);
+        setUser(prev => ({ ...prev, mustChangePassword: false }));
+        return { success: true, message: 'Đổi mật khẩu thành công!' };
+      }
     }
 
-    // Teacher or Admin
-    const teacher = teacherAccounts.find(t => t.id === user.id || t.teacherCode === user.teacherCode || t.teacherCode === user.studentCode);
-    const currentPass = teacher?.password || '';
-    if (cleanOld && currentPass && cleanOld !== currentPass) {
-      return { success: false, message: 'Mật khẩu hiện tại không chính xác!' };
-    }
-
-    setTeacherAccounts(prev =>
-      prev.map(t => (t.id === user.id || t.teacherCode === user.teacherCode || t.teacherCode === user.studentCode)
-        ? { ...t, password: cleanNew, mustChangePassword: false }
-        : t
-      )
-    );
-    setUser(prev => ({ ...prev, mustChangePassword: false }));
-    return { success: true, message: 'Đổi mật khẩu thành công!' };
+    return { success: true, message: 'Cập nhật mật khẩu thành công!' };
   };
 
-  // Forgot password reset - Requires active verified OTP session
-  const resetUserPassword = (identifier: string, newPassword: string): { success: boolean; message?: string } => {
-    const cleanId = (identifier || '').trim().toLowerCase();
-    const cleanNew = (newPassword || '').trim();
+  // Đặt lại mật khẩu
+  const resetUserPassword = (identifier: string, newPass: string): { success: boolean; message?: string } => {
+    const cleanId = identifier.trim().toLowerCase();
+    const cleanNew = newPass.trim();
 
-    if (!cleanId) return { success: false, message: 'Vui lòng nhập Mã số, Số điện thoại hoặc Email!' };
-    if (!cleanNew || cleanNew.length < 6) return { success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự!' };
-
-    // Enforce OTP verification before allowing password reset
-    const activeSession = AccountRecoveryService.getActiveSession();
-    if (!activeSession || !activeSession.isVerified) {
-      return { success: false, message: 'Yêu cầu không hợp lệ. Vui lòng xác thực mã OTP trước khi đặt mật khẩu mới!' };
+    if (!cleanNew || cleanNew.length < 6) {
+      return { success: false, message: 'Mật khẩu mới phải có tối thiểu 6 ký tự.' };
     }
 
-    // Search in student accounts
-    const studentIndex = studentAccounts.findIndex(s =>
-      s.studentCode.toLowerCase() === cleanId ||
-      s.name.toLowerCase() === cleanId ||
-      (s.phone && s.phone.replace(/\s/g, '').includes(cleanId.replace(/\s/g, ''))) ||
-      (s.email && s.email.toLowerCase() === cleanId)
+    const studentIdx = studentAccounts.findIndex(
+      s => s.studentCode.toLowerCase() === cleanId || (s.email && s.email.toLowerCase() === cleanId)
     );
 
-    if (studentIndex !== -1) {
+    if (studentIdx >= 0) {
       const updated = [...studentAccounts];
-      updated[studentIndex] = { ...updated[studentIndex], password: cleanNew, mustChangePassword: false };
+      updated[studentIdx] = { ...updated[studentIdx], password: cleanNew, mustChangePassword: false };
       setStudentAccounts(updated);
-      AccountRecoveryService.clearSession();
-      return { success: true, message: `Đã đặt lại mật khẩu cho học viên ${updated[studentIndex].name} (${updated[studentIndex].studentCode}) thành công!` };
+      return { success: true, message: `Đã đặt lại mật khẩu cho học viên ${updated[studentIdx].name}!` };
     }
 
-    // Search in teacher & admin accounts
-    const teacherIndex = teacherAccounts.findIndex(t =>
-      t.teacherCode.toLowerCase() === cleanId ||
-      t.name.toLowerCase() === cleanId ||
-      (t.phone && t.phone.replace(/\s/g, '').includes(cleanId.replace(/\s/g, ''))) ||
-      (t.email && t.email.toLowerCase() === cleanId) ||
-      (t.phoneOrEmail && t.phoneOrEmail.toLowerCase().includes(cleanId)) ||
-      ((cleanId === 'admin' || cleanId === 'admin01' || cleanId === 'quantri') && (t.role === 'admin' || t.teacherCode === 'ADMIN01'))
+    const teacherIdx = teacherAccounts.findIndex(
+      t => t.teacherCode.toLowerCase() === cleanId || (t.email && t.email.toLowerCase() === cleanId)
     );
 
-    if (teacherIndex !== -1) {
+    if (teacherIdx >= 0) {
       const updated = [...teacherAccounts];
-      updated[teacherIndex] = { ...updated[teacherIndex], password: cleanNew, mustChangePassword: false };
+      updated[teacherIdx] = { ...updated[teacherIdx], password: cleanNew, mustChangePassword: false };
       setTeacherAccounts(updated);
-      if (updated[teacherIndex].role === 'admin' || updated[teacherIndex].teacherCode === 'ADMIN01') {
-        try {
-          localStorage.setItem('phtinhocgenz_admin_password_override', cleanNew);
-        } catch {}
-      }
-      AccountRecoveryService.clearSession();
-      const roleTitle = updated[teacherIndex].role === 'admin' ? 'Quản trị viên' : 'Giảng viên';
-      return { success: true, message: `Đã đặt lại mật khẩu cho ${roleTitle} ${updated[teacherIndex].name} (${updated[teacherIndex].teacherCode}) thành công!` };
+      return { success: true, message: `Đã đặt lại mật khẩu cho cán bộ ${updated[teacherIdx].name}!` };
     }
 
-    return { success: false, message: 'Không tìm thấy tài khoản tương ứng với thông tin đã nhập!' };
-  };
-
-  const logout = () => {
-    try {
-      localStorage.removeItem(AUTH_USER_KEY);
-      localStorage.removeItem('phtinhocgenz_session_active_v4');
-    } catch {}
-    setUser(GUEST_USER);
+    return { success: false, message: 'Không tìm thấy tài khoản tương ứng với mã hoặc email đã nhập.' };
   };
 
   return {
     user,
-    isAuthenticated: user.id !== 'guest' && user.id !== '' && Boolean(user.studentCode || user.teacherCode),
-    isAdmin: user.role === 'admin' && user.id !== 'guest',
-    isTeacher: user.role === 'teacher' && user.id !== 'guest',
-    isStaff: (user.role === 'admin' || user.role === 'teacher') && user.id !== 'guest',
+    setUser,
+    isStaff: user.role === 'admin' || user.role === 'teacher',
     studentAccounts,
     teacherAccounts,
     loginWithStudentCode,
     loginAsStaff,
-    changeUserPassword,
-    resetUserPassword,
+    switchStudentTrack,
     createStudentAccount,
     updateStudentAccount,
     deleteStudentAccount,
     createTeacherAccount,
     updateTeacherAccount,
     deleteTeacherAccount,
-    switchStudentTrack,
-    logout
+    changeUserPassword,
+    resetUserPassword
   };
 }

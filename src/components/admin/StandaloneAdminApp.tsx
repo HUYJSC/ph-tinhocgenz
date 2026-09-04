@@ -282,41 +282,6 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               </button>
             </div>
 
-            {/* Quick credentials hint */}
-            <div style={{
-              background: 'rgba(217, 119, 6, 0.1)',
-              border: '1px dashed rgba(217, 119, 6, 0.4)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.78rem',
-              color: '#fde68a'
-            }}>
-              <span>💡 Tài khoản: <strong>admin</strong> • Mật khẩu: <strong>123456</strong></span>
-              <button
-                type="button"
-                onClick={() => {
-                  setAdminUsername('admin');
-                  setAdminPassword('123456');
-                  setLoginError('');
-                  soundFx.playClick();
-                }}
-                style={{
-                  background: 'rgba(217, 119, 6, 0.3)',
-                  border: '1px solid rgba(217, 119, 6, 0.5)',
-                  color: '#fff',
-                  borderRadius: '4px',
-                  padding: '2px 8px',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                Điền nhanh
-              </button>
-            </div>
 
             {loginError && (
               <div style={{ padding: '10px 12px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#fca5a5', fontSize: '0.82rem' }}>

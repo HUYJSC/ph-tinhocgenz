@@ -60,7 +60,7 @@ export class AccountRecoveryService {
    * Ví dụ: 0332298065 -> 0332****065
    */
   static maskPhone(phone: string): string {
-    if (!phone) return '0332****065';
+    if (!phone) return '090****xxx';
     const clean = phone.replace(/\s+/g, '');
     if (clean.length < 7) return `${clean.slice(0, 3)}****`;
     return `${clean.slice(0, 4)}****${clean.slice(-3)}`;
@@ -94,8 +94,8 @@ export class AccountRecoveryService {
     const cleanId = identifier.trim();
     const targetEmail = (rawEmail && rawEmail.includes('@'))
       ? rawEmail.trim().toLowerCase()
-      : (role === 'admin' ? 'hdh.hutech@gmail.com' : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`);
-    const targetPhone = rawPhone ? rawPhone.trim() : '0332298065';
+      : (role === 'admin' ? 'admin@tinhocgenz.io.vn' : `${cleanId.toLowerCase()}@student.tinhocgenz.edu.vn`);
+    const targetPhone = rawPhone ? rawPhone.trim() : '';
 
     const otp = this.generateRandomOtp();
     const now = Date.now();
