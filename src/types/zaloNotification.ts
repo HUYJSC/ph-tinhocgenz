@@ -11,7 +11,15 @@ export type DeliveryStatus =
   | 'cancelled'
   | 'pending';
 
-export type OaConnectionStatus = 'unconfigured' | 'connected' | 'token_expiring' | 'webhook_error';
+export type OaConnectionStatus =
+  | 'checking'
+  | 'unconfigured'
+  | 'not_configured'
+  | 'config_incomplete'
+  | 'token_expiring'
+  | 'token_expired'
+  | 'connected'
+  | 'webhook_error';
 
 export interface ZaloNotificationLog {
   id: string;
@@ -55,15 +63,31 @@ export interface ZaloDispatchConfig {
 }
 
 export interface ZaloOaStatusResponse {
+  configured?: boolean;
   status: OaConnectionStatus;
   message: string;
+  missing?: string[];
   missing_env?: string[];
   oa_id: string | null;
   expires_at?: string;
   active_template_count: number;
   remaining_quota: number;
   last_webhook_at: string | null;
-  recent_logs: Array<{
+  checks?: {
+    app: boolean;
+    oa: boolean;
+    token: boolean;
+    refreshToken: boolean;
+    template: boolean;
+    webhook: boolean;
+    database: boolean;
+  };
+  flags?: {
+    integrationEnabled: boolean;
+    sendEnabled: boolean;
+    automationEnabled: boolean;
+  };
+  recent_logs?: Array<{
     id: string;
     student_id: string;
     recipient_type: RecipientType;
@@ -79,3 +103,4 @@ export interface ZaloOaStatusResponse {
     delivered_at?: string;
   }>;
 }
+

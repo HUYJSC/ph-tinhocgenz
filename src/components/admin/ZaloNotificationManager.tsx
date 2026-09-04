@@ -13,7 +13,7 @@ import {
 import {
   Send, Bot, Users, UserCheck, ShieldAlert,
   Clock, CheckCircle2, Search,
-  Settings, RefreshCw, Copy, Sparkles, AlertTriangle, AlertCircle, PhoneCall
+  Settings, RefreshCw, Copy, Sparkles, AlertTriangle, AlertCircle, PhoneCall, ExternalLink
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -145,6 +145,7 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
   };
 
   // Gửi thử nghiệm đến số quản trị
+  // Gửi thử nghiệm đến số quản trị qua endpoint chuyên dụng /api/zalo/send-test
   const handleSendAdminTest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!testPhone.trim()) return;
@@ -153,33 +154,28 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
     setTestResult(null);
 
     try {
-      const res = await fetch('/api/zalo/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: testPhone.trim(),
-          template_id: 'PH_EDU_TEST_2026',
-          template_data: {
-            admin_name: 'Quản Trị Viên',
-            test_time: new Date().toLocaleString('vi-VN'),
-            note: 'Kiểm tra kết nối Zalo ZBS Template Message API 2026'
-          },
-          tracking_id: `TEST_ADMIN_${Date.now()}`
-        })
-      });
+      const res = await AiZaloNotificationService.sendTestMessage(
+        testPhone.trim(),
+        'REMINDER',
+        {
+          student_name: 'Học viên Test',
+          recipient_name: 'Quản Trị Viên',
+          cycle: 'Kiểm thử Vận hành ZBS 2026',
+          message_body: 'Kiểm tra thông tuyến Zalo ZBS Template Message API chính thức 2026.'
+        }
+      );
 
-      const data = await res.json();
-      if (res.ok && data.success && data.msg_id) {
+      if (res.success) {
         soundFx.playVictory();
         setTestResult({
           success: true,
-          msg: `Gửi thử thành công! Msg ID thật từ Zalo: ${data.msg_id}`
+          msg: `Gửi thử thành công! Msg ID thật từ Zalo: ${res.msg_id}`
         });
       } else {
         soundFx.playIncorrect();
         setTestResult({
           success: false,
-          msg: `Gửi thất bại: ${data.message || data.error || 'Lỗi Zalo OpenAPI'}`
+          msg: `Gửi thất bại: ${res.error || res.message || 'Lỗi Zalo OpenAPI'}`
         });
       }
     } catch (err: any) {
@@ -354,119 +350,178 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
         </div>
       </div>
 
-      {/* ── 2. CONNECTION STATUS BANNER (REAL HARDWARE / API STATUS) ── */}
-      {currentStatus === 'unconfigured' && (
-        <div style={{
-          padding: '16px 20px',
-          background: 'rgba(239, 68, 68, 0.08)',
-          border: '1px solid rgba(239, 68, 68, 0.4)',
-          borderRadius: '14px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c', fontWeight: 800, fontSize: '14px' }}>
-              <AlertCircle size={18} />
-              <span>TRẠNG THÁI ZALO ZBS: CHƯA CẤU HÌNH</span>
-            </div>
+      {/* ── 2. CONNECTION STATUS BANNER (5 TRẠNG THÁI ĐỘNG & BẢO MẬT THEO MASTER PROMPT) ── */}
+      <div style={{
+        padding: '16px 20px',
+        borderRadius: '16px',
+        border: isLoadingStatus
+          ? '1px solid #94a3b8'
+          : currentStatus === 'connected'
+          ? '1px solid #10b981'
+          : currentStatus === 'token_expiring' || currentStatus === 'token_expired'
+          ? '1px solid #f59e0b'
+          : currentStatus === 'config_incomplete'
+          ? '1px solid #f97316'
+          : '1px solid #ef4444',
+        background: isLoadingStatus
+          ? 'rgba(148, 163, 184, 0.08)'
+          : currentStatus === 'connected'
+          ? 'rgba(16, 185, 129, 0.08)'
+          : currentStatus === 'token_expiring' || currentStatus === 'token_expired'
+          ? 'rgba(245, 158, 11, 0.08)'
+          : currentStatus === 'config_incomplete'
+          ? 'rgba(249, 115, 22, 0.08)'
+          : 'rgba(239, 68, 68, 0.08)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          {/* Main Status Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {isLoadingStatus ? (
+              <RefreshCw size={18} className="animate-spin" color="#64748b" />
+            ) : currentStatus === 'connected' ? (
+              <CheckCircle2 size={18} color="#10b981" />
+            ) : currentStatus === 'token_expiring' || currentStatus === 'token_expired' ? (
+              <AlertTriangle size={18} color="#d97706" />
+            ) : (
+              <AlertCircle size={18} color="#ef4444" />
+            )}
+
+            <span style={{
+              fontSize: '14px',
+              fontWeight: 800,
+              color: isLoadingStatus
+                ? '#475569'
+                : currentStatus === 'connected'
+                ? '#065f46'
+                : currentStatus === 'token_expiring' || currentStatus === 'token_expired'
+                ? '#92400e'
+                : currentStatus === 'config_incomplete'
+                ? '#9a3412'
+                : '#b91c1c'
+            }}>
+              {isLoadingStatus
+                ? 'ĐANG KIỂM TRA KẾT NỐI ZALO...'
+                : currentStatus === 'connected'
+                ? 'ZALO ZBS: ĐÃ KẾT NỐI CHÍNH THỨC'
+                : currentStatus === 'token_expiring' || currentStatus === 'token_expired'
+                ? 'ZALO ZBS: TOKEN HẾT HẠN / CẦN KẾT NỐI LẠI'
+                : currentStatus === 'config_incomplete'
+                ? 'ZALO ZBS: CẤU HÌNH CHƯA HOÀN TẤT'
+                : 'TRẠNG THÁI ZALO ZBS: CHƯA CẤU HÌNH'}
+            </span>
+
+            {oaStatus?.oa_id && (
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                • OA: <strong style={{ color: 'var(--text-primary)' }}>{oaStatus.oa_id}</strong>
+              </span>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <a
+              href="/api/zalo/oauth/start"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                padding: '5px 12px',
+                borderRadius: '8px',
+                background: '#0284c7',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <ExternalLink size={13} />
+              <span>Kết Nối Zalo OA</span>
+            </a>
+
             <button
               onClick={refreshStatus}
               disabled={isLoadingStatus}
               style={{
-                padding: '4px 12px',
-                borderRadius: '6px',
+                padding: '5px 12px',
+                borderRadius: '8px',
                 background: 'transparent',
-                border: '1px solid #ef4444',
-                color: '#b91c1c',
-                fontSize: '11.5px',
+                border: '1px solid #0284c7',
+                color: '#0284c7',
+                fontSize: '12px',
                 fontWeight: 700,
-                cursor: 'pointer'
+                cursor: isLoadingStatus ? 'not-allowed' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
               }}
             >
-              {isLoadingStatus ? 'Đang kiểm tra...' : 'Kiểm tra lại kết nối'}
+              {isLoadingStatus && <RefreshCw size={13} className="animate-spin" />}
+              <span>{isLoadingStatus ? 'Đang kiểm tra...' : 'Kiểm tra lại kết nối'}</span>
             </button>
           </div>
-          <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Hệ thống đang hoạt động ở chế độ nghiêm ngặt và <strong>tuyệt đối không giả lập gửi thành công</strong>. Để kích hoạt gửi Zalo thật, quản trị viên cần cung cấp các biến môi trường sau trên Vercel:
-          </p>
-          {oaStatus?.missing_env && oaStatus.missing_env.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-              {oaStatus.missing_env.map(envKey => (
-                <span key={envKey} style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#991b1b', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-                  {envKey}
+        </div>
+
+        {/* ── Section XXXV: 4 Health Badges Bar ── */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '8px',
+          padding: '10px 14px',
+          background: 'rgba(255, 255, 255, 0.7)',
+          borderRadius: '10px',
+          fontSize: '12px',
+          border: '1px solid var(--border-subtle)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>Kết nối Zalo:</span>
+            <strong>{currentStatus === 'connected' ? '🟢 Online' : '🔴 Offline'}</strong>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>Token:</span>
+            <strong>
+              {oaStatus?.checks?.token ? '🟢 Hợp lệ' : currentStatus === 'token_expiring' ? '🟡 Sắp hết hạn' : '🔴 Chưa có / Hết hạn'}
+            </strong>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>Webhook:</span>
+            <strong>{oaStatus?.checks?.webhook ? '🟢 Hoạt động' : '⚪ Chưa kích hoạt'}</strong>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>ZBS Template:</span>
+            <strong>{(oaStatus?.active_template_count ?? 0) > 0 ? '🟢 Đã cấu hình' : '⚪ Chưa có'}</strong>
+          </div>
+        </div>
+
+        {/* Missing Server Variables Warning (Never Expose Secrets) */}
+        {((oaStatus?.missing && oaStatus.missing.length > 0) || (oaStatus?.missing_env && oaStatus.missing_env.length > 0)) && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+              Biến môi trường cần cung cấp trên Vercel Project Settings (chỉ hiển thị tên biến, không lộ secret):
+            </span>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
+              {(oaStatus.missing || oaStatus.missing_env || []).map(envKey => (
+                <span
+                  key={envKey}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    color: '#991b1b',
+                    padding: '2px 7px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(239, 68, 68, 0.25)'
+                  }}
+                >
+                  {envKey}: CHƯA CÓ
                 </span>
               ))}
             </div>
-          )}
-        </div>
-      )}
-
-      {currentStatus === 'connected' && (
-        <div style={{
-          padding: '12px 18px',
-          background: 'rgba(16, 185, 129, 0.08)',
-          border: '1px solid #10b981',
-          borderRadius: '12px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '10px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
-            <span style={{ fontSize: '13px', fontWeight: 800, color: '#065f46' }}>
-              ZALO ZBS: ĐÃ KẾT NỐI CHÍNH THỨC
-            </span>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              • OA ID: <strong style={{ color: 'var(--text-primary)' }}>{oaStatus?.oa_id || 'PH Digital Education'}</strong>
-            </span>
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            <span>Template đang dùng: <strong>{oaStatus?.active_template_count || 1}</strong></span>
-            <span>Quota còn lại: <strong>{oaStatus?.remaining_quota || 5000}</strong></span>
-            <span>Webhook gần nhất: <strong>{oaStatus?.last_webhook_at ? new Date(oaStatus.last_webhook_at).toLocaleString('vi-VN') : 'Chưa nhận sự kiện'}</strong></span>
-          </div>
-        </div>
-      )}
-
-      {currentStatus === 'token_expiring' && (
-        <div style={{
-          padding: '12px 18px',
-          background: 'rgba(245, 158, 11, 0.1)',
-          border: '1px solid #f59e0b',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          color: '#92400e',
-          fontSize: '13px',
-          fontWeight: 700
-        }}>
-          <AlertTriangle size={16} color="#d97706" />
-          <span>TOKEN SẮP HẾT HẠN: Access Token đang được tự động làm mới bằng Zalo OAuth v4.</span>
-        </div>
-      )}
-
-      {currentStatus === 'webhook_error' && (
-        <div style={{
-          padding: '12px 18px',
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid #ef4444',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          color: '#b91c1c',
-          fontSize: '13px',
-          fontWeight: 700
-        }}>
-          <AlertCircle size={16} color="#dc2626" />
-          <span>WEBHOOK LỖI: Chữ ký HMAC hoặc đường truyền Webhook không khớp. Vui lòng kiểm tra khóa bí mật Webhook.</span>
-        </div>
-      )}
+        )}
+      </div>
 
       {scanSuccessMessage && (
         <div style={{

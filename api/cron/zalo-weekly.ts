@@ -127,7 +127,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       study_link: 'https://hoctructuyen.tinhocgenz.io.vn'
     };
 
+    const isAutomationEnabled = process.env.ZALO_AUTOMATION_ENABLED === 'true' && process.env.ZALO_SEND_ENABLED === 'true';
+
     // Đưa vào hàng đợi zalo_dispatch_queue
+    const initialStatus = isAutomationEnabled ? 'processing' : 'queued';
     const { error: queueErr } = await supabase
       .from('zalo_dispatch_queue')
       .insert({
@@ -138,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         template_id: defaultTemplateId,
         template_data: templateData,
         tracking_id: trackingId,
-        status: 'processing',
+        status: initialStatus,
         scheduled_at: new Date().toISOString()
       });
 
@@ -149,6 +152,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     results.queued++;
+
+    // Nếu Automation Flag tắt (mặc định), giữ trong hàng đợi để Admin Review duyệt gửi
+    if (!isAutomationEnabled) {
+      continue;
+    }
 
     // 7. Gửi tin với Rate Limiting (giãn cách nhẹ 150ms để tuân thủ OpenAPI)
     await new Promise(r => setTimeout(r, 150));

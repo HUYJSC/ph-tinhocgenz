@@ -191,6 +191,26 @@ assert(migrationSql.includes('CREATE TABLE IF NOT EXISTS zalo_message_logs'), 'C
 assert(migrationSql.includes('CREATE TABLE IF NOT EXISTS zalo_webhook_events'), 'Có bảng zalo_webhook_events');
 assert(migrationSql.includes('ENABLE ROW LEVEL SECURITY'), 'Đã kích hoạt RLS (Row Level Security)');
 
+// ── TEST 8: KIỂM TRA HEALTH CHECK ENDPOINT & RATE LIMITER ──
+console.log('\n🏥 NHÓM 8: Kiểm tra Health Check & Rate Limiter');
+assert(fs.existsSync('api/zalo/health.ts'), 'Tệp api/zalo/health.ts tồn tại');
+assert(fs.existsSync('api/zalo/send-test.ts'), 'Tệp api/zalo/send-test.ts tồn tại');
+assert(fs.existsSync('api/zalo/oauth/start.ts'), 'Tệp api/zalo/oauth/start.ts tồn tại');
+assert(fs.existsSync('api/_lib/rateLimiter.ts'), 'Tệp api/_lib/rateLimiter.ts tồn tại');
+
+const healthCode = fs.readFileSync('api/zalo/health.ts', 'utf8');
+assert(!healthCode.includes('access_token:') && !healthCode.includes('refresh_token:'), 'Health Check không trả token hay secret thô');
+assert(healthCode.includes('checks') && healthCode.includes('missing'), 'Health Check có cấu trúc checks và missing');
+
+// ── TEST 9: KIỂM TRA SỔ TAY VẬN HÀNH & BIẾN MÔI TRƯỜNG MẪU ──
+console.log('\n📄 NHÓM 9: Kiểm tra Tài liệu Vận hành & Mẫu Cấu hình');
+assert(fs.existsSync('docs/ZALO_INTEGRATION.md'), 'Có tài liệu docs/ZALO_INTEGRATION.md đầy đủ');
+assert(fs.existsSync('.env.example'), 'Có tệp mẫu biến môi trường .env.example');
+
+const envExample = fs.readFileSync('.env.example', 'utf8');
+assert(envExample.includes('ZALO_APP_ID') && envExample.includes('ZALO_APP_SECRET'), 'Mẫu .env.example có đủ biến Zalo');
+assert(!envExample.includes('=1') && !envExample.includes('=2') && !envExample.includes('sk_'), 'Mẫu .env.example không chứa secret thật');
+
 console.log('\n================================================================');
 console.log(`🏁 TỔNG KẾT: ${passed}/${total} KIỂM THỬ ĐẠT CHUẨN (${Math.round((passed/total)*100)}%)`);
 if (failed === 0) {

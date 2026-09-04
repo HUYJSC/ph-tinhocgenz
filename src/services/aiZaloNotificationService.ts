@@ -250,27 +250,99 @@ export class AiZaloNotificationService {
   }
 
   /**
-   * Lấy trạng thái kết nối OA và lịch sử tin nhắn thực tế từ Serverless Backend
+   * Lấy trạng thái kết nối OA và kiểm tra sức khỏe hệ thống từ /api/zalo/health
    */
   static async fetchOaStatus(): Promise<ZaloOaStatusResponse> {
     try {
-      const res = await fetch('/api/zalo/status');
+      const res = await fetch('/api/zalo/health');
       if (res.ok) {
         return await res.json();
       }
-    } catch (e) {
-      console.warn('Không thể kết nối /api/zalo/status:', e);
+    } catch {
+      // Fallback sang endpoint status nếu health chưa phản hồi
+      try {
+        const resFallback = await fetch('/api/zalo/status');
+        if (resFallback.ok) {
+          return await resFallback.json();
+        }
+      } catch (e) {
+        console.warn('Không thể kết nối /api/zalo/health hoặc /api/zalo/status:', e);
+      }
     }
 
     return {
-      status: 'unconfigured',
-      message: 'Chưa cấu hình API hoặc máy chủ chưa sẵn sàng.',
+      configured: false,
+      status: 'not_configured',
+      message: 'Hệ thống Zalo chưa được cấu hình đầy đủ trên máy chủ.',
+      missing: ['app_id', 'credentials', 'token'],
       oa_id: null,
       active_template_count: 0,
       remaining_quota: 0,
       last_webhook_at: null,
+      checks: {
+        app: false,
+        oa: false,
+        token: false,
+        refreshToken: false,
+        template: false,
+        webhook: false,
+        database: false
+      },
       recent_logs: []
     };
+  }
+
+  /**
+   * Gửi thử nghiệm Zalo ZBS đến số quản trị viên qua endpoint chuyên dụng /api/zalo/send-test
+   */
+  static async sendTestMessage(
+    recipientPhone: string,
+    templateType: 'REMINDER' | 'WARNING' | 'PAYMENT' = 'REMINDER',
+    parameters?: Record<string, any>,
+    authToken?: string
+  ): Promise<{ success: boolean; msg_id?: string; message?: string; error?: string }> {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const res = await fetch('/api/zalo/send-test', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          recipient: recipientPhone,
+          template: templateType,
+          parameters: parameters || {
+            student_name: 'Học viên Test',
+            recipient_name: 'Quản trị viên Hệ thống',
+            cycle: 'Kiểm thử Vận hành',
+            message_body: 'Đây là tin nhắn kiểm thử kết nối chính thức Zalo ZBS từ Hệ thống PH Digital Education.'
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        return {
+          success: true,
+          msg_id: data.msg_id,
+          message: data.message
+        };
+      }
+
+      return {
+        success: false,
+        error: data.error || data.message || 'Gửi thử nghiệm qua Zalo thất bại'
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: `Lỗi kết nối máy chủ gửi thử: ${err.message}`
+      };
+    }
   }
 
   /**

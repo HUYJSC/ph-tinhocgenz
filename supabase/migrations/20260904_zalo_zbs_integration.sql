@@ -178,3 +178,54 @@ USING (
     student_id = auth.uid()::text OR
     student_id = (auth.jwt() ->> 'student_code')
 );
+
+-- ==============================================================================
+-- 7. Bảng quản lý tích hợp bảo mật cấp máy chủ (zalo_integrations - Section XV)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS zalo_integrations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    provider VARCHAR(50) NOT NULL DEFAULT 'zalo_oa',
+    oa_id VARCHAR(100) NOT NULL UNIQUE,
+    access_token_encrypted TEXT,
+    refresh_token_encrypted TEXT,
+    access_token_expires_at TIMESTAMPTZ,
+    refresh_token_expires_at TIMESTAMPTZ,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE zalo_integrations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "service_role_all_integrations" ON zalo_integrations;
+CREATE POLICY "service_role_all_integrations" ON zalo_integrations FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- ==============================================================================
+-- 8. Bảng định danh liên kết Zalo người dùng chính thức (zalo_connections - Section XIX)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS zalo_connections (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID,
+    student_id VARCHAR(100),
+    zalo_user_id VARCHAR(100),
+    user_external_id VARCHAR(100),
+    oa_id VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'pending',
+    consent_at TIMESTAMPTZ,
+    last_interaction_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_zalo_conn_student ON zalo_connections(student_id);
+CREATE INDEX IF NOT EXISTS idx_zalo_conn_zalo_uid ON zalo_connections(zalo_user_id);
+
+ALTER TABLE zalo_connections ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "service_role_all_connections" ON zalo_connections;
+CREATE POLICY "service_role_all_connections" ON zalo_connections FOR ALL TO service_role USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "staff_view_connections" ON zalo_connections;
+CREATE POLICY "staff_view_connections" ON zalo_connections FOR SELECT TO authenticated
+USING (
+    (auth.jwt() ->> 'role') IN ('admin', 'teacher') OR
+    (auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'teacher')
+);
+
