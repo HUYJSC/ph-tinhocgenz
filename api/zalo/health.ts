@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdminClient } from '../_lib/supabase';
-import { getZaloConfig } from '../_lib/zaloConfig';
+import { getSupabaseAdminClient } from '../_lib/supabase.js';
+import { getZaloConfig } from '../_lib/zaloConfig.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Chỉ chấp nhận GET

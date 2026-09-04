@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdminClient } from '../_lib/supabase';
+import { getSupabaseAdminClient } from '../_lib/supabase.js';
 import {
   sendZaloTemplateMessage,
   normalizeVietnamesePhone,
   maskPhone,
   isTransientZaloError
-} from '../_lib/zaloClient';
+} from '../_lib/zaloClient.js';
 
 /**
  * Tính số tuần trong năm để sinh Idempotency Key duy nhất cho chu kỳ hàng tuần

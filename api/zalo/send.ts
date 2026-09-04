@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdminClient, verifyUserRole } from '../_lib/supabase';
+import { getSupabaseAdminClient, verifyUserRole } from '../_lib/supabase.js';
 import {
   sendZaloTemplateMessage,
   normalizeVietnamesePhone,
   maskPhone
-} from '../_lib/zaloClient';
+} from '../_lib/zaloClient.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Chỉ chấp nhận phương thức POST

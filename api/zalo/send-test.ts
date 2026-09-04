@@ -1,12 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdminClient, verifyUserRole } from '../_lib/supabase';
+import { getSupabaseAdminClient, verifyUserRole } from '../_lib/supabase.js';
 import {
   sendZaloTemplateMessage,
   normalizeVietnamesePhone,
   maskPhone
-} from '../_lib/zaloClient';
-import { getZaloConfig } from '../_lib/zaloConfig';
-import { checkRateLimit } from '../_lib/rateLimiter';
+} from '../_lib/zaloClient.js';
+import { getZaloConfig } from '../_lib/zaloConfig.js';
+import { checkRateLimit } from '../_lib/rateLimiter.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

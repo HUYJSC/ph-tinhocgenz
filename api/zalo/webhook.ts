@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdminClient } from '../_lib/supabase';
-import { verifyZaloWebhookSignature } from '../_lib/zaloClient';
+import { getSupabaseAdminClient } from '../_lib/supabase.js';
+import { verifyZaloWebhookSignature } from '../_lib/zaloClient.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 0. Handshake xác thực URL từ Zalo Developer Console (Zalo gửi GET challenge hoặc ping kiểm tra URL)

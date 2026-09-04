@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { getSupabaseAdminClient } from './supabase';
+import { getSupabaseAdminClient } from './supabase.js';
 
 export interface ZaloOaTokenRecord {
   id: string;

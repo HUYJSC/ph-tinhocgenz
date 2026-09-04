@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { getZaloConfig } from '../../_lib/zaloConfig';
-import { checkRateLimit } from '../../_lib/rateLimiter';
+import { getZaloConfig } from '../../_lib/zaloConfig.js';
+import { checkRateLimit } from '../../_lib/rateLimiter.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
