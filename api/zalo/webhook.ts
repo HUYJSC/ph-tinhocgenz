@@ -3,12 +3,27 @@ import { getSupabaseAdminClient } from '../_lib/supabase';
 import { verifyZaloWebhookSignature } from '../_lib/zaloClient';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // 0. Handshake xác thực URL từ Zalo Developer Console (Zalo gửi GET challenge hoặc ping kiểm tra URL)
+  if (req.method === 'GET') {
+    const challenge = req.query.challenge as string | undefined;
+    if (challenge) {
+      return res.status(200).send(challenge);
+    }
+    return res.status(200).json({
+      error: 0,
+      status: 'active',
+      service: 'PH Digital Education Zalo ZBS Webhook Service',
+      version: '2026.1',
+      timestamp: new Date().toISOString()
+    });
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed. Use POST.' });
+    return res.status(405).json({ error: 'Method Not Allowed. Use POST or GET.' });
   }
 
   const signature = (req.headers['x-zes-signature'] || req.headers['x-zalo-signature']) as string | undefined;
-  const timestamp = req.headers['x-zes-timestamp'] as string | undefined;
+  const timestamp = (req.headers['x-zes-timestamp'] || req.headers['x-zalo-timestamp']) as string | undefined;
   const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
   // 1. Kiểm tra chữ ký & chống Replay Attack nếu có cấu hình bí mật webhook
@@ -80,8 +95,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 4. Tùy chọn: Chuyển tiếp (forward) sự kiện sang Webhook debug (ví dụ Webhook.site) nếu được cấu hình
-  const forwardUrl = process.env.WEBHOOK_FORWARD_URL;
+  // 4. Chuyển tiếp (forward) sự kiện sang Webhook debug (Webhook.site) theo yêu cầu vận hành
+  const forwardUrl = process.env.WEBHOOK_FORWARD_URL || 'https://webhook.site/1cae0c37-7f5a-4fb6-9824-b0b5a51d01bd';
   if (forwardUrl) {
     try {
       fetch(forwardUrl, {
