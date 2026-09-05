@@ -107,6 +107,32 @@ export async function getValidZaloAccessToken(): Promise<{
     .limit(1);
 
   if (dbError || !tokens || tokens.length === 0) {
+    const staticToken = process.env.ZALO_OA_ACCESS_TOKEN;
+    const staticRefreshToken = process.env.ZALO_OA_REFRESH_TOKEN || '';
+    const staticOaId = process.env.ZALO_OA_ID || 'PH_DIGITAL_EDU_OFFICIAL';
+
+    if (staticToken) {
+      const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+      try {
+        await supabase.from('zalo_oauth_tokens').upsert({
+          oa_id: staticOaId,
+          app_id: appId || '3389337624368807364',
+          access_token: staticToken,
+          refresh_token: staticRefreshToken,
+          expires_at: expiresAt,
+          is_active: true,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'oa_id' });
+      } catch (err) {
+        console.warn('Auto seed Zalo static token into Supabase failed:', err);
+      }
+      return {
+        token: staticToken,
+        oaId: staticOaId,
+        isExpiringSoon: false
+      };
+    }
+
     return {
       token: null,
       oaId: null,
