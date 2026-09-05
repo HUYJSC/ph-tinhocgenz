@@ -42,7 +42,7 @@ export interface ZaloNotificationLog {
   aiGeneratedMessage: string;
   sentAt: string;
   status: DeliveryStatus;
-  channel: 'zalo_zns' | 'zalo_oa' | 'sms_fallback';
+  channel: 'zalo_zns' | 'zalo_oa' | 'zalo_personal' | 'sms_fallback';
   deliveredMessageId?: string;
   zaloMsgId?: string;
   trackingId?: string;

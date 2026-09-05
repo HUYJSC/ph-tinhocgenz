@@ -13,7 +13,8 @@ import {
 import {
   Send, Bot, Users, UserCheck, ShieldAlert,
   Clock, CheckCircle2, Search,
-  Settings, RefreshCw, Copy, Sparkles, AlertTriangle, AlertCircle, PhoneCall, ExternalLink
+  Settings, RefreshCw, Copy, Sparkles, AlertTriangle, AlertCircle, PhoneCall, ExternalLink,
+  MessageSquare, ArrowRight, Zap, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -28,6 +29,10 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
 }) => {
   const [config] = useState<ZaloDispatchConfig>(AiZaloNotificationService.getConfig());
   const [activeCycle, setActiveCycle] = useState<ReminderCycle>('weekly');
+  const [dispatchMode, setDispatchMode] = useState<'personal' | 'oa'>('personal');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [sequentialModalOpen, setSequentialModalOpen] = useState(false);
+  const [sequentialIndex, setSequentialIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRecipient, setFilterRecipient] = useState<'all' | 'parent' | 'student'>('all');
   const [logs, setLogs] = useState<ZaloNotificationLog[]>([]);
@@ -35,6 +40,31 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
   const [scanSuccessMessage, setScanSuccessMessage] = useState('');
   const [editingStudent, setEditingStudent] = useState<StudentAccount | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Mở Zalo Cá nhân 1-Click (Không cần GPKD, 0đ phí)
+  const handleOpenZaloPersonal = (log: ZaloNotificationLog) => {
+    soundFx.playClick();
+    let phone = (log.recipientPhone || '').replace(/[^0-9]/g, '');
+    if (phone.startsWith('84')) phone = '0' + phone.substring(2);
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(log.aiGeneratedMessage);
+    }
+
+    const zaloUrl = phone ? `https://zalo.me/${phone}` : 'https://zalo.me';
+    window.open(zaloUrl, '_blank');
+
+    setLogs(prev => prev.map(l => l.id === log.id ? {
+      ...l,
+      status: 'delivered',
+      channel: 'zalo_personal',
+      zaloMsgId: `ZALO_ME_${Date.now()}`
+    } : l));
+
+    setToastMessage(`Đã copy nội dung & mở Zalo của ${log.recipientName} (${phone || 'Chưa có SĐT'})! Nhấn Ctrl + V để dán và gửi.`);
+    soundFx.playVictory();
+    setTimeout(() => setToastMessage(null), 5000);
+  };
 
   // Real OA Status from Serverless Backend
   const [oaStatus, setOaStatus] = useState<ZaloOaStatusResponse | null>(null);
@@ -254,6 +284,83 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
+      {/* ── 0. BỘ CHUYỂN ĐỔI PHƯƠNG THỨC VẬN HÀNH ZALO ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'var(--bg-card)',
+        padding: '12px 18px',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        flexWrap: 'wrap',
+        gap: '12px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.05)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-secondary)' }}>
+            Cơ chế gửi Zalo:
+          </span>
+          <div style={{ display: 'flex', background: 'var(--bg-base)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-muted)', gap: '4px' }}>
+            <button
+              type="button"
+              onClick={() => { soundFx.playClick(); setDispatchMode('personal'); }}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '8px',
+                border: 'none',
+                background: dispatchMode === 'personal' ? '#0068FF' : 'transparent',
+                color: dispatchMode === 'personal' ? '#ffffff' : 'var(--text-secondary)',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: dispatchMode === 'personal' ? '0 2px 10px rgba(0, 104, 255, 0.4)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <MessageSquare size={15} />
+              <span>💬 1-Click Zalo Cá Nhân (Khuyên dùng • 0đ • Không cần GPKD)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { soundFx.playClick(); setDispatchMode('oa'); }}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '8px',
+                border: 'none',
+                background: dispatchMode === 'oa' ? '#0284c7' : 'transparent',
+                color: dispatchMode === 'oa' ? '#ffffff' : 'var(--text-secondary)',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: dispatchMode === 'oa' ? '0 2px 10px rgba(2, 132, 199, 0.4)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Bot size={15} />
+              <span>🏢 Zalo OA Doanh Nghiệp (ZBS API • Cần GPKD)</span>
+            </button>
+          </div>
+        </div>
+
+        {dispatchMode === 'personal' ? (
+          <span style={{ fontSize: '12.5px', color: '#10b981', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <CheckCircle2 size={16} /> Chế độ cá nhân kích hoạt: Tự động copy tin nhắn AI & mở zalo.me
+          </span>
+        ) : (
+          <span style={{ fontSize: '12.5px', color: '#0284c7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Sparkles size={16} /> Chế độ doanh nghiệp: Gửi qua Zalo OA & ZBS Template API
+          </span>
+        )}
+      </div>
+
       {/* ── 1. HEADER BANNER THƯƠNG HIỆU ZALO AI ── */}
       <div
         className="card"
@@ -351,6 +458,74 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
       </div>
 
       {/* ── 2. CONNECTION STATUS BANNER (5 TRẠNG THÁI ĐỘNG & BẢO MẬT THEO MASTER PROMPT) ── */}
+      {dispatchMode === 'personal' ? (
+        <div style={{
+          padding: '16px 20px',
+          borderRadius: '16px',
+          border: '1px solid #10b981',
+          background: 'rgba(16, 185, 129, 0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: '#0068FF',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 900,
+              fontSize: '20px',
+              boxShadow: '0 4px 12px rgba(0, 104, 255, 0.35)'
+            }}>
+              Z
+            </div>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#065f46', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>CHẾ ĐỘ GỬI ZALO CÁ NHÂN TRỰC TIẾP (1-CLICK DIRECT CHAT)</span>
+                <span style={{ fontSize: '11px', background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
+                  HOẠT ĐỘNG NGAY • 0Đ PHÍ
+                </span>
+              </div>
+              <div style={{ fontSize: '13px', color: '#047857', marginTop: '3px', lineHeight: 1.5 }}>
+                Hệ thống AI tự động phân tích học lực, kỹ năng yếu và soạn tin nhắn sư phạm chuẩn mực. Bạn chỉ cần bấm <strong>"💬 Mở Zalo Nhắn Tin"</strong>, tin nhắn sẽ tự động copy vào bộ nhớ đệm và mở ứng dụng/web Zalo đúng số điện thoại học sinh/phụ huynh. Bạn chỉ cần nhấn <strong>Ctrl + V</strong> và gửi!
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                setSequentialIndex(0);
+                setSequentialModalOpen(true);
+              }}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                background: '#0068FF',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: 800,
+                fontSize: '12.5px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(0, 104, 255, 0.35)'
+              }}
+            >
+              <Zap size={14} />
+              <span>⚡ Mở Trợ Lý Gửi Tuần Tự</span>
+            </button>
+          </div>
+        </div>
+      ) : (
       <div style={{
         padding: '16px 20px',
         borderRadius: '16px',
@@ -522,6 +697,7 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
           </div>
         )}
       </div>
+      )}
 
       {scanSuccessMessage && (
         <div style={{
@@ -644,28 +820,57 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
           ))}
         </div>
 
-        {/* Action: Duyệt gửi hàng loạt */}
-        {pendingCount > 0 && (
-          <button
-            onClick={() => setBulkConfirmOpen(true)}
-            style={{
-              padding: '8px 18px',
-              borderRadius: '8px',
-              background: '#059669',
-              color: '#fff',
-              border: 'none',
-              fontWeight: 800,
-              fontSize: '12.5px',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)'
-            }}
-          >
-            <Send size={14} />
-            <span>Duyệt & Gửi Hàng Loạt ({pendingCount} tin)</span>
-          </button>
+        {/* Action: Trợ lý gửi tuần tự hoặc Duyệt gửi hàng loạt */}
+        {dispatchMode === 'personal' ? (
+          logs.length > 0 && (
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                setSequentialIndex(0);
+                setSequentialModalOpen(true);
+              }}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #0068FF, #0284c7)',
+                color: '#fff',
+                border: 'none',
+                fontWeight: 800,
+                fontSize: '12.5px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 10px rgba(0, 104, 255, 0.4)'
+              }}
+            >
+              <Zap size={15} />
+              <span>⚡ Trợ Lý Gửi Tuần Tự Từng Học Viên ({logs.length})</span>
+            </button>
+          )
+        ) : (
+          pendingCount > 0 && (
+            <button
+              onClick={() => setBulkConfirmOpen(true)}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '8px',
+                background: '#059669',
+                color: '#fff',
+                border: 'none',
+                fontWeight: 800,
+                fontSize: '12.5px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)'
+              }}
+            >
+              <Send size={14} />
+              <span>Duyệt & Gửi Hàng Loạt ({pendingCount} tin)</span>
+            </button>
+          )
         )}
 
         {/* Filter Recipient & Search */}
@@ -929,26 +1134,50 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
                       <span>Sửa SĐT</span>
                     </button>
 
-                    <button
-                      onClick={() => handleSendSingleZalo(log)}
-                      disabled={isAccepted}
-                      style={{
-                        padding: '6px 16px',
-                        borderRadius: '8px',
-                        background: isAccepted ? '#94a3b8' : '#0284c7',
-                        color: '#ffffff',
-                        border: 'none',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        cursor: isAccepted ? 'not-allowed' : 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <Send size={13} />
-                      <span>{isAccepted ? 'Đã Gửi Zalo' : 'Gửi Ngay Qua Zalo'}</span>
-                    </button>
+                    {dispatchMode === 'personal' ? (
+                      <button
+                        onClick={() => handleOpenZaloPersonal(log)}
+                        style={{
+                          padding: '8px 18px',
+                          borderRadius: '8px',
+                          background: log.status === 'delivered' ? '#059669' : '#0068FF',
+                          color: '#ffffff',
+                          border: 'none',
+                          fontSize: '12.5px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: log.status === 'delivered' ? 'none' : '0 2px 10px rgba(0, 104, 255, 0.35)',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <MessageSquare size={14} />
+                        <span>{log.status === 'delivered' ? '✓ Đã Mở Zalo (Gửi Lại)' : '💬 Mở Zalo Nhắn Tin'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSendSingleZalo(log)}
+                        disabled={isAccepted}
+                        style={{
+                          padding: '6px 16px',
+                          borderRadius: '8px',
+                          background: isAccepted ? '#94a3b8' : '#0284c7',
+                          color: '#ffffff',
+                          border: 'none',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          cursor: isAccepted ? 'not-allowed' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <Send size={13} />
+                        <span>{isAccepted ? 'Đã Gửi Zalo' : 'Gửi Ngay Qua Zalo'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1223,6 +1452,237 @@ export const ZaloNotificationManager: React.FC<ZaloNotificationManagerProps> = (
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* ── 8. MODAL TRỢ LÝ GỬI ZALO TUẦN TỰ (1-CLICK PER STUDENT) ── */}
+      {sequentialModalOpen && filteredLogs.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px'
+        }}>
+          <div className="card" style={{
+            background: 'var(--bg-card)',
+            maxWidth: '620px',
+            width: '100%',
+            borderRadius: '20px',
+            padding: '28px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--border-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '18px'
+          }}>
+            {/* Header with Step Counter */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  background: 'rgba(0, 104, 255, 0.15)',
+                  color: '#0068FF',
+                  padding: '4px 10px',
+                  borderRadius: '6px'
+                }}>
+                  ⚡ TRỢ LÝ GỬI ZALO TUẦN TỰ
+                </span>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: '6px 0 0', color: 'var(--text-primary)' }}>
+                  Học viên {sequentialIndex + 1} / {filteredLogs.length}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setSequentialModalOpen(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Target Student Info Card */}
+            {(() => {
+              const currentLog = filteredLogs[sequentialIndex] || filteredLogs[0];
+              const phone = (currentLog.recipientPhone || '').replace(/[^0-9]/g, '');
+              const cleanPhone = phone.startsWith('84') ? '0' + phone.substring(2) : phone;
+              const isDelivered = currentLog.status === 'delivered';
+
+              return (
+                <>
+                  <div style={{
+                    background: 'var(--bg-base)',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-muted)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        {currentLog.studentName} ({currentLog.studentCode})
+                      </span>
+                      <span style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: currentLog.recipientType === 'parent' ? '#1e40af' : '#065f46',
+                        color: '#fff'
+                      }}>
+                        {currentLog.recipientType === 'parent' ? 'Gửi Phụ Huynh' : 'Gửi Học Viên'}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      Người nhận: <strong style={{ color: 'var(--text-primary)' }}>{currentLog.recipientName}</strong> • SĐT: <strong style={{ color: '#0068FF', fontFamily: 'var(--font-mono)' }}>{cleanPhone}</strong>
+                    </div>
+
+                    {/* AI Message Preview */}
+                    <div style={{
+                      marginTop: '8px',
+                      background: 'var(--bg-card)',
+                      padding: '14px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-muted)',
+                      fontSize: '13px',
+                      lineHeight: 1.6,
+                      color: 'var(--text-primary)',
+                      maxHeight: '180px',
+                      overflowY: 'auto',
+                      whiteSpace: 'pre-line'
+                    }}>
+                      {currentLog.aiGeneratedMessage}
+                    </div>
+                  </div>
+
+                  {/* Big Action Button */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button
+                      onClick={() => {
+                        handleOpenZaloPersonal(currentLog);
+                        if (sequentialIndex < filteredLogs.length - 1) {
+                          setSequentialIndex(prev => prev + 1);
+                        }
+                      }}
+                      style={{
+                        padding: '14px',
+                        borderRadius: '12px',
+                        background: isDelivered ? '#059669' : '#0068FF',
+                        color: '#fff',
+                        border: 'none',
+                        fontSize: '15px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        boxShadow: '0 4px 16px rgba(0, 104, 255, 0.4)'
+                      }}
+                    >
+                      <MessageSquare size={18} />
+                      <span>{isDelivered ? '✓ Đã Mở Zalo (Bấm để mở lại & Tiếp tục)' : '💬 Copy & Mở Zalo Học Viên Này'}</span>
+                      <ArrowRight size={18} />
+                    </button>
+
+                    {/* Navigation Buttons */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button
+                        disabled={sequentialIndex === 0}
+                        onClick={() => setSequentialIndex(prev => Math.max(0, prev - 1))}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color)',
+                          background: 'transparent',
+                          cursor: sequentialIndex === 0 ? 'not-allowed' : 'pointer',
+                          opacity: sequentialIndex === 0 ? 0.4 : 1,
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <ChevronLeft size={16} /> Quay Lại
+                      </button>
+
+                      <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                        Đã duyệt: {filteredLogs.filter(l => l.status === 'delivered').length} / {filteredLogs.length}
+                      </span>
+
+                      <button
+                        disabled={sequentialIndex === filteredLogs.length - 1}
+                        onClick={() => setSequentialIndex(prev => Math.min(filteredLogs.length - 1, prev + 1))}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color)',
+                          background: 'transparent',
+                          cursor: sequentialIndex === filteredLogs.length - 1 ? 'not-allowed' : 'pointer',
+                          opacity: sequentialIndex === filteredLogs.length - 1 ? 0.4 : 1,
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        Bỏ Qua / Kế Tiếp <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── TOAST NOTIFICATION ── */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: '#064e3b',
+          color: '#ecfdf5',
+          border: '1px solid #10b981',
+          padding: '14px 20px',
+          borderRadius: '12px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '13.5px',
+          fontWeight: 700,
+          maxWidth: '460px'
+        }}>
+          <CheckCircle2 size={20} color="#34d399" />
+          <span style={{ flex: 1, lineHeight: 1.4 }}>{toastMessage}</span>
+          <button
+            onClick={() => setToastMessage(null)}
+            style={{ background: 'transparent', border: 'none', color: '#a7f3d0', cursor: 'pointer', fontSize: '18px', fontWeight: 800 }}
+          >
+            ×
+          </button>
         </div>
       )}
 
