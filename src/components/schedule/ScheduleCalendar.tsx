@@ -33,6 +33,9 @@ const SHIFT_LABELS: { [key in ShiftTimeSlot]: { label: string; time: string; col
   evening: { label: 'Ca Tối', time: '18:30 - 20:30', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
 };
 
+const HOURS_24 = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+const STANDARD_MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
 export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   currentUser,
   schedules,
@@ -1120,64 +1123,187 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </div>
                 </div>
 
-                {/* Direct Custom Time Pickers */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '10px',
-                  background: 'var(--bg-card)',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-color)'
-                }}>
-                  <div style={{ flex: '1 1 120px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
-                      Giờ bắt đầu:
-                    </label>
-                    <input
-                      type="time"
-                      required
-                      value={formStartTime}
-                      onChange={e => {
-                        const val = e.target.value;
-                        setFormStartTime(val);
-                        setFormShift(inferShiftFromTime(val));
-                      }}
-                      style={{ width: '100%', padding: '8px 10px', fontSize: '0.88rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
-                    />
-                  </div>
+                {/* Direct 24-Hour Time Pickers (Hoàn toàn loại bỏ SA / CH / AM / PM trên mọi trình duyệt) */}
+                {(() => {
+                  const [startH = '18', startM = '30'] = (formStartTime || '18:30').split(':');
+                  const [endH = '20', endM = '30'] = (formEndTime || '20:30').split(':');
+                  const startMinOpts = STANDARD_MINUTES.includes(startM)
+                    ? STANDARD_MINUTES
+                    : Array.from(new Set([...STANDARD_MINUTES, startM])).sort();
+                  const endMinOpts = STANDARD_MINUTES.includes(endM)
+                    ? STANDARD_MINUTES
+                    : Array.from(new Set([...STANDARD_MINUTES, endM])).sort();
 
-                  <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center' }}>➔</span>
+                  return (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '10px',
+                      background: 'var(--bg-card)',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      {/* Giờ bắt đầu (24h) */}
+                      <div style={{ flex: '1 1 135px' }}>
+                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                          Giờ bắt đầu (24h):
+                        </label>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: 'var(--bg-secondary)',
+                          padding: '6px 8px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color)'
+                        }}>
+                          <select
+                            aria-label="Giờ bắt đầu"
+                            value={startH}
+                            onChange={e => {
+                              const h = e.target.value;
+                              const newTime = `${h}:${startM}`;
+                              setFormStartTime(newTime);
+                              setFormShift(inferShiftFromTime(newTime));
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '2px 0',
+                              fontSize: '0.92rem',
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'var(--text-primary)',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {HOURS_24.map(h => (
+                              <option key={h} value={h} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{h}h</option>
+                            ))}
+                          </select>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-muted)' }}>:</span>
+                          <select
+                            aria-label="Phút bắt đầu"
+                            value={startM}
+                            onChange={e => {
+                              const m = e.target.value;
+                              const newTime = `${startH}:${m}`;
+                              setFormStartTime(newTime);
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '2px 0',
+                              fontSize: '0.92rem',
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'var(--text-primary)',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {startMinOpts.map(m => (
+                              <option key={m} value={m} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{m}p</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
 
-                  <div style={{ flex: '1 1 120px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
-                      Giờ kết thúc:
-                    </label>
-                    <input
-                      type="time"
-                      required
-                      value={formEndTime}
-                      onChange={e => setFormEndTime(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', fontSize: '0.88rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
-                    />
-                  </div>
+                      <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', marginTop: '16px' }}>➔</span>
 
-                  <div style={{ flex: '1 1 130px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
-                      Phân loại buổi (Ca):
-                    </label>
-                    <select
-                      value={formShift}
-                      onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
-                      style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
-                    >
-                      <option value="morning">☀️ Ca Sáng</option>
-                      <option value="afternoon">🌤️ Ca Chiều</option>
-                      <option value="evening">🌙 Ca Tối</option>
-                    </select>
-                  </div>
-                </div>
+                      {/* Giờ kết thúc (24h) */}
+                      <div style={{ flex: '1 1 135px' }}>
+                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                          Giờ kết thúc (24h):
+                        </label>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: 'var(--bg-secondary)',
+                          padding: '6px 8px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color)'
+                        }}>
+                          <select
+                            aria-label="Giờ kết thúc"
+                            value={endH}
+                            onChange={e => {
+                              const h = e.target.value;
+                              setFormEndTime(`${h}:${endM}`);
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '2px 0',
+                              fontSize: '0.92rem',
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'var(--text-primary)',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {HOURS_24.map(h => (
+                              <option key={h} value={h} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{h}h</option>
+                            ))}
+                          </select>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-muted)' }}>:</span>
+                          <select
+                            aria-label="Phút kết thúc"
+                            value={endM}
+                            onChange={e => {
+                              const m = e.target.value;
+                              setFormEndTime(`${endH}:${m}`);
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '2px 0',
+                              fontSize: '0.92rem',
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'var(--text-primary)',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {endMinOpts.map(m => (
+                              <option key={m} value={m} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{m}p</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Phân loại buổi (Ca) */}
+                      <div style={{ flex: '1 1 130px' }}>
+                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                          Phân loại buổi (Ca):
+                        </label>
+                        <select
+                          value={formShift}
+                          onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
+                          style={{ width: '100%', padding: '9px 10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
+                        >
+                          <option value="morning">☀️ Ca Sáng</option>
+                          <option value="afternoon">🌤️ Ca Chiều</option>
+                          <option value="evening">🌙 Ca Tối</option>
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Duration Hint & Validation */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
