@@ -31,6 +31,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   return (
     <div
+      className="mobile-bottom-sheet-overlay"
       style={{
         position: 'fixed',
         inset: 0,
@@ -46,7 +47,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="card animate-slide-up"
+        className="card mobile-bottom-sheet animate-slide-up"
         style={{
           width: '100%',
           maxWidth: '460px',
@@ -61,6 +62,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Mobile Swipe / Drag Handle indicator */}
+        <div className="mobile-sheet-handle show-sm" />
+
         {/* Close Button */}
         <button
           onClick={onClose}

@@ -4,6 +4,7 @@ import { useQuizEngine, QuizMode } from '../../hooks/useQuizEngine';
 import { QuestionCard } from './QuestionCard';
 import { Timer, ArrowLeft, ArrowRight, Flag, Send, Grid, AlertCircle, AlertTriangle, X, Paperclip, Download } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { triggerHapticFeedback } from '../../utils/mobilePlatform';
 
 interface QuizRunnerProps {
   quiz: Quiz;
@@ -321,6 +322,7 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
       <div
         style={{
           marginTop: '20px',
+          paddingBottom: 'max(14px, var(--safe-bottom, 0px))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -329,7 +331,10 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
         }}
       >
         <button
-          onClick={prevQuestion}
+          onClick={() => {
+            triggerHapticFeedback('light');
+            prevQuestion();
+          }}
           disabled={currentIndex === 0}
           className="btn btn-secondary"
           style={{ opacity: currentIndex === 0 ? 0.4 : 1, cursor: currentIndex === 0 ? 'not-allowed' : 'pointer' }}
@@ -340,7 +345,10 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            onClick={() => toggleFlag(currentQuestion.id)}
+            onClick={() => {
+              triggerHapticFeedback('light');
+              toggleFlag(currentQuestion.id);
+            }}
             className="btn btn-secondary"
             style={{
               color: flaggedQuestions[currentQuestion.id] ? '#f59e0b' : 'var(--text-secondary)',
@@ -353,7 +361,10 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
 
           {isLastQuestion ? (
             <button
-              onClick={() => setShowConfirmSubmit(true)}
+              onClick={() => {
+                triggerHapticFeedback('medium');
+                setShowConfirmSubmit(true);
+              }}
               className="btn btn-primary"
               style={{ background: 'var(--accent-gradient-emerald)' }}
             >
@@ -361,7 +372,13 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
               <span>Nộp bài ngay</span>
             </button>
           ) : (
-            <button onClick={nextQuestion} className="btn btn-primary">
+            <button
+              onClick={() => {
+                triggerHapticFeedback('light');
+                nextQuestion();
+              }}
+              className="btn btn-primary"
+            >
               <span>Câu kế tiếp</span>
               <ArrowRight size={16} />
             </button>
@@ -372,6 +389,7 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
       {/* Questions Drawer / Quick Jump Grid Modal */}
       {showDrawer && (
         <div
+          className="mobile-bottom-sheet-overlay"
           style={{
             position: 'fixed',
             inset: 0,
@@ -386,10 +404,11 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
           onClick={() => setShowDrawer(false)}
         >
           <div
-            className="card animate-slide-up"
+            className="card mobile-bottom-sheet animate-slide-up"
             style={{ width: '100%', maxWidth: '480px', padding: '24px', background: 'var(--bg-secondary)' }}
             onClick={e => e.stopPropagation()}
           >
+            <div className="mobile-sheet-handle show-sm" />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Danh sách toàn bộ câu hỏi</h3>
               <button
@@ -476,9 +495,10 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
         </div>
       )}
 
-      {/* Confirm Submit Dialog */}
+      {/* Confirmation Modal */}
       {showConfirmSubmit && (
         <div
+          className="mobile-bottom-sheet-overlay"
           style={{
             position: 'fixed',
             inset: 0,
@@ -491,7 +511,8 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
             padding: '20px'
           }}
         >
-          <div className="card animate-slide-up" style={{ maxWidth: '420px', width: '100%', padding: '24px', textAlign: 'center', background: 'var(--bg-secondary)' }}>
+          <div className="card mobile-bottom-sheet animate-slide-up" style={{ maxWidth: '420px', width: '100%', padding: '24px', textAlign: 'center', background: 'var(--bg-secondary)' }}>
+            <div className="mobile-sheet-handle show-sm" />
             <div
               style={{
                 width: '56px',

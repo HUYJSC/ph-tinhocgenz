@@ -168,6 +168,31 @@ assert(adminPortalContent.includes('Tách Đề 3 Môn: Word • Excel • PPT')
 const runnerContent = fs.readFileSync('src/components/quiz/QuizRunner.tsx', 'utf8');
 assert(runnerContent.includes('quiz.practiceFiles'), 'QuizRunner hỗ trợ học viên tải tệp bài tập thực hành về máy');
 
+// 12. Test Mobile OS Calibration (Android & iOS)
+console.log('\n📱 NHÓM 12: Kiểm tra Chuẩn hóa UI/UX Mobile App Đa Nền tảng (Android & iOS)');
+const mobilePlatformExists = fs.existsSync(path.resolve('src/utils/mobilePlatform.ts'));
+assert(mobilePlatformExists, 'Tệp tiện ích nền tảng src/utils/mobilePlatform.ts tồn tại');
+
+const mobilePlatformContent = fs.readFileSync('src/utils/mobilePlatform.ts', 'utf8');
+assert(mobilePlatformContent.includes('detectMobilePlatform'), 'Có hàm detectMobilePlatform nhận diện iOS và Android');
+assert(mobilePlatformContent.includes('initMobilePlatform'), 'Có hàm initMobilePlatform gắn class nền tảng lên thẻ gốc');
+assert(mobilePlatformContent.includes('triggerHapticFeedback'), 'Có hàm triggerHapticFeedback kích hoạt rung phản hồi xúc giác');
+
+const cssContent = fs.readFileSync('src/index.css', 'utf8');
+assert(cssContent.includes('.platform-ios'), 'CSS có bộ định kiểu riêng cho iOS (.platform-ios)');
+assert(cssContent.includes('.platform-android'), 'CSS có bộ định kiểu riêng cho Android (.platform-android)');
+assert(cssContent.includes('safe-area-inset-top') && cssContent.includes('safe-area-inset-bottom'), 'Hỗ trợ vùng an toàn Dynamic Island / Notch và Home Indicator');
+assert(cssContent.includes('.dashboard-bento-grid'), 'Có lớp bento grid tự động chuyển 1 cột trên mobile chống tràn màn hình');
+assert(cssContent.includes('.mobile-bottom-sheet'), 'Có lớp Bottom Sheet trượt từ đáy cho các hộp thoại trên mobile');
+
+const mobileNavContent = fs.readFileSync('src/components/layout/MobileBottomNav.tsx', 'utf8');
+assert(mobileNavContent.includes('triggerHapticFeedback'), 'MobileBottomNav tích hợp rung xúc giác chuẩn native app');
+assert(mobileNavContent.includes('safe-bottom'), 'MobileBottomNav có khoảng đệm an toàn với thanh điều hướng đáy');
+
+const studentDashContent = fs.readFileSync('src/components/dashboard/StudentOnePageDashboard.tsx', 'utf8');
+assert(studentDashContent.includes('dashboard-bento-grid'), 'StudentOnePageDashboard sử dụng dashboard-bento-grid responsive');
+assert(!studentDashContent.includes('minmax(0, 1fr) 380px'), 'Đã loại bỏ hoàn toàn bề rộng cứng 380px gây tràn ngang màn hình');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

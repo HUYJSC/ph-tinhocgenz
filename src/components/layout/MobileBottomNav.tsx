@@ -11,6 +11,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { triggerHapticFeedback } from '../../utils/mobilePlatform';
 import { ActiveTab } from './Sidebar';
 
 interface MobileBottomNavProps {
@@ -37,9 +38,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 }) => {
   const handleVibrate = () => {
     soundFx.playClick();
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try { navigator.vibrate(8); } catch (e) {}
-    }
+    triggerHapticFeedback('light');
   };
 
   const handleClick = (tab: ActiveTab, action?: () => void) => {
@@ -60,14 +59,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         display: 'none',
         position: 'fixed',
         bottom: 0, left: 0, right: 0,
-        height: 'calc(64px + var(--safe-bottom, 0px))',
-        paddingBottom: 'var(--safe-bottom, 0px)',
-        paddingLeft: 'max(8px, var(--safe-left, 0px))',
-        paddingRight: 'max(8px, var(--safe-right, 0px))',
-        background: 'rgba(255, 255, 255, 0.94)',
-        backdropFilter: 'blur(20px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(20px) saturate(1.8)',
-        borderTop: '1px solid #E2E8F0',
+        height: 'calc(62px + max(8px, var(--safe-bottom, 0px)))',
+        paddingBottom: 'max(8px, var(--safe-bottom, 0px))',
+        paddingLeft: 'max(6px, var(--safe-left, 0px))',
+        paddingRight: 'max(6px, var(--safe-right, 0px))',
+        background: 'var(--bg-glass, rgba(255, 255, 255, 0.94))',
+        backdropFilter: 'blur(24px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
+        borderTop: '1px solid var(--border-color, #E2E8F0)',
         zIndex: 90,
         boxShadow: '0 -4px 20px rgba(15, 23, 42, 0.08)',
         justifyContent: 'space-around',
@@ -199,22 +198,23 @@ const ActiveDot: React.FC = () => (
   <span
     style={{
       position: 'absolute',
-      bottom: '6px',
-      width: '5px',
-      height: '5px',
-      borderRadius: '50%',
-      background: '#2563EB'
+      bottom: '3px',
+      width: '16px',
+      height: '3px',
+      borderRadius: '999px',
+      background: 'linear-gradient(90deg, #2563EB, #60A5FA)',
+      boxShadow: '0 1px 4px rgba(37, 99, 235, 0.4)'
     }}
   />
 );
 
-const getBtnStyle = (_isActive: boolean): React.CSSProperties => ({
+const getBtnStyle = (isActive: boolean): React.CSSProperties => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '4px',
+  gap: '3px',
   height: '100%',
   background: 'transparent',
   border: 'none',
@@ -224,13 +224,14 @@ const getBtnStyle = (_isActive: boolean): React.CSSProperties => ({
   minHeight: '48px',
   minWidth: '48px',
   position: 'relative',
-  transition: 'transform 0.15s ease'
+  transform: isActive ? 'scale(1.04)' : 'scale(1)',
+  transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
 });
 
 const getLabelStyle = (isActive: boolean): React.CSSProperties => ({
   fontSize: '11px',
-  fontWeight: isActive ? 700 : 500,
-  color: isActive ? '#2563EB' : '#64748B',
+  fontWeight: isActive ? 800 : 500,
+  color: isActive ? '#2563EB' : 'var(--text-secondary, #64748B)',
   letterSpacing: '-0.01em',
   lineHeight: 1.2
 });

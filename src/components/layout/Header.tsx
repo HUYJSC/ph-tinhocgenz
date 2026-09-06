@@ -4,6 +4,7 @@ import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { NotificationBell } from '../ui/NotificationBell';
 import { soundFx } from '../../utils/audio';
+import { triggerHapticFeedback } from '../../utils/mobilePlatform';
 
 import { ActiveTab } from './Sidebar';
 
@@ -124,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
       style={{
         height: 'auto',
         minHeight: 'var(--header-height)',
-        padding: '0 20px',
+        padding: 'max(6px, var(--safe-top, 0px)) max(14px, var(--safe-right, 0px)) 6px max(14px, var(--safe-left, 0px))',
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--bg-glass)',
@@ -246,10 +247,14 @@ export const Header: React.FC<HeaderProps> = ({
           return (
             <button
               key={hub.id}
-              onClick={() => { soundFx.playClick(); handleSelectTab(hub.defaultTab); }}
+              onClick={() => {
+                soundFx.playClick();
+                triggerHapticFeedback('light');
+                handleSelectTab(hub.defaultTab);
+              }}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '5px',
-                padding: '5px 12px', borderRadius: '999px', whiteSpace: 'nowrap',
+                padding: '6px 14px', borderRadius: '999px', whiteSpace: 'nowrap',
                 background: isHubActive ? '#2563EB' : 'var(--bg-secondary)',
                 border: 'none', color: isHubActive ? '#fff' : 'var(--text-secondary)',
                 fontSize: '12px', fontWeight: isHubActive ? 700 : 500, cursor: 'pointer',

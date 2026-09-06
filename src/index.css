@@ -649,7 +649,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex !important;
   }
   .app-container {
-    padding-bottom: calc(68px + var(--safe-bottom)) !important;
+    padding-bottom: calc(76px + var(--safe-bottom, 0px)) !important;
   }
   .app-header {
     padding: 0 14px !important;
@@ -672,6 +672,203 @@ h1, h2, h3, h4, h5, h6 {
   outline-offset: 2px;
 }
 
+/* ── 10. RESPONSIVE BENTO GRIDS (Zero horizontal overflow on mobile) ── */
+.dashboard-bento-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .dashboard-bento-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.teacher-bento-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .teacher-bento-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ── 11. DUAL-OS CALIBRATION: IOS (APPLE HIG) & ANDROID (MATERIAL 3) ── */
+button, .btn, .mobile-nav, nav, a {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* iOS Specific Styles */
+.platform-ios {
+  -webkit-text-size-adjust: 100%;
+}
+
+.platform-ios .app-header {
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+}
+
+.platform-ios .mobile-nav {
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+}
+
+/* Android Specific Styles */
+.platform-android .app-header {
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+}
+
+.platform-android .mobile-nav {
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  height: calc(68px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+}
+
+.platform-android button:active,
+.platform-android .btn:active {
+  filter: brightness(0.94);
+  transform: scale(0.98);
+  transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+/* Universal Mobile Enhancements (< 768px) */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent unwanted iOS/Android auto-zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Native Mobile Bottom Sheet Standard */
+  .mobile-bottom-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--bg-overlay, rgba(15, 23, 42, 0.6));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .mobile-bottom-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    max-height: 88dvh !important;
+    padding: 16px 20px calc(24px + var(--safe-bottom, 0px)) !important;
+    animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+
+  .mobile-sheet-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--border-color, #CBD5E1);
+    margin: 0 auto 14px;
+  }
+}
+
+/* ── 12. COMPONENT-LEVEL MOBILE CALIBRATION ── */
+.student-dashboard-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: var(--font-sans);
+}
+
+.student-hero-banner {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 55%, #0A2540 100%);
+  border-radius: 20px;
+  padding: 28px 32px;
+  color: #FFFFFF;
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.auth-master-card {
+  width: 100%;
+  max-width: 1020px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.02);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.auth-left-column {
+  background: linear-gradient(160deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  padding: 44px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #FFFFFF;
+}
+
+.auth-right-column {
+  background: #FFFFFF;
+  padding: 44px 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .student-dashboard-container {
+    padding: 14px 12px 36px;
+    gap: 16px;
+  }
+  .student-hero-banner {
+    padding: 18px 16px;
+    border-radius: 16px;
+    gap: 16px;
+  }
+  .auth-master-card {
+    border-radius: 18px;
+    grid-template-columns: 1fr;
+  }
+  .auth-left-column {
+    padding: 24px 20px 20px;
+  }
+  .auth-right-column {
+    padding: 24px 18px;
+  }
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -680,5 +877,6 @@ h1, h2, h3, h4, h5, h6 {
     transform: rotate(360deg);
   }
 }
+
 
 

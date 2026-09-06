@@ -11,6 +11,7 @@ import { TeacherAcademicHeader } from './components/layout/TeacherAcademicHeader
 import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
 import { CertificateService } from './services/certificateService';
 import { AnalyticsService } from './services/analyticsService';
+import { initMobilePlatform } from './utils/mobilePlatform';
 import type { DigitalCertificate, DiagnosticResult } from './types/edtech';
 import type { Quiz, QuizAttempt } from './types/quiz';
 import type { QuizMode } from './hooks/useQuizEngine';
@@ -178,6 +179,11 @@ export function App() {
     }
     return 'dashboard';
   });
+
+  // Mobile OS Engine (iOS & Android Calibration)
+  useEffect(() => {
+    initMobilePlatform();
+  }, []);
 
   // SPA Browser history synchronization across all routes
   useEffect(() => {

@@ -96,12 +96,14 @@ export const FileSplitter3in1Modal: React.FC<FileSplitter3in1ModalProps> = ({
 
   return (
     <div
+      className="mobile-bottom-sheet-overlay"
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(15, 23, 42, 0.7)',
-        backdropFilter: 'blur(5px)',
-        zIndex: 1050,
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -110,11 +112,12 @@ export const FileSplitter3in1Modal: React.FC<FileSplitter3in1ModalProps> = ({
       onClick={onClose}
     >
       <div
+        className="mobile-bottom-sheet"
         style={{
           width: '100%',
           maxWidth: '740px',
           background: '#ffffff',
-          borderRadius: '14px',
+          borderRadius: '16px',
           border: '1px solid #E2E8F0',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           display: 'flex',
@@ -124,6 +127,9 @@ export const FileSplitter3in1Modal: React.FC<FileSplitter3in1ModalProps> = ({
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Mobile Swipe / Drag Handle indicator */}
+        <div className="mobile-sheet-handle show-sm" style={{ marginTop: '12px' }} />
+
         {/* Modal Header */}
         <div
           style={{
@@ -180,7 +186,7 @@ export const FileSplitter3in1Modal: React.FC<FileSplitter3in1ModalProps> = ({
         <div style={{ padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           
           {/* Feature Badges */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
             <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '10px 12px' }}>
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D4ED8', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>📘 Tách file 1:</span> Word
@@ -360,7 +366,7 @@ export const FileSplitter3in1Modal: React.FC<FileSplitter3in1ModalProps> = ({
               </div>
 
               {/* 3 Separated Files Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                 {/* Word */}
                 <div style={{ background: '#ffffff', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#1D4ED8' }}>

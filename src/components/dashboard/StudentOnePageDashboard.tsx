@@ -94,36 +94,9 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   };
 
   return (
-    <div
-      style={{
-        maxWidth: '1240px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '24px 20px 80px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px',
-        fontFamily: 'var(--font-sans)'
-      }}
-    >
+    <div className="student-dashboard-container" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* ── 1. PREMIUM HERO BANNER (Học viện số hiện đại) ── */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 55%, #0A2540 100%)',
-          borderRadius: '20px',
-          padding: '28px 32px',
-          color: '#FFFFFF',
-          boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.4)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '24px'
-        }}
-      >
+      <div className="student-hero-banner">
         {/* Glow ambient background decoration */}
         <div
           style={{
@@ -328,7 +301,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
       </div>
 
       {/* ── 2. MAIN 2-COLUMN DASHBOARD BENTO GRID ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: '24px', alignItems: 'start' }}>
+      <div className="dashboard-bento-grid">
         
         {/* ── CỘT TRÁI (65%): CÁC MODULE HỌC TẬP & KHẢO THÍ CHÍNH ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

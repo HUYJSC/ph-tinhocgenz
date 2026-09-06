@@ -125,29 +125,10 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     }}>
 
       {/* Main Dual-Column Master Card Container */}
-      <div style={{
-        width: '100%',
-        maxWidth: '1020px',
-        background: '#FFFFFF',
-        border: '1px solid #E2E8F0',
-        borderRadius: '24px',
-        boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.02)',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        overflow: 'hidden',
-        position: 'relative',
-        zIndex: 10
-      }}>
+      <div className="auth-master-card">
 
         {/* LEFT COLUMN: BRAND SHOWCASE & CREDIBILITY */}
-        <div style={{
-          background: 'linear-gradient(160deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%)',
-          padding: '44px 36px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          color: '#FFFFFF'
-        }}>
+        <div className="auth-left-column">
           {/* Back button */}
           <div>
             <button
@@ -313,13 +294,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
         </div>
 
         {/* RIGHT COLUMN: REFINED AUTHENTICATION CARD */}
-        <div style={{
-          background: '#FFFFFF',
-          padding: '44px 38px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center'
-        }}>
+        <div className="auth-right-column">
           <div>
             {/* Header */}
             <div style={{ marginBottom: '24px' }}>
