@@ -11,7 +11,7 @@ import {
   BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
-  Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText
+  Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -257,12 +257,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [newTeacherPass, setNewTeacherPass] = useState('123');
   const [newTeacherContact, setNewTeacherContact] = useState('');
   const [newTeacherTracks, setNewTeacherTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
+  const [showNewTeacherPass, setShowNewTeacherPass] = useState(false);
 
   // Edit Teacher State
   const [editingTeacher, setEditingTeacher] = useState<TeacherAccount | null>(null);
   const [editTeacherName, setEditTeacherName] = useState('');
   const [editTeacherCode, setEditTeacherCode] = useState('');
   const [editTeacherPass, setEditTeacherPass] = useState('123');
+  const [showEditTeacherPass, setShowEditTeacherPass] = useState(false);
   const [editTeacherContact, setEditTeacherContact] = useState('');
   const [editTeacherTracks, setEditTeacherTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
 
@@ -465,6 +467,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           return [...prev, trackId];
         }
       });
+    }
+    soundFx.playClick();
+  };
+
+  const handleSelectAllTracks = (isEdit: boolean = false) => {
+    const allIds = ALL_TRACK_OPTIONS.map(t => t.id);
+    if (isEdit) {
+      setEditTeacherTracks(allIds);
+    } else {
+      setNewTeacherTracks(allIds);
+    }
+    soundFx.playClick();
+  };
+
+  const handleClearAllTracks = (isEdit: boolean = false) => {
+    if (isEdit) {
+      setEditTeacherTracks(['office-fast-3in1']);
+    } else {
+      setNewTeacherTracks(['office-fast-3in1']);
     }
     soundFx.playClick();
   };
@@ -1544,10 +1565,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 Tạo Tài Khoản Giảng Viên / Trợ Giảng Đứng Lớp
               </h3>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Họ và Tên Giảng Viên *
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Họ và Tên Giảng Viên <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -1555,13 +1576,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     placeholder="Ví dụ: Cô Thu Hằng"
                     value={newTeacherName}
                     onChange={e => setNewTeacherName(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none', fontSize: '0.9rem', fontWeight: 600 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Mã Giảng Viên (Tài Khoản Đăng Nhập) *
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Mã Giảng Viên (Tài Khoản Đăng Nhập) <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -1569,42 +1590,124 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     placeholder="Ví dụ: GV03"
                     value={newTeacherCode}
                     onChange={e => setNewTeacherCode(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: '#d97706', fontWeight: 800, fontSize: '0.92rem', outline: 'none' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Mật Khẩu (Mặc định: 123)
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Mật Khẩu Đăng Nhập
                   </label>
-                  <input
-                    type="text"
-                    value={newTeacherPass}
-                    onChange={e => setNewTeacherPass(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showNewTeacherPass ? 'text' : 'password'}
+                      value={newTeacherPass}
+                      onChange={e => setNewTeacherPass(e.target.value)}
+                      placeholder="Nhập mật khẩu..."
+                      style={{ width: '100%', padding: '10px 42px 10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none', fontSize: '0.9rem', fontWeight: 600 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewTeacherPass(!showNewTeacherPass)}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '4px'
+                      }}
+                      title={showNewTeacherPass ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      {showNewTeacherPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Email Hoặc SĐT Liên Hệ
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Email / SĐT Liên Hệ
                   </label>
                   <input
                     type="text"
-                    placeholder="thuhang@tinhocgenz.io.vn"
+                    placeholder="thuhang@tinhocgenz.io.vn hoặc 0912..."
                     value={newTeacherContact}
                     onChange={e => setNewTeacherContact(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none', fontSize: '0.9rem', fontWeight: 600 }}
                   />
                 </div>
               </div>
 
               {/* Tracks Assignment Checkboxes */}
-              <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                  PHÂN CÔNG PHÂN HỆ GIẢNG DẠY (Giảng viên chỉ có quyền soạn đề & chấm bài ở các môn được tích):
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginTop: '8px' }}>
+              <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  marginBottom: '12px',
+                  paddingBottom: '8px',
+                  borderBottom: '1px solid rgba(100, 116, 139, 0.12)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      PHÂN CÔNG PHÂN HỆ GIẢNG DẠY
+                    </span>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      background: newTeacherTracks.length > 0 ? 'rgba(217, 119, 6, 0.12)' : 'rgba(100, 116, 139, 0.1)',
+                      color: newTeacherTracks.length > 0 ? '#d97706' : 'var(--text-muted)',
+                      border: newTeacherTracks.length > 0 ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid transparent'
+                    }}>
+                      Đã chọn: {newTeacherTracks.length} / {ALL_TRACK_OPTIONS.length} môn
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAllTracks(false)}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        border: '1px solid rgba(217, 119, 6, 0.3)',
+                        background: 'rgba(217, 119, 6, 0.08)',
+                        color: '#d97706',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ✓ Chọn tất cả
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleClearAllTracks(false)}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '0.74rem',
+                        fontWeight: 600,
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color)',
+                        background: 'var(--bg-card)',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ✕ Bỏ chọn
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
                   {ALL_TRACK_OPTIONS.map(trk => {
                     const isChecked = newTeacherTracks.includes(trk.id);
                     return (
@@ -1612,34 +1715,51 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         key={trk.id}
                         onClick={() => toggleTeacherTrack(trk.id, false)}
                         style={{
-                          padding: '8px 10px',
-                          borderRadius: 'var(--radius-sm)',
-                          background: isChecked ? 'rgba(217, 119, 6, 0.1)' : 'var(--bg-card)',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          background: isChecked ? 'rgba(217, 119, 6, 0.09)' : 'var(--bg-card)',
                           border: isChecked ? '1.5px solid #d97706' : '1px solid var(--border-color)',
+                          boxShadow: isChecked ? '0 2px 8px rgba(217, 119, 6, 0.12)' : 'none',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '8px',
-                          fontSize: '0.8rem',
-                          fontWeight: isChecked ? 700 : 500,
-                          color: isChecked ? '#d97706' : 'var(--text-secondary)'
+                          gap: '10px',
+                          minHeight: '48px',
+                          transition: 'all 0.15s ease',
+                          userSelect: 'none'
                         }}
                       >
-                        {isChecked ? <CheckSquare size={15} color="#d97706" /> : <Square size={15} />}
-                        <span>{trk.label}</span>
+                        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                          {isChecked ? <CheckSquare size={17} color="#d97706" /> : <Square size={17} color="var(--text-muted)" />}
+                        </div>
+                        <span style={{
+                          fontSize: '0.82rem',
+                          fontWeight: isChecked ? 700 : 500,
+                          color: isChecked ? '#b45309' : 'var(--text-secondary)',
+                          lineHeight: 1.35,
+                          flex: 1
+                        }}>
+                          {trk.label}
+                        </span>
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="submit" className="btn btn-primary" style={{ padding: '9px 18px', fontWeight: 800, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}>
-                  Lưu & Cấp Tài Khoản Giảng Viên
-                </button>
-                <button type="button" onClick={() => setShowAddTeacherForm(false)} className="btn btn-secondary">
-                  Hủy
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  💡 Giảng viên được cấp tài khoản sẽ dùng Mã GV và Mật khẩu trên để đăng nhập.
+                </span>
+                <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+                  <button type="button" onClick={() => setShowAddTeacherForm(false)} className="btn btn-secondary" style={{ padding: '9px 18px', borderRadius: '10px', fontWeight: 600 }}>
+                    Hủy
+                  </button>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '9px 22px', fontWeight: 800, borderRadius: '10px', background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 14px rgba(217, 119, 6, 0.25)' }}>
+                    <CheckCircle2 size={16} />
+                    <span>Lưu & Cấp Tài Khoản Giảng Viên</span>
+                  </button>
+                </div>
               </div>
             </form>
           )}
@@ -1773,88 +1893,204 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div
                 className="card"
                 style={{
-                  maxWidth: '620px',
-                  width: '100%',
-                  padding: '24px',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-xl)',
+                  maxWidth: '780px',
+                  width: '95%',
+                  padding: '24px 28px',
+                  borderRadius: '16px',
+                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.25)',
                   background: 'var(--bg-card)',
-                  maxHeight: '90vh',
+                  maxHeight: '92vh',
                   overflowY: 'auto'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <Edit3 size={18} color="#d97706" />
-                    <span>Chỉnh Sửa Giảng Viên & Phân Công Môn Học</span>
-                  </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 119, 6, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#d97706'
+                    }}>
+                      <Edit3 size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
+                        Chỉnh Sửa Giảng Viên & Phân Công Môn Học
+                      </h3>
+                      <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Quản lý tài khoản giảng viên và thiết lập quyền phụ trách các phân hệ giảng dạy
+                      </p>
+                    </div>
+                  </div>
                   <button
+                    type="button"
                     onClick={() => setEditingTeacher(null)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    style={{
+                      background: 'rgba(100, 116, 139, 0.08)',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s'
+                    }}
                   >
-                    <X size={20} />
+                    <X size={18} />
                   </button>
                 </div>
 
-                <form onSubmit={handleSaveEditTeacher} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                <form onSubmit={handleSaveEditTeacher} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Họ và Tên Giảng Viên *
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Họ và Tên Giảng Viên <span style={{ color: '#ef4444' }}>*</span>
                       </label>
                       <input
                         type="text"
                         required
                         value={editTeacherName}
                         onChange={e => setEditTeacherName(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                        placeholder="VD: Thầy Đình Huy"
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none', fontSize: '0.9rem', fontWeight: 600 }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Mã Giảng Viên (Tài Khoản) *
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Mã Giảng Viên (Tài Khoản) <span style={{ color: '#ef4444' }}>*</span>
                       </label>
                       <input
                         type="text"
                         required
                         value={editTeacherCode}
                         onChange={e => setEditTeacherCode(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
+                        placeholder="VD: GV02"
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: '#d97706', fontWeight: 800, fontSize: '0.92rem', outline: 'none' }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Mật Khẩu
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Mật Khẩu Đăng Nhập
                       </label>
-                      <input
-                        type="text"
-                        value={editTeacherPass}
-                        onChange={e => setEditTeacherPass(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                      />
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type={showEditTeacherPass ? 'text' : 'password'}
+                          value={editTeacherPass}
+                          onChange={e => setEditTeacherPass(e.target.value)}
+                          placeholder="Nhập mật khẩu..."
+                          style={{ width: '100%', padding: '10px 42px 10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none', fontSize: '0.9rem', fontWeight: 600 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowEditTeacherPass(!showEditTeacherPass)}
+                          style={{
+                            position: 'absolute',
+                            right: '10px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '4px'
+                          }}
+                          title={showEditTeacherPass ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        >
+                          {showEditTeacherPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                         Email / SĐT Liên Hệ
                       </label>
                       <input
                         type="text"
+                        placeholder="VD: 0912 345 602 hoặc email@domain.com"
                         value={editTeacherContact}
                         onChange={e => setEditTeacherContact(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none', fontSize: '0.9rem', fontWeight: 600 }}
                       />
                     </div>
                   </div>
 
                   {/* Tracks Assignment Checkboxes */}
-                  <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                      PHÂN CÔNG PHÂN HỆ GIẢNG DẠY (Tích chọn để mở quyền):
-                    </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginTop: '8px' }}>
+                  <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      marginBottom: '12px',
+                      paddingBottom: '8px',
+                      borderBottom: '1px solid rgba(100, 116, 139, 0.12)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          PHÂN CÔNG PHÂN HỆ GIẢNG DẠY
+                        </span>
+                        <span style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '999px',
+                          background: editTeacherTracks.length > 0 ? 'rgba(217, 119, 6, 0.12)' : 'rgba(100, 116, 139, 0.1)',
+                          color: editTeacherTracks.length > 0 ? '#d97706' : 'var(--text-muted)',
+                          border: editTeacherTracks.length > 0 ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid transparent'
+                        }}>
+                          Đã chọn: {editTeacherTracks.length} / {ALL_TRACK_OPTIONS.length} môn
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAllTracks(true)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '0.74rem',
+                            fontWeight: 700,
+                            borderRadius: '6px',
+                            border: '1px solid rgba(217, 119, 6, 0.3)',
+                            background: 'rgba(217, 119, 6, 0.08)',
+                            color: '#d97706',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✓ Chọn tất cả
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleClearAllTracks(true)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '0.74rem',
+                            fontWeight: 600,
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-card)',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✕ Bỏ chọn
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
                       {ALL_TRACK_OPTIONS.map(trk => {
                         const isChecked = editTeacherTracks.includes(trk.id);
                         return (
@@ -1862,43 +2098,60 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             key={trk.id}
                             onClick={() => toggleTeacherTrack(trk.id, true)}
                             style={{
-                              padding: '8px 10px',
-                              borderRadius: 'var(--radius-sm)',
-                              background: isChecked ? 'rgba(217, 119, 6, 0.1)' : 'var(--bg-card)',
+                              padding: '10px 12px',
+                              borderRadius: '10px',
+                              background: isChecked ? 'rgba(217, 119, 6, 0.09)' : 'var(--bg-card)',
                               border: isChecked ? '1.5px solid #d97706' : '1px solid var(--border-color)',
+                              boxShadow: isChecked ? '0 2px 8px rgba(217, 119, 6, 0.12)' : 'none',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '8px',
-                              fontSize: '0.8rem',
-                              fontWeight: isChecked ? 700 : 500,
-                              color: isChecked ? '#d97706' : 'var(--text-secondary)'
+                              gap: '10px',
+                              minHeight: '48px',
+                              transition: 'all 0.15s ease',
+                              userSelect: 'none'
                             }}
                           >
-                            {isChecked ? <CheckSquare size={15} color="#d97706" /> : <Square size={15} />}
-                            <span>{trk.label}</span>
+                            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                              {isChecked ? <CheckSquare size={17} color="#d97706" /> : <Square size={17} color="var(--text-muted)" />}
+                            </div>
+                            <span style={{
+                              fontSize: '0.82rem',
+                              fontWeight: isChecked ? 700 : 500,
+                              color: isChecked ? '#b45309' : 'var(--text-secondary)',
+                              lineHeight: 1.35,
+                              flex: 1
+                            }}>
+                              {trk.label}
+                            </span>
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setEditingTeacher(null)}
-                      className="btn btn-secondary"
-                      style={{ padding: '9px 16px' }}
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      style={{ padding: '9px 20px', fontWeight: 800, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
-                    >
-                      Lưu Thay Đổi & Cập Nhật Giảng Viên
-                    </button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      💡 Giảng viên chỉ có quyền quản lý lịch dạy, chấm bài và tạo đề thi ở các môn được tích chọn.
+                    </span>
+                    <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditingTeacher(null)}
+                        className="btn btn-secondary"
+                        style={{ padding: '9px 18px', borderRadius: '10px', fontWeight: 600 }}
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        style={{ padding: '9px 22px', fontWeight: 800, borderRadius: '10px', background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 14px rgba(217, 119, 6, 0.25)' }}
+                      >
+                        <CheckCircle2 size={16} />
+                        <span>Lưu Thay Đổi & Cập Nhật Giảng Viên</span>
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
