@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../types/assignment';
 import { SAMPLE_INFORMATICS_EXAMS } from '../utils/documentParser';
 import { uploadFileToGoogleDrive } from '../utils/googleDriveService';
-
+import { formatDateTimeAmPm, formatTimeAmPm } from '../utils/timeFormat';
 import { MASTER_ADMIN_DRIVE_CONFIG } from '../utils/googleDriveService';
 
 const ASSIGNMENTS_KEY = 'phtinhocgenz_assignments_v3';
@@ -242,7 +242,7 @@ export function useAssignmentStorage() {
       driveFolderUrl: resolvedDriveFolderUrl,
       driveSyncStatus: resolvedSyncStatus,
       timeSpentSeconds,
-      submittedAt: now.toLocaleString('vi-VN'),
+      submittedAt: formatDateTimeAmPm(now),
       status: isLate ? 'late' : 'submitted'
     };
 
@@ -258,7 +258,7 @@ export function useAssignmentStorage() {
       studentName,
       studentCode,
       assignmentTitle: targetAssignment?.title || 'Bài tập Tin học',
-      timestamp: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: formatTimeAmPm(now.toTimeString().slice(0, 5)),
       isRead: false
     };
 

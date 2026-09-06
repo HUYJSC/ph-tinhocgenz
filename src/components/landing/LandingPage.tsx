@@ -985,7 +985,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 </div>
                 <div>
                   <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Thời gian hỗ trợ:</span>
-                  <span style={{ color: '#F1F5F9' }}>08:00 – 21:30 (Thứ 2 – Chủ Nhật)</span>
+                  <span style={{ color: '#F1F5F9' }}>08:00 AM – 09:30 PM (Thứ 2 – Chủ Nhật)</span>
                 </div>
               </div>
             </div>

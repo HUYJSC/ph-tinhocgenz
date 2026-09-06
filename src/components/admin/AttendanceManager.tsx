@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { getCurrentCoordinates } from '../../utils/securityUtils';
+import { formatTimeAmPm } from '../../utils/timeFormat';
 
 interface AttendanceManagerProps {
   sessions: AttendanceSession[];
@@ -166,7 +167,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         r.studentCode,
         r.studentName,
         r.status === 'present' ? 'Có mặt' : r.status === 'makeup' || r.isMakeup ? 'Học bù' : r.status === 'late' ? 'Đi muộn' : 'Vắng',
-        r.checkInTime || '',
+        r.checkInTime ? formatTimeAmPm(r.checkInTime) : '',
         r.checkInMethod === 'qr_scan' ? 'Quét QR' : r.checkInMethod === 'pin_code' ? 'Nhập PIN' : 'Thủ công',
         r.note || ''
       ])
@@ -615,7 +616,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                           <span>{rec.status === 'makeup' || rec.isMakeup ? 'HỌC BÙ' : 'ĐÃ ĐIỂM DANH'}</span>
                         </span>
                         <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
-                          ⏱️ {rec.checkInTime || 'Vừa xong'} • {rec.checkInMethod === 'qr_scan' ? 'Quét QR' : 'Nhập PIN'}
+                          ⏱️ {rec.checkInTime ? formatTimeAmPm(rec.checkInTime) : 'Vừa xong'} • {rec.checkInMethod === 'qr_scan' ? 'Quét QR' : 'Nhập PIN'}
                         </div>
                       </div>
                     </div>
@@ -727,7 +728,7 @@ export const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                       </span>
                     </td>
                     <td style={{ padding: '10px 12px', color: '#64748B', fontSize: '12px' }}>
-                      {rec.checkInTime || '--'}
+                      {rec.checkInTime ? formatTimeAmPm(rec.checkInTime) : '--'}
                     </td>
                     <td style={{ padding: '10px 12px', textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '4px' }}>

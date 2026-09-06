@@ -7,6 +7,7 @@ import {
   Award, MapPin
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { formatTimeAmPm } from '../../utils/timeFormat';
 
 interface StudentAttendanceDashboardProps {
   currentUser: UserProfile;
@@ -345,7 +346,7 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
                       </div>
                       <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span>📅 {session.date}</span>
-                        <span>⏰ {session.startTime || '08:00'}</span>
+                        <span>⏰ {formatTimeAmPm(session.startTime || '08:00')}</span>
                         <span>👨‍🏫 GV: {session.teacherName}</span>
                         {session.room && (
                           <span style={{ color: 'var(--brand)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
@@ -376,7 +377,7 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
                           <span>ĐÃ ĐIỂM DANH</span>
                         </span>
                         <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px' }}>
-                          Lúc {myRec.checkInTime} ({myRec.checkInMethod === 'qr_scan' ? 'Quét QR' : myRec.checkInMethod === 'pin_code' ? 'Mã PIN' : 'GV chấm'})
+                          Lúc {formatTimeAmPm(myRec.checkInTime)} ({myRec.checkInMethod === 'qr_scan' ? 'Quét QR' : myRec.checkInMethod === 'pin_code' ? 'Mã PIN' : 'GV chấm'})
                         </div>
                       </div>
                     )}
@@ -398,7 +399,7 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
                           <span>HỌC BÙ (VẮNG BÙ)</span>
                         </span>
                         <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px' }}>
-                          Lúc {myRec?.checkInTime || '--:--'} • Báo cáo Admin ✓
+                          Lúc {myRec?.checkInTime ? formatTimeAmPm(myRec.checkInTime) : '--:--'} • Báo cáo Admin ✓
                         </div>
                       </div>
                     )}
@@ -420,7 +421,7 @@ export const StudentAttendanceDashboard: React.FC<StudentAttendanceDashboardProp
                           <span>ĐI TRỄ</span>
                         </span>
                         <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px' }}>
-                          Lúc {myRec?.checkInTime}
+                          Lúc {myRec?.checkInTime ? formatTimeAmPm(myRec.checkInTime) : ''}
                         </div>
                       </div>
                     )}

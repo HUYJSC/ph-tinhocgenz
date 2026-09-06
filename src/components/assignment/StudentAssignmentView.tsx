@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import confetti from 'canvas-confetti';
+import { formatDateTimeAmPm } from '../../utils/timeFormat';
 
 interface StudentAssignmentViewProps {
   assignments: Assignment[];
@@ -27,22 +28,9 @@ interface StudentAssignmentViewProps {
   ) => void;
 }
 
+// Format Date & Time to readable Vietnamese format with AM/PM
 function formatReadableDateTime(isoString: string): string {
-  if (!isoString) return 'Chưa thiết lập';
-  try {
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return isoString;
-    const hours = d.getHours().toString().padStart(2, '0');
-    const mins = d.getMinutes().toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const dayName = daysOfWeek[d.getDay()];
-    return `${hours}:${mins} - ${dayName}, ${day}/${month}/${year}`;
-  } catch (e) {
-    return isoString;
-  }
+  return formatDateTimeAmPm(isoString);
 }
 
 export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
@@ -223,7 +211,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
     setShowSubmitModal(false);
     setSubmittedSuccess(sub || {
       assignmentTitle: activeAssignment.title,
-      submittedAt: new Date().toLocaleString('vi-VN')
+      submittedAt: formatDateTimeAmPm(new Date())
     });
 
     soundFx.playVictory();

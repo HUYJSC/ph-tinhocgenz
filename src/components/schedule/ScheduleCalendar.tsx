@@ -6,6 +6,7 @@ import {
   CheckCircle2, X, Edit3, Clock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { formatTimeAmPm } from '../../utils/timeFormat';
 
 interface ScheduleCalendarProps {
   currentUser: UserProfile;
@@ -27,9 +28,9 @@ const DAY_NAMES: { [key: number]: string } = {
 };
 
 const SHIFT_LABELS: { [key in ShiftTimeSlot]: { label: string; time: string; color: string; bg: string } } = {
-  morning: { label: 'Ca Sáng', time: '08:00 - 10:00', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-  afternoon: { label: 'Ca Chiều', time: '14:00 - 16:00', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-  evening: { label: 'Ca Tối', time: '18:30 - 20:30', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
+  morning: { label: 'Ca Sáng', time: '08:00 AM - 10:00 AM', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+  afternoon: { label: 'Ca Chiều', time: '02:00 PM - 04:00 PM', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+  evening: { label: 'Ca Tối', time: '06:30 PM - 08:30 PM', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
 };
 
 export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
@@ -627,7 +628,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                                 padding: '1px 6px',
                                 borderRadius: '4px'
                               }}>
-                                {shiftInfo.label} • {sch.startTime} - {sch.endTime}
+                                {shiftInfo.label} • {formatTimeAmPm(sch.startTime)} - {formatTimeAmPm(sch.endTime)}
                               </span>
                               <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                                 {sch.classCode}
@@ -802,7 +803,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.72rem', fontWeight: 800, color: shiftInfo.color, background: shiftInfo.bg, padding: '2px 8px', borderRadius: '6px' }}>
-                          {DAY_NAMES[sch.dayOfWeek]} • {sch.startTime} - {sch.endTime}
+                          {DAY_NAMES[sch.dayOfWeek]} • {formatTimeAmPm(sch.startTime)} - {formatTimeAmPm(sch.endTime)}
                         </span>
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', background: 'var(--brand-light)', padding: '2px 8px', borderRadius: '6px' }}>
                           {TRACK_LABELS[sch.track] || sch.track}
@@ -1077,13 +1078,13 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {[
-                      { label: 'Sáng: 08:00 - 10:00', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
-                      { label: 'Sáng: 09:30 - 11:30', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
-                      { label: 'Chiều: 14:00 - 16:00', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
-                      { label: 'Chiều: 15:30 - 17:30', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
-                      { label: 'Tối 1: 18:00 - 20:00', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
-                      { label: 'Tối 2: 18:30 - 20:30', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
-                      { label: 'Tối 3: 19:00 - 21:00', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
+                      { label: 'Sáng: 08:00 AM - 10:00 AM', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
+                      { label: 'Sáng: 09:30 AM - 11:30 AM', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
+                      { label: 'Chiều: 02:00 PM - 04:00 PM', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
+                      { label: 'Chiều: 03:30 PM - 05:30 PM', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
+                      { label: 'Tối 1: 06:00 PM - 08:00 PM', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
+                      { label: 'Tối 2: 06:30 PM - 08:30 PM', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
+                      { label: 'Tối 3: 07:00 PM - 09:00 PM', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
                     ].map(p => {
                       const isMatch = formStartTime === p.start && formEndTime === p.end;
                       return (
@@ -1179,12 +1180,12 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 </div>
 
                 {/* Duration Hint & Validation */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
                   <span style={{ color: getDurationMessage(formStartTime, formEndTime).isError ? '#ef4444' : '#059669', fontWeight: 700 }}>
                     {getDurationMessage(formStartTime, formEndTime).text}
                   </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                    Tự do nhập giờ bất kỳ (24h)
+                  <span style={{ color: '#d97706', fontWeight: 800, fontSize: '0.76rem', background: 'rgba(217, 119, 6, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
+                    ⏰ {formatTimeAmPm(formStartTime)} ➔ {formatTimeAmPm(formEndTime)}
                   </span>
                 </div>
               </div>

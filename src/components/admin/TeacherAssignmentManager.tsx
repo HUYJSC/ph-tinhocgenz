@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { SecureDocViewer } from '../assignment/SecureDocViewer';
+import { formatDateTimeAmPm } from '../../utils/timeFormat';
 
 const ALL_TRACK_OPTIONS = TRACK_LIST;
 
@@ -30,23 +31,9 @@ interface TeacherAssignmentManagerProps {
   onMarkNotificationAsRead: (id: string) => void;
 }
 
-// Format Date & Time to readable Vietnamese format
+// Format Date & Time to readable Vietnamese format with AM/PM
 function formatReadableDateTime(isoString: string): string {
-  if (!isoString) return 'Chưa thiết lập';
-  try {
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return isoString;
-    const hours = d.getHours().toString().padStart(2, '0');
-    const mins = d.getMinutes().toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const dayName = daysOfWeek[d.getDay()];
-    return `${hours}:${mins} - ${dayName}, ${day}/${month}/${year}`;
-  } catch (e) {
-    return isoString;
-  }
+  return formatDateTimeAmPm(isoString);
 }
 
 export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> = ({
