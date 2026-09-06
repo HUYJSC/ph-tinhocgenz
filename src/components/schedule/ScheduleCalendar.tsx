@@ -28,9 +28,9 @@ const DAY_NAMES: { [key: number]: string } = {
 };
 
 const SHIFT_LABELS: { [key in ShiftTimeSlot]: { label: string; time: string; color: string; bg: string } } = {
-  morning: { label: 'Ca Sáng', time: '08:00 AM - 10:00 AM', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-  afternoon: { label: 'Ca Chiều', time: '02:00 PM - 04:00 PM', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-  evening: { label: 'Ca Tối', time: '06:30 PM - 08:30 PM', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
+  morning: { label: 'Ca Sáng', time: '08:00 - 10:00', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+  afternoon: { label: 'Ca Chiều', time: '14:00 - 16:00', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+  evening: { label: 'Ca Tối', time: '18:30 - 20:30', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
 };
 
 export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
@@ -1078,13 +1078,13 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {[
-                      { label: 'Sáng: 08:00 AM - 10:00 AM', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
-                      { label: 'Sáng: 09:30 AM - 11:30 AM', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
-                      { label: 'Chiều: 02:00 PM - 04:00 PM', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
-                      { label: 'Chiều: 03:30 PM - 05:30 PM', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
-                      { label: 'Tối 1: 06:00 PM - 08:00 PM', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
-                      { label: 'Tối 2: 06:30 PM - 08:30 PM', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
-                      { label: 'Tối 3: 07:00 PM - 09:00 PM', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
+                      { label: 'Sáng: 08:00 - 10:00', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
+                      { label: 'Sáng: 09:30 - 11:30', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
+                      { label: 'Chiều: 14:00 - 16:00', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
+                      { label: 'Chiều: 15:30 - 17:30', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
+                      { label: 'Tối 1: 18:00 - 20:00', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
+                      { label: 'Tối 2: 18:30 - 20:30', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
+                      { label: 'Tối 3: 19:00 - 21:00', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
                     ].map(p => {
                       const isMatch = formStartTime === p.start && formEndTime === p.end;
                       return (

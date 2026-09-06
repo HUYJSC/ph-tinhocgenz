@@ -124,7 +124,7 @@ export class AccountRecoveryService {
       recipientName: accountName,
       subject: `[PH Digital Education] Mã xác nhận khôi phục tài khoản: ${otp}`,
       otpCode: otp,
-      sentAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
+      sentAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
       htmlContent: `
         <div style="font-family: 'Be Vietnam Pro', Arial, sans-serif; max-width: 540px; margin: auto; padding: 24px; border: 1px solid #E2E8F0; border-radius: 16px; background: #ffffff;">
           <div style="text-align: center; margin-bottom: 20px;">

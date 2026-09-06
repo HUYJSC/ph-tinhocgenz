@@ -220,7 +220,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, onResetProgress }) 
                     {attempt.quizTitle}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', gap: '10px', marginTop: '2px' }}>
-                    <span>{new Date(attempt.completedAt).toLocaleDateString('vi-VN')} {new Date(attempt.completedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                    <span>{new Date(attempt.completedAt).toLocaleDateString('vi-VN')} {new Date(attempt.completedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
                     <span>•</span>
                     <span>Thời gian: {formatTime(attempt.timeSpentSeconds)}</span>
                     <span>•</span>
