@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Flame, Bell, FileText, MessageSquare, BookOpen, School, Award, Bot, ChevronDown } from 'lucide-react';
+import { Flame, FileText, MessageSquare, BookOpen, School, Award, Bot, ChevronDown } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
+import { NotificationBell } from '../ui/NotificationBell';
 import { soundFx } from '../../utils/audio';
 
 import { ActiveTab } from './Sidebar';
@@ -86,9 +87,9 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab = 'dashboard',
   setActiveTab,
   isAdmin = false,
-  unreadNotificationCount = 0,
+  unreadNotificationCount: _unreadNotificationCount = 0,
   onLogout,
-  onOpenNotifications,
+  onOpenNotifications: _onOpenNotifications,
   onOpenProfileModal,
   onOpenChangePassword,
   onOpenInstallModal,
@@ -223,17 +224,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Notifications */}
-          {onOpenNotifications && (
-            <button onClick={() => { soundFx.playClick(); onOpenNotifications?.(); }} title="Thông báo bài nộp" className="btn btn-icon" style={{ width: '34px', height: '34px', minHeight: '34px', position: 'relative', color: unreadNotificationCount > 0 ? 'var(--danger)' : 'var(--text-secondary)' }}>
-              <Bell size={15} />
-              {unreadNotificationCount > 0 && (
-                <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '14px', height: '14px', borderRadius: '50%', background: 'var(--danger)', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {unreadNotificationCount}
-                </span>
-              )}
-            </button>
-          )}
+          {/* Notifications — Push-enabled Bell with dropdown panel */}
+          <NotificationBell userId={currentUser.id} />
 
           {/* Feedback */}
           {onOpenFeedback && (

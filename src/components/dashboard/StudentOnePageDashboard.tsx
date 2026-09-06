@@ -12,7 +12,7 @@ import {
   FileText, ExternalLink, AlertTriangle, Dumbbell, Bell, CheckCircle2
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-import { AiZaloNotificationService } from '../../services/aiZaloNotificationService';
+import { AiNotificationService } from '../../services/aiNotificationService';
 
 interface StudentOnePageDashboardProps {
   currentUser: UserProfile;
@@ -938,9 +938,9 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
             </form>
           </div>
 
-          {/* Widget 5: Lịch Nhắc Nhở Học Tập & Báo Cáo Định Kỳ Zalo AI */}
+          {/* Widget 5: Lịch Nhắc Nhở Học Tập & Báo Cáo Định Kỳ Tự Động (Web Push & In-App) */}
           {(() => {
-            const studentAge = AiZaloNotificationService.calculateStudentAge(currentUser as any);
+            const studentAge = AiNotificationService.calculateStudentAge(currentUser as any);
             const isAdult = studentAge >= 25;
             return (
               <div
@@ -961,18 +961,18 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                     <span>Lịch Nhắc Nhở & Báo Cáo AI</span>
                   </div>
                   <span style={{ fontSize: '11px', background: '#0284C7', color: '#FFFFFF', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
-                    Zalo ZNS
+                    Web Push & In-App 🔔
                   </span>
                 </div>
 
                 <div style={{ fontSize: '12.5px', color: '#0C4A6E', lineHeight: 1.5 }}>
                   {isAdult ? (
                     <span>
-                      🎯 <strong>Chế độ Người lớn ({studentAge} tuổi):</strong> Báo cáo tiến độ và gợi ý tự động hóa được gửi <strong>trực tiếp đến Zalo của bạn</strong>. Tôn trọng quyền tự chủ công việc, không gửi phụ huynh.
+                      🎯 <strong>Chế độ Người lớn ({studentAge} tuổi):</strong> Báo cáo tiến độ và gợi ý tự động hóa được gửi <strong>trực tiếp đến Trình duyệt & Chuông thông báo của bạn</strong>. Tôn trọng quyền tự chủ công việc, không gửi phụ huynh.
                     </span>
                   ) : (
                     <span>
-                      👨‍👩‍👧 <strong>Kênh đồng hành ({studentAge} tuổi):</strong> Báo cáo kết quả tuần và nhắc nhở ca phụ đạo được gửi đến <strong>Phụ huynh</strong> qua Zalo để cùng hỗ trợ bạn hoàn thành mục tiêu.
+                      👨‍👩‍👧 <strong>Kênh đồng hành ({studentAge} tuổi):</strong> Báo cáo kết quả tuần và nhắc nhở ca phụ đạo được gửi đến <strong>Phụ huynh</strong> qua Web Push & Chuông thông báo để cùng hỗ trợ bạn hoàn thành mục tiêu.
                     </span>
                   )}
                 </div>

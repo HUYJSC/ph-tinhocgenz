@@ -536,7 +536,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   }}
                 >
                   <Phone size={14} />
-                  <span>SĐT / SMS Zalo</span>
+                  <span>Số điện thoại SMS</span>
                 </button>
               </div>
             </div>

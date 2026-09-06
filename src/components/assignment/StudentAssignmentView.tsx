@@ -4,7 +4,8 @@ import { UserProfile } from '../../types/auth';
 import { SecureDocViewer } from './SecureDocViewer';
 import {
   Clock, CheckCircle2, Play, UploadCloud, Send,
-  AlertCircle, ArrowLeft, Cloud
+  AlertCircle, ArrowLeft, Cloud, Upload, FileSpreadsheet,
+  Download, Trash2, RefreshCw
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import confetti from 'canvas-confetti';
@@ -100,20 +101,102 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Xử lý tệp bài làm thực hành của học viên
+  const processFile = (file: File) => {
+    let sizeStr = '';
+    if (file.size < 1024) sizeStr = `${file.size} B`;
+    else if (file.size < 1024 * 1024) sizeStr = `${(file.size / 1024).toFixed(0)} KB`;
+    else sizeStr = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAttachedFile({
+        name: file.name,
+        size: sizeStr,
+        content: event.target?.result as string
+      });
+      soundFx.playCorrect();
+    };
+    reader.onerror = () => {
+      alert('Không thể đọc tệp bài làm. Vui lòng thử lại!');
+      soundFx.playIncorrect();
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const sizeStr = (file.size / 1024).toFixed(1) + ' KB';
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setAttachedFile({
-          name: file.name,
-          size: sizeStr,
-          content: event.target?.result as string
-        });
-      };
-      reader.readAsDataURL(file);
-      soundFx.playCorrect();
+      processFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  // Tải nhanh tệp dữ liệu mẫu từ giáo viên về máy
+  const handleQuickDownloadSample = (file: any) => {
+    soundFx.playClick();
+    if (file.downloadUrl) {
+      let downloadLink = file.downloadUrl;
+      let isBlob = false;
+      if (file.downloadUrl.startsWith('data:')) {
+        try {
+          const parts = file.downloadUrl.split(',');
+          const mimeMatch = parts[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+          const base64Data = parts[1].replace(/\s/g, '');
+          const binaryString = window.atob(base64Data);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: mime });
+          downloadLink = URL.createObjectURL(blob);
+          isBlob = true;
+        } catch (e) {
+          console.error('Error creating blob for sample file:', e);
+        }
+      }
+      const a = document.createElement('a');
+      a.href = downloadLink;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (isBlob) {
+        setTimeout(() => URL.revokeObjectURL(downloadLink), 2000);
+      }
+    } else {
+      const sampleCsv = `STT,Mã Học Viên,Họ và Tên,Điểm Word,Điểm Excel,Điểm PPT,Xếp Loại\n1,THGZ01,Nguyễn Văn An,8.5,9.0,8.0,Giỏi\n2,THGZ02,Trần Thị Mai,9.0,9.5,8.5,Xuất sắc\n3,THGZ03,Phạm Minh Tuấn,7.0,8.0,7.5,Khá\n4,THGZ04,Lê Thu Trang,8.0,8.5,9.0,Giỏi`;
+      const blob = new Blob([sampleCsv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name || 'Du_Lieu_Mau_Thuc_Hanh.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -331,88 +414,255 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               />
             </div>
 
-            {/* Right: Simplified Student Submission Sheet */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                2. Phiếu Làm Bài & Nộp Lưu Trữ Google Drive:
+            {/* Right: Student Practical Submission Sheet */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>2. Phiếu Làm Bài & Nộp Tệp Thực Hành:</span>
               </div>
 
-              <div className="card" style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Cloud Info Banner */}
-                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(37, 99, 235, 0.08)', border: '1px solid rgba(37, 99, 235, 0.2)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
-                  <Cloud size={18} />
-                  <span>Bài làm của bạn sẽ tự động lưu vào Google Drive của Giảng viên.</span>
+              <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                {/* 1. Quick Sample File Downloader (If Teacher Provided Files) */}
+                {activeAssignment.sampleDataFiles && activeAssignment.sampleDataFiles.length > 0 && (
+                  <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Download size={14} />
+                      <span>Bước 1: Tải tệp thực hành mẫu từ Giảng viên (nếu chưa tải)</span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {activeAssignment.sampleDataFiles.map(f => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => handleQuickDownloadSample(f)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            background: '#FFFFFF',
+                            border: '1px solid #86EFAC',
+                            color: '#15803D',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                          }}
+                        >
+                          <FileSpreadsheet size={14} color="#16A34A" />
+                          <span>Tải: {f.name} ({f.size})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. PRIMARY ACTION: NÚT TẢI TỆP BÀI LÀM THỰC HÀNH LÊN */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <UploadCloud size={17} color="#2563EB" />
+                      <span>Bước 2: Tải lên tệp bài làm thực hành đã hoàn thành *</span>
+                    </label>
+                    <span style={{ fontSize: '0.72rem', background: '#DBEAFE', color: '#1D4ED8', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                      Bắt buộc tệp làm bài
+                    </span>
+                  </div>
+
+                  {!attachedFile ? (
+                    /* Large Interactive Upload Zone */
+                    <label
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '12px',
+                        padding: '28px 20px',
+                        borderRadius: '10px',
+                        background: isDragging ? 'rgba(34, 197, 94, 0.08)' : 'var(--bg-primary)',
+                        border: isDragging ? '2px dashed #16A34A' : '2px dashed #3B82F6',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '52px',
+                          height: '52px',
+                          borderRadius: '50%',
+                          background: '#EFF6FF',
+                          color: '#2563EB',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 10px rgba(37, 99, 235, 0.15)'
+                        }}
+                      >
+                        <Upload size={26} />
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#1E293B' }}>
+                          BẤM VÀO ĐÂY ĐỂ TẢI TỆP BÀI LÀM LÊN
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '3px' }}>
+                          Hoặc kéo thả file Excel (.xlsx), Word (.docx), PowerPoint (.pptx), ZIP vào khung này
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: '7px 18px',
+                          borderRadius: '6px',
+                          background: '#16A34A',
+                          color: '#FFFFFF',
+                          fontSize: '0.84rem',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: '0 2px 6px rgba(22, 163, 74, 0.3)'
+                        }}
+                      >
+                        <UploadCloud size={16} />
+                        <span>Chọn Tệp Từ Máy Tính Của Bạn</span>
+                      </div>
+
+                      <input
+                        type="file"
+                        style={{ display: 'none' }}
+                        accept=".xlsx,.xls,.docx,.doc,.pptx,.ppt,.zip,.rar,.7z,.pdf,.py,.txt"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  ) : (
+                    /* Attached File Card */
+                    <div
+                      style={{
+                        background: '#F0FDF4',
+                        border: '2px solid #22C55E',
+                        borderRadius: '10px',
+                        padding: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '12px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div
+                          style={{
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '8px',
+                            background: '#DCFCE7',
+                            color: '#16A34A',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <FileSpreadsheet size={24} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A' }}>
+                            {attachedFile.name}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#166534', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <CheckCircle2 size={13} color="#16A34A" />
+                            <span>Dung lượng: <strong>{attachedFile.size}</strong> • Đã nạp sẵn sàng nộp</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <label
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            background: '#FFFFFF',
+                            border: '1px solid #CBD5E1',
+                            color: '#334155',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <RefreshCw size={13} />
+                          <span>Đổi tệp khác</span>
+                          <input
+                            type="file"
+                            style={{ display: 'none' }}
+                            accept=".xlsx,.xls,.docx,.doc,.pptx,.ppt,.zip,.rar,.7z,.pdf,.py,.txt"
+                            onChange={handleFileUpload}
+                          />
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={() => setAttachedFile(null)}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            background: '#FEE2E2',
+                            border: '1px solid #FCA5A5',
+                            color: '#DC2626',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <Trash2 size={13} />
+                          <span>Xóa</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Text Area for Answers / Explanations */}
+                {/* 3. Optional Notes / Remarks */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                    Nhập câu trả lời, công thức hàm hoặc ghi chú bài làm:
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '5px' }}>
+                    Ghi chú hoặc lời nhắn cho Giảng viên (Tùy chọn):
                   </label>
                   <textarea
-                    rows={6}
-                    placeholder="Nhập phần trả lời bài làm của bạn tại đây (ví dụ: Câu 1: =VLOOKUP(...), Câu 2: ...)..."
+                    rows={3}
+                    placeholder="Nhập ghi chú bài làm của bạn (ví dụ: Em đã làm hoàn chỉnh trên Sheet 1 và Sheet 2...)..."
                     value={unifiedAnswer}
                     onChange={e => setUnifiedAnswer(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '12px 14px',
+                      padding: '10px 12px',
                       borderRadius: 'var(--radius-md)',
                       background: 'var(--bg-primary)',
                       border: '1px solid var(--border-color)',
                       color: 'var(--text-primary)',
-                      fontSize: '0.9rem',
+                      fontSize: '0.85rem',
                       fontFamily: 'inherit',
                       outline: 'none',
                       resize: 'vertical',
-                      lineHeight: '1.6'
+                      lineHeight: '1.5'
                     }}
                   />
                 </div>
 
-                {/* Upload Homework / Practical Work File */}
-                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                    Đính kèm tệp bài làm thực hành (Excel, Word, Python .py, ZIP, PDF...):
-                  </label>
-                  <label
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      padding: '20px',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'var(--bg-primary)',
-                      border: attachedFile ? '2px solid #10b981' : '2px dashed var(--border-color)',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <UploadCloud size={26} color={attachedFile ? '#10b981' : 'var(--accent-primary)'} />
-                    <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      {attachedFile ? (
-                        <b style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <CheckCircle2 size={16} />
-                          <span>Đã chọn: {attachedFile.name} ({attachedFile.size})</span>
-                        </b>
-                      ) : (
-                        'Nhấp để chọn tệp bài làm thực hành từ máy tính'
-                      )}
-                    </span>
-                    <input
-                      type="file"
-                      style={{ display: 'none' }}
-                      onChange={handleFileUpload}
-                    />
-                  </label>
-                </div>
-
-                <div style={{ fontSize: '12.5px', color: '#16A34A', background: '#DCFCE7', padding: '8px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <CheckCircle2 size={15} />
-                  <span>Bài làm của bạn được bảo mật và chuyển trực tiếp tới Giảng viên chấm điểm ngay sau khi nộp.</span>
+                {/* Cloud & Teacher Delivery Guarantee */}
+                <div style={{ fontSize: '0.78rem', color: '#16A34A', background: '#DCFCE7', padding: '9px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Cloud size={16} />
+                  <span>Bài làm của bạn sẽ tự động chuyển tới Giảng viên và lưu trữ an toàn ngay sau khi nộp.</span>
                 </div>
 
                 {/* Big Action Submit Button */}
@@ -422,18 +672,19 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   className="btn btn-primary"
                   style={{
                     width: '100%',
-                    padding: '13px',
-                    fontSize: '0.98rem',
+                    padding: '14px',
+                    fontSize: '1rem',
                     fontWeight: 800,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    marginTop: '4px'
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                   }}
                 >
                   <Send size={18} />
-                  <span>Xác Nhận & Nộp Bài Làm</span>
+                  <span>{attachedFile ? `Nộp Bài Thực Hành (Kèm ${attachedFile.name})` : 'Xác Nhận & Nộp Bài Làm'}</span>
                 </button>
               </div>
             </div>

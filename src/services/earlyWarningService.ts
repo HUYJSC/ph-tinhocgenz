@@ -79,7 +79,7 @@ export class EarlyWarningService {
     // Suggested Teacher Action
     let suggestedAction = 'Tiếp tục theo dõi tiến độ bình thường.';
     if (riskLevel === 'CRITICAL') {
-      suggestedAction = 'Gọi điện thoại hoặc gửi Zalo nhắc nhở lịch học và phụ đạo riêng 1-1.';
+      suggestedAction = 'Gọi điện thoại hoặc gửi thông báo đẩy (Web Push) nhắc nhở lịch học và phụ đạo riêng 1-1.';
     } else if (riskLevel === 'HIGH') {
       suggestedAction = 'Gửi tin nhắn thông báo lộ trình ôn tập và giao bài tập trúng điểm yếu.';
     } else if (riskLevel === 'MEDIUM') {

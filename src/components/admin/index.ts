@@ -4,4 +4,3 @@ export { TeacherAssignmentManager } from './TeacherAssignmentManager';
 export { EarlyWarningDashboard } from './EarlyWarningDashboard';
 export { TeacherAcademicPortal } from './TeacherAcademicPortal';
 export { StandaloneAdminApp } from './StandaloneAdminApp';
-export { ZaloNotificationManager } from './ZaloNotificationManager';

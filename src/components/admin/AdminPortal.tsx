@@ -6,7 +6,6 @@ import { ClassScheduleItem } from '../../types/schedule';
 import { TeacherAssignmentManager } from './TeacherAssignmentManager';
 import { ScheduleCalendar } from '../schedule/ScheduleCalendar';
 import { EarlyWarningDashboard } from './EarlyWarningDashboard';
-import { ZaloNotificationManager } from './ZaloNotificationManager';
 import { EarlyWarningService } from '../../services/earlyWarningService';
 import {
   BookOpen, Users, BarChart3, PlusCircle, Trash2,
@@ -23,7 +22,6 @@ export type AdminPortalSubTab =
   | 'student_directory'
   | 'teachers'
   | 'early_warning'
-  | 'zalo_notifications'
   | 'exams'
   | 'question_bank'
   | 'meet_hub'
@@ -559,7 +557,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             { id: 'student_directory', label: 'Hồ sơ học viên', count: studentAccounts.length, icon: Users },
             ...(isSuperAdmin ? [{ id: 'teachers', label: 'Giảng viên', count: teacherAccounts.length, icon: UserCheck }] : []),
             { id: 'early_warning', label: 'Cảnh báo học vụ', count: EarlyWarningService.evaluateAllStudents(studentAccounts).filter(s => s.riskLevel === 'CRITICAL' || s.riskLevel === 'HIGH').length || undefined, isAlert: true, icon: AlertTriangle },
-            { id: 'zalo_notifications', label: 'Tổng đài Zalo AI', count: studentAccounts.length || undefined, icon: Bot },
             ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Phòng Google Meet', count: meetHubRooms.length, icon: Video }] : []),
             { id: 'exams', label: 'Kho đề thi', count: totalQuizzes, icon: BookOpen },
             { id: 'question_bank', label: 'Ngân hàng câu hỏi', count: totalQuestions, icon: FileSpreadsheet },
@@ -647,13 +644,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         />
       )}
 
-      {/* ── 0D. TỔNG ĐÀI ZALO AI & NHẮC NHỞ ĐỊNH KỲ (PHÂN THEO ĐỘ TUỔI) ── */}
-      {activeSubTab === 'zalo_notifications' && (
-        <ZaloNotificationManager
-          studentAccounts={studentAccounts}
-          onUpdateStudent={onUpdateStudentAccount}
-        />
-      )}
 
       {/* 1. OVERVIEW TAB - EDTECH COMMAND CENTER */}
       {activeSubTab === 'overview' && (

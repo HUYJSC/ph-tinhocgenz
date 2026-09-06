@@ -8,9 +8,10 @@ import {
   PlusCircle, Trash2,
   Bell, Lock, Unlock, Eye, X, Clock, FileText,
   FolderOpen, Cloud, ExternalLink, FileSpreadsheet,
-  Search, RotateCcw
+  Search, RotateCcw, CheckCircle2, Download
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { SecureDocViewer } from '../assignment/SecureDocViewer';
 
 const ALL_TRACK_OPTIONS = TRACK_LIST;
 
@@ -102,11 +103,56 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   const [sampleFileName, setSampleFileName] = useState('Du_Lieu_Mau_Thuc_Hanh_Excel.xlsx');
   const [sampleFileSize, setSampleFileSize] = useState('245 KB');
   const [sampleFileType, setSampleFileType] = useState<'excel' | 'word' | 'powerpoint' | 'zip' | 'other'>('excel');
+  const [sampleFileDownloadUrl, setSampleFileDownloadUrl] = useState('');
+
+  // Xử lý đẩy tệp dữ liệu mẫu từ máy tính
+  const handleSampleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSampleFileName(file.name);
+
+    // Tính toán dung lượng tệp
+    let sizeStr = '';
+    if (file.size < 1024) sizeStr = `${file.size} B`;
+    else if (file.size < 1024 * 1024) sizeStr = `${(file.size / 1024).toFixed(0)} KB`;
+    else sizeStr = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+    setSampleFileSize(sizeStr);
+
+    // Tự động phân loại định dạng tệp
+    const lower = file.name.toLowerCase();
+    if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) {
+      setSampleFileType('excel');
+    } else if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
+      setSampleFileType('word');
+    } else if (lower.endsWith('.pptx') || lower.endsWith('.ppt')) {
+      setSampleFileType('powerpoint');
+    } else if (lower.endsWith('.zip') || lower.endsWith('.rar') || lower.endsWith('.7z')) {
+      setSampleFileType('zip');
+    } else {
+      setSampleFileType('other');
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setSampleFileDownloadUrl(result);
+      soundFx.playClick();
+    };
+    reader.onerror = () => {
+      alert('Không thể đọc tệp mẫu. Vui lòng thử lại!');
+      soundFx.playIncorrect();
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Selected Submission to Grade
   const [selectedSubmission, setSelectedSubmission] = useState<AssignmentSubmission | null>(null);
   const [gradeScore, setGradeScore] = useState<number>(85);
   const [gradeFeedback, setGradeFeedback] = useState<string>('Bài làm rất tốt, định dạng chuẩn yêu cầu.');
+
+  // Viewing / Previewing Assignment for Teacher
+  const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null);
 
   // Master Google Drive Settings State
   const [driveFolderInput, setDriveFolderInput] = useState(
@@ -202,7 +248,8 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
         id: `sample-${Date.now()}`,
         name: sampleFileName.trim() || 'Du_Lieu_Mau_Thuc_Hanh_Excel.xlsx',
         size: sampleFileSize || '245 KB',
-        fileType: sampleFileType
+        fileType: sampleFileType,
+        downloadUrl: sampleFileDownloadUrl || undefined
       }] : []
     });
 
@@ -504,21 +551,45 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                     <span>{a.isOpen ? 'Đang mở nhận bài' : 'Đã đóng nộp bài'}</span>
                   </span>
 
-                  <button
-                    onClick={() => onToggleOpen(a.id)}
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: a.isOpen ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                      border: 'none',
-                      color: a.isOpen ? '#ef4444' : '#10b981',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {a.isOpen ? 'Khóa Đề' : 'Mở Đề'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setViewingAssignment(a)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'rgba(37, 99, 235, 0.1)',
+                        border: 'none',
+                        color: '#2563eb',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="Xem nội dung đề thi bảo mật"
+                    >
+                      <Eye size={12} />
+                      <span>Xem Đề</span>
+                    </button>
+
+                    <button
+                      onClick={() => onToggleOpen(a.id)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: a.isOpen ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                        border: 'none',
+                        color: a.isOpen ? '#ef4444' : '#10b981',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {a.isOpen ? 'Khóa Đề' : 'Mở Đề'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -935,7 +1006,54 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               accept=".docx,.doc,.pdf,.xlsx,.pptx,.png,.jpg,.jpeg,.txt"
               style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px dashed #DC2626', color: 'var(--text-primary)', outline: 'none' }}
             />
-            {sourceFileName && <div style={{ fontSize: '0.78rem', color: '#16A34A', fontWeight: 700, marginTop: '6px' }}>✓ Đã tải tệp đề: {sourceFileName}</div>}
+            {sourceFileName && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '6px', marginTop: '8px' }}>
+                <div style={{ fontSize: '0.78rem', color: '#16A34A', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={14} color="#16A34A" />
+                  <span>Đã tải tệp đề: {sourceFileName}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewingAssignment({
+                      id: 'preview-upload',
+                      title: title || sourceFileName,
+                      description,
+                      category,
+                      teacherId: currentUser.id,
+                      teacherName: currentUser.name,
+                      targetClass,
+                      sourceFileName,
+                      sourceFileType,
+                      rawContent,
+                      parsedQuestions: [],
+                      startTime,
+                      endTime,
+                      durationMinutes,
+                      isOpen: true,
+                      createdAt: new Date().toISOString(),
+                      securityOptions: { disableCopy, disableDownload, watermarkStudent }
+                    } as unknown as Assignment);
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    background: '#2563EB',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Eye size={12} />
+                  <span>Xem Trước File Đề</span>
+                </button>
+              </div>
+            )}
             {isProcessingFile && <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginTop: '4px' }}>⏳ Đang xử lý bóc tách nội dung đề thi...</div>}
             {fileError && <div style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '4px' }}>{fileError}</div>}
           </div>
@@ -964,8 +1082,8 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
           </div>
 
           {/* 3. Sample Dataset File (DOWNLOAD ALLOWED) */}
-          <div style={{ background: '#F0FDF4', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid #BBF7D0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: '#F0FDF4', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid #BBF7D0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>💾 3. File Dữ Liệu Mẫu Thực Hành (CHO PHÉP Học Viên Tải Về Máy)</span>
               </label>
@@ -976,39 +1094,93 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             </div>
 
             {hasSampleFile && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* Nút Chọn Tệp Mẫu Trực Tiếp Chuẩn Trình Duyệt (Giống Mục 1) */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Tên file mẫu:</label>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>
+                    Tệp dữ liệu mẫu thực hành (Excel, Word, PowerPoint, ZIP...):
+                  </div>
                   <input
-                    type="text"
-                    value={sampleFileName}
-                    onChange={e => setSampleFileName(e.target.value)}
-                    placeholder="Du_Lieu_Mau_Excel.xlsx"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                    type="file"
+                    onChange={handleSampleFileUpload}
+                    accept=".xlsx,.xls,.csv,.docx,.doc,.pptx,.ppt,.zip,.rar,.7z,.pdf,.txt"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: 'var(--radius-md)',
+                      background: '#FFFFFF',
+                      border: '1px dashed #16A34A',
+                      color: 'var(--text-primary)',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Định dạng file:</label>
-                  <select
-                    value={sampleFileType}
-                    onChange={e => setSampleFileType(e.target.value as any)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
-                  >
-                    <option value="excel">Microsoft Excel (.xlsx / .xls / .csv)</option>
-                    <option value="word">Microsoft Word (.docx / .doc)</option>
-                    <option value="powerpoint">Microsoft PowerPoint (.pptx)</option>
-                    <option value="zip">Tệp nén tài nguyên (.zip / .rar)</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Dung lượng ước tính:</label>
-                  <input
-                    type="text"
-                    value={sampleFileSize}
-                    onChange={e => setSampleFileSize(e.target.value)}
-                    placeholder="245 KB"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
-                  />
+
+                {sampleFileDownloadUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle2 size={14} color="#16A34A" />
+                      <span>Đã nạp tệp mẫu: <strong>{sampleFileName}</strong> ({sampleFileSize})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSampleFileDownloadUrl('');
+                        setSampleFileName('');
+                        setSampleFileSize('');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#DC2626',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        padding: '2px 6px'
+                      }}
+                    >
+                      ✕ Gỡ tệp
+                    </button>
+                  </div>
+                )}
+
+                {/* File Details Fields */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Tên file mẫu:</label>
+                    <input
+                      type="text"
+                      value={sampleFileName}
+                      onChange={e => setSampleFileName(e.target.value)}
+                      placeholder="Du_Lieu_Mau_Excel.xlsx"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Định dạng file:</label>
+                    <select
+                      value={sampleFileType}
+                      onChange={e => setSampleFileType(e.target.value as any)}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                    >
+                      <option value="excel">Microsoft Excel (.xlsx / .xls / .csv)</option>
+                      <option value="word">Microsoft Word (.docx / .doc)</option>
+                      <option value="powerpoint">Microsoft PowerPoint (.pptx)</option>
+                      <option value="zip">Tệp nén tài nguyên (.zip / .rar)</option>
+                      <option value="other">Định dạng khác</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Dung lượng ước tính:</label>
+                    <input
+                      type="text"
+                      value={sampleFileSize}
+                      onChange={e => setSampleFileSize(e.target.value)}
+                      placeholder="245 KB"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -1143,7 +1315,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
                   <div style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{selectedSubmission.assignmentTitle}</div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -1151,26 +1323,119 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                   </div>
                 </div>
 
-                {selectedSubmission.driveFileUrl && (
-                  <a
-                    href={selectedSubmission.driveFileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{ padding: '8px 14px', fontSize: '0.82rem', fontWeight: 800, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rel = assignments.find(a => a.id === selectedSubmission.assignmentId || a.title === selectedSubmission.assignmentTitle);
+                      if (rel) {
+                        setViewingAssignment(rel);
+                      } else {
+                        alert('Không tìm thấy thông tin đề bài gốc.');
+                      }
+                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
                   >
-                    <FolderOpen size={15} />
-                    <span>Mở Trên Google Drive</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
+                    <Eye size={13} />
+                    <span>Xem Lại Đề Bài</span>
+                  </button>
+
+                  {selectedSubmission.driveFileUrl && (
+                    <a
+                      href={selectedSubmission.driveFileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary"
+                      style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}
+                    >
+                      <FolderOpen size={14} />
+                      <span>Mở Trên Drive</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  )}
+                </div>
               </div>
+
+              {/* Student's Uploaded Practical File */}
+              {(selectedSubmission.attachedFileName || selectedSubmission.attachedFileUrl) && (
+                <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '8px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <FileSpreadsheet size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#166534' }}>
+                        Tệp bài làm thực hành: {selectedSubmission.attachedFileName || 'Bai_Lam_Thuc_Hanh.xlsx'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#15803D' }}>
+                        Dung lượng: {selectedSubmission.attachedFileSize || 'Đầy đủ'} • Đã nộp thành công
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedSubmission.attachedFileUrl) {
+                        const base64 = selectedSubmission.attachedFileUrl;
+                        const fileName = selectedSubmission.attachedFileName || 'Bai_Lam_Thuc_Hanh.xlsx';
+                        try {
+                          const parts = base64.split(',');
+                          const mimeMatch = parts[0].match(/:(.*?);/);
+                          const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+                          const raw = parts[1].replace(/\s/g, '');
+                          const bin = window.atob(raw);
+                          const len = bin.length;
+                          const bytes = new Uint8Array(len);
+                          for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+                          const blob = new Blob([bytes], { type: mime });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = fileName;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          setTimeout(() => URL.revokeObjectURL(url), 2000);
+                        } catch (e) {
+                          const a = document.createElement('a');
+                          a.href = base64;
+                          a.download = fileName;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                        }
+                      } else {
+                        alert('Không tìm thấy dữ liệu tệp bài làm đính kèm.');
+                      }
+                    }}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '6px',
+                      background: '#16A34A',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)'
+                    }}
+                  >
+                    <Download size={15} />
+                    <span>Tải Về Máy Để Chấm</span>
+                  </button>
+                </div>
+              )}
 
               {/* Answers View */}
               {Object.keys(selectedSubmission.answers).length > 0 && (
                 <div>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Câu Trả Lời Trực Tuyến:
+                    Câu Trả Lời Trực Tuyến & Ghi Chú Của Học Viên:
                   </label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
                     {Object.entries(selectedSubmission.answers).map(([qId, ans], idx) => (
@@ -1221,6 +1486,71 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+      {/* TEACHER ASSIGNMENT PREVIEW MODAL */}
+      {viewingAssignment && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '16px',
+            backdropFilter: 'blur(4px)'
+          }}
+          className="animate-fade-in"
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: '920px',
+              width: '100%',
+              maxHeight: '94vh',
+              overflowY: 'auto',
+              padding: '20px',
+              borderRadius: '12px',
+              background: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
+              <div>
+                <span style={{ fontSize: '11px', background: '#DBEAFE', color: '#1D4ED8', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
+                  CHẾ ĐỘ XEM TRƯỚC ĐỀ THI BẢO MẬT (DÀNH CHO GIẢNG VIÊN)
+                </span>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: '4px 0 0' }}>
+                  {viewingAssignment.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingAssignment(null)}
+                style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <SecureDocViewer
+              content={viewingAssignment.rawContent}
+              sourceFileType={viewingAssignment.sourceFileType}
+              sourceFileName={viewingAssignment.sourceFileName}
+              studentName={currentUser.name}
+              studentCode={currentUser.email || 'GIANG_VIEN'}
+              title={viewingAssignment.title}
+              videoLecture={viewingAssignment.videoLecture}
+              sampleDataFiles={viewingAssignment.sampleDataFiles}
+            />
           </div>
         </div>
       )}

@@ -6,7 +6,7 @@
   "installCommand": "npm install",
   "crons": [
     {
-      "path": "/api/cron/zalo-weekly",
+      "path": "/api/cron/notification-weekly",
       "schedule": "0 12 * * 0"
     }
   ],

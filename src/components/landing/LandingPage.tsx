@@ -958,8 +958,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   </a>
                 </li>
                 <li>
-                  <a href="https://zalo.me/0332298065" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
-                    💬 Hỗ trợ học vụ & Kỹ thuật Zalo 1-1
+                  <a href="tel:0332298065" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onMouseEnter={(e) => e.currentTarget.style.color = '#38BDF8'} onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
+                    💬 Hỗ trợ học vụ & Hotline kỹ thuật 1-1
                   </a>
                 </li>
               </ul>
@@ -976,8 +976,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   <a href="tel:0332298065" style={{ color: '#38BDF8', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}>033.229.8065</a>
                 </div>
                 <div>
-                  <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Zalo Official Account:</span>
-                  <span style={{ color: '#F1F5F9', fontWeight: 600 }}>PH Digital Education</span>
+                  <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Kênh thông báo:</span>
+                  <span style={{ color: '#F1F5F9', fontWeight: 600 }}>Web Push & Cổng trực tuyến 24/7</span>
                 </div>
                 <div>
                   <span style={{ color: '#64748B', display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Email Học vụ:</span>

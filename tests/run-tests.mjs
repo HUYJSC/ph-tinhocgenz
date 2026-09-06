@@ -112,16 +112,16 @@ const distHtml = fs.readFileSync('dist/index.html', 'utf8');
 assert(distHtml.includes('<!DOCTYPE html>'), 'Tệp index.html trong dist hợp lệ');
 assert(distHtml.includes('/assets/'), 'Có đường dẫn nạp assets CSS/JS');
 
-// 9. Test Periodic Reminders & Age-Gated AI Zalo Engine
-console.log('\n📱 NHÓM 9: Kiểm tra Hệ thống Nhắc nhở Định kỳ & Cảnh báo Zalo AI Phân loại theo độ tuổi');
-const zaloServiceContent = fs.readFileSync('src/services/aiZaloNotificationService.ts', 'utf8');
-assert(zaloServiceContent.includes('ageThreshold: 25'), 'Ngưỡng phân tách độ tuổi mặc định là 25 tuổi');
-assert(zaloServiceContent.includes('recipientType: \'parent\''), 'Học viên < 25 tuổi định tuyến gửi Phụ huynh kèm cặp');
-assert(zaloServiceContent.includes('recipientType: \'student\''), 'Học viên ≥ 25 tuổi định tuyến gửi trực tiếp người học, tôn trọng quyền tự chủ');
-assert(zaloServiceContent.includes('daily') && zaloServiceContent.includes('weekly') && zaloServiceContent.includes('monthly'), 'Hỗ trợ đủ 3 chu kỳ: Hằng ngày, Hằng tuần, Hằng tháng');
-const zaloManagerContent = fs.readFileSync('src/components/admin/ZaloNotificationManager.tsx', 'utf8');
-assert(zaloManagerContent.includes('AI Quét & Soạn Tin Nhắn Zalo'), 'Có nút AI Quét & Soạn tin nhắn Zalo tự động');
-assert(zaloManagerContent.includes('ZaloNotificationLog'), 'Quản lý lịch sử nhật ký phát tin Zalo ZNS');
+// 9. Test Periodic Reminders & Automated Web Push AI Notification Engine
+console.log('\n🔔 NHÓM 9: Kiểm tra Hệ thống Thông báo Tự động & Web Push AI Phân loại theo độ tuổi');
+const notifServiceContent = fs.readFileSync('src/services/aiNotificationService.ts', 'utf8');
+assert(notifServiceContent.includes('ageThreshold: 25'), 'Ngưỡng phân tách độ tuổi mặc định là 25 tuổi');
+assert(notifServiceContent.includes('recipientType: \'parent\''), 'Học viên < 25 tuổi định tuyến gửi Phụ huynh kèm cặp');
+assert(notifServiceContent.includes('recipientType: \'student\''), 'Học viên ≥ 25 tuổi định tuyến gửi trực tiếp người học, tôn trọng quyền tự chủ');
+assert(notifServiceContent.includes('daily') && notifServiceContent.includes('weekly') && notifServiceContent.includes('monthly'), 'Hỗ trợ đủ 3 chu kỳ: Hằng ngày, Hằng tuần, Hằng tháng');
+const bellContent = fs.readFileSync('src/components/ui/NotificationBell.tsx', 'utf8');
+assert(bellContent.includes('PushNotificationService'), 'NotificationBell tích hợp PushNotificationService');
+assert(bellContent.includes('unreadCount'), 'Có badge đếm tin thông báo chưa đọc');
 
 // 10. Test First-time Password Change & Self-Recovery via Email OTP
 console.log('\n🔑 NHÓM 10: Kiểm tra Đổi mật khẩu lần đầu chuẩn SEC & Tự khôi phục tài khoản qua Email OTP');

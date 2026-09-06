@@ -8,7 +8,7 @@ import {
   Shield, Users, UserCheck, Calendar, CheckSquare, BookOpen,
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
   ExternalLink, Key, Menu, X, ChevronRight,
-  Server, BarChart3, Bot, Eye, EyeOff, GraduationCap
+  Server, BarChart3, Eye, EyeOff, GraduationCap
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
@@ -352,7 +352,6 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
         { id: 'exams', label: 'Kho Đề Thi Chuẩn', icon: BookOpen, badge: props.quizzes.length },
         { id: 'question_bank', label: 'Ngân Hàng Câu Hỏi', icon: FileSpreadsheet, badge: null },
         { id: 'early_warning', label: 'Cảnh Báo Học Vụ Sớm', icon: AlertTriangle, badge: '🚨' },
-        { id: 'zalo_notifications', label: 'Tổng Đài Zalo AI', icon: Bot, badge: 'AI' },
         { id: 'meet_hub', label: 'Phòng Google Meet', icon: Video, badge: '10' },
         { id: 'seo_center', label: 'Cấu Hình SEO & Web', icon: Globe, badge: null },
       ]
