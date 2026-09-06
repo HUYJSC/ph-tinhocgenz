@@ -3,7 +3,7 @@ import { ClassScheduleItem, ShiftTimeSlot } from '../../types/schedule';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import {
   Calendar, MapPin, Video, User, PlusCircle, Trash2,
-  CheckCircle2, X, Edit3
+  CheckCircle2, X, Edit3, Clock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -80,6 +80,31 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     const chars = 'abcdefghijklmnopqrstuvwxyz';
     const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     return `https://meet.google.com/${seg()}-${seg()}-${seg()}`;
+  };
+
+  const inferShiftFromTime = (startTime: string): ShiftTimeSlot => {
+    if (!startTime) return 'evening';
+    const hour = parseInt(startTime.split(':')[0], 10);
+    if (isNaN(hour)) return 'evening';
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  };
+
+  const getDurationMessage = (start: string, end: string): { text: string; isError: boolean } => {
+    if (!start || !end) return { text: 'Vui lòng chọn đủ giờ bắt đầu và kết thúc', isError: true };
+    const [sH, sM] = start.split(':').map(Number);
+    const [eH, eM] = end.split(':').map(Number);
+    if (isNaN(sH) || isNaN(sM) || isNaN(eH) || isNaN(eM)) return { text: '', isError: false };
+    const diff = (eH * 60 + eM) - (sH * 60 + sM);
+    if (diff <= 0) return { text: '⚠️ Giờ kết thúc phải lớn hơn giờ bắt đầu!', isError: true };
+    const hours = Math.floor(diff / 60);
+    const mins = diff % 60;
+    let durationStr = '';
+    if (hours > 0 && mins > 0) durationStr = `${hours} tiếng ${mins} phút`;
+    else if (hours > 0) durationStr = `${hours} tiếng`;
+    else durationStr = `${mins} phút`;
+    return { text: `⏱️ Thời lượng ca học: ${durationStr} (${diff} phút)`, isError: false };
   };
 
   const detectConflicts = (
@@ -960,7 +985,8 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              {/* ── BỐ CỤC MỚI: THỨ TRONG TUẦN & TIẾN ĐỘ BUỔI HỌC ── */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
                     Thứ Trong Tuần:
@@ -968,7 +994,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   <select
                     value={formDayOfWeek}
                     onChange={e => setFormDayOfWeek(Number(e.target.value))}
-                    style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', borderRadius: '10px' }}
+                    style={{ width: '100%', padding: '9px 12px', fontSize: '0.84rem', borderRadius: '10px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
                   >
                     <option value={1}>Thứ Hai</option>
                     <option value={2}>Thứ Ba</option>
@@ -982,48 +1008,184 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Khung Giờ (Ca):
+                    Số Buổi Học (Hiện tại / Tổng):
                   </label>
-                  <select
-                    value={formShift}
-                    onChange={e => {
-                      const sh = e.target.value as ShiftTimeSlot;
-                      setFormShift(sh);
-                      if (sh === 'morning') { setFormStartTime('08:00'); setFormEndTime('10:00'); }
-                      else if (sh === 'afternoon') { setFormStartTime('14:00'); setFormEndTime('16:00'); }
-                      else { setFormStartTime('18:30'); setFormEndTime('20:30'); }
-                    }}
-                    style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', borderRadius: '10px' }}
-                  >
-                    <option value="morning">Ca Sáng (08:00 - 10:00)</option>
-                    <option value="afternoon">Ca Chiều (14:00 - 16:00)</option>
-                    <option value="evening">Ca Tối (18:30 - 20:30)</option>
-                  </select>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Buổi</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={formLessonNumber}
+                        onChange={e => setFormLessonNumber(Number(e.target.value))}
+                        style={{ width: '100%', minWidth: '45px', padding: '8px 6px', fontSize: '0.84rem', fontWeight: 700, borderRadius: '8px', textAlign: 'center', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                    <span style={{ fontWeight: 800, color: 'var(--text-muted)' }}>/</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tổng</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={formTotalLessons}
+                        onChange={e => setFormTotalLessons(Number(e.target.value))}
+                        style={{ width: '100%', minWidth: '45px', padding: '8px 6px', fontSize: '0.84rem', fontWeight: 700, borderRadius: '8px', textAlign: 'center', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── BỐ CỤC MỚI: KHUNG GIỜ (CA) & THỜI GIAN TIẾT HỌC ── */}
+              <div style={{
+                background: 'var(--bg-secondary)',
+                border: '1.5px solid var(--border-color)',
+                borderRadius: '14px',
+                padding: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                    <Clock size={16} color="#d97706" />
+                    <span>Khung Giờ & Thời Gian Tiết Học:</span>
+                  </label>
+
+                  {/* Active Shift Indicator Chip */}
+                  <span style={{
+                    fontSize: '0.74rem',
+                    fontWeight: 800,
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    color: formShift === 'morning' ? '#059669' : formShift === 'afternoon' ? '#2563eb' : '#7c3aed',
+                    background: formShift === 'morning' ? 'rgba(16, 185, 129, 0.12)' : formShift === 'afternoon' ? 'rgba(37, 99, 235, 0.12)' : 'rgba(124, 58, 237, 0.12)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {formShift === 'morning' ? '☀️ Ca Sáng' : formShift === 'afternoon' ? '🌤️ Ca Chiều' : '🌙 Ca Tối'}
+                  </span>
                 </div>
 
+                {/* Quick Shift Selection Presets */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Số Buổi Học:
-                  </label>
-                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '6px' }}>
+                    Chọn nhanh ca học chuẩn:
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {[
+                      { label: 'Sáng: 08:00 - 10:00', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
+                      { label: 'Sáng: 09:30 - 11:30', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
+                      { label: 'Chiều: 14:00 - 16:00', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
+                      { label: 'Chiều: 15:30 - 17:30', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
+                      { label: 'Tối 1: 18:00 - 20:00', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
+                      { label: 'Tối 2: 18:30 - 20:30', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
+                      { label: 'Tối 3: 19:00 - 21:00', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
+                    ].map(p => {
+                      const isMatch = formStartTime === p.start && formEndTime === p.end;
+                      return (
+                        <button
+                          key={p.label}
+                          type="button"
+                          onClick={() => {
+                            setFormStartTime(p.start);
+                            setFormEndTime(p.end);
+                            setFormShift(p.shift);
+                            soundFx.playClick();
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '8px',
+                            fontSize: '0.74rem',
+                            fontWeight: isMatch ? 800 : 600,
+                            border: isMatch ? '1.5px solid #d97706' : '1px solid var(--border-color)',
+                            background: isMatch ? 'rgba(217, 119, 6, 0.15)' : 'var(--bg-card)',
+                            color: isMatch ? '#d97706' : 'var(--text-secondary)',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <span>{p.icon}</span>
+                          <span>{p.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Direct Custom Time Pickers */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                  background: 'var(--bg-card)',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      Giờ bắt đầu:
+                    </label>
                     <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={formLessonNumber}
-                      onChange={e => setFormLessonNumber(Number(e.target.value))}
-                      style={{ width: '50px', padding: '8px 6px', fontSize: '0.82rem', borderRadius: '8px', textAlign: 'center' }}
-                    />
-                    <span>/</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={formTotalLessons}
-                      onChange={e => setFormTotalLessons(Number(e.target.value))}
-                      style={{ width: '50px', padding: '8px 6px', fontSize: '0.82rem', borderRadius: '8px', textAlign: 'center' }}
+                      type="time"
+                      required
+                      value={formStartTime}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFormStartTime(val);
+                        setFormShift(inferShiftFromTime(val));
+                      }}
+                      style={{ width: '100%', padding: '8px 10px', fontSize: '0.88rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
                     />
                   </div>
+
+                  <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center' }}>➔</span>
+
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      Giờ kết thúc:
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={formEndTime}
+                      onChange={e => setFormEndTime(e.target.value)}
+                      style={{ width: '100%', padding: '8px 10px', fontSize: '0.88rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div style={{ flex: '1 1 130px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      Phân loại buổi (Ca):
+                    </label>
+                    <select
+                      value={formShift}
+                      onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
+                      style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
+                    >
+                      <option value="morning">☀️ Ca Sáng</option>
+                      <option value="afternoon">🌤️ Ca Chiều</option>
+                      <option value="evening">🌙 Ca Tối</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Duration Hint & Validation */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '4px' }}>
+                  <span style={{ color: getDurationMessage(formStartTime, formEndTime).isError ? '#ef4444' : '#059669', fontWeight: 700 }}>
+                    {getDurationMessage(formStartTime, formEndTime).text}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                    Tự do nhập giờ bất kỳ (24h)
+                  </span>
                 </div>
               </div>
 
