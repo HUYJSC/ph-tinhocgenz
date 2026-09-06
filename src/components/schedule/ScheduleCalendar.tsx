@@ -6,7 +6,7 @@ import {
   CheckCircle2, X, Edit3, Clock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-import { formatTimeAmPm } from '../../utils/timeFormat';
+import { formatTimeAmPm, toAmPmDisplay } from '../../utils/timeFormat';
 
 interface ScheduleCalendarProps {
   currentUser: UserProfile;
@@ -28,13 +28,63 @@ const DAY_NAMES: { [key: number]: string } = {
 };
 
 const SHIFT_LABELS: { [key in ShiftTimeSlot]: { label: string; time: string; color: string; bg: string } } = {
-  morning: { label: 'Ca Sáng', time: '08:00 - 10:00', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-  afternoon: { label: 'Ca Chiều', time: '14:00 - 16:00', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-  evening: { label: 'Ca Tối', time: '18:30 - 20:30', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
+  morning: { label: 'Ca AM', time: '08:00 - 10:00', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+  afternoon: { label: 'Ca PM', time: '14:00 - 16:00', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+  evening: { label: 'Ca PM (Tối)', time: '18:30 - 20:30', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
 };
 
-const HOURS_24 = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
-const STANDARD_MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+const handleTimeChange = (
+  val: string,
+  setter: (v: string) => void,
+  onValidComplete?: (time: string) => void
+) => {
+  let clean = val.replace(/[^0-9:]/g, '');
+  if (clean.length > 5) clean = clean.slice(0, 5);
+  setter(clean);
+  if (/^([01]\d|2[0-3]):[0-5]\d$/.test(clean) && onValidComplete) {
+    onValidComplete(clean);
+  }
+};
+
+const handleTimeBlur = (
+  val: string,
+  setter: (v: string) => void,
+  onValidComplete?: (time: string) => void
+) => {
+  if (!val.trim()) return;
+  const raw = val.trim();
+  const digits = raw.replace(/[^0-9]/g, '');
+  let formatted = raw;
+
+  if (digits.length === 4) {
+    const h = parseInt(digits.slice(0, 2), 10);
+    const m = parseInt(digits.slice(2, 4), 10);
+    const clampedH = Math.min(23, Math.max(0, h));
+    const clampedM = Math.min(59, Math.max(0, m));
+    formatted = `${clampedH.toString().padStart(2, '0')}:${clampedM.toString().padStart(2, '0')}`;
+  } else if (digits.length === 3) {
+    const h = parseInt(digits.slice(0, 1), 10);
+    const m = parseInt(digits.slice(1, 3), 10);
+    const clampedM = Math.min(59, Math.max(0, m));
+    formatted = `0${h}:${clampedM.toString().padStart(2, '0')}`;
+  } else if (raw.includes(':')) {
+    const parts = raw.split(':');
+    const h = parseInt(parts[0], 10) || 0;
+    const m = parseInt(parts[1], 10) || 0;
+    const clampedH = Math.min(23, Math.max(0, h));
+    const clampedM = Math.min(59, Math.max(0, m));
+    formatted = `${clampedH.toString().padStart(2, '0')}:${clampedM.toString().padStart(2, '0')}`;
+  } else if (digits.length >= 1 && digits.length <= 2) {
+    const h = parseInt(digits, 10) || 0;
+    const clampedH = Math.min(23, Math.max(0, h));
+    formatted = `${clampedH.toString().padStart(2, '0')}:00`;
+  }
+
+  setter(formatted);
+  if (onValidComplete) {
+    onValidComplete(formatted);
+  }
+};
 
 export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   currentUser,
@@ -142,7 +192,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         conflicts.push({
           type: 'meet_url',
           severity: 'error',
-          message: `⛔ Link Meet này đã được dùng cho lớp "${meetConflict.classCode} — ${meetConflict.teacherName}" cùng ca ${shift === 'morning' ? 'Sáng' : shift === 'afternoon' ? 'Chiều' : 'Tối'} ngày ${date}. Học viên 2 lớp sẽ vào chung 1 phòng!`,
+          message: `⛔ Link Meet này đã được dùng cho lớp "${meetConflict.classCode} — ${meetConflict.teacherName}" cùng ca ${shift === 'morning' ? 'AM' : 'PM'} ngày ${date}. Học viên 2 lớp sẽ vào chung 1 phòng!`,
           conflictWith: meetConflict,
           suggestedFix: generateMeetCode()
         });
@@ -166,7 +216,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         conflicts.push({
           type: 'teacher_double',
           severity: 'warning',
-          message: `⚠️ Giảng viên "${teacherName}" đang có lớp "${teacherConflict.classCode}" cùng ca ${shift === 'morning' ? 'Sáng' : shift === 'afternoon' ? 'Chiều' : 'Tối'} ngày ${date}. Xác nhận lịch giảng dạy trùng?`,
+          message: `⚠️ Giảng viên "${teacherName}" đang có lớp "${teacherConflict.classCode}" cùng ca ${shift === 'morning' ? 'AM' : 'PM'} ngày ${date}. Xác nhận lịch giảng dạy trùng?`,
           conflictWith: teacherConflict
         });
       }
@@ -1070,7 +1120,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     alignItems: 'center',
                     gap: '4px'
                   }}>
-                    {formShift === 'morning' ? '☀️ Ca Sáng' : formShift === 'afternoon' ? '🌤️ Ca Chiều' : '🌙 Ca Tối'}
+                    {formShift === 'morning' ? '☀️ Ca AM' : formShift === 'afternoon' ? '🌤️ Ca PM (Chiều)' : '🌙 Ca PM (Tối)'}
                   </span>
                 </div>
 
@@ -1081,13 +1131,13 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {[
-                      { label: 'Sáng: 08:00 - 10:00', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
-                      { label: 'Sáng: 09:30 - 11:30', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
-                      { label: 'Chiều: 14:00 - 16:00', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
-                      { label: 'Chiều: 15:30 - 17:30', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
-                      { label: 'Tối 1: 18:00 - 20:00', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
-                      { label: 'Tối 2: 18:30 - 20:30', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
-                      { label: 'Tối 3: 19:00 - 21:00', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
+                      { label: 'AM: 08:00 - 10:00', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
+                      { label: 'AM: 09:30 - 11:30', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
+                      { label: 'PM: 14:00 - 16:00', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
+                      { label: 'PM: 15:30 - 17:30', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
+                      { label: 'PM 1: 18:00 - 20:00', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
+                      { label: 'PM 2: 18:30 - 20:30', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
+                      { label: 'PM 3: 19:00 - 21:00', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
                     ].map(p => {
                       const isMatch = formStartTime === p.start && formEndTime === p.end;
                       return (
@@ -1123,187 +1173,126 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </div>
                 </div>
 
-                {/* Direct 24-Hour Time Pickers (Hoàn toàn loại bỏ SA / CH / AM / PM trên mọi trình duyệt) */}
-                {(() => {
-                  const [startH = '18', startM = '30'] = (formStartTime || '18:30').split(':');
-                  const [endH = '20', endM = '30'] = (formEndTime || '20:30').split(':');
-                  const startMinOpts = STANDARD_MINUTES.includes(startM)
-                    ? STANDARD_MINUTES
-                    : Array.from(new Set([...STANDARD_MINUTES, startM])).sort();
-                  const endMinOpts = STANDARD_MINUTES.includes(endM)
-                    ? STANDARD_MINUTES
-                    : Array.from(new Set([...STANDARD_MINUTES, endM])).sort();
-
-                  return (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      gap: '10px',
-                      background: 'var(--bg-card)',
-                      padding: '12px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)'
-                    }}>
-                      {/* Giờ bắt đầu (24h) */}
-                      <div style={{ flex: '1 1 135px' }}>
-                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                          Giờ bắt đầu (24h):
-                        </label>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          background: 'var(--bg-secondary)',
-                          padding: '6px 8px',
-                          borderRadius: '8px',
-                          border: '1px solid var(--border-color)'
-                        }}>
-                          <select
-                            aria-label="Giờ bắt đầu"
-                            value={startH}
-                            onChange={e => {
-                              const h = e.target.value;
-                              const newTime = `${h}:${startM}`;
-                              setFormStartTime(newTime);
-                              setFormShift(inferShiftFromTime(newTime));
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '2px 0',
-                              fontSize: '0.92rem',
-                              fontWeight: 800,
-                              borderRadius: '4px',
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'var(--text-primary)',
-                              outline: 'none',
-                              cursor: 'pointer',
-                              textAlign: 'center'
-                            }}
-                          >
-                            {HOURS_24.map(h => (
-                              <option key={h} value={h} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{h}h</option>
-                            ))}
-                          </select>
-                          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-muted)' }}>:</span>
-                          <select
-                            aria-label="Phút bắt đầu"
-                            value={startM}
-                            onChange={e => {
-                              const m = e.target.value;
-                              const newTime = `${startH}:${m}`;
-                              setFormStartTime(newTime);
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '2px 0',
-                              fontSize: '0.92rem',
-                              fontWeight: 800,
-                              borderRadius: '4px',
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'var(--text-primary)',
-                              outline: 'none',
-                              cursor: 'pointer',
-                              textAlign: 'center'
-                            }}
-                          >
-                            {startMinOpts.map(m => (
-                              <option key={m} value={m} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{m}p</option>
-                            ))}
-                          </select>
-                        </div>
+                {/* Nhập khung giờ trực tiếp (gõ phím dễ dàng, hiển thị AM/PM tức thì) */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  background: 'var(--bg-card)',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  {/* Giờ bắt đầu */}
+                  <div style={{ flex: '1 1 135px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      Giờ bắt đầu:
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'var(--bg-secondary)',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)'
+                      }}>
+                        <Clock size={14} color="#d97706" />
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="18:30"
+                          maxLength={5}
+                          value={formStartTime}
+                          onChange={e => handleTimeChange(e.target.value, setFormStartTime, (t) => setFormShift(inferShiftFromTime(t)))}
+                          onBlur={() => handleTimeBlur(formStartTime, setFormStartTime, (t) => setFormShift(inferShiftFromTime(t)))}
+                          style={{
+                            width: '100%',
+                            fontSize: '0.94rem',
+                            fontWeight: 800,
+                            borderRadius: '4px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--text-primary)',
+                            outline: 'none',
+                            textAlign: 'center',
+                            letterSpacing: '1px'
+                          }}
+                        />
                       </div>
-
-                      <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', marginTop: '16px' }}>➔</span>
-
-                      {/* Giờ kết thúc (24h) */}
-                      <div style={{ flex: '1 1 135px' }}>
-                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                          Giờ kết thúc (24h):
-                        </label>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          background: 'var(--bg-secondary)',
-                          padding: '6px 8px',
-                          borderRadius: '8px',
-                          border: '1px solid var(--border-color)'
-                        }}>
-                          <select
-                            aria-label="Giờ kết thúc"
-                            value={endH}
-                            onChange={e => {
-                              const h = e.target.value;
-                              setFormEndTime(`${h}:${endM}`);
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '2px 0',
-                              fontSize: '0.92rem',
-                              fontWeight: 800,
-                              borderRadius: '4px',
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'var(--text-primary)',
-                              outline: 'none',
-                              cursor: 'pointer',
-                              textAlign: 'center'
-                            }}
-                          >
-                            {HOURS_24.map(h => (
-                              <option key={h} value={h} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{h}h</option>
-                            ))}
-                          </select>
-                          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-muted)' }}>:</span>
-                          <select
-                            aria-label="Phút kết thúc"
-                            value={endM}
-                            onChange={e => {
-                              const m = e.target.value;
-                              setFormEndTime(`${endH}:${m}`);
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '2px 0',
-                              fontSize: '0.92rem',
-                              fontWeight: 800,
-                              borderRadius: '4px',
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'var(--text-primary)',
-                              outline: 'none',
-                              cursor: 'pointer',
-                              textAlign: 'center'
-                            }}
-                          >
-                            {endMinOpts.map(m => (
-                              <option key={m} value={m} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{m}p</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Phân loại buổi (Ca) */}
-                      <div style={{ flex: '1 1 130px' }}>
-                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                          Phân loại buổi (Ca):
-                        </label>
-                        <select
-                          value={formShift}
-                          onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
-                          style={{ width: '100%', padding: '9px 10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
-                        >
-                          <option value="morning">☀️ Ca Sáng</option>
-                          <option value="afternoon">🌤️ Ca Chiều</option>
-                          <option value="evening">🌙 Ca Tối</option>
-                        </select>
-                      </div>
+                      <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textAlign: 'center' }}>
+                        {toAmPmDisplay(formStartTime) || 'hh:mm AM/PM'}
+                      </span>
                     </div>
-                  );
-                })()}
+                  </div>
+
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', marginTop: '-12px' }}>➔</span>
+
+                  {/* Giờ kết thúc */}
+                  <div style={{ flex: '1 1 135px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      Giờ kết thúc:
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'var(--bg-secondary)',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)'
+                      }}>
+                        <Clock size={14} color="#d97706" />
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="20:30"
+                          maxLength={5}
+                          value={formEndTime}
+                          onChange={e => handleTimeChange(e.target.value, setFormEndTime)}
+                          onBlur={() => handleTimeBlur(formEndTime, setFormEndTime)}
+                          style={{
+                            width: '100%',
+                            fontSize: '0.94rem',
+                            fontWeight: 800,
+                            borderRadius: '4px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--text-primary)',
+                            outline: 'none',
+                            textAlign: 'center',
+                            letterSpacing: '1px'
+                          }}
+                        />
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textAlign: 'center' }}>
+                        {toAmPmDisplay(formEndTime) || 'hh:mm AM/PM'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Phân loại buổi (Ca) */}
+                  <div style={{ flex: '1 1 135px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      Phân loại buổi (Ca):
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      <select
+                        value={formShift}
+                        onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
+                        style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
+                      >
+                        <option value="morning">☀️ Ca AM</option>
+                        <option value="afternoon">🌤️ Ca PM (Chiều)</option>
+                        <option value="evening">🌙 Ca PM (Tối)</option>
+                      </select>
+                      <span style={{ fontSize: '0.7rem', color: 'transparent', userSelect: 'none' }}>.</span>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Duration Hint & Validation */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
@@ -1311,7 +1300,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     {getDurationMessage(formStartTime, formEndTime).text}
                   </span>
                   <span style={{ color: '#d97706', fontWeight: 800, fontSize: '0.76rem', background: 'rgba(217, 119, 6, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
-                    ⏰ {formatTimeAmPm(formStartTime)} ➔ {formatTimeAmPm(formEndTime)}
+                    ⏰ {formStartTime} ➔ {formEndTime} ({toAmPmDisplay(formStartTime)} ➔ {toAmPmDisplay(formEndTime)})
                   </span>
                 </div>
               </div>

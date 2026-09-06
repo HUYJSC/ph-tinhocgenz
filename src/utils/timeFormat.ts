@@ -63,6 +63,27 @@ export function formatTime24h(timeStr: string | undefined | null): string {
   return parseSingleTimeTo24h(trimmed);
 }
 
+/**
+ * Converts a 24-hour time string (HH:mm) into 12-hour AM/PM format
+ * Example:
+ * - "18:30" -> "06:30 PM"
+ * - "08:00" -> "08:00 AM"
+ * - "12:00" -> "12:00 PM"
+ * - "00:00" -> "12:00 AM"
+ */
+export function toAmPmDisplay(timeStr: string | undefined | null): string {
+  if (!timeStr) return '';
+  const clean = timeStr.trim();
+  const match = clean.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return clean;
+  let h = parseInt(match[1], 10);
+  const m = parseInt(match[2], 10);
+  if (isNaN(h) || isNaN(m)) return clean;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
+}
+
 // Alias for backwards compatibility, ensuring 24-hour output everywhere
 export const formatTimeAmPm = formatTime24h;
 
