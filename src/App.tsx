@@ -120,6 +120,7 @@ export function App() {
     googleDriveConfig,
     updateGoogleDriveConfig,
     createAssignment,
+    updateAssignment,
     deleteAssignment,
     toggleAssignmentOpen,
     submitAssignment,
@@ -735,6 +736,7 @@ export function App() {
                   googleDriveConfig={googleDriveConfig}
                   onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
                   onCreateAssignment={createAssignment}
+                  onUpdateAssignment={updateAssignment}
                   onDeleteAssignment={deleteAssignment}
                   onToggleOpen={toggleAssignmentOpen}
                   onGradeSubmission={gradeSubmission}

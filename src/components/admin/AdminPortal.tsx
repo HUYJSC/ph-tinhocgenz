@@ -38,6 +38,7 @@ interface AdminPortalProps {
   googleDriveConfig?: GoogleDriveConfig;
   onUpdateGoogleDriveConfig?: (config: GoogleDriveConfig) => void;
   onCreateAssignment?: (data: Omit<Assignment, 'id' | 'createdAt'>) => void;
+  onUpdateAssignment?: (assignmentId: string, data: Partial<Assignment>) => void;
   onDeleteAssignment?: (id: string) => void;
   onToggleOpen?: (id: string) => void;
   onGradeSubmission?: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
@@ -86,6 +87,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   googleDriveConfig,
   onUpdateGoogleDriveConfig,
   onCreateAssignment,
+  onUpdateAssignment,
   onDeleteAssignment,
   onToggleOpen,
   onGradeSubmission,
@@ -630,6 +632,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onUpdateGoogleDriveConfig={onUpdateGoogleDriveConfig}
           currentUser={currentUser}
           onCreateAssignment={onCreateAssignment || (() => {})}
+          onUpdateAssignment={onUpdateAssignment}
           onDeleteAssignment={onDeleteAssignment || (() => {})}
           onToggleOpen={onToggleOpen || (() => {})}
           onGradeSubmission={onGradeSubmission || (() => {})}

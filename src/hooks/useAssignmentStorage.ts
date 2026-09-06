@@ -157,6 +157,13 @@ export function useAssignmentStorage() {
     setAssignments(prev => prev.filter(a => a.id !== assignmentId));
   };
 
+  // Update existing assignment
+  const updateAssignment = (assignmentId: string, updatedData: Partial<Assignment>) => {
+    setAssignments(prev =>
+      prev.map(a => (a.id === assignmentId ? { ...a, ...updatedData } : a))
+    );
+  };
+
   // Toggle open status
   const toggleAssignmentOpen = (assignmentId: string) => {
     setAssignments(prev =>
@@ -299,6 +306,7 @@ export function useAssignmentStorage() {
     googleDriveConfig,
     updateGoogleDriveConfig,
     createAssignment,
+    updateAssignment,
     deleteAssignment,
     toggleAssignmentOpen,
     submitAssignment,

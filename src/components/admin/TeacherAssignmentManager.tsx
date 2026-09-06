@@ -8,7 +8,7 @@ import {
   PlusCircle, Trash2,
   Bell, Lock, Unlock, Eye, X, Clock, FileText,
   FolderOpen, Cloud, ExternalLink, FileSpreadsheet,
-  Search, RotateCcw, CheckCircle2, Download
+  Search, RotateCcw, CheckCircle2, Download, Pencil
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { SecureDocViewer } from '../assignment/SecureDocViewer';
@@ -23,6 +23,7 @@ interface TeacherAssignmentManagerProps {
   onUpdateGoogleDriveConfig?: (config: GoogleDriveConfig) => void;
   currentUser: UserProfile;
   onCreateAssignment: (data: Omit<Assignment, 'id' | 'createdAt'>) => void;
+  onUpdateAssignment?: (assignmentId: string, data: Partial<Assignment>) => void;
   onDeleteAssignment: (id: string) => void;
   onToggleOpen: (id: string) => void;
   onGradeSubmission: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
@@ -56,6 +57,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   onUpdateGoogleDriveConfig,
   currentUser,
   onCreateAssignment,
+  onUpdateAssignment,
   onDeleteAssignment,
   onToggleOpen,
   onGradeSubmission,
@@ -153,6 +155,159 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
 
   // Viewing / Previewing Assignment for Teacher
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null);
+
+  // Editing Assignment State (Quyền chỉnh sửa đề thi)
+  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editCategory, setEditCategory] = useState<SubjectCategory>('office-fast-3in1');
+  const [editTargetClass, setEditTargetClass] = useState('');
+  const [editDurationMinutes, setEditDurationMinutes] = useState(45);
+  const [editStartTime, setEditStartTime] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
+  const [editDisableCopy, setEditDisableCopy] = useState(true);
+  const [editDisableDownload, setEditDisableDownload] = useState(true);
+  const [editWatermarkStudent, setEditWatermarkStudent] = useState(true);
+  const [editVideoLectureUrl, setEditVideoLectureUrl] = useState('');
+  const [editVideoLectureTitle, setEditVideoLectureTitle] = useState('');
+  const [editHasSampleFile, setEditHasSampleFile] = useState(false);
+  const [editSampleFileName, setEditSampleFileName] = useState('');
+  const [editSampleFileSize, setEditSampleFileSize] = useState('');
+  const [editSampleFileType, setEditSampleFileType] = useState<'excel' | 'word' | 'powerpoint' | 'zip' | 'other'>('excel');
+  const [editSampleFileDownloadUrl, setEditSampleFileDownloadUrl] = useState('');
+  const [editSourceFileName, setEditSourceFileName] = useState('');
+  const [editSourceFileType, setEditSourceFileType] = useState<'docx' | 'doc' | 'pdf' | 'image' | 'text'>('docx');
+  const [editRawContent, setEditRawContent] = useState('');
+  const [editIsProcessingFile, setEditIsProcessingFile] = useState(false);
+
+  const handleOpenEdit = (assign: Assignment) => {
+    setEditingAssignment(assign);
+    setEditTitle(assign.title);
+    setEditDescription(assign.description || '');
+    setEditCategory(assign.category);
+    setEditTargetClass(assign.targetClass || '');
+    setEditDurationMinutes(assign.durationMinutes || 45);
+    setEditStartTime(assign.startTime || getLocalDatetimeString(new Date()));
+    setEditEndTime(assign.endTime || getLocalDatetimeString(new Date()));
+    setEditDisableCopy(assign.securityOptions?.disableCopy ?? true);
+    setEditDisableDownload(assign.securityOptions?.disableDownload ?? true);
+    setEditWatermarkStudent(assign.securityOptions?.watermarkStudent ?? true);
+    setEditVideoLectureUrl(assign.videoLecture?.videoUrl || '');
+    setEditVideoLectureTitle(assign.videoLecture?.title || '');
+
+    const sample = assign.sampleDataFiles?.[0];
+    setEditHasSampleFile(Boolean(sample));
+    setEditSampleFileName(sample?.name || '');
+    setEditSampleFileSize(sample?.size || '');
+    setEditSampleFileType(sample?.fileType || 'excel');
+    setEditSampleFileDownloadUrl(sample?.downloadUrl || '');
+
+    setEditSourceFileName(assign.sourceFileName || '');
+    setEditSourceFileType(assign.sourceFileType || 'docx');
+    setEditRawContent(assign.rawContent || '');
+    soundFx.playClick();
+  };
+
+  const setQuickEditDeadline = (days: number) => {
+    const end = new Date();
+    end.setDate(end.getDate() + days);
+    end.setHours(23, 59, 0, 0);
+    setEditEndTime(getLocalDatetimeString(end));
+  };
+
+  const handleEditExamFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditIsProcessingFile(true);
+    try {
+      const parsed = await parseUploadedDocument(file);
+      setEditSourceFileName(file.name);
+      setEditSourceFileType(parsed.sourceFileType);
+      setEditRawContent(parsed.rawContent);
+      soundFx.playClick();
+    } catch (err) {
+      alert('Không thể đọc tệp đề thay thế.');
+      soundFx.playIncorrect();
+    } finally {
+      setEditIsProcessingFile(false);
+    }
+  };
+
+  const handleEditSampleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setEditSampleFileName(file.name);
+    let sizeStr = '';
+    if (file.size < 1024) sizeStr = `${file.size} B`;
+    else if (file.size < 1024 * 1024) sizeStr = `${(file.size / 1024).toFixed(0)} KB`;
+    else sizeStr = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+    setEditSampleFileSize(sizeStr);
+
+    const lower = file.name.toLowerCase();
+    if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) {
+      setEditSampleFileType('excel');
+    } else if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
+      setEditSampleFileType('word');
+    } else if (lower.endsWith('.pptx') || lower.endsWith('.ppt')) {
+      setEditSampleFileType('powerpoint');
+    } else if (lower.endsWith('.zip') || lower.endsWith('.rar') || lower.endsWith('.7z')) {
+      setEditSampleFileType('zip');
+    } else {
+      setEditSampleFileType('other');
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditSampleFileDownloadUrl(reader.result as string);
+      soundFx.playClick();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAssignment) return;
+    if (!editTitle.trim()) {
+      alert('Vui lòng nhập tiêu đề đề thi!');
+      return;
+    }
+
+    const updatedData: Partial<Assignment> = {
+      title: editTitle.trim(),
+      description: editDescription.trim(),
+      category: editCategory,
+      targetClass: editTargetClass,
+      durationMinutes: editDurationMinutes,
+      startTime: editStartTime,
+      endTime: editEndTime,
+      sourceFileName: editSourceFileName,
+      sourceFileType: editSourceFileType,
+      rawContent: editRawContent,
+      securityOptions: {
+        disableCopy: editDisableCopy,
+        disableDownload: editDisableDownload,
+        watermarkStudent: editWatermarkStudent
+      },
+      videoLecture: editVideoLectureUrl.trim() ? {
+        title: editVideoLectureTitle.trim() || 'Clip Bài Giảng Hướng Dẫn',
+        videoUrl: editVideoLectureUrl.trim()
+      } : undefined,
+      sampleDataFiles: editHasSampleFile && editSampleFileName ? [{
+        id: editingAssignment.sampleDataFiles?.[0]?.id || `sample-${Date.now()}`,
+        name: editSampleFileName.trim(),
+        size: editSampleFileSize || '245 KB',
+        fileType: editSampleFileType,
+        downloadUrl: editSampleFileDownloadUrl || undefined
+      }] : []
+    };
+
+    if (onUpdateAssignment) {
+      onUpdateAssignment(editingAssignment.id, updatedData);
+    }
+    soundFx.playVictory();
+    setEditingAssignment(null);
+  };
 
   // Master Google Drive Settings State
   const [driveFolderInput, setDriveFolderInput] = useState(
@@ -523,13 +678,22 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                   <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
                     {TRACK_LABELS[a.category as CurriculumTrack] || a.targetClass}
                   </span>
-                  <button
-                    onClick={() => onDeleteAssignment(a.id)}
-                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
-                    title="Xóa đề thi này"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      onClick={() => handleOpenEdit(a)}
+                      style={{ background: 'none', border: 'none', color: '#d97706', cursor: 'pointer', padding: '2px' }}
+                      title="Chỉnh sửa đề thi này"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      onClick={() => onDeleteAssignment(a.id)}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                      title="Xóa đề thi này"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </div>
 
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -572,6 +736,28 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                     >
                       <Eye size={12} />
                       <span>Xem Đề</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEdit(a)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'rgba(217, 119, 6, 0.1)',
+                        border: 'none',
+                        color: '#d97706',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="Chỉnh sửa nội dung, thời hạn và tệp đề thi này"
+                    >
+                      <Pencil size={12} />
+                      <span>Sửa Đề</span>
                     </button>
 
                     <button
@@ -1552,6 +1738,426 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               videoLecture={viewingAssignment.videoLecture}
               sampleDataFiles={viewingAssignment.sampleDataFiles}
             />
+          </div>
+        </div>
+      )}
+
+      {/* TEACHER ASSIGNMENT EDIT MODAL */}
+      {editingAssignment && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '16px',
+            backdropFilter: 'blur(4px)'
+          }}
+          className="animate-fade-in"
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: '880px',
+              width: '100%',
+              maxHeight: '94vh',
+              overflowY: 'auto',
+              padding: '24px',
+              borderRadius: '12px',
+              background: 'var(--bg-card)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+              <div>
+                <span style={{ fontSize: '11px', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
+                  QUYỀN CHỈNH SỬA ĐỀ THI & BÀI TẬP
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Pencil size={18} color="#d97706" />
+                  <span>Chỉnh Sửa Đề Thi: {editingAssignment.title}</span>
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingAssignment(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
+                title="Đóng cửa sổ"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Tiêu Đề Đề Thi / Bài Tập *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ví dụ: Đề Kiểm Tra MOS Excel Hàm Nâng Cao"
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Mô Tả Ngắn Gọn
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: Luyện tập các hàm thống kê và dò tìm dữ liệu..."
+                    value={editDescription}
+                    onChange={e => setEditDescription(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Phân Hệ Môn Học Đào Tạo *
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={e => {
+                      const trk = e.target.value as SubjectCategory;
+                      setEditCategory(trk);
+                      if (TRACK_LABELS[trk as CurriculumTrack]) {
+                        setEditTargetClass(`Lớp ${TRACK_LABELS[trk as CurriculumTrack]}`);
+                      }
+                    }}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  >
+                    {ALL_TRACK_OPTIONS.map(trk => (
+                      <option key={trk.id} value={trk.id}>
+                        {trk.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Lớp Học Phân Công
+                  </label>
+                  <input
+                    type="text"
+                    value={editTargetClass}
+                    onChange={e => setEditTargetClass(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                    Thời Gian Làm Bài (Phút)
+                  </label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={300}
+                    value={editDurationMinutes}
+                    onChange={e => setEditDurationMinutes(Number(e.target.value))}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              {/* Schedule Configuration */}
+              <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <label style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={16} color="#d97706" />
+                  <span>Thời Gian Mở Cửa & Hạn Chót Nộp Bài</span>
+                </label>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
+                      Thời Điểm Bắt Đầu Mở Đề:
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={editStartTime}
+                      onChange={e => setEditStartTime(e.target.value)}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Hạn Chót Đóng Đề:</label>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {[
+                          { label: '+3 Ngày', days: 3 },
+                          { label: '+7 Ngày', days: 7 },
+                          { label: '+30 Ngày', days: 30 }
+                        ].map(p => (
+                          <button
+                            key={p.days}
+                            type="button"
+                            onClick={() => setQuickEditDeadline(p.days)}
+                            style={{ padding: '3px 6px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-card)', fontSize: '0.72rem', cursor: 'pointer' }}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={editEndTime}
+                      onChange={e => setEditEndTime(e.target.value)}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 1. File Document Upload (PROTECTED EXAM - NO DOWNLOAD) */}
+              <div style={{ background: '#FEF2F2', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid #FCA5A5' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#991B1B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Lock size={15} />
+                    <span>1. Tệp Đề Bài Gốc (Tải tệp mới để thay thế nếu muốn)</span>
+                  </label>
+                  <span style={{ fontSize: '0.72rem', background: '#FEE2E2', color: '#991B1B', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    Chặn tải xuống đối với học viên
+                  </span>
+                </div>
+
+                <input
+                  type="file"
+                  onChange={handleEditExamFileUpload}
+                  accept=".docx,.doc,.pdf,.xlsx,.pptx,.png,.jpg,.jpeg,.txt"
+                  style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px dashed #DC2626', color: 'var(--text-primary)', outline: 'none' }}
+                />
+
+                {editSourceFileName && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '6px', marginTop: '8px' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#16A34A', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle2 size={14} color="#16A34A" />
+                      <span>Tệp đề hiện hành: {editSourceFileName}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setViewingAssignment({
+                          ...editingAssignment,
+                          title: editTitle || editSourceFileName,
+                          rawContent: editRawContent,
+                          sourceFileName: editSourceFileName,
+                          sourceFileType: editSourceFileType
+                        });
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        background: '#2563EB',
+                        color: '#fff',
+                        border: 'none',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Eye size={12} />
+                      <span>Xem Trước File Đề</span>
+                    </button>
+                  </div>
+                )}
+                {editIsProcessingFile && <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginTop: '4px' }}>⏳ Đang xử lý bóc tách nội dung đề thi...</div>}
+              </div>
+
+              {/* 2. Video Lecture Clip Link */}
+              <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🎥 2. Clip Bài Giảng / Hướng Dẫn Trực Tuyến (Tùy chọn)</span>
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                  <input
+                    type="text"
+                    placeholder="Tiêu đề clip bài giảng (VD: Hướng dẫn giải bài tập Excel cơ bản...)"
+                    value={editVideoLectureTitle}
+                    onChange={e => setEditVideoLectureTitle(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none' }}
+                  />
+                  <input
+                    type="url"
+                    placeholder="Link Video (YouTube / Google Drive / MP4 embed...)"
+                    value={editVideoLectureUrl}
+                    onChange={e => setEditVideoLectureUrl(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              {/* 3. Sample Dataset File (DOWNLOAD ALLOWED) */}
+              <div style={{ background: '#F0FDF4', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid #BBF7D0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>💾 3. File Dữ Liệu Mẫu Thực Hành (CHO PHÉP Học Viên Tải Về Máy)</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#166534', fontWeight: 700, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={editHasSampleFile} onChange={e => setEditHasSampleFile(e.target.checked)} />
+                    <span>Kèm file dữ liệu mẫu</span>
+                  </label>
+                </div>
+
+                {editHasSampleFile && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ background: '#FFFFFF', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #86EFAC' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#166534', marginBottom: '6px' }}>
+                        📂 Bấm nút bên dưới để chọn tệp mẫu mới từ máy tính (.xlsx, .docx, .pptx, .zip...):
+                      </div>
+                      <input
+                        type="file"
+                        onChange={handleEditSampleFileUpload}
+                        accept=".xlsx,.xls,.csv,.docx,.doc,.pptx,.ppt,.zip,.rar,.7z,.pdf,.txt"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          borderRadius: 'var(--radius-md)',
+                          background: '#F0FDF4',
+                          border: '1.5px dashed #16A34A',
+                          color: 'var(--text-primary)',
+                          outline: 'none',
+                          cursor: 'pointer',
+                          fontWeight: 600
+                        }}
+                      />
+                    </div>
+
+                    {editSampleFileDownloadUrl && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '0.78rem', color: '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <CheckCircle2 size={14} color="#16A34A" />
+                          <span>Đã nạp tệp mẫu: <strong>{editSampleFileName}</strong> ({editSampleFileSize})</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditSampleFileDownloadUrl('');
+                            setEditSampleFileName('');
+                            setEditSampleFileSize('');
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#DC2626',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            padding: '2px 6px'
+                          }}
+                        >
+                          ✕ Gỡ tệp
+                        </button>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Tên file mẫu:</label>
+                        <input
+                          type="text"
+                          value={editSampleFileName}
+                          onChange={e => setEditSampleFileName(e.target.value)}
+                          placeholder="Du_Lieu_Mau_Excel.xlsx"
+                          style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Định dạng file:</label>
+                        <select
+                          value={editSampleFileType}
+                          onChange={e => setEditSampleFileType(e.target.value as any)}
+                          style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                        >
+                          <option value="excel">Microsoft Excel (.xlsx / .xls / .csv)</option>
+                          <option value="word">Microsoft Word (.docx / .doc)</option>
+                          <option value="powerpoint">Microsoft PowerPoint (.pptx)</option>
+                          <option value="zip">Tệp nén tài nguyên (.zip / .rar)</option>
+                          <option value="other">Định dạng khác</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Dung lượng ước tính:</label>
+                        <input
+                          type="text"
+                          value={editSampleFileSize}
+                          onChange={e => setEditSampleFileSize(e.target.value)}
+                          placeholder="245 KB"
+                          style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: '#FFFFFF', border: '1px solid #86EFAC', fontSize: '0.82rem', outline: 'none' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 4. DRM Security Options */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', background: 'var(--bg-primary)', padding: '12px 14px', borderRadius: 'var(--radius-md)' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={editDisableCopy} onChange={e => setEditDisableCopy(e.target.checked)} />
+                  <span>Chặn bôi đen / copy nội dung đề thi</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={editDisableDownload} onChange={e => setEditDisableDownload(e.target.checked)} />
+                  <span>Chặn tải file đề trực tiếp về máy</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={editWatermarkStudent} onChange={e => setEditWatermarkStudent(e.target.checked)} />
+                  <span>Đóng dấu mờ bản quyền tên học viên</span>
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingAssignment(null)}
+                  className="btn btn-secondary"
+                  style={{ padding: '10px 18px', fontWeight: 700 }}
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{
+                    padding: '10px 24px',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    border: 'none',
+                    color: '#fff'
+                  }}
+                >
+                  <CheckCircle2 size={16} />
+                  <span>Lưu Thay Đổi Đề Thi</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
