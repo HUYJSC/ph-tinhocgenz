@@ -3,7 +3,7 @@ import { ClassScheduleItem, ShiftTimeSlot } from '../../types/schedule';
 import { UserProfile, TRACK_LABELS, CurriculumTrack } from '../../types/auth';
 import {
   Calendar, MapPin, Video, User, PlusCircle, Trash2,
-  CheckCircle2, X, Edit3, Clock
+  CheckCircle2, X, Edit3, Clock, BookOpen, Lock
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { formatTimeAmPm, toAmPmDisplay } from '../../utils/timeFormat';
@@ -32,6 +32,19 @@ const SHIFT_LABELS: { [key in ShiftTimeSlot]: { label: string; time: string; col
   afternoon: { label: 'Ca PM', time: '14:00 - 16:00', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
   evening: { label: 'Ca PM (Tối)', time: '18:30 - 20:30', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
 };
+
+export const OFFICIAL_CLASSES: { classCode: string; track: CurriculumTrack; label: string; room: string; teacherName: string }[] = [
+  { classCode: 'K26-WE01', track: 'office-fast-3in1', label: 'K26-WE01 — Fast 3in1 (Word, Excel, PPT)', room: 'Phòng LAB 01 (Tầng 2)', teacherName: 'Thầy Quang Huy' },
+  { classCode: 'K26-CC01', track: 'cc-cntt-basic', label: 'K26-CC01 — CC CNTT Cơ bản (6 buổi)', room: 'Phòng LAB 01 (Tầng 2)', teacherName: 'Thầy Quang Huy' },
+  { classCode: 'K26-CCN01', track: 'cc-cntt-advanced', label: 'K26-CCN01 — CC CNTT Nâng cao (6 buổi)', room: 'Phòng LAB 03 (Tầng 4)', teacherName: 'Thầy Đức Nam' },
+  { classCode: 'K26-WE-CB', track: 'cntt-basic-we', label: 'K26-WE-CB — CNTT Cơ bản: Word + Excel', room: 'Phòng LAB 02 (Tầng 3)', teacherName: 'Cô Hoàng Mai' },
+  { classCode: 'K26-WENC01', track: 'cntt-adv-we', label: 'K26-WENC01 — CNTT Nâng Cao: Word + Excel', room: 'Phòng LAB 03 (Tầng 4)', teacherName: 'Thầy Đức Nam' },
+  { classCode: 'K26-AI01', track: 'ai-office', label: 'K26-AI01 — Ứng dụng AI vào VP (5 buổi)', room: 'Trực Tuyến Toàn Khóa', teacherName: 'Thầy Quang Huy' },
+  { classCode: 'K26-KT01', track: 'excel-accounting', label: 'K26-KT01 — Excel cho Kế toán', room: 'Phòng LAB 03 (Tầng 4)', teacherName: 'Thầy Đức Nam' },
+  { classCode: 'K26-W01', track: 'word-6b', label: 'K26-W01 — Soạn thảo Word (6 buổi)', room: 'Phòng LAB 02 (Tầng 3)', teacherName: 'Cô Thu Minh' },
+  { classCode: 'K26-EX01', track: 'excel-6b', label: 'K26-EX01 — Bảng tính Excel (6 buổi)', room: 'Phòng LAB 02 (Tầng 3)', teacherName: 'Cô Hoàng Mai' },
+  { classCode: 'K26-PPT01', track: 'ppt-6b', label: 'K26-PPT01 — Thuyết trình PowerPoint (6 buổi)', room: 'Phòng LAB 01 (Tầng 2)', teacherName: 'Cô Hoàng Mai' }
+];
 
 const handleTimeChange = (
   val: string,
@@ -119,6 +132,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const [formLessonNumber, setFormLessonNumber] = useState<number>(1);
   const [formTotalLessons, setFormTotalLessons] = useState<number>(3);
   const [formNotes, setFormNotes] = useState('');
+  const [isCustomClassCode, setIsCustomClassCode] = useState(false);
 
   // ── CONFLICT DETECTION ENGINE ──────────────────────────────────────────
   interface ConflictResult {
@@ -285,20 +299,22 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
   const handleOpenCreateModal = () => {
     setEditingItem(null);
-    setFormTitle('Buổi Học Mới: Kỹ Năng Thực Hành');
-    setFormTrack(currentUser.programTrack || 'office-fast-3in1');
-    setFormClassCode('K26-WE01');
-    setFormTeacherName(currentUser.name || 'Thầy Quang Huy');
+    const defaultCls = OFFICIAL_CLASSES.find(c => c.track === currentUser.programTrack) || OFFICIAL_CLASSES[0];
+    setFormTitle('Buổi Học: Kỹ Năng Thực Hành');
+    setFormTrack(defaultCls.track);
+    setFormClassCode(defaultCls.classCode);
+    setFormTeacherName(currentUser.role === 'teacher' ? (currentUser.name || defaultCls.teacherName) : defaultCls.teacherName);
     setFormDayOfWeek(1);
     setFormDate(new Date().toISOString().split('T')[0]);
     setFormStartTime('18:30');
     setFormEndTime('20:30');
     setFormShift('evening');
-    setFormRoom('Phòng LAB 01 (Tầng 2)');
+    setFormRoom(defaultCls.room);
     setFormMeetingUrl(generateMeetCode()); // ← Tự sinh link Meet duy nhất cho lớp này
     setFormLessonNumber(1);
     setFormTotalLessons(6);
     setFormNotes('');
+    setIsCustomClassCode(false);
     setIsCreateModalOpen(true);
     soundFx.playClick();
   };
@@ -319,6 +335,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     setFormLessonNumber(sch.lessonNumber || 1);
     setFormTotalLessons(sch.totalLessons || 6);
     setFormNotes(sch.notes || '');
+    setIsCustomClassCode(!OFFICIAL_CLASSES.some(c => c.classCode === sch.classCode));
     setIsCreateModalOpen(true);
     soundFx.playClick();
   };
@@ -968,7 +985,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
             className="card animate-slide-up"
             style={{
               width: '100%',
-              maxWidth: '560px',
+              maxWidth: '640px',
               maxHeight: '90vh',
               overflowY: 'auto',
               borderRadius: '20px',
@@ -1008,38 +1025,160 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Phân Hệ Đào Tạo:
+              {/* ── KHÓA PHÂN HỆ & MÃ LỚP CỐ ĐỊNH CHO GV ── */}
+              <div style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                padding: '12px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                    <BookOpen size={15} color="var(--brand)" />
+                    <span>Lớp Học & Phân Hệ Đào Tạo:</span>
                   </label>
-                  <select
-                    value={formTrack}
-                    onChange={e => setFormTrack(e.target.value as CurriculumTrack)}
-                    style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', borderRadius: '10px' }}
-                  >
-                    {Object.entries(TRACK_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
-                    ))}
-                  </select>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      color: 'var(--brand)',
+                      background: 'var(--brand-light)',
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Lock size={11} /> Cố định theo danh sách lớp
+                    </span>
+                    {!isCustomClassCode ? (
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomClassCode(true)}
+                        style={{ fontSize: '0.68rem', color: 'var(--text-muted)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                      >
+                        Nhập mã khác
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomClassCode(false);
+                          const def = OFFICIAL_CLASSES[0];
+                          setFormClassCode(def.classCode);
+                          setFormTrack(def.track);
+                        }}
+                        style={{ fontSize: '0.68rem', color: 'var(--brand)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                      >
+                        Chọn danh sách chuẩn
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Mã Lớp Học:
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formClassCode}
-                    onChange={e => setFormClassCode(e.target.value)}
-                    placeholder="VD: K26-WE01"
-                    style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.3fr', gap: '10px', alignItems: 'start' }}>
+                  {/* Mã Lớp Học */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      Mã Lớp Học:
+                    </label>
+                    {!isCustomClassCode ? (
+                      <select
+                        value={formClassCode}
+                        onChange={e => {
+                          const code = e.target.value;
+                          setFormClassCode(code);
+                          const matched = OFFICIAL_CLASSES.find(c => c.classCode === code);
+                          if (matched) {
+                            setFormTrack(matched.track);
+                            if (!editingItem) {
+                              setFormRoom(matched.room);
+                              if (currentUser.role !== 'teacher') {
+                                setFormTeacherName(matched.teacherName);
+                              }
+                            }
+                          }
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          fontSize: '0.84rem',
+                          fontWeight: 800,
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--bg-card)',
+                          color: 'var(--text-primary)',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {OFFICIAL_CLASSES.map(cls => (
+                          <option key={cls.classCode} value={cls.classCode}>
+                            {cls.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        required
+                        value={formClassCode}
+                        onChange={e => setFormClassCode(e.target.value)}
+                        placeholder="VD: K26-WE01"
+                        style={{ width: '100%', padding: '8px 10px', fontSize: '0.84rem', fontWeight: 700, borderRadius: '8px' }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Phân Hệ Đào Tạo (Khóa cố định theo mã lớp) */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      Phân Hệ (Khóa theo lớp):
+                    </label>
+                    {!isCustomClassCode ? (
+                      <div
+                        style={{
+                          padding: '8px 10px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--bg-card)',
+                          color: 'var(--brand)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          minHeight: '35px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                        title={TRACK_LABELS[formTrack] || formTrack}
+                      >
+                        <Lock size={12} color="var(--brand)" style={{ flexShrink: 0 }} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {TRACK_LABELS[formTrack] || formTrack}
+                        </span>
+                      </div>
+                    ) : (
+                      <select
+                        value={formTrack}
+                        onChange={e => setFormTrack(e.target.value as CurriculumTrack)}
+                        style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', borderRadius: '8px' }}
+                      >
+                        {Object.entries(TRACK_LABELS).map(([k, v]) => (
+                          <option key={k} value={k}>{v}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* ── BỐ CỤC MỚI: THỨ TRONG TUẦN & TIẾN ĐỘ BUỔI HỌC ── */}
+              {/* ── BỐ CỤC: THỨ TRONG TUẦN & TIẾN ĐỘ BUỔI HỌC ── */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
@@ -1092,33 +1231,30 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 </div>
               </div>
 
-              {/* ── BỐ CỤC MỚI: KHUNG GIỜ (CA) & THỜI GIAN TIẾT HỌC ── */}
+              {/* ── BỐ CỤC KHUNG GIỜ: GOOGLE CALENDAR / CANVAS LMS MINIMAL STYLE ── */}
               <div style={{
                 background: 'var(--bg-secondary)',
-                border: '1.5px solid var(--border-color)',
+                border: '1px solid var(--border-color)',
                 borderRadius: '14px',
                 padding: '14px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                    <Clock size={16} color="#d97706" />
-                    <span>Khung Giờ & Thời Gian Tiết Học:</span>
-                  </label>
-
-                  {/* Active Shift Indicator Chip */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={16} color="var(--brand)" />
+                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      Khung Giờ Tiết Học (Chuẩn LMS)
+                    </span>
+                  </div>
                   <span style={{
-                    fontSize: '0.74rem',
+                    fontSize: '0.72rem',
                     fontWeight: 800,
                     padding: '3px 10px',
                     borderRadius: '999px',
                     color: formShift === 'morning' ? '#059669' : formShift === 'afternoon' ? '#2563eb' : '#7c3aed',
-                    background: formShift === 'morning' ? 'rgba(16, 185, 129, 0.12)' : formShift === 'afternoon' ? 'rgba(37, 99, 235, 0.12)' : 'rgba(124, 58, 237, 0.12)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
+                    background: formShift === 'morning' ? 'rgba(16, 185, 129, 0.12)' : formShift === 'afternoon' ? 'rgba(37, 99, 235, 0.12)' : 'rgba(124, 58, 237, 0.12)'
                   }}>
                     {formShift === 'morning' ? '☀️ Ca AM' : formShift === 'afternoon' ? '🌤️ Ca PM (Chiều)' : '🌙 Ca PM (Tối)'}
                   </span>
@@ -1126,18 +1262,18 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
                 {/* Quick Shift Selection Presets */}
                 <div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '6px' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '6px' }}>
                     Chọn nhanh ca học chuẩn:
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {[
-                      { label: 'AM: 08:00 - 10:00', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
-                      { label: 'AM: 09:30 - 11:30', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
-                      { label: 'PM: 14:00 - 16:00', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
-                      { label: 'PM: 15:30 - 17:30', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
-                      { label: 'PM 1: 18:00 - 20:00', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
-                      { label: 'PM 2: 18:30 - 20:30', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
-                      { label: 'PM 3: 19:00 - 21:00', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
+                      { label: '08:00 - 10:00 (AM)', shift: 'morning' as ShiftTimeSlot, start: '08:00', end: '10:00', icon: '☀️' },
+                      { label: '09:30 - 11:30 (AM)', shift: 'morning' as ShiftTimeSlot, start: '09:30', end: '11:30', icon: '☀️' },
+                      { label: '14:00 - 16:00 (PM)', shift: 'afternoon' as ShiftTimeSlot, start: '14:00', end: '16:00', icon: '🌤️' },
+                      { label: '15:30 - 17:30 (PM)', shift: 'afternoon' as ShiftTimeSlot, start: '15:30', end: '17:30', icon: '🌤️' },
+                      { label: '18:00 - 20:00 (PM 1)', shift: 'evening' as ShiftTimeSlot, start: '18:00', end: '20:00', icon: '🌙' },
+                      { label: '18:30 - 20:30 (PM 2)', shift: 'evening' as ShiftTimeSlot, start: '18:30', end: '20:30', icon: '🌙' },
+                      { label: '19:00 - 21:00 (PM 3)', shift: 'evening' as ShiftTimeSlot, start: '19:00', end: '21:00', icon: '🌙' }
                     ].map(p => {
                       const isMatch = formStartTime === p.start && formEndTime === p.end;
                       return (
@@ -1151,13 +1287,13 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                             soundFx.playClick();
                           }}
                           style={{
-                            padding: '4px 10px',
+                            padding: '4px 9px',
                             borderRadius: '8px',
-                            fontSize: '0.74rem',
+                            fontSize: '0.72rem',
                             fontWeight: isMatch ? 800 : 600,
-                            border: isMatch ? '1.5px solid #d97706' : '1px solid var(--border-color)',
-                            background: isMatch ? 'rgba(217, 119, 6, 0.15)' : 'var(--bg-card)',
-                            color: isMatch ? '#d97706' : 'var(--text-secondary)',
+                            border: isMatch ? '1.5px solid var(--brand)' : '1px solid var(--border-color)',
+                            background: isMatch ? 'var(--brand-light)' : 'var(--bg-card)',
+                            color: isMatch ? 'var(--brand)' : 'var(--text-secondary)',
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1173,134 +1309,129 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </div>
                 </div>
 
-                {/* Nhập khung giờ trực tiếp (gõ phím dễ dàng, hiển thị AM/PM tức thì) */}
+                {/* Nhập khung giờ trực tiếp Google Calendar Style */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '12px',
+                  justifyContent: 'space-between',
+                  gap: '10px',
                   background: 'var(--bg-card)',
-                  padding: '12px 14px',
+                  padding: '10px 14px',
                   borderRadius: '10px',
-                  border: '1px solid var(--border-color)'
+                  border: '1px solid var(--border-color)',
+                  flexWrap: 'wrap'
                 }}>
                   {/* Giờ bắt đầu */}
-                  <div style={{ flex: '1 1 135px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      Giờ bắt đầu:
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      Bắt đầu
                     </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="18:30"
+                      maxLength={5}
+                      value={formStartTime}
+                      onChange={e => handleTimeChange(e.target.value, setFormStartTime, (t) => setFormShift(inferShiftFromTime(t)))}
+                      onBlur={() => handleTimeBlur(formStartTime, setFormStartTime, (t) => setFormShift(inferShiftFromTime(t)))}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        fontSize: '0.94rem',
+                        fontWeight: 800,
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color)',
                         background: 'var(--bg-secondary)',
-                        padding: '6px 10px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)'
-                      }}>
-                        <Clock size={14} color="#d97706" />
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="18:30"
-                          maxLength={5}
-                          value={formStartTime}
-                          onChange={e => handleTimeChange(e.target.value, setFormStartTime, (t) => setFormShift(inferShiftFromTime(t)))}
-                          onBlur={() => handleTimeBlur(formStartTime, setFormStartTime, (t) => setFormShift(inferShiftFromTime(t)))}
-                          style={{
-                            width: '100%',
-                            fontSize: '0.94rem',
-                            fontWeight: 800,
-                            borderRadius: '4px',
-                            border: 'none',
-                            background: 'transparent',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            textAlign: 'center',
-                            letterSpacing: '1px'
-                          }}
-                        />
-                      </div>
-                      <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textAlign: 'center' }}>
-                        {toAmPmDisplay(formStartTime) || 'hh:mm AM/PM'}
-                      </span>
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        textAlign: 'center',
+                        fontFamily: 'monospace, sans-serif'
+                      }}
+                    />
+                    <div style={{ fontSize: '0.68rem', color: '#6366f1', fontWeight: 700, textAlign: 'center', marginTop: '3px' }}>
+                      {toAmPmDisplay(formStartTime) || 'AM/PM'}
                     </div>
                   </div>
 
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', marginTop: '-12px' }}>➔</span>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', marginTop: '-12px' }}>
+                    đến
+                  </span>
 
                   {/* Giờ kết thúc */}
-                  <div style={{ flex: '1 1 135px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      Giờ kết thúc:
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      Kết thúc
                     </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="20:30"
+                      maxLength={5}
+                      value={formEndTime}
+                      onChange={e => handleTimeChange(e.target.value, setFormEndTime)}
+                      onBlur={() => handleTimeBlur(formEndTime, setFormEndTime)}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        fontSize: '0.94rem',
+                        fontWeight: 800,
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color)',
                         background: 'var(--bg-secondary)',
-                        padding: '6px 10px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)'
-                      }}>
-                        <Clock size={14} color="#d97706" />
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="20:30"
-                          maxLength={5}
-                          value={formEndTime}
-                          onChange={e => handleTimeChange(e.target.value, setFormEndTime)}
-                          onBlur={() => handleTimeBlur(formEndTime, setFormEndTime)}
-                          style={{
-                            width: '100%',
-                            fontSize: '0.94rem',
-                            fontWeight: 800,
-                            borderRadius: '4px',
-                            border: 'none',
-                            background: 'transparent',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            textAlign: 'center',
-                            letterSpacing: '1px'
-                          }}
-                        />
-                      </div>
-                      <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textAlign: 'center' }}>
-                        {toAmPmDisplay(formEndTime) || 'hh:mm AM/PM'}
-                      </span>
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        textAlign: 'center',
+                        fontFamily: 'monospace, sans-serif'
+                      }}
+                    />
+                    <div style={{ fontSize: '0.68rem', color: '#6366f1', fontWeight: 700, textAlign: 'center', marginTop: '3px' }}>
+                      {toAmPmDisplay(formEndTime) || 'AM/PM'}
                     </div>
                   </div>
 
-                  {/* Phân loại buổi (Ca) */}
-                  <div style={{ flex: '1 1 135px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      Phân loại buổi (Ca):
+                  {/* Phân loại ca */}
+                  <div style={{ flex: '1 1 130px' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      Phân loại ca
                     </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <select
-                        value={formShift}
-                        onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
-                        style={{ width: '100%', padding: '8px 10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
-                      >
-                        <option value="morning">☀️ Ca AM</option>
-                        <option value="afternoon">🌤️ Ca PM (Chiều)</option>
-                        <option value="evening">🌙 Ca PM (Tối)</option>
-                      </select>
-                      <span style={{ fontSize: '0.7rem', color: 'transparent', userSelect: 'none' }}>.</span>
-                    </div>
+                    <select
+                      value={formShift}
+                      onChange={e => setFormShift(e.target.value as ShiftTimeSlot)}
+                      style={{
+                        width: '100%',
+                        padding: '7px 8px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color)',
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="morning">☀️ Ca AM</option>
+                      <option value="afternoon">🌤️ Ca PM (Chiều)</option>
+                      <option value="evening">🌙 Ca PM (Tối)</option>
+                    </select>
+                    <div style={{ fontSize: '0.68rem', color: 'transparent', userSelect: 'none', marginTop: '3px' }}>.</div>
                   </div>
                 </div>
 
                 {/* Duration Hint & Validation */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', flexWrap: 'wrap', gap: '6px' }}>
                   <span style={{ color: getDurationMessage(formStartTime, formEndTime).isError ? '#ef4444' : '#059669', fontWeight: 700 }}>
                     {getDurationMessage(formStartTime, formEndTime).text}
                   </span>
-                  <span style={{ color: '#d97706', fontWeight: 800, fontSize: '0.76rem', background: 'rgba(217, 119, 6, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
-                    ⏰ {formStartTime} ➔ {formEndTime} ({toAmPmDisplay(formStartTime)} ➔ {toAmPmDisplay(formEndTime)})
+                  <span style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    color: 'var(--brand)',
+                    background: 'var(--brand-light)',
+                    padding: '2px 8px',
+                    borderRadius: '6px'
+                  }}>
+                    {toAmPmDisplay(formStartTime)} – {toAmPmDisplay(formEndTime)}
                   </span>
                 </div>
               </div>
@@ -1324,14 +1455,43 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '4px' }}>
                     Giảng Viên Đứng Lớp:
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formTeacherName}
-                    onChange={e => setFormTeacherName(e.target.value)}
-                    placeholder="VD: Cô Thu Minh"
-                    style={{ width: '100%', padding: '8px 12px', fontSize: '0.82rem', borderRadius: '10px' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      required
+                      disabled={currentUser.role === 'teacher'}
+                      value={formTeacherName}
+                      onChange={e => setFormTeacherName(e.target.value)}
+                      placeholder="VD: Thầy Quang Huy"
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        fontSize: '0.82rem',
+                        borderRadius: '10px',
+                        background: currentUser.role === 'teacher' ? 'rgba(0,0,0,0.03)' : 'var(--bg-card)',
+                        cursor: currentUser.role === 'teacher' ? 'not-allowed' : 'text'
+                      }}
+                    />
+                    {currentUser.role === 'teacher' && (
+                      <span style={{
+                        position: 'absolute',
+                        right: '8px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        color: 'var(--brand)',
+                        background: 'var(--brand-light)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        <Lock size={10} /> Cố định theo GV
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
