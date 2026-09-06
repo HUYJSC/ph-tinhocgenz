@@ -1096,9 +1096,9 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             {hasSampleFile && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {/* Nút Chọn Tệp Mẫu Trực Tiếp Chuẩn Trình Duyệt (Giống Mục 1) */}
-                <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>
-                    Tệp dữ liệu mẫu thực hành (Excel, Word, PowerPoint, ZIP...):
+                <div style={{ background: '#FFFFFF', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #86EFAC' }}>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#166534', marginBottom: '6px' }}>
+                    📂 Bấm nút bên dưới để chọn tệp mẫu từ máy tính (.xlsx, .docx, .pptx, .zip...):
                   </div>
                   <input
                     type="file"
@@ -1108,11 +1108,12 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
                       width: '100%',
                       padding: '10px',
                       borderRadius: 'var(--radius-md)',
-                      background: '#FFFFFF',
-                      border: '1px dashed #16A34A',
+                      background: '#F0FDF4',
+                      border: '1.5px dashed #16A34A',
                       color: 'var(--text-primary)',
                       outline: 'none',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      fontWeight: 600
                     }}
                   />
                 </div>

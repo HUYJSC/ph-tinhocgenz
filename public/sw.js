@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v3)
-// Nâng cấp: Web Push Notifications + Offline Caching
-const CACHE_NAME = 'ph-eduquest-v3';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v4)
+// Nâng cấp: Web Push Notifications + Offline Caching + Purge V3 Cache
+const CACHE_NAME = 'ph-eduquest-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
