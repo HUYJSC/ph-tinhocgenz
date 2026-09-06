@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import { useQuizEngine, QuizMode } from '../../hooks/useQuizEngine';
 import { QuestionCard } from './QuestionCard';
-import { Timer, ArrowLeft, ArrowRight, Flag, Send, Grid, AlertCircle, AlertTriangle, X } from 'lucide-react';
+import { Timer, ArrowLeft, ArrowRight, Flag, Send, Grid, AlertCircle, AlertTriangle, X, Paperclip, Download } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface QuizRunnerProps {
@@ -248,6 +248,60 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
           />
         </div>
       </div>
+
+      {/* Practice Attachments Bar */}
+      {quiz.practiceFiles && quiz.practiceFiles.length > 0 && (
+        <div
+          style={{
+            background: 'rgba(37, 99, 235, 0.08)',
+            border: '1px solid rgba(37, 99, 235, 0.25)',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            marginBottom: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#2563eb' }}>
+              <Paperclip size={16} />
+              <span>Tệp thực hành đính kèm ({quiz.practiceFiles.length} tệp)</span>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Tải file về máy để thực hành làm bài song song với câu hỏi
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {quiz.practiceFiles.map(file => (
+              <a
+                key={file.id}
+                href={file.downloadUrl || '#'}
+                download={file.name}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  background: 'var(--bg-secondary, #ffffff)',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  color: '#1d4ed8',
+                  textDecoration: 'none',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>{file.module === 'word' ? '📘' : file.module === 'excel' ? '📊' : '📙'}</span>
+                <span>{file.name}</span>
+                <Download size={13} />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Question Card Display */}
       <QuestionCard

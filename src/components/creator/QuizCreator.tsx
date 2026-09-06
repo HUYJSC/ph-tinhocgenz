@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
-import { Quiz, Question, SubjectCategory, Difficulty } from '../../types/quiz';
-import { Plus, Trash2, Save, FileText, Sparkles, AlertCircle, X } from 'lucide-react';
+import { Quiz, Question, SubjectCategory, Difficulty, PracticeAttachment } from '../../types/quiz';
+import { 
+  Plus, Trash2, Save, FileText, Sparkles, AlertCircle, X,
+  UploadCloud, FolderArchive, Paperclip, Download, CheckCircle2,
+  Loader2
+} from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import {
+  decomposePackageFiles,
+  getSample3in1StarterBundle,
+  countQuestionsByModule,
+  formatBytes
+} from '../../utils/packageBundleParser';
 
 interface QuizCreatorProps {
   onAddQuiz: (quiz: Quiz) => void;
@@ -14,6 +24,14 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
   const [category, setCategory] = useState<SubjectCategory>('office-fast-3in1');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(10);
+
+  // 3in1 Package Bundle & Practice Files state
+  const [practiceFiles, setPracticeFiles] = useState<PracticeAttachment[]>([]);
+  const [showBundleModal, setShowBundleModal] = useState(false);
+  const [isProcessingBundle, setIsProcessingBundle] = useState(false);
+  const [bundleSuccessMsg, setBundleSuccessMsg] = useState<string | null>(null);
+  const [bundleErrorMsg, setBundleErrorMsg] = useState<string | null>(null);
+  const [activeModuleFilter, setActiveModuleFilter] = useState<'all' | 'word' | 'excel' | 'powerpoint'>('all');
 
   // Smart Text Importer state (Word / Text Format, NO JSON REQUIRED!)
   const [showTextModal, setShowTextModal] = useState(false);
@@ -35,7 +53,8 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
       correctAnswer: 1,
       explanation: 'Hàm VLOOKUP (Vertical Lookup) dùng để tìm kiếm giá trị theo cột dọc trong bảng dữ liệu.',
       hint: 'Chữ V viết tắt của từ Vertical (theo chiều dọc).',
-      points: 10
+      points: 10,
+      subjectId: 'excel'
     }
   ]);
 
@@ -80,7 +99,111 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
     }
   };
 
-  // ── 1. SMART TEXT / WORD PARSER (NO JSON!) ──
+  // ── 0. BÓC TÁCH GÓI TỰ ĐỘNG 3IN1 (WORD - EXCEL - PPT) ──
+  const handlePackageFilesUpload = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
+
+    setIsProcessingBundle(true);
+    setBundleErrorMsg(null);
+    setBundleSuccessMsg(null);
+
+    try {
+      const result = await decomposePackageFiles(files);
+
+      // Cập nhật câu hỏi
+      if (result.allQuestions.length > 0) {
+        if (questions.length === 1 && (!questions[0].prompt || questions[0].prompt.includes('Hàm nào trong Microsoft Excel'))) {
+          setQuestions(result.allQuestions);
+        } else {
+          setQuestions(prev => [...prev, ...result.allQuestions]);
+        }
+      }
+
+      // Cập nhật tệp đính kèm thực hành
+      if (result.allAttachments.length > 0) {
+        setPracticeFiles(prev => {
+          const existingNames = new Set(prev.map(p => p.name.toLowerCase()));
+          const newOnes = result.allAttachments.filter(a => !existingNames.has(a.name.toLowerCase()));
+          return [...prev, ...newOnes];
+        });
+      }
+
+      if (!title.trim() && result.title) {
+        setTitle(result.title);
+      }
+      if (!description.trim() && result.description) {
+        setDescription(result.description);
+      }
+
+      setCategory('office-fast-3in1');
+      setBundleSuccessMsg(result.summaryText);
+      soundFx.playVictory();
+    } catch (err: any) {
+      console.error('Lỗi khi bóc tách gói tệp:', err);
+      setBundleErrorMsg(err.message || 'Không thể bóc tách gói tệp. Vui lòng kiểm tra lại định dạng tệp tải lên.');
+      soundFx.playIncorrect();
+    } finally {
+      setIsProcessingBundle(false);
+    }
+  };
+
+  const handleLoadSample3in1Bundle = () => {
+    const sample = getSample3in1StarterBundle();
+    setTitle(sample.title);
+    setDescription(sample.description);
+    setQuestions(sample.allQuestions);
+    setPracticeFiles(sample.allAttachments);
+    setCategory('office-fast-3in1');
+    setTimeLimitMinutes(15);
+    setShowBundleModal(false);
+    soundFx.playFanfare();
+    alert('🎉 Đã nạp thành công Gói Đề Mẫu Chuẩn 3in1 (2 câu Word, 2 câu Excel, 2 câu PowerPoint kèm 3 tệp thực hành .docx, .xlsx, .pptx)!');
+  };
+
+  const handleManualAddPracticeFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+      let module: 'word' | 'excel' | 'powerpoint' = 'word';
+      if (ext === 'xlsx' || ext === 'xls' || ext === 'csv' || file.name.toLowerCase().includes('excel')) {
+        module = 'excel';
+      } else if (ext === 'pptx' || ext === 'ppt' || file.name.toLowerCase().includes('powerpoint') || file.name.toLowerCase().includes('slide')) {
+        module = 'powerpoint';
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const newAttachment: PracticeAttachment = {
+          id: `manual-attach-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          name: file.name,
+          size: file.size,
+          module,
+          fileType: ext,
+          downloadUrl: reader.result as string
+        };
+        setPracticeFiles(prev => [...prev, newAttachment]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+    soundFx.playClick();
+  };
+
+  const handleRemovePracticeFile = (fileId: string) => {
+    setPracticeFiles(prev => prev.filter(p => p.id !== fileId));
+    soundFx.playClick();
+  };
+
+  const handleQuestionModuleChange = (qIdx: number, mod: 'word' | 'excel' | 'powerpoint') => {
+    const updated = [...questions];
+    updated[qIdx] = { ...updated[qIdx], subjectId: mod };
+    setQuestions(updated);
+    soundFx.playClick();
+  };
   const handleParseTextQuestions = () => {
     setTextParseError('');
     if (!textInput.trim()) {
@@ -330,27 +453,40 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
       }
     }
 
+    const modulesSummary = countQuestionsByModule(questions);
+
     const newQuiz: Quiz = {
       id: `quiz-custom-${Date.now()}`,
       title,
-      description: description || 'Bộ đề kiểm tra chuẩn hóa học vụ',
+      description: description || 'Gói đề thi & bài tập thực hành 3in1 chuẩn hóa học vụ',
       category,
       difficulty,
       timeLimitMinutes: Number(timeLimitMinutes) || 10,
       icon: 'BookOpen',
       badgeColor: '#2563EB',
       questions,
+      practiceFiles: practiceFiles.length > 0 ? practiceFiles : undefined,
+      modulesSummary,
       isCustom: true
     };
 
     onAddQuiz(newQuiz);
     soundFx.playFanfare();
-    alert('🎉 Đã lưu và xuất bản đề thi thành công vào hệ thống đào tạo!');
+    alert('🎉 Đã lưu và xuất bản gói đề & bài thực hành 3in1 thành công vào hệ thống đào tạo!');
     onSuccessNavigate();
   };
 
+  const moduleCounts = countQuestionsByModule(questions);
+
+  const filteredQuestionsWithIdx = questions
+    .map((q, idx) => ({ q, idx }))
+    .filter(({ q }) => {
+      if (activeModuleFilter === 'all') return true;
+      return q.subjectId === activeModuleFilter;
+    });
+
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', padding: '24px 20px', fontFamily: "'Times New Roman', Times, serif" }}>
+    <div style={{ maxWidth: '920px', margin: '0 auto', width: '100%', padding: '24px 20px', fontFamily: "'Times New Roman', Times, serif" }}>
       
       {/* ── TOP HEADER ── */}
       <div
@@ -369,16 +505,39 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
         }}
       >
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
-            Soạn Đề Thi & Bài Kiểm Tra Học Vụ
+          <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FolderArchive size={22} color="#2563EB" />
+            <span>Soạn Gói Đề & Bài Thực Hành 3in1 (Word - Excel - PPT)</span>
           </h1>
-          <p style={{ fontSize: '13px', color: '#64748B', margin: '4px 0 0' }}>
-            Thiết kế câu hỏi trực quan, dán đề từ file Word hoặc tự động tạo bằng AI (không cần nhập JSON)
+          <p style={{ fontSize: '13px', color: '#64748B', margin: '5px 0 0' }}>
+            Tự động bóc tách từng phần thi Word, Excel, PowerPoint; đính kèm tệp thực hành (.docx, .xlsx, .pptx) cho học viên tải về
           </p>
         </div>
 
-        {/* Quick Action Buttons (NO JSON) */}
+        {/* Quick Action Buttons */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setShowBundleModal(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              background: '#2563EB',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 5px rgba(37, 99, 235, 0.3)'
+            }}
+          >
+            <UploadCloud size={16} />
+            <span>📦 Tải File & Tách Gói 3in1</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setShowTextModal(true)}
@@ -397,7 +556,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
             }}
           >
             <FileText size={15} color="#2563EB" />
-            <span>Dán đề từ Word / Văn bản</span>
+            <span>Dán đề Word/Text</span>
           </button>
 
           <button
@@ -418,7 +577,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
             }}
           >
             <Sparkles size={15} color="#2563EB" />
-            <span>Tạo tự động bằng AI</span>
+            <span>Tạo bằng AI</span>
           </button>
         </div>
       </div>
@@ -572,7 +731,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
           </div>
         </div>
 
-        {/* ── 2. DANH SÁCH CÂU HỎI TRỰC QUAN (VISUAL BUILDER) ── */}
+        {/* ── 2. DANH MỤC TỆP THỰC HÀNH ĐÍNH KÈM (PRACTICE ATTACHMENTS) ── */}
         <div
           style={{
             background: '#ffffff',
@@ -582,9 +741,153 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
             boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
-              2. Danh sách câu hỏi ({questions.length} câu)
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Paperclip size={18} color="#2563EB" />
+                <span>2. Danh mục tệp thực hành đính kèm ({practiceFiles.length} tệp)</span>
+              </h2>
+              <p style={{ fontSize: '12.5px', color: '#64748B', margin: '4px 0 0' }}>
+                Các tệp Word, Excel, PowerPoint chứa dữ liệu bài tập để học viên tải về máy tính thực hành trực tiếp
+              </p>
+            </div>
+
+            <label
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '6px',
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                color: '#1D4ED8',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              <Plus size={15} />
+              <span>+ Thêm tệp thực hành</span>
+              <input
+                type="file"
+                multiple
+                accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt,.pdf,.zip"
+                style={{ display: 'none' }}
+                onChange={handleManualAddPracticeFiles}
+              />
+            </label>
+          </div>
+
+          {practiceFiles.length === 0 ? (
+            <div
+              style={{
+                border: '1px dashed #CBD5E1',
+                borderRadius: '8px',
+                padding: '20px',
+                textAlign: 'center',
+                background: '#F8FAFC',
+                color: '#64748B',
+                fontSize: '13px'
+              }}
+            >
+              Chưa có tệp bài tập thực hành nào. Bạn có thể nhấn <b>"📦 Tải File & Tách Gói 3in1"</b> ở trên để hệ thống tự động bóc tách và đính kèm, hoặc bấm <b>"+ Thêm tệp thực hành"</b> để chọn file từ máy tính.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
+              {practiceFiles.map(file => {
+                const isWord = file.module === 'word';
+                const isExcel = file.module === 'excel';
+                const modBadgeBg = isWord ? '#EFF6FF' : isExcel ? '#F0FDF4' : '#FFF7ED';
+                const modBadgeBorder = isWord ? '#BFDBFE' : isExcel ? '#BBF7D0' : '#FFEDD5';
+                const modBadgeColor = isWord ? '#1D4ED8' : isExcel ? '#15803D' : '#C2410C';
+                const modIcon = isWord ? '📘 Word' : isExcel ? '📊 Excel' : '📙 PowerPoint';
+
+                return (
+                  <div
+                    key={file.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          background: modBadgeBg,
+                          border: `1px solid ${modBadgeBorder}`,
+                          color: modBadgeColor
+                        }}
+                      >
+                        {modIcon}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePracticeFile(file.id)}
+                        style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '2px' }}
+                        title="Xóa tệp đính kèm này"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#1E293B', wordBreak: 'break-all' }}>
+                      {file.name}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '4px' }}>
+                      <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>
+                        {typeof file.size === 'number' ? formatBytes(file.size) : file.size}
+                      </span>
+                      {file.downloadUrl && (
+                        <a
+                          href={file.downloadUrl}
+                          download={file.name}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '12px',
+                            color: '#2563EB',
+                            textDecoration: 'none',
+                            fontWeight: 600
+                          }}
+                        >
+                          <Download size={13} />
+                          <span>Tải thử</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── 3. DANH SÁCH CÂU HỎI BÓC TÁCH THEO MÔ-ĐUN (VISUAL BUILDER) ── */}
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1px solid #E2E8F0',
+            borderRadius: '8px',
+            padding: '20px 24px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
+              3. Danh sách câu hỏi ({questions.length} câu)
             </h2>
 
             <button
@@ -609,10 +912,38 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
             </button>
           </div>
 
+          {/* Module Filter Tabs */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '18px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px', flexWrap: 'wrap' }}>
+            {[
+              { id: 'all', label: `Tất cả (${questions.length})` },
+              { id: 'word', label: `📘 Word (${moduleCounts.wordCount})` },
+              { id: 'excel', label: `📊 Excel (${moduleCounts.excelCount})` },
+              { id: 'powerpoint', label: `📙 PowerPoint (${moduleCounts.pptCount})` }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveModuleFilter(tab.id as any)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  border: activeModuleFilter === tab.id ? '1.5px solid #2563EB' : '1px solid #CBD5E1',
+                  background: activeModuleFilter === tab.id ? '#EFF6FF' : '#FFFFFF',
+                  color: activeModuleFilter === tab.id ? '#1D4ED8' : '#475569',
+                  fontSize: '12.5px',
+                  fontWeight: activeModuleFilter === tab.id ? 700 : 500,
+                  cursor: 'pointer'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {questions.map((q, qIdx) => (
+            {filteredQuestionsWithIdx.map(({ q, idx }) => (
               <div
-                key={q.id || qIdx}
+                key={q.id || idx}
                 style={{
                   background: '#F8FAFC',
                   border: '1px solid #E2E8F0',
@@ -622,15 +953,43 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
                 }}
               >
                 {/* Question Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#2563EB' }}>
-                    Câu hỏi số {qIdx + 1}
-                  </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#2563EB' }}>
+                      Câu hỏi số {idx + 1}
+                    </span>
+
+                    {/* Module Switcher Pills */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {(['word', 'excel', 'powerpoint'] as const).map(mod => {
+                        const isCurrent = (q.subjectId || 'word') === mod;
+                        return (
+                          <button
+                            key={mod}
+                            type="button"
+                            onClick={() => handleQuestionModuleChange(idx, mod)}
+                            style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              border: isCurrent ? '1px solid #2563EB' : '1px solid #E2E8F0',
+                              background: isCurrent ? '#EFF6FF' : '#FFFFFF',
+                              color: isCurrent ? '#1D4ED8' : '#64748B',
+                              fontSize: '11px',
+                              fontWeight: isCurrent ? 700 : 500,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {mod === 'word' ? '📘 Word' : mod === 'excel' ? '📊 Excel' : '📙 PPT'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
                   {questions.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => handleRemoveQuestion(qIdx)}
+                      onClick={() => handleRemoveQuestion(idx)}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -660,7 +1019,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
                     required
                     placeholder="Nhập nội dung câu hỏi trắc nghiệm..."
                     value={q.prompt}
-                    onChange={e => handleQuestionChange(qIdx, 'prompt', e.target.value)}
+                    onChange={e => handleQuestionChange(idx, 'prompt', e.target.value)}
                     style={{
                       width: '100%',
                       padding: '10px 12px',
@@ -697,9 +1056,9 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
                       >
                         <input
                           type="radio"
-                          name={`correct-ans-${qIdx}`}
+                          name={`correct-ans-${idx}`}
                           checked={q.correctAnswer === optIdx}
-                          onChange={() => handleQuestionChange(qIdx, 'correctAnswer', optIdx)}
+                          onChange={() => handleQuestionChange(idx, 'correctAnswer', optIdx)}
                           style={{ cursor: 'pointer', accentColor: '#2563EB' }}
                         />
                         <span style={{ fontSize: '13px', fontWeight: 600, color: q.correctAnswer === optIdx ? '#2563EB' : '#475569' }}>
@@ -710,7 +1069,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
                           required
                           placeholder={`Nội dung đáp án ${letter}`}
                           value={q.options ? q.options[optIdx] : ''}
-                          onChange={e => handleOptionChange(qIdx, optIdx, e.target.value)}
+                          onChange={e => handleOptionChange(idx, optIdx, e.target.value)}
                           style={{
                             flex: 1,
                             border: 'none',
@@ -734,7 +1093,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
                     type="text"
                     placeholder="Giải thích vì sao đáp án trên là chính xác (hiển thị khi học viên xem lại bài)..."
                     value={q.explanation || ''}
-                    onChange={e => handleQuestionChange(qIdx, 'explanation', e.target.value)}
+                    onChange={e => handleQuestionChange(idx, 'explanation', e.target.value)}
                     style={{
                       width: '100%',
                       height: '38px',
@@ -1059,6 +1418,190 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
               >
                 <Sparkles size={14} />
                 <span>{isAiGenerating ? 'Đang tạo câu hỏi...' : 'Tạo câu hỏi ngay'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 3: 3IN1 PACKAGE BUNDLE IMPORTER & DECOMPOSER ── */}
+      {showBundleModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 160,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowBundleModal(false)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '680px',
+              background: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid #E2E8F0',
+              padding: '24px 28px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <FolderArchive size={22} color="#2563EB" />
+                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                  Tải File & Tách Gói Tự Động 3in1 (Word - Excel - PPT)
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowBundleModal(false)}
+                style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+              Tải lên các tệp đề thi hoặc tệp thực hành (hỗ trợ nhiều tệp cùng lúc hoặc tệp nén). Hệ thống sẽ tự động bóc tách từng phần thi theo chuẩn học vụ và gom tệp thực hành cho học viên tải về.
+            </p>
+
+            {/* 3 Module Feature Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '10px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#1D4ED8', marginBottom: '2px' }}>📘 Microsoft Word</div>
+                <div style={{ fontSize: '11.5px', color: '#475569' }}>Tách câu hỏi Word & tệp .docx đính kèm</div>
+              </div>
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '6px', padding: '10px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D', marginBottom: '2px' }}>📊 Microsoft Excel</div>
+                <div style={{ fontSize: '11.5px', color: '#475569' }}>Tách câu hỏi Excel & bảng tính .xlsx thực hành</div>
+              </div>
+              <div style={{ background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: '6px', padding: '10px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#C2410C', marginBottom: '2px' }}>📙 PowerPoint</div>
+                <div style={{ fontSize: '11.5px', color: '#475569' }}>Tách câu hỏi Slide & tệp .pptx mẫu</div>
+              </div>
+            </div>
+
+            {/* Drag & Drop Upload Zone */}
+            <label
+              style={{
+                border: '2px dashed #93C5FD',
+                borderRadius: '8px',
+                padding: '28px 20px',
+                textAlign: 'center',
+                background: isProcessingBundle ? '#F8FAFC' : '#F0F7FF',
+                cursor: isProcessingBundle ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {isProcessingBundle ? (
+                <>
+                  <Loader2 size={32} color="#2563EB" className="animate-spin" />
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#2563EB' }}>
+                    Đang bóc tách và phân loại tệp Word, Excel, PowerPoint...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud size={36} color="#2563EB" />
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#1E293B' }}>
+                    Nhấn để chọn tệp hoặc kéo thả tệp vào đây
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>
+                    Hỗ trợ tệp: .docx, .xlsx, .pptx, .pdf, .txt, .zip (chọn nhiều tệp cùng lúc)
+                  </span>
+                </>
+              )}
+              <input
+                type="file"
+                multiple
+                disabled={isProcessingBundle}
+                accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt,.pdf,.txt,.zip"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handlePackageFilesUpload(e.target.files);
+                  }
+                }}
+              />
+            </label>
+
+            {/* Quick 1-Click Starter Bundle */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                  ⚡ Thử nghiệm nhanh chưa có sẵn file?
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  Nạp gói mẫu chuẩn hóa 3in1 với 6 câu hỏi và 3 file thực hành có sẵn.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleLoadSample3in1Bundle}
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: '6px',
+                  background: '#2563EB',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Nạp Gói Mẫu Chuẩn
+              </button>
+            </div>
+
+            {/* Success Banner */}
+            {bundleSuccessMsg && (
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '12px 14px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: '#15803D', fontSize: '13px' }}>
+                <CheckCircle2 size={18} color="#16A34A" />
+                <span>{bundleSuccessMsg}</span>
+              </div>
+            )}
+
+            {/* Error Banner */}
+            {bundleErrorMsg && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', padding: '12px 14px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: '#DC2626', fontSize: '13px' }}>
+                <AlertCircle size={18} color="#DC2626" />
+                <span>{bundleErrorMsg}</span>
+              </div>
+            )}
+
+            {/* Modal Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setShowBundleModal(false)}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '6px',
+                  background: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  color: '#334155',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer'
+                }}
+              >
+                {bundleSuccessMsg ? 'Đóng & Chỉnh sửa đề' : 'Đóng'}
               </button>
             </div>
           </div>

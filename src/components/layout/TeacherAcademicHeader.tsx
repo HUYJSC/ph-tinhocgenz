@@ -51,7 +51,7 @@ const TEACHER_HUB_DEFS: {
       { id: 'schedule',      label: 'Thời khóa biểu & Lịch dạy' },
       { id: 'assignments',   label: 'Khảo thí & Chấm bài nộp' },
       { id: 'early_warning', label: 'Cảnh báo học vụ sớm' },
-      { id: 'creator',       label: 'Soạn đề thi mới' },
+      { id: 'creator',       label: 'Soạn Gói Đề & Thực Hành 3in1' },
     ]
   },
   {

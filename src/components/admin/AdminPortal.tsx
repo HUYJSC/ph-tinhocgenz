@@ -749,7 +749,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 }}
               >
                 <PlusCircle size={16} />
-                <span>Soạn Đề Thi Mới</span>
+                <span>Soạn Gói Đề & Bài Thực Hành 3in1</span>
               </button>
 
               <div style={{

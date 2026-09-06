@@ -39,6 +39,16 @@ export interface Question {
   difficulty?: 'easy' | 'medium' | 'hard'; // để tính score mô hình
 }
 
+export interface PracticeAttachment {
+  id: string;
+  name: string;
+  size: string | number;
+  module: 'word' | 'excel' | 'powerpoint' | 'general';
+  fileType: string;
+  downloadUrl?: string; // Data URI or URL for downloading/opening
+  previewData?: string;
+}
+
 export interface Quiz {
   id: string;
   title: string;
@@ -52,6 +62,12 @@ export interface Quiz {
   author?: string;
   createdAt?: string;
   isCustom?: boolean;
+  practiceFiles?: PracticeAttachment[];
+  modulesSummary?: {
+    wordCount: number;
+    excelCount: number;
+    pptCount: number;
+  };
 }
 
 export interface QuestionResult {

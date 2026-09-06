@@ -140,6 +140,27 @@ const forgotModalContent = fs.readFileSync('src/components/auth/ForgotPasswordMo
 assert(forgotModalContent.includes('enter_otp') && forgotModalContent.includes('new_password'), 'ForgotPasswordModal hỗ trợ quy trình Wizard đa bước qua Email OTP');
 assert(forgotModalContent.includes('countdown'), 'Có bộ đếm ngược thời gian hết hạn mã xác nhận');
 
+// 11. Test 3in1 Package Bundle Decomposer & Practice Attachments
+console.log('\n📦 NHÓM 11: Kiểm tra Soạn Gói Đề & Tách Tệp Thực Hành 3in1 (Word - Excel - PPT)');
+const bundleParserContent = fs.readFileSync('src/utils/packageBundleParser.ts', 'utf8');
+assert(bundleParserContent.includes('decomposePackageFiles'), 'Có hàm bóc tách tự động nhiều tệp decomposePackageFiles');
+assert(bundleParserContent.includes('getSample3in1StarterBundle'), 'Có hàm nạp gói mẫu chuẩn hóa 3in1 thử nghiệm');
+assert(bundleParserContent.includes('detectModuleFromFile'), 'Có hàm tự động nhận diện mô-đun Word, Excel, PowerPoint từ phần mở rộng và tên tệp');
+
+const quizCreatorContent = fs.readFileSync('src/components/creator/QuizCreator.tsx', 'utf8');
+assert(quizCreatorContent.includes('Tải File & Tách Gói 3in1'), 'QuizCreator có nút Tải File & Tách Gói 3in1');
+assert(quizCreatorContent.includes('practiceFiles'), 'QuizCreator hỗ trợ quản lý danh mục tệp thực hành đính kèm');
+assert(quizCreatorContent.includes('activeModuleFilter'), 'QuizCreator có bộ lọc câu hỏi theo từng mô-đun Word, Excel, PPT');
+
+const headerContent = fs.readFileSync('src/components/layout/TeacherAcademicHeader.tsx', 'utf8');
+assert(headerContent.includes('Soạn Gói Đề & Thực Hành 3in1'), 'Đổi tên thuật ngữ điều hướng thành Soạn Gói Đề & Thực Hành 3in1');
+
+const adminPortalContent = fs.readFileSync('src/components/admin/AdminPortal.tsx', 'utf8');
+assert(adminPortalContent.includes('Soạn Gói Đề & Bài Thực Hành 3in1'), 'AdminPortal cập nhật nhãn Soạn Gói Đề & Bài Thực Hành 3in1');
+
+const runnerContent = fs.readFileSync('src/components/quiz/QuizRunner.tsx', 'utf8');
+assert(runnerContent.includes('quiz.practiceFiles'), 'QuizRunner hỗ trợ học viên tải tệp bài tập thực hành về máy');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
