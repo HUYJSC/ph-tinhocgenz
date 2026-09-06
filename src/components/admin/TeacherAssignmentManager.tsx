@@ -13,6 +13,8 @@ import {
 import { soundFx } from '../../utils/audio';
 import { SecureDocViewer } from '../assignment/SecureDocViewer';
 import { formatDateTimeAmPm } from '../../utils/timeFormat';
+import { FileSplitter3in1Modal } from './FileSplitter3in1Modal';
+import { SingleFileSplitResult } from '../../utils/packageBundleParser';
 
 const ALL_TRACK_OPTIONS = TRACK_LIST;
 
@@ -53,6 +55,28 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
   const [activeTab, setActiveTab] = useState<'manage' | 'create' | 'submissions' | 'drive_cloud' | 'notifications'>('manage');
   const [selectedFamily, setSelectedFamily] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSplitterModal, setShowSplitterModal] = useState(false);
+
+  const handleSplitterApply = (splitResult: SingleFileSplitResult) => {
+    const cleanName = splitResult.originalFileName.replace(/\.[^/.]+$/, '');
+    setTitle(`Đề 3 Môn: ${cleanName}`);
+    setDescription(`Bộ đề thi và bài thực hành 3 môn bóc tách từ ${splitResult.originalFileName}. Gồm Word (${splitResult.wordFile.questions.length} câu), Excel (${splitResult.excelFile.questions.length} câu), PowerPoint (${splitResult.pptFile.questions.length} câu).`);
+    setCategory('office-fast-3in1');
+    if (splitResult.allQuestions && splitResult.allQuestions.length > 0) {
+      setParsedQuestions(splitResult.allQuestions);
+      setRawContent(`${splitResult.wordFile.content}\n\n${splitResult.excelFile.content}\n\n${splitResult.pptFile.content}`);
+    }
+    if (splitResult.excelFile) {
+      setHasSampleFile(true);
+      setSampleFileName(splitResult.excelFile.fileName);
+      setSampleFileSize(splitResult.excelFile.fileSize);
+      setSampleFileType('excel');
+      setSampleFileDownloadUrl(splitResult.excelFile.downloadUrl || '');
+    }
+    setActiveTab('create');
+    setShowSplitterModal(false);
+    soundFx.playClick();
+  };
   
   // Form State
   const [title, setTitle] = useState('');
@@ -522,12 +546,13 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
           </button>
 
           <button
-            onClick={() => setActiveTab('create')}
+            onClick={() => setShowSplitterModal(true)}
             className="btn btn-primary"
-            style={{ padding: '6px 14px', minHeight: '32px', height: '32px', fontSize: '0.78rem', fontWeight: 800, borderRadius: '8px', background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
+            style={{ padding: '6px 14px', minHeight: '32px', height: '32px', fontSize: '0.78rem', fontWeight: 800, borderRadius: '8px', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)' }}
+            title="Tải 1 file tổng hợp chứa cả 3 môn (Word, Excel, PowerPoint) và tự động bóc tách thành 3 file riêng biệt"
           >
             <PlusCircle size={14} />
-            <span>Tạo Đề Thi Mới</span>
+            <span>Tách Đề 3 Môn: Word • Excel • PPT</span>
           </button>
         </div>
       </div>
@@ -538,7 +563,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
           { id: 'manage', label: `Đề Thi (${assignments.length})`, icon: FileText },
           { id: 'submissions', label: `Bài Nộp (${submissions.length})`, icon: FolderOpen },
           { id: 'drive_cloud', label: 'Google Drive Tổng (Admin)', icon: Cloud },
-          { id: 'create', label: 'Soạn Đề Mới', icon: PlusCircle },
+          { id: 'create', label: 'Tách & Soạn Đề 3 Môn', icon: PlusCircle },
           { id: 'notifications', label: `Thông Báo (${notifications.filter(n => !n.isRead).length})`, icon: Bell }
         ].map(tab => {
           const Icon = tab.icon;
@@ -2161,6 +2186,13 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
             </form>
           </div>
         </div>
+      )}
+
+      {showSplitterModal && (
+        <FileSplitter3in1Modal
+          onClose={() => setShowSplitterModal(false)}
+          onProceedToCreator={handleSplitterApply}
+        />
       )}
     </div>
   );

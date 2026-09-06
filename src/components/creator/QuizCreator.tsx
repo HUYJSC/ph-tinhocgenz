@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Quiz, Question, SubjectCategory, Difficulty, PracticeAttachment } from '../../types/quiz';
 import { 
   Plus, Trash2, Save, FileText, Sparkles, AlertCircle, X,
@@ -37,6 +37,30 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
   const [showTextModal, setShowTextModal] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [textParseError, setTextParseError] = useState('');
+
+  // Auto-consume data if teacher came from "Tách Đề 3 Môn: Word • Excel • PPT"
+  useEffect(() => {
+    try {
+      const preloadedRaw = localStorage.getItem('phtinhocgenz_preloaded_split_3in1');
+      if (preloadedRaw) {
+        const data = JSON.parse(preloadedRaw);
+        if (data.title) setTitle(data.title);
+        if (data.description) setDescription(data.description);
+        if (data.category) setCategory(data.category);
+        if (data.timeLimitMinutes) setTimeLimitMinutes(data.timeLimitMinutes);
+        if (Array.isArray(data.questions) && data.questions.length > 0) {
+          setQuestions(data.questions);
+        }
+        if (Array.isArray(data.practiceFiles) && data.practiceFiles.length > 0) {
+          setPracticeFiles(data.practiceFiles);
+        }
+        setBundleSuccessMsg(`Đã nạp thành công 3 môn từ file: ${data.originalFileName || 'Đề 3in1'}`);
+        localStorage.removeItem('phtinhocgenz_preloaded_split_3in1');
+      }
+    } catch (e) {
+      console.error('Lỗi khi đọc phtinhocgenz_preloaded_split_3in1:', e);
+    }
+  }, []);
 
   // AI Generator state
   const [showAiModal, setShowAiModal] = useState(false);
@@ -535,7 +559,7 @@ export const QuizCreator: React.FC<QuizCreatorProps> = ({ onAddQuiz, onSuccessNa
             }}
           >
             <UploadCloud size={16} />
-            <span>📦 Tải File & Tách Gói 3in1</span>
+            <span>Tải 1 File & Tách 3 Môn (Word - Excel - PPT)</span>
           </button>
 
           <button

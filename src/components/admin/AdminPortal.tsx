@@ -7,6 +7,8 @@ import { TeacherAssignmentManager } from './TeacherAssignmentManager';
 import { ScheduleCalendar } from '../schedule/ScheduleCalendar';
 import { EarlyWarningDashboard } from './EarlyWarningDashboard';
 import { EarlyWarningService } from '../../services/earlyWarningService';
+import { FileSplitter3in1Modal } from './FileSplitter3in1Modal';
+import { SingleFileSplitResult } from '../../utils/packageBundleParser';
 import {
   BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
@@ -126,6 +128,54 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       setActiveSubTab(initialSubTab);
     }
   }, [initialSubTab]);
+
+  const [showFileSplitterModal, setShowFileSplitterModal] = useState(false);
+
+  const handleProceedFromSplitterToCreator = (result: SingleFileSplitResult) => {
+    try {
+      localStorage.setItem('phtinhocgenz_preloaded_split_3in1', JSON.stringify({
+        title: 'Gói Đề Thi 3 Môn (Word - Excel - PPT) - Bóc tách từ ' + result.originalFileName,
+        description: result.summaryText,
+        questions: result.allQuestions,
+        practiceFiles: [
+          {
+            id: 'split-att-word-' + Date.now(),
+            name: result.wordFile.fileName,
+            size: result.wordFile.fileSize,
+            module: 'word',
+            fileType: 'word',
+            downloadUrl: result.wordFile.downloadUrl
+          },
+          {
+            id: 'split-att-excel-' + Date.now(),
+            name: result.excelFile.fileName,
+            size: result.excelFile.fileSize,
+            module: 'excel',
+            fileType: 'excel',
+            downloadUrl: result.excelFile.downloadUrl
+          },
+          {
+            id: 'split-att-ppt-' + Date.now(),
+            name: result.pptFile.fileName,
+            size: result.pptFile.fileSize,
+            module: 'powerpoint',
+            fileType: 'powerpoint',
+            downloadUrl: result.pptFile.downloadUrl
+          }
+        ]
+      }));
+    } catch (e) {
+      console.error('Không thể lưu preloaded split vào localStorage:', e);
+    }
+    setShowFileSplitterModal(false);
+    onNavigateToCreator();
+  };
+
+  const handleOpenBlankCreator = () => {
+    localStorage.removeItem('phtinhocgenz_preloaded_split_3in1');
+    setShowFileSplitterModal(false);
+    onNavigateToCreator();
+  };
 
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -733,7 +783,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </button>
 
               <button
-                onClick={onNavigateToCreator}
+                onClick={() => setShowFileSplitterModal(true)}
                 className="btn btn-primary"
                 style={{
                   padding: '9px 18px',
@@ -747,9 +797,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
                   cursor: 'pointer'
                 }}
+                title="Tải 1 file tổng hợp chứa cả 3 môn (Word, Excel, PowerPoint) lên và tự động tách thành 3 file riêng biệt"
               >
                 <PlusCircle size={16} />
-                <span>Soạn Gói Đề & Bài Thực Hành 3in1</span>
+                <span>Tách Đề 3 Môn: Word • Excel • PPT</span>
               </button>
 
               <div style={{
@@ -3022,6 +3073,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
         </div>
       )}
+
+      {/* File Splitter 3in1 Modal */}
+      <FileSplitter3in1Modal
+        isOpen={showFileSplitterModal}
+        onClose={() => setShowFileSplitterModal(false)}
+        onProceedToCreator={handleProceedFromSplitterToCreator}
+        onOpenBlankCreator={handleOpenBlankCreator}
+      />
     </div>
   );
 };

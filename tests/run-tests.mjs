@@ -144,19 +144,26 @@ assert(forgotModalContent.includes('countdown'), 'Có bộ đếm ngược thờ
 console.log('\n📦 NHÓM 11: Kiểm tra Soạn Gói Đề & Tách Tệp Thực Hành 3in1 (Word - Excel - PPT)');
 const bundleParserContent = fs.readFileSync('src/utils/packageBundleParser.ts', 'utf8');
 assert(bundleParserContent.includes('decomposePackageFiles'), 'Có hàm bóc tách tự động nhiều tệp decomposePackageFiles');
-assert(bundleParserContent.includes('getSample3in1StarterBundle'), 'Có hàm nạp gói mẫu chuẩn hóa 3in1 thử nghiệm');
+assert(bundleParserContent.includes('splitSingleFileInto3Modules'), 'Có hàm bóc tách 1 file tổng hợp thành 3 file riêng biệt (Word, Excel, PPT)');
+assert(bundleParserContent.includes('getSample3in1CombinedDocument'), 'Có hàm cung cấp tài liệu mẫu 3 môn tổng hợp');
 assert(bundleParserContent.includes('detectModuleFromFile'), 'Có hàm tự động nhận diện mô-đun Word, Excel, PowerPoint từ phần mở rộng và tên tệp');
 
+const splitterModalContent = fs.readFileSync('src/components/admin/FileSplitter3in1Modal.tsx', 'utf8');
+assert(splitterModalContent.includes('splitSingleFileInto3Modules'), 'FileSplitter3in1Modal tích hợp bộ bóc tách 1 file ra 3 file');
+assert(splitterModalContent.includes('Tải file Word'), 'FileSplitter3in1Modal cho phép tải riêng từng file Word, Excel, PPT');
+assert(splitterModalContent.includes('Tải trọn bộ 3 file'), 'FileSplitter3in1Modal cho phép tải trọn bộ 3 file về máy');
+
 const quizCreatorContent = fs.readFileSync('src/components/creator/QuizCreator.tsx', 'utf8');
-assert(quizCreatorContent.includes('Tải File & Tách Gói 3in1'), 'QuizCreator có nút Tải File & Tách Gói 3in1');
+assert(quizCreatorContent.includes('Tách 3 Môn'), 'QuizCreator có nút Tải 1 File & Tách 3 Môn');
+assert(quizCreatorContent.includes('phtinhocgenz_preloaded_split_3in1'), 'QuizCreator hỗ trợ nạp dữ liệu tách 3 môn từ localStorage');
 assert(quizCreatorContent.includes('practiceFiles'), 'QuizCreator hỗ trợ quản lý danh mục tệp thực hành đính kèm');
 assert(quizCreatorContent.includes('activeModuleFilter'), 'QuizCreator có bộ lọc câu hỏi theo từng mô-đun Word, Excel, PPT');
 
-const headerContent = fs.readFileSync('src/components/layout/TeacherAcademicHeader.tsx', 'utf8');
-assert(headerContent.includes('Soạn Gói Đề & Thực Hành 3in1'), 'Đổi tên thuật ngữ điều hướng thành Soạn Gói Đề & Thực Hành 3in1');
+const teacherManagerContent = fs.readFileSync('src/components/admin/TeacherAssignmentManager.tsx', 'utf8');
+assert(teacherManagerContent.includes('Tách Đề 3 Môn: Word • Excel • PPT'), 'TeacherAssignmentManager đổi nút thành Tách Đề 3 Môn: Word • Excel • PPT');
 
 const adminPortalContent = fs.readFileSync('src/components/admin/AdminPortal.tsx', 'utf8');
-assert(adminPortalContent.includes('Soạn Gói Đề & Bài Thực Hành 3in1'), 'AdminPortal cập nhật nhãn Soạn Gói Đề & Bài Thực Hành 3in1');
+assert(adminPortalContent.includes('Tách Đề 3 Môn: Word • Excel • PPT'), 'AdminPortal cập nhật nút chính xác theo hình: Tách Đề 3 Môn: Word • Excel • PPT');
 
 const runnerContent = fs.readFileSync('src/components/quiz/QuizRunner.tsx', 'utf8');
 assert(runnerContent.includes('quiz.practiceFiles'), 'QuizRunner hỗ trợ học viên tải tệp bài tập thực hành về máy');
