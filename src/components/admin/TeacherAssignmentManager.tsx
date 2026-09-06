@@ -305,7 +305,21 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
     if (onUpdateAssignment) {
       onUpdateAssignment(editingAssignment.id, updatedData);
     }
+
+    // Failsafe direct localStorage persistence
+    try {
+      const saved = localStorage.getItem('phtinhocgenz_assignments_v3');
+      if (saved) {
+        const list: Assignment[] = JSON.parse(saved);
+        const updatedList = list.map(a => a.id === editingAssignment.id ? { ...a, ...updatedData } : a);
+        localStorage.setItem('phtinhocgenz_assignments_v3', JSON.stringify(updatedList));
+      }
+    } catch (err) {
+      console.warn('Fallback localStorage save error:', err);
+    }
+
     soundFx.playVictory();
+    alert(`Đã lưu thành công các thay đổi cho đề thi: "${editTitle.trim()}"!`);
     setEditingAssignment(null);
   };
 

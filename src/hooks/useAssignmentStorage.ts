@@ -159,9 +159,15 @@ export function useAssignmentStorage() {
 
   // Update existing assignment
   const updateAssignment = (assignmentId: string, updatedData: Partial<Assignment>) => {
-    setAssignments(prev =>
-      prev.map(a => (a.id === assignmentId ? { ...a, ...updatedData } : a))
-    );
+    setAssignments(prev => {
+      const next = prev.map(a => (a.id === assignmentId ? { ...a, ...updatedData } : a));
+      try {
+        localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(next));
+      } catch (e) {
+        console.error('Failed to save assignments on updateAssignment', e);
+      }
+      return next;
+    });
   };
 
   // Toggle open status

@@ -39,6 +39,7 @@ interface StandaloneAdminAppProps {
   googleDriveConfig?: GoogleDriveConfig;
   onUpdateGoogleDriveConfig?: (config: GoogleDriveConfig) => void;
   onCreateAssignment?: (data: Omit<Assignment, 'id' | 'createdAt'>) => void;
+  onUpdateAssignment?: (assignmentId: string, data: Partial<Assignment>) => void;
   onDeleteAssignment?: (id: string) => void;
   onToggleOpen?: (id: string) => void;
   onGradeSubmission?: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
