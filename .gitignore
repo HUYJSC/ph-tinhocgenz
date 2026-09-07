@@ -7,12 +7,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
-*.local
 
-# Editor directories and files
+# Local env files – NEVER commit real secrets
+*.local
+.env
+.env.*
+!.env.example
+
+# Editor directories
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,9 +30,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deployment meta (regenerated automatically)
 .vercel
 .netlify
-.env*
 
 # Python & Backend
 __pycache__/
@@ -36,3 +45,7 @@ backend/db.sqlite3
 backend/staticfiles/
 .pytest_cache/
 .coverage*
+
+# Temp / scratch
+extracted_pdf_de1.txt
+split_de1_script.py
