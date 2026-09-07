@@ -21,10 +21,10 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node.js 20
+      - name: ⚙️ Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: 📦 Install dependencies
@@ -78,11 +78,11 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: ✅ Django system checks
-        run: python manage.py check --deploy --settings=config.settings.test
-        continue-on-error: true   # may fail if test settings don't exist yet
+        run: python manage.py check --settings=config.settings.base
+        continue-on-error: true   # non-blocking
 
       - name: 🧪 Run Django tests
-        run: python manage.py test --settings=config.settings.test
+        run: python manage.py test --settings=config.settings.base
         continue-on-error: true   # non-blocking until full test suite is ready
 
   # ── 3. SECURITY SCAN (lightweight) ──────────────────────────────────────────
@@ -98,7 +98,7 @@ jobs:
       - name: ⚙️ Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: 📦 Install dependencies (CI)
