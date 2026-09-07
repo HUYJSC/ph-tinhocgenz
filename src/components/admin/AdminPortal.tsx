@@ -16,6 +16,7 @@ import {
   Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { LearningResourceHub, LearningHubSubTab } from './LearningResourceHub';
 
 export type AdminPortalSubTab =
   | 'overview'
@@ -27,7 +28,14 @@ export type AdminPortalSubTab =
   | 'exams'
   | 'question_bank'
   | 'meet_hub'
-  | 'seo_center';
+  | 'seo_center'
+  | 'learning_sources'
+  | 'review_queue'
+  | 'tinhocgenz_studio'
+  | 'sync_history'
+  | 'quality_reports'
+  | 'failing_sources'
+  | 'automation_settings';
 
 interface AdminPortalProps {
   quizzes: Quiz[];
@@ -2903,6 +2911,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
         </div>
       )}
+
+      {/* ── 8. TRUNG TÂM NGUỒN HỌC LIỆU VÀ KIỂM DUYỆT ĐỀ THI (HỘI ĐỒNG MASTER) ── */}
+      {(activeSubTab === 'learning_sources' ||
+        activeSubTab === 'review_queue' ||
+        activeSubTab === 'tinhocgenz_studio' ||
+        activeSubTab === 'sync_history' ||
+        activeSubTab === 'quality_reports' ||
+        activeSubTab === 'failing_sources' ||
+        activeSubTab === 'automation_settings') && (
+        <LearningResourceHub
+          currentTab={activeSubTab as LearningHubSubTab}
+          onTabChange={(tab) => handleSelectSubTab(tab as AdminPortalSubTab)}
+          currentUser={currentUser}
+        />
+      )}
+
       {/* ── MODAL: ĐỌC ĐỀ THI & XEM ĐÁP ÁN DÀNH CHO GIẢNG VIÊN / ADMIN ── */}
       {readingQuiz && (
         <div

@@ -193,6 +193,66 @@ const studentDashContent = fs.readFileSync('src/components/dashboard/StudentOneP
 assert(studentDashContent.includes('dashboard-bento-grid'), 'StudentOnePageDashboard sử dụng dashboard-bento-grid responsive');
 assert(!studentDashContent.includes('minmax(0, 1fr) 380px'), 'Đã loại bỏ hoàn toàn bề rộng cứng 380px gây tràn ngang màn hình');
 
+// 13. Test Phân hệ Trung Tâm Nguồn Học Liệu & Kiểm Duyệt Đề Thi
+console.log('\n🏛️ NHÓM 13: Kiểm tra Trung Tâm Nguồn Học Liệu & Kiểm Duyệt Đề Thi (Phân hệ mới 2026)');
+
+const learningTypesExists = fs.existsSync(path.resolve('src/types/learningResource.ts'));
+assert(learningTypesExists, 'Tệp định nghĩa dữ liệu src/types/learningResource.ts tồn tại');
+
+const certCatalogExists = fs.existsSync(path.resolve('src/data/certificationCatalog.ts'));
+assert(certCatalogExists, 'Danh mục chuẩn khảo thí src/data/certificationCatalog.ts tồn tại');
+
+const certCatalogContent = fs.readFileSync('src/data/certificationCatalog.ts', 'utf8');
+assert(certCatalogContent.includes('MO-100') && certCatalogContent.includes('MOS_2019'), 'MO-100 được định nghĩa chính xác cho Office 2019');
+assert(certCatalogContent.includes('MO-110') && certCatalogContent.includes('MOS_365'), 'MO-110 được định nghĩa chính xác cho Microsoft 365 Apps');
+assert(certCatalogContent.includes('validateExamCodeVsTitle'), 'Có hàm validateExamCodeVsTitle phát hiện xung đột mã thi');
+
+const ssrfProtectionExists = fs.existsSync(path.resolve('src/utils/ssrfProtection.ts'));
+assert(ssrfProtectionExists, 'Tệp bảo vệ SSRF src/utils/ssrfProtection.ts tồn tại');
+
+const ssrfContent = fs.readFileSync('src/utils/ssrfProtection.ts', 'utf8');
+assert(ssrfContent.includes('isPrivateOrReservedIp'), 'Có hàm isPrivateOrReservedIp chặn các dải IP nội bộ');
+assert(ssrfContent.includes('169.254.169.254'), 'Chặn địa chỉ Cloud Metadata 169.254.169.254');
+
+const learningServiceExists = fs.existsSync(path.resolve('src/services/learningResourceService.ts'));
+assert(learningServiceExists, 'Service điều phối src/services/learningResourceService.ts tồn tại');
+
+const serviceContent = fs.readFileSync('src/services/learningResourceService.ts', 'utf8');
+assert(serviceContent.includes('processNewResourcePipeline'), 'Có pipeline 12 bước processNewResourcePipeline');
+assert(serviceContent.includes('src-ref-blogdaytinhoc'), 'Có nguồn mẫu blogdaytinhoc.com');
+assert(serviceContent.includes('factual_conflicts'), 'Có lưu vết factual_conflicts khi phát hiện sai mã bài thi');
+
+const sqlMigrationExists = fs.existsSync(path.resolve('supabase/migrations/20260907_learning_resource_hub.sql'));
+assert(sqlMigrationExists, 'Tệp Supabase SQL migration 20260907_learning_resource_hub.sql tồn tại');
+
+const sqlContent = fs.readFileSync('supabase/migrations/20260907_learning_resource_hub.sql', 'utf8');
+assert(sqlContent.includes('CREATE TABLE IF NOT EXISTS public.learning_sources'), 'Có bảng learning_sources');
+assert(sqlContent.includes('CREATE TABLE IF NOT EXISTS public.content_review_queue'), 'Có bảng content_review_queue');
+assert(sqlContent.includes('CREATE TABLE IF NOT EXISTS public.certification_catalog'), 'Có bảng certification_catalog');
+
+const cronEndpointExists = fs.existsSync(path.resolve('api/cron/learning-source-sync.ts'));
+assert(cronEndpointExists, 'Endpoint Cron api/cron/learning-source-sync.ts tồn tại');
+
+const vercelJsonContent = fs.readFileSync('vercel.json', 'utf8');
+assert(vercelJsonContent.includes('/api/cron/learning-source-sync'), 'vercel.json đã đăng ký cron learning-source-sync');
+assert(vercelJsonContent.includes('0 2 1 * *'), 'Lịch cron chạy 09:00 ngày 01 hằng tháng (UTC: 0 2 1 * *)');
+
+const adminAppContent = fs.readFileSync('src/components/admin/StandaloneAdminApp.tsx', 'utf8');
+assert(adminAppContent.includes('learning_sources'), 'StandaloneAdminApp menu có mục Trung Tâm Nguồn Học Liệu');
+assert(adminAppContent.includes('review_queue'), 'StandaloneAdminApp menu có mục Nội Dung Chờ Kiểm Duyệt');
+assert(adminAppContent.includes('tinhocgenz_studio'), 'StandaloneAdminApp menu có mục Kho Tài Liệu TIN HỌC GEN Z');
+assert(adminAppContent.includes('sync_history'), 'StandaloneAdminApp menu có mục Lịch Sử Đồng Bộ');
+assert(adminAppContent.includes('quality_reports'), 'StandaloneAdminApp menu có mục Báo Cáo Chất Lượng');
+assert(adminAppContent.includes('failing_sources'), 'StandaloneAdminApp menu có mục Nguồn Bị Lỗi');
+assert(adminAppContent.includes('automation_settings'), 'StandaloneAdminApp menu có mục Thiết Lập Tự Động Hóa');
+
+// Kiểm tra bảo toàn 28 câu hỏi trắc nghiệm và 10 phân hệ
+const defaultQuizzesContent = fs.readFileSync('src/data/defaultQuizzes.ts', 'utf8');
+const totalQuizzes = (defaultQuizzesContent.match(/id:\s*'quiz-/g) || []).length;
+const totalQuestions = (defaultQuizzesContent.match(/prompt:\s*'/g) || []).length;
+assert(totalQuizzes === 10, 'Bảo toàn chính xác 10 phân hệ đào tạo (không mất đề thi)');
+assert(totalQuestions === 28, 'Bảo toàn chính xác 28 câu hỏi trắc nghiệm hiện tại (không mất câu hỏi)');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
@@ -201,3 +261,4 @@ if (failedTests === 0) {
   console.log(`⚠️ Có ${failedTests} bài test không đạt yêu cầu.`);
 }
 console.log('====================================================\n');
+

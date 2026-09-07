@@ -341,11 +341,11 @@ export const DEFAULT_QUIZZES: Quiz[] = [
     ]
   },
 
-  // 8. Word (6 buổi) - Chuẩn Khảo Thí Quốc Tế MOS MO-100
+  // 8. Word (6 buổi) - Chuẩn Khảo Thí Quốc Tế MOS MO-100 (Office 2019)
   {
     id: 'quiz-word-6b',
-    title: 'Khảo Thí Quốc Tế: MOS Word Associate (Exam MO-100)',
-    description: 'Bộ đề thi thử chuẩn Microsoft Office Specialist Word 2019 / Microsoft 365: Kỹ năng quản lý tài liệu, định dạng Styles, Find & Replace ký tự đặc biệt, chia cột báo, Section Breaks và quản lý đối tượng đồ họa.',
+    title: 'Khảo Thí Quốc Tế: MOS Word Associate (Exam MO-100 - Office 2019)',
+    description: 'Bộ đề thi thử chuẩn Microsoft Office Specialist Word 2019 (Exam MO-100): Kỹ năng quản lý tài liệu, định dạng Styles, Find & Replace ký tự đặc biệt, chia cột báo, Section Breaks và quản lý đối tượng đồ họa. (Lưu ý: Đối với Microsoft 365 Apps, mã bài thi tương ứng là MO-110).',
     category: 'word-6b',
     difficulty: 'medium',
     timeLimitMinutes: 20,
