@@ -49,3 +49,6 @@ backend/staticfiles/
 # Temp / scratch
 extracted_pdf_de1.txt
 split_de1_script.py
+
+.vercel
+.env*
