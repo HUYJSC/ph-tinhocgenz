@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
   ShieldCheck, Lock, AlertTriangle, FileText, Download,
-  Video, Eye, FileSpreadsheet, Maximize2, Minimize2, ExternalLink
+  Video, Eye, FileSpreadsheet, Maximize2, Minimize2,
+  ZoomIn, MoveHorizontal, Send
 } from 'lucide-react';
 import { SampleDataFile, VideoLecture } from '../../types/assignment';
 import { soundFx } from '../../utils/audio';
 
-interface SecureDocViewerProps {
+export interface SecureDocViewerProps {
   content: string;
   sourceFileType: 'docx' | 'doc' | 'pdf' | 'image' | 'text';
   sourceFileName?: string;
@@ -15,6 +16,10 @@ interface SecureDocViewerProps {
   title: string;
   videoLecture?: VideoLecture;
   sampleDataFiles?: SampleDataFile[];
+  defaultHeight?: number | string;
+  isFullWidth?: boolean;
+  onToggleFullWidth?: () => void;
+  onQuickSubmit?: () => void;
 }
 
 /**
@@ -71,13 +76,25 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
   studentCode,
   title,
   videoLecture,
-  sampleDataFiles = []
+  sampleDataFiles = [],
+  defaultHeight,
+  isFullWidth = false,
+  onToggleFullWidth,
+  onQuickSubmit
 }) => {
   const [securityAlert, setSecurityAlert] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'exam' | 'video' | 'sample_data'>('exam');
   const [previewingSampleFile, setPreviewingSampleFile] = useState<SampleDataFile | null>(null);
   const [blobUrl, setBlobUrl] = useState<string>('');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [heightMode, setHeightMode] = useState<'normal' | 'tall' | 'screen'>('screen');
+  const [zoomPercent, setZoomPercent] = useState<number>(150);
+
+  // Tính chiều cao khung tài liệu to & bự (mặc định chiếm trọn chiều cao màn hình)
+  const computedHeight = defaultHeight || (
+    heightMode === 'screen' ? 'calc(100vh - 130px)' :
+    heightMode === 'tall' ? '950px' : '750px'
+  );
 
   // Nhận diện định dạng tệp thông minh
   const isPdf =
@@ -381,7 +398,7 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#DC2626', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   🔒 ĐỀ THI THỰC HÀNH CHÍNH THỨC (CHỐNG RÒ RỈ & CHẶN TẢI VỀ)
                 </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', margin: '2px 0 0' }}>
+                <h3 style={{ fontSize: '15.5px', fontWeight: 800, color: '#0F172A', margin: '2px 0 0' }}>
                   {title}
                 </h3>
                 {sourceFileName && (
@@ -391,52 +408,183 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {/* 1. Nút Mở Rộng 100% / Thu Nhỏ nếu có callback từ cha */}
+                {onToggleFullWidth && (
+                  <button
+                    type="button"
+                    onClick={onToggleFullWidth}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: isFullWidth ? '1px solid #3B82F6' : '1px solid #CBD5E1',
+                      background: isFullWidth ? '#EFF6FF' : '#FFFFFF',
+                      color: isFullWidth ? '#1D4ED8' : '#334155',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                    title={isFullWidth ? "Thu gọn về dạng chia đôi cột để vừa xem vừa nộp" : "Mở rộng tài liệu 100% toàn chiều ngang"}
+                  >
+                    <MoveHorizontal size={13} />
+                    <span>{isFullWidth ? 'Thu Nhỏ (70:30)' : 'Siêu Rộng 100%'}</span>
+                  </button>
+                )}
+
+                {/* 2. Tùy chọn chiều cao hiển thị to & bự */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    setHeightMode(prev => prev === 'normal' ? 'tall' : prev === 'tall' ? 'screen' : 'normal');
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#475569',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                  title="Thay đổi chiều cao hiển thị của khung tài liệu"
+                >
+                  <Eye size={13} />
+                  <span>
+                    {heightMode === 'tall' ? 'Khung To (880px)' : heightMode === 'screen' ? 'Toàn Màn Hình Trang' : 'Chuẩn (720px)'}
+                  </span>
+                </button>
+
+                {/* 3. BỘ ĐIỀU KHIỂN PHÓNG TO / THU NHỎ TÀI LIỆU TO & BỰ */}
+                <div style={{ display: 'flex', alignItems: 'center', background: '#F1F5F9', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '2px', gap: '2px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      setZoomPercent(prev => Math.max(prev - 20, 80));
+                    }}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#0F172A',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      fontSize: '13px'
+                    }}
+                    title="Thu nhỏ đề bài (-20%)"
+                  >
+                    -
+                  </button>
+
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, padding: '2px 6px', color: '#1E293B', minWidth: '44px', textAlign: 'center' }}>
+                    {zoomPercent}%
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      setZoomPercent(prev => Math.min(prev + 20, 240));
+                    }}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#0F172A',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      fontSize: '13px'
+                    }}
+                    title="Phóng to đề bài (+20%)"
+                  >
+                    +
+                  </button>
+
+                  <div style={{ width: '1px', height: '14px', background: '#CBD5E1', margin: '0 2px' }} />
+
+                  {[125, 150, 180].map(pct => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => {
+                        soundFx.playClick();
+                        setZoomPercent(pct);
+                      }}
+                      style={{
+                        padding: '3px 7px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        background: zoomPercent === pct ? '#2563EB' : 'transparent',
+                        color: zoomPercent === pct ? '#FFFFFF' : '#475569',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                      title={`Phóng to ${pct}%`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      setZoomPercent(160);
+                    }}
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      background: '#F0FDF4',
+                      color: '#15803D',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}
+                    title="Căn vừa chiều ngang cực to"
+                  >
+                    <ZoomIn size={12} />
+                    <span>Fit Width</span>
+                  </button>
+                </div>
+
+                {/* 4. Chế độ Rạp Chiếu Toàn Màn Hình Trong Trang (Không mở tab) */}
                 <button
                   type="button"
                   onClick={() => setIsFullScreen(true)}
                   style={{
                     padding: '6px 12px',
                     borderRadius: '6px',
-                    border: '1px solid #CBD5E1',
-                    background: '#FFFFFF',
-                    color: '#2563EB',
+                    border: '1px solid #2563EB',
+                    background: '#2563EB',
+                    color: '#FFFFFF',
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '5px'
+                    gap: '5px',
+                    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
                   }}
-                  title="Mở toàn màn hình để quan sát đề bài dễ dàng hơn"
+                  title="Mở chế độ rạp chiếu xem đề thi to cực đại ngay trên trang"
                 >
                   <Maximize2 size={13} />
                   <span>Toàn Màn Hình</span>
                 </button>
-
-                {blobUrl && (
-                  <button
-                    type="button"
-                    onClick={() => window.open(blobUrl, '_blank')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid #CBD5E1',
-                      background: '#FFFFFF',
-                      color: '#475569',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}
-                    title="Mở tài liệu trong cửa sổ trình duyệt mới"
-                  >
-                    <ExternalLink size={13} />
-                    <span>Mở Cửa Sổ Riêng</span>
-                  </button>
-                )}
 
                 <span style={{ padding: '4px 10px', borderRadius: '4px', background: '#FEE2E2', color: '#991B1B', fontSize: '11.5px', fontWeight: 700 }}>
                   Chỉ xem trực tuyến
@@ -450,25 +598,26 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
 
               {/* 1. HIỂN THỊ FILE PDF TRỰC TIẾP QUA IFRAME & OBJECT */}
               {isPdf && blobUrl ? (
-                <div style={{ position: 'relative', width: '100%', height: '680px', background: '#525659' }}>
+                <div style={{ position: 'relative', width: '100%', height: computedHeight, background: '#334155', transition: 'height 0.25s ease' }}>
                   <iframe
-                    src={`${blobUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                    key={`${blobUrl}-${zoomPercent}`}
+                    src={`${blobUrl}#view=FitH&zoom=${zoomPercent}&toolbar=1&navpanes=0&scrollbar=1&pagemode=none`}
                     title={title}
                     style={{ width: '100%', height: '100%', border: 'none' }}
                   />
                 </div>
               ) : isImage && (blobUrl || content) ? (
                 /* 2. HIỂN THỊ FILE HÌNH ẢNH */
-                <div style={{ padding: '20px', textAlign: 'center', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ padding: '20px', textAlign: 'center', minHeight: '450px', height: computedHeight, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0F172A', overflow: 'auto', transition: 'height 0.25s ease' }}>
                   <img
                     src={blobUrl || content}
                     alt={title}
                     style={{
                       maxWidth: '100%',
-                      maxHeight: '650px',
+                      maxHeight: '100%',
                       objectFit: 'contain',
-                      borderRadius: '6px',
-                      boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+                      borderRadius: '8px',
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.3)'
                     }}
                   />
                 </div>
@@ -476,15 +625,16 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
                 /* 3. HIỂN THỊ VĂN BẢN / WORD ĐƯỢC ĐỊNH DẠNG ĐẸP MẮT */
                 <div
                   style={{
-                    padding: '24px 28px',
-                    minHeight: '400px',
-                    maxHeight: '650px',
+                    padding: '28px 36px',
+                    minHeight: '450px',
+                    height: computedHeight,
                     overflowY: 'auto',
                     background: '#ffffff',
                     color: '#0F172A',
-                    lineHeight: 1.7,
-                    fontSize: '14.5px',
-                    fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
+                    lineHeight: 1.8,
+                    fontSize: '15.5px',
+                    fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+                    transition: 'height 0.25s ease'
                   }}
                 >
                   <div style={{ whiteSpace: 'pre-wrap', position: 'relative', zIndex: 1 }}>
@@ -721,7 +871,7 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
         )}
       </div>
 
-      {/* ── MODAL XEM TOÀN MÀN HÌNH (FULL SCREEN VIEWER) ── */}
+      {/* ── MODAL XEM TOÀN MÀN HÌNH (FULL SCREEN THEATER VIEWER - IN-PAGE) ── */}
       {isFullScreen && (
         <div
           style={{
@@ -730,12 +880,12 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(15, 23, 42, 0.92)',
+            background: 'rgba(15, 23, 42, 0.95)',
             zIndex: 99999,
             display: 'flex',
             flexDirection: 'column',
-            padding: '16px',
-            backdropFilter: 'blur(8px)'
+            padding: '12px',
+            backdropFilter: 'blur(12px)'
           }}
           className="animate-fade-in"
         >
@@ -746,44 +896,90 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
               alignItems: 'center',
               padding: '10px 18px',
               background: '#1E293B',
-              borderRadius: '10px 10px 0 0',
-              borderBottom: '1px solid #334155'
+              borderRadius: '12px 12px 0 0',
+              borderBottom: '1px solid #334155',
+              flexWrap: 'wrap',
+              gap: '10px'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Lock size={16} color="#38BDF8" />
+              <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: 'rgba(56, 189, 248, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Lock size={16} color="#38BDF8" />
+              </div>
               <div>
-                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px' }}>{title}</span>
-                {sourceFileName && <span style={{ color: '#94A3B8', fontSize: '12px', marginLeft: '8px' }}>({sourceFileName})</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#FFFFFF', fontWeight: 800, fontSize: '15px' }}>{title}</span>
+                  <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(34, 197, 94, 0.15)', color: '#4ADE80', fontSize: '11px', fontWeight: 700 }}>
+                    RẠP CHIẾU TOÀN MÀN HÌNH
+                  </span>
+                </div>
+                {sourceFileName && <span style={{ color: '#94A3B8', fontSize: '12px' }}>Tệp gốc: {sourceFileName}</span>}
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#94A3B8', fontSize: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <span style={{ color: '#94A3B8', fontSize: '12px', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '6px' }}>
                 🛡️ DRM: {studentName} ({studentCode})
               </span>
-              {blobUrl && (
+
+              {/* Quick Sample Files Download */}
+              {sampleDataFiles && sampleDataFiles.length > 0 && (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {sampleDataFiles.map(f => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => handleDownloadSampleFile(f)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        background: '#166534',
+                        color: '#BBF7D0',
+                        border: '1px solid #22C55E',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                      title="Tải file mẫu thực hành về máy"
+                    >
+                      <Download size={13} />
+                      <span>Tải: {f.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Quick Submit Shortcut */}
+              {onQuickSubmit && (
                 <button
                   type="button"
-                  onClick={() => window.open(blobUrl, '_blank')}
+                  onClick={() => {
+                    setIsFullScreen(false);
+                    onQuickSubmit();
+                  }}
                   style={{
-                    padding: '6px 12px',
+                    padding: '6px 14px',
                     borderRadius: '6px',
-                    background: '#334155',
-                    color: '#F8FAFC',
-                    border: '1px solid #475569',
+                    background: '#2563EB',
+                    color: '#FFFFFF',
+                    border: 'none',
                     fontSize: '12px',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '5px',
+                    boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
                   }}
                 >
-                  <ExternalLink size={13} />
-                  <span>Tab Mới</span>
+                  <Send size={13} />
+                  <span>Nộp Bài Thi</span>
                 </button>
               )}
+
               <button
                 type="button"
                 onClick={() => setIsFullScreen(false)}
@@ -800,18 +996,19 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
                   alignItems: 'center',
                   gap: '4px'
                 }}
+                title="Bấm nút hoặc nhấn phím ESC để thu nhỏ lại"
               >
                 <Minimize2 size={13} />
-                <span>Thoát Toàn Màn Hình</span>
+                <span>Thu Nhỏ (ESC)</span>
               </button>
             </div>
           </div>
 
-          <div style={{ flex: 1, position: 'relative', background: '#0F172A', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+          <div style={{ flex: 1, position: 'relative', background: '#0F172A', borderRadius: '0 0 12px 12px', overflow: 'hidden' }}>
             <WatermarkOverlay />
             {isPdf && blobUrl ? (
               <iframe
-                src={`${blobUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                src={`${blobUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH&pagemode=none`}
                 title={title}
                 style={{ width: '100%', height: '100%', border: 'none' }}
               />
@@ -820,7 +1017,7 @@ export const SecureDocViewer: React.FC<SecureDocViewerProps> = ({
                 <img src={blobUrl || content} alt={title} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               </div>
             ) : (
-              <div style={{ padding: '30px', color: '#FFFFFF', whiteSpace: 'pre-wrap', maxHeight: '100%', overflowY: 'auto' }}>
+              <div style={{ padding: '36px', color: '#FFFFFF', whiteSpace: 'pre-wrap', maxHeight: '100%', overflowY: 'auto', lineHeight: 1.8, fontSize: '16px' }}>
                 {content}
               </div>
             )}

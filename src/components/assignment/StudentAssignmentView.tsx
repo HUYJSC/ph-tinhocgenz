@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Assignment, AssignmentSubmission } from '../../types/assignment';
 import { UserProfile } from '../../types/auth';
 import { SecureDocViewer } from './SecureDocViewer';
 import {
   Clock, CheckCircle2, Play, UploadCloud, Send,
   AlertCircle, ArrowLeft, Cloud, Upload, FileSpreadsheet,
-  Download, Trash2, RefreshCw
+  Download, Trash2, RefreshCw, Maximize2, SplitSquareVertical,
+  MoveHorizontal, X
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import confetti from 'canvas-confetti';
@@ -47,6 +48,46 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
   const [timeSpentSeconds, setTimeSpentSeconds] = useState<number>(0);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState<AssignmentSubmission | null>(null);
+
+  // Smart Layout Modes: 'focus' (78/22 - Đề Siêu To), 'full' (100% Siêu Rộng), 'split' (50/50 Cân Bằng)
+  const [layoutMode, setLayoutMode] = useState<'focus' | 'full' | 'split'>('focus');
+  const [splitPercent, setSplitPercent] = useState<number>(78);
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [showDrawerSubmit, setShowDrawerSubmit] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Xử lý kéo thả thanh phân chia kích thước (Draggable Splitter)
+  const handleMouseDownResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const newWidth = e.clientX - rect.left;
+      const pct = Math.round((newWidth / rect.width) * 100);
+      if (pct >= 40 && pct <= 85) {
+        setSplitPercent(pct);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isResizing) {
+        setIsResizing(false);
+      }
+    };
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   // Active exam countdown timer
   useEffect(() => {
@@ -258,7 +299,15 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '16px' }} className="animate-slide-up">
+    <div
+      style={{
+        maxWidth: activeAssignment ? '100%' : '1200px',
+        margin: '0 auto',
+        width: '100%',
+        padding: activeAssignment ? '6px 16px' : '16px'
+      }}
+      className="animate-slide-up"
+    >
       {/* 1. Exam Result / Success View */}
       {submittedSuccess && (
         <div className="card animate-slide-up" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '580px', margin: '20px auto' }}>
@@ -352,7 +401,99 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              {/* BỘ CHUYỂN ĐỔI CHẾ ĐỘ XEM ĐỀ THI TO VÀ BỰ (KHÔNG MỞ TAB) */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: 'var(--bg-secondary, #F1F5F9)',
+                  padding: '3px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #E2E8F0)'
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    setLayoutMode('focus');
+                    setSplitPercent(78);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: layoutMode === 'focus' ? 'var(--accent-primary, #2563EB)' : 'transparent',
+                    color: layoutMode === 'focus' ? '#FFFFFF' : 'var(--text-secondary, #64748B)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Chế độ Đề Bài Siêu To (78% Đề thi / 22% Nộp bài - Khuyên dùng)"
+                >
+                  <MoveHorizontal size={13} />
+                  <span>Đề Siêu To (78:22)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    setLayoutMode('full');
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: layoutMode === 'full' ? 'var(--accent-primary, #2563EB)' : 'transparent',
+                    color: layoutMode === 'full' ? '#FFFFFF' : 'var(--text-secondary, #64748B)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Chế độ Siêu Rộng cực đại 100% (Phiếu nộp bài dạng thanh nổi)"
+                >
+                  <Maximize2 size={13} />
+                  <span>Siêu Rộng (100%)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    setLayoutMode('split');
+                    setSplitPercent(50);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: layoutMode === 'split' ? 'var(--accent-primary, #2563EB)' : 'transparent',
+                    color: layoutMode === 'split' ? '#FFFFFF' : 'var(--text-secondary, #64748B)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Chế độ Cân Bằng (50% Đề thi / 50% Nộp bài)"
+                >
+                  <SplitSquareVertical size={13} />
+                  <span>Cân Bằng (50:50)</span>
+                </button>
+              </div>
+
               {/* Countdown Timer Badge */}
               <div
                 style={{
@@ -383,38 +524,28 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
             </div>
           </div>
 
-          {/* Exam Grid: Left Protected Viewer | Right Simplified Submission Sheet */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
-            {/* Left: Secure Protected DRM Document Viewer */}
-            <div>
-              <div style={{ marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                1. Đề thi gốc từ Giáo viên (Bảo mật - Chống sao chép):
-              </div>
-              <SecureDocViewer
-                content={activeAssignment.rawContent}
-                sourceFileType={activeAssignment.sourceFileType}
-                sourceFileName={activeAssignment.sourceFileName}
-                studentName={currentUser.name}
-                studentCode={currentUser.studentCode || 'THGZ01'}
-                title={activeAssignment.title}
-                videoLecture={activeAssignment.videoLecture}
-                sampleDataFiles={activeAssignment.sampleDataFiles}
-              />
-            </div>
-
-            {/* Right: Student Practical Submission Sheet */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>2. Phiếu Làm Bài & Nộp Tệp Thực Hành:</span>
-              </div>
-
-              <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                {/* 1. Quick Sample File Downloader (If Teacher Provided Files) */}
+          {/* Helper render Phiếu nộp bài */}
+          {(() => {
+            const renderSubmissionSheetContent = (inDrawer = false) => (
+              <div
+                className="card"
+                style={{
+                  padding: inDrawer ? '18px' : '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  background: 'var(--bg-card)',
+                  borderRadius: '12px',
+                  border: inDrawer ? 'none' : '1px solid var(--border-color)',
+                  boxShadow: inDrawer ? 'none' : '0 2px 8px rgba(0,0,0,0.04)'
+                }}
+              >
+                {/* 1. Quick Sample File Downloader */}
                 {activeAssignment.sampleDataFiles && activeAssignment.sampleDataFiles.length > 0 && (
                   <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <Download size={14} />
-                      <span>Bước 1: Tải tệp thực hành mẫu từ Giảng viên (nếu chưa tải)</span>
+                      <span>Bước 1: Tải tệp thực hành mẫu từ Giảng viên</span>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {activeAssignment.sampleDataFiles.map(f => (
@@ -450,7 +581,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <UploadCloud size={17} color="#2563EB" />
-                      <span>Bước 2: Tải lên tệp bài làm thực hành đã hoàn thành *</span>
+                      <span>Bước 2: Tải lên tệp bài làm thực hành *</span>
                     </label>
                     <span style={{ fontSize: '0.72rem', background: '#DBEAFE', color: '#1D4ED8', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
                       Bắt buộc tệp làm bài
@@ -458,7 +589,6 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                   </div>
 
                   {!attachedFile ? (
-                    /* Large Interactive Upload Zone */
                     <label
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
@@ -468,8 +598,8 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '12px',
-                        padding: '28px 20px',
+                        gap: '10px',
+                        padding: inDrawer ? '20px 14px' : '26px 18px',
                         borderRadius: '10px',
                         background: isDragging ? 'rgba(34, 197, 94, 0.08)' : 'var(--bg-primary)',
                         border: isDragging ? '2px dashed #16A34A' : '2px dashed #3B82F6',
@@ -481,8 +611,8 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                     >
                       <div
                         style={{
-                          width: '52px',
-                          height: '52px',
+                          width: '46px',
+                          height: '46px',
                           borderRadius: '50%',
                           background: '#EFF6FF',
                           color: '#2563EB',
@@ -492,25 +622,25 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                           boxShadow: '0 4px 10px rgba(37, 99, 235, 0.15)'
                         }}
                       >
-                        <Upload size={26} />
+                        <Upload size={22} />
                       </div>
 
                       <div>
-                        <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#1E293B' }}>
-                          BẤM VÀO ĐÂY ĐỂ TẢI TỆP BÀI LÀM LÊN
+                        <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1E293B' }}>
+                          BẤM VÀO ĐÂY ĐỂ TẢI BÀI LÀM LÊN
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '3px' }}>
-                          Hoặc kéo thả file Excel (.xlsx), Word (.docx), PowerPoint (.pptx), ZIP vào khung này
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
+                          Kéo thả file Excel (.xlsx), Word (.docx), PowerPoint (.pptx), ZIP
                         </div>
                       </div>
 
                       <div
                         style={{
-                          padding: '7px 18px',
+                          padding: '6px 16px',
                           borderRadius: '6px',
                           background: '#16A34A',
                           color: '#FFFFFF',
-                          fontSize: '0.84rem',
+                          fontSize: '0.82rem',
                           fontWeight: 800,
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -518,8 +648,8 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                           boxShadow: '0 2px 6px rgba(22, 163, 74, 0.3)'
                         }}
                       >
-                        <UploadCloud size={16} />
-                        <span>Chọn Tệp Từ Máy Tính Của Bạn</span>
+                        <UploadCloud size={15} />
+                        <span>Chọn Tệp Từ Máy Tính</span>
                       </div>
 
                       <input
@@ -530,25 +660,24 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                       />
                     </label>
                   ) : (
-                    /* Attached File Card */
                     <div
                       style={{
                         background: '#F0FDF4',
                         border: '2px solid #22C55E',
                         borderRadius: '10px',
-                        padding: '16px',
+                        padding: '14px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         flexWrap: 'wrap',
-                        gap: '12px'
+                        gap: '10px'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div
                           style={{
-                            width: '44px',
-                            height: '44px',
+                            width: '40px',
+                            height: '40px',
                             borderRadius: '8px',
                             background: '#DCFCE7',
                             color: '#16A34A',
@@ -557,28 +686,28 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                             justifyContent: 'center'
                           }}
                         >
-                          <FileSpreadsheet size={24} />
+                          <FileSpreadsheet size={22} />
                         </div>
                         <div>
-                          <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A' }}>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', wordBreak: 'break-all' }}>
                             {attachedFile.name}
                           </div>
-                          <div style={{ fontSize: '0.78rem', color: '#166534', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <CheckCircle2 size={13} color="#16A34A" />
-                            <span>Dung lượng: <strong>{attachedFile.size}</strong> • Đã nạp sẵn sàng nộp</span>
+                          <div style={{ fontSize: '0.75rem', color: '#166534', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <CheckCircle2 size={12} color="#16A34A" />
+                            <span>Dung lượng: <strong>{attachedFile.size}</strong> • Sẵn sàng nộp</span>
                           </div>
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
                         <label
                           style={{
-                            padding: '6px 12px',
+                            padding: '5px 10px',
                             borderRadius: '6px',
                             background: '#FFFFFF',
                             border: '1px solid #CBD5E1',
                             color: '#334155',
-                            fontSize: '0.78rem',
+                            fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -586,8 +715,8 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                             gap: '4px'
                           }}
                         >
-                          <RefreshCw size={13} />
-                          <span>Đổi tệp khác</span>
+                          <RefreshCw size={12} />
+                          <span>Đổi tệp</span>
                           <input
                             type="file"
                             style={{ display: 'none' }}
@@ -600,12 +729,12 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                           type="button"
                           onClick={() => setAttachedFile(null)}
                           style={{
-                            padding: '6px 10px',
+                            padding: '5px 8px',
                             borderRadius: '6px',
                             background: '#FEE2E2',
                             border: '1px solid #FCA5A5',
                             color: '#DC2626',
-                            fontSize: '0.78rem',
+                            fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -613,7 +742,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                             gap: '4px'
                           }}
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={12} />
                           <span>Xóa</span>
                         </button>
                       </div>
@@ -627,7 +756,7 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                     Ghi chú hoặc lời nhắn cho Giảng viên (Tùy chọn):
                   </label>
                   <textarea
-                    rows={3}
+                    rows={inDrawer ? 2 : 3}
                     placeholder="Nhập ghi chú bài làm của bạn (ví dụ: Em đã làm hoàn chỉnh trên Sheet 1 và Sheet 2...)..."
                     value={unifiedAnswer}
                     onChange={e => setUnifiedAnswer(e.target.value)}
@@ -648,20 +777,23 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                 </div>
 
                 {/* Cloud & Teacher Delivery Guarantee */}
-                <div style={{ fontSize: '0.78rem', color: '#16A34A', background: '#DCFCE7', padding: '9px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Cloud size={16} />
-                  <span>Bài làm của bạn sẽ tự động chuyển tới Giảng viên và lưu trữ an toàn ngay sau khi nộp.</span>
+                <div style={{ fontSize: '0.78rem', color: '#16A34A', background: '#DCFCE7', padding: '8px 12px', borderRadius: '6px', border: '1px solid #86EFAC', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Cloud size={15} />
+                  <span>Bài làm tự động đồng bộ về Google Drive của Giảng viên.</span>
                 </div>
 
                 {/* Big Action Submit Button */}
                 <button
                   type="button"
-                  onClick={() => setShowSubmitModal(true)}
+                  onClick={() => {
+                    if (inDrawer) setShowDrawerSubmit(false);
+                    setShowSubmitModal(true);
+                  }}
                   className="btn btn-primary"
                   style={{
                     width: '100%',
-                    padding: '14px',
-                    fontSize: '1rem',
+                    padding: '12px',
+                    fontSize: '0.95rem',
                     fontWeight: 800,
                     display: 'flex',
                     alignItems: 'center',
@@ -671,12 +803,299 @@ export const StudentAssignmentView: React.FC<StudentAssignmentViewProps> = ({
                     boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                   }}
                 >
-                  <Send size={18} />
+                  <Send size={17} />
                   <span>{attachedFile ? `Nộp Bài Thực Hành (Kèm ${attachedFile.name})` : 'Xác Nhận & Nộp Bài Làm'}</span>
                 </button>
               </div>
-            </div>
-          </div>
+            );
+
+            return (
+              <>
+                {/* ── BỐ CỤC THÔNG MINH: ĐỀ THI TO & BỰ + THANH PHÂN CHIA KÉO THẢ ── */}
+                <div
+                  ref={containerRef}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: layoutMode === 'full' ? '0' : '14px',
+                    alignItems: 'stretch',
+                    position: 'relative',
+                    width: '100%'
+                  }}
+                >
+                  {/* CỘT TRÁI: KHUNG XEM ĐỀ THI SIÊU BỰ */}
+                  <div
+                    style={{
+                      flex: layoutMode === 'full' ? '1 1 100%' : `0 0 ${splitPercent}%`,
+                      maxWidth: layoutMode === 'full' ? '100%' : `${splitPercent}%`,
+                      minWidth: '320px',
+                      transition: isResizing ? 'none' : 'flex 0.2s ease, max-width 0.2s ease'
+                    }}
+                  >
+                    <div style={{ marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>1. Đề thi gốc từ Giáo viên (Bảo mật - Chống sao chép):</span>
+                      {layoutMode === 'full' && (
+                        <span style={{ fontSize: '0.78rem', color: '#16A34A', background: '#DCFCE7', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                          📖 Chế độ xem Siêu Rộng 100%
+                        </span>
+                      )}
+                      {layoutMode === 'focus' && (
+                        <span style={{ fontSize: '0.78rem', color: '#2563EB', background: '#DBEAFE', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                          🎯 Chế độ Đề Bài To ({splitPercent}%)
+                        </span>
+                      )}
+                    </div>
+
+                    <SecureDocViewer
+                      content={activeAssignment.rawContent}
+                      sourceFileType={activeAssignment.sourceFileType}
+                      sourceFileName={activeAssignment.sourceFileName}
+                      studentName={currentUser.name}
+                      studentCode={currentUser.studentCode || 'THGZ01'}
+                      title={activeAssignment.title}
+                      videoLecture={activeAssignment.videoLecture}
+                      sampleDataFiles={activeAssignment.sampleDataFiles}
+                      isFullWidth={layoutMode === 'full'}
+                      onToggleFullWidth={() => {
+                        soundFx.playClick();
+                        setLayoutMode(prev => prev === 'full' ? 'focus' : 'full');
+                        if (layoutMode === 'full') setSplitPercent(70);
+                      }}
+                      onQuickSubmit={() => setShowSubmitModal(true)}
+                    />
+                  </div>
+
+                  {/* THANH KÉO PHÂN CHIA (DRAGGABLE SPLITTER RESIZER) */}
+                  {layoutMode !== 'full' && (
+                    <div
+                      onMouseDown={handleMouseDownResize}
+                      title="Rê chuột kéo thả để tùy biến độ to của đề bài theo ý muốn"
+                      style={{
+                        width: '10px',
+                        cursor: 'col-resize',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        userSelect: 'none',
+                        position: 'relative',
+                        zIndex: 10,
+                        margin: '0 -2px'
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '4px',
+                          height: '46px',
+                          borderRadius: '4px',
+                          background: isResizing ? '#2563EB' : '#CBD5E1',
+                          boxShadow: isResizing ? '0 0 8px rgba(37, 99, 235, 0.5)' : 'none',
+                          transition: 'background 0.2s ease'
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* CỘT PHẢI: PHIẾU NỘP BÀI (TỰ ĐỘNG THU GỌN KHI Ở CHẾ ĐỘ FOCUS, ẨN KHI Ở CHẾ ĐỘ FULL) */}
+                  {layoutMode !== 'full' && (
+                    <div
+                      style={{
+                        flex: `1 1 calc(${100 - splitPercent}% - 14px)`,
+                        minWidth: '280px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        position: 'sticky',
+                        top: '130px',
+                        alignSelf: 'flex-start'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>2. Phiếu Làm Bài & Nộp Tệp:</span>
+                      </div>
+                      {renderSubmissionSheetContent(false)}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── FLOATING SUBMISSION DOCK (THANH NỘP BÀI NỔI KHI Ở CHẾ ĐỘ 100% SIÊU RỘNG) ── */}
+                {layoutMode === 'full' && (
+                  <div
+                    style={{
+                      position: 'fixed',
+                      bottom: '24px',
+                      right: '24px',
+                      zIndex: 9999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 18px',
+                      background: 'rgba(15, 23, 42, 0.94)',
+                      backdropFilter: 'blur(16px)',
+                      borderRadius: 'var(--radius-full, 9999px)',
+                      boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      color: '#FFFFFF'
+                    }}
+                    className="animate-fade-in"
+                  >
+                    {/* Timer */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.88rem', fontWeight: 800, color: timeLeftSeconds <= 300 ? '#EF4444' : '#38BDF8' }}>
+                      <Clock size={16} />
+                      <span>{formatTimer(timeLeftSeconds)}</span>
+                    </div>
+
+                    <div style={{ height: '22px', width: '1px', background: 'rgba(255,255,255,0.2)' }} />
+
+                    {/* Trạng thái bài làm */}
+                    <div style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {attachedFile ? (
+                        <span style={{ color: '#4ADE80', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <CheckCircle2 size={15} />
+                          <span>{attachedFile.name.length > 18 ? attachedFile.name.substring(0, 15) + '...' : attachedFile.name}</span>
+                        </span>
+                      ) : (
+                        <span style={{ color: '#F87171', fontSize: '0.8rem', fontWeight: 600 }}>
+                          ⚠️ Chưa nạp file bài làm
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Nút mở phiếu nộp bài dạng Drawer bên phải */}
+                    <button
+                      type="button"
+                      onClick={() => setShowDrawerSubmit(true)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 'var(--radius-full, 9999px)',
+                        background: '#3B82F6',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 8px rgba(59, 130, 246, 0.4)'
+                      }}
+                    >
+                      <UploadCloud size={15} />
+                      <span>Phiếu Nộp Bài</span>
+                    </button>
+
+                    {/* Nút Nộp Bài Thi */}
+                    <button
+                      type="button"
+                      onClick={() => setShowSubmitModal(true)}
+                      className="btn btn-primary"
+                      style={{
+                        padding: '8px 18px',
+                        borderRadius: 'var(--radius-full, 9999px)',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Send size={15} />
+                      <span>Nộp Bài</span>
+                    </button>
+
+                    {/* Nút Thu Nhỏ lại 70:30 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playClick();
+                        setLayoutMode('focus');
+                        setSplitPercent(70);
+                      }}
+                      style={{
+                        background: 'rgba(255,255,255,0.12)',
+                        border: 'none',
+                        color: '#CBD5E1',
+                        padding: '6px 12px',
+                        borderRadius: 'var(--radius-full, 9999px)',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                      title="Quay về bố cục 70:30"
+                    >
+                      Thu Nhỏ (70:30)
+                    </button>
+                  </div>
+                )}
+
+                {/* ── SIDE DRAWER NỘP BÀI (KHI Ở CHẾ ĐỘ SIÊU RỘNG 100%) ── */}
+                {showDrawerSubmit && (
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 99998,
+                      background: 'rgba(0,0,0,0.5)',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      justifyContent: 'flex-end'
+                    }}
+                    onClick={() => setShowDrawerSubmit(false)}
+                    className="animate-fade-in"
+                  >
+                    <div
+                      style={{
+                        width: '100%',
+                        maxWidth: '440px',
+                        height: '100%',
+                        background: 'var(--bg-card, #FFFFFF)',
+                        boxShadow: '-8px 0 30px rgba(0,0,0,0.25)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflowY: 'auto'
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <div
+                        style={{
+                          padding: '16px 20px',
+                          borderBottom: '1px solid var(--border-color, #E2E8F0)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          background: 'var(--bg-secondary, #F8FAFC)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.95rem' }}>
+                          <UploadCloud size={18} color="#2563EB" />
+                          <span>Phiếu Nộp Tệp Thực Hành</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowDrawerSubmit(false)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted, #64748B)',
+                            cursor: 'pointer',
+                            padding: '4px'
+                          }}
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+
+                      <div style={{ padding: '16px' }}>
+                        {renderSubmissionSheetContent(true)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 

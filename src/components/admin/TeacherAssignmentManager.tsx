@@ -1724,9 +1724,9 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
           <div
             className="card"
             style={{
-              maxWidth: '920px',
-              width: '100%',
-              maxHeight: '94vh',
+              maxWidth: '96vw',
+              width: '96vw',
+              maxHeight: '96vh',
               overflowY: 'auto',
               padding: '20px',
               borderRadius: '12px',
@@ -1763,6 +1763,7 @@ export const TeacherAssignmentManager: React.FC<TeacherAssignmentManagerProps> =
               title={viewingAssignment.title}
               videoLecture={viewingAssignment.videoLecture}
               sampleDataFiles={viewingAssignment.sampleDataFiles}
+              defaultHeight="calc(88vh - 100px)"
             />
           </div>
         </div>
