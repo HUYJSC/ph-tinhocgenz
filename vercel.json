@@ -6,7 +6,7 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "devCommand": "npm run dev",
-  "cleanUrls": true,
+  "cleanUrls": false,
   "trailingSlash": false,
 
   "crons": [
@@ -22,16 +22,12 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/((?!assets/|api/|.*\\..*).*)",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-
-  "redirects": [
-    {
-      "source": "/admin",
-      "destination": "/#/admin",
-      "permanent": false
     }
   ],
 
