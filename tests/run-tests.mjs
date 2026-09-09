@@ -253,6 +253,37 @@ const totalQuestions = (defaultQuizzesContent.match(/prompt:\s*'/g) || []).lengt
 assert(totalQuizzes === 10, 'Bảo toàn chính xác 10 phân hệ đào tạo (không mất đề thi)');
 assert(totalQuestions === 28, 'Bảo toàn chính xác 28 câu hỏi trắc nghiệm hiện tại (không mất câu hỏi)');
 
+// 14. Test Chuẩn hóa PWA & Bộ API Client SDK 2026
+console.log('\n🚀 NHÓM 14: Kiểm tra Chuẩn hóa PWA & Bộ API Client SDK 2026');
+
+const manifestContent = fs.readFileSync('public/manifest.json', 'utf8');
+assert(manifestContent.includes('"orientation": "any"'), 'PWA manifest mở khóa xoay màn hình linh hoạt ("orientation": "any")');
+
+const packageJsonContent = fs.readFileSync('package.json', 'utf8');
+assert(packageJsonContent.includes('"lint": "tsc --noEmit"'), 'Lệnh npm run lint được cấu hình chạy typecheck tsc --noEmit');
+
+const apiServices = [
+  { path: 'src/services/api/courseService.ts', symbol: 'courseService', name: 'Course Service SDK' },
+  { path: 'src/services/api/assessmentService.ts', symbol: 'assessmentService', name: 'Assessment Service SDK' },
+  { path: 'src/services/api/attendanceService.ts', symbol: 'attendanceService', name: 'Attendance Service SDK' },
+  { path: 'src/services/api/assignmentService.ts', symbol: 'assignmentService', name: 'Assignment Service SDK' },
+  { path: 'src/services/api/certificateService.ts', symbol: 'certificateApiService', name: 'Certificate Service SDK' },
+  { path: 'src/services/api/analyticsService.ts', symbol: 'analyticsApiService', name: 'Analytics Service SDK' },
+  { path: 'src/services/api/index.ts', symbol: 'export * from', name: 'Index Hub SDK' }
+];
+
+apiServices.forEach(srv => {
+  const exists = fs.existsSync(path.resolve(srv.path));
+  assert(exists, `Tệp ${srv.name} tồn tại: ${srv.path}`);
+  if (exists) {
+    const content = fs.readFileSync(srv.path, 'utf8');
+    assert(content.includes(srv.symbol), `${srv.name} xuất khẩu ${srv.symbol} hợp lệ`);
+  }
+});
+
+const securityUtilsContent = fs.readFileSync('src/utils/securityUtils.ts', 'utf8');
+assert(securityUtilsContent.includes('/api/health/'), 'getClientIp ưu tiên tra cứu endpoint nội bộ trước khi gọi bên thứ 3');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
@@ -261,4 +292,5 @@ if (failedTests === 0) {
   console.log(`⚠️ Có ${failedTests} bài test không đạt yêu cầu.`);
 }
 console.log('====================================================\n');
+
 

@@ -21,13 +21,25 @@ export async function getClientIp(): Promise<string> {
       clearTimeout(id);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      return (data.ip || data.query || data.origin || '').split(',')[0].trim();
+      return (data.ip || data.client_ip || data.query || data.origin || '').split(',')[0].trim();
     } catch (e) {
       clearTimeout(id);
       throw e;
     }
   };
 
+  // 1. Thử gọi máy chủ backend nội bộ trước nếu có hỗ trợ phản hồi IP client
+  try {
+    const internalUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/health/` : '/api/health/';
+    const internalIp = await fetchWithTimeout(internalUrl, 2000);
+    if (internalIp && internalIp.length >= 7) {
+      cachedIp = internalIp;
+      lastIpFetchTime = now;
+      return internalIp;
+    }
+  } catch {}
+
+  // 2. Dự phòng các nhà cung cấp công cộng an toàn
   const providers = [
     'https://api.ipify.org?format=json',
     'https://api64.ipify.org?format=json',
