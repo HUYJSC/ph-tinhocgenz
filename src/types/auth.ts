@@ -37,6 +37,7 @@ export interface StudentAccount {
   phone?: string;
   email?: string;
   password?: string;
+  passwordHash?: string;
   schoolOrClass: string;
   programTrack: CurriculumTrack;
   enrolledTracks: CurriculumTrack[];
@@ -65,6 +66,7 @@ export interface TeacherAccount {
   email?: string;
   phoneOrEmail?: string;
   password?: string;
+  passwordHash?: string;
   assignedTracks: CurriculumTrack[];
   mustChangePassword?: boolean;
   role: 'teacher' | 'admin';

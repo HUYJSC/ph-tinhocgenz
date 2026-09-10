@@ -41,8 +41,17 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Không cache các endpoint API backend trực tiếp
-  if (url.pathname.startsWith('/api/')) {
+  // Không cache các endpoint API backend hoặc các trang quản trị nhạy cảm (SEC-P1-02)
+  const isPrivateOrApi = 
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/admin') ||
+    url.pathname.startsWith('/teacher') ||
+    url.pathname.startsWith('/academic') ||
+    url.pathname.startsWith('/auth') ||
+    url.pathname.startsWith('/attendance') ||
+    url.pathname.startsWith('/schedule');
+
+  if (isPrivateOrApi) {
     return;
   }
 

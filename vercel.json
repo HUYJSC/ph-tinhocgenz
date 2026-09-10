@@ -62,6 +62,10 @@
         {
           "key": "Permissions-Policy",
           "value": "camera=*, microphone=(), geolocation=(self)"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://api.ipify.org https://api64.ipify.org https://ipapi.co https://api.my-ip.io https://*.supabase.co wss://*.supabase.co https://hoctructuyen.tinhocgenz.io.vn https://tinhocgenz.io.vn; frame-src 'self' https://docs.google.com https://drive.google.com; object-src 'none'; base-uri 'self';"
         }
       ]
     },

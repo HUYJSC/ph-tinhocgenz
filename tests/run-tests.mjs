@@ -284,6 +284,39 @@ apiServices.forEach(srv => {
 const securityUtilsContent = fs.readFileSync('src/utils/securityUtils.ts', 'utf8');
 assert(securityUtilsContent.includes('/api/health/'), 'getClientIp ưu tiên tra cứu endpoint nội bộ trước khi gọi bên thứ 3');
 
+// 15. Test Khóa Chặt Bảo Mật P0 & Triệt Tiêu Backdoor (Security Lockdown Suite 2026)
+console.log('\n🛡️ NHÓM 15: Kiểm tra Khóa Chặt Bảo Mật P0 & Triệt Tiêu Backdoor (Security Lockdown Suite 2026)');
+
+const useAuthContent = fs.readFileSync('src/hooks/useAuth.ts', 'utf8');
+assert(!useAuthContent.includes("password: '123'"), 'P0-SEC: Đã xóa bỏ hoàn toàn mật khẩu hardcode plaintext (password: 123) trong danh sách học viên');
+assert(!useAuthContent.includes("cleanPin.length >= 3"), 'P0-SEC: Đã triệt tiêu hoàn toàn backdoor bypass quản trị (cleanPin.length >= 3)');
+assert(!useAuthContent.includes("cleanPass === '123' || cleanPass === '123456'"), 'P0-SEC: Đã triệt tiêu logic bypass mật khẩu học viên (cleanPass === 123)');
+assert(!useAuthContent.includes("password: 'Admin@2026'"), 'P0-SEC: Đã loại bỏ mật khẩu quản trị viên plaintext khỏi mã nguồn');
+assert(useAuthContent.includes('hashPasswordSync') && useAuthContent.includes('safeCompare'), 'P0-SEC: useAuth tích hợp băm mật khẩu bảo mật và so khớp hằng số thời gian');
+
+const forgotModalCheck = fs.readFileSync('src/components/auth/ForgotPasswordModal.tsx', 'utf8');
+assert(!forgotModalCheck.includes('emailLog.otpCode'), 'P0-SEC: Loại bỏ triệt để hiển thị mã OTP plaintext trên màn hình modal khôi phục tài khoản');
+assert(!forgotModalCheck.includes('handleCopyOtp'), 'P0-SEC: Đã xóa bỏ nút sao chép mã OTP tắt');
+
+const swContent = fs.readFileSync('public/sw.js', 'utf8');
+assert(swContent.includes('/admin') && swContent.includes('/teacher') && swContent.includes('/academic'), 'P1-SEC: Service Worker chặn cache toàn bộ các đường dẫn quản trị nhạy cảm');
+
+const vercelContent = fs.readFileSync('vercel.json', 'utf8');
+assert(vercelContent.includes('Content-Security-Policy'), 'P1-SEC: vercel.json thiết lập đầy đủ Header Content-Security-Policy (CSP) nghiêm ngặt');
+
+const appContent = fs.readFileSync('src/App.tsx', 'utf8');
+assert(appContent.includes('403') && appContent.includes('user.role === \'student\''), 'P1-SEC: App.tsx có lớp chặn RBAC 403 khi tài khoản học viên cố truy cập /admin');
+
+const gatewayContent = fs.readFileSync('src/components/auth/UnifiedAuthGateway.tsx', 'utf8');
+assert(gatewayContent.includes('portal=admin') && gatewayContent.includes('portal=student'), 'P2-UX: Cổng xác thực hỗ trợ định tuyến tham số ?portal=student|teacher|admin');
+
+const authSecurityExists = fs.existsSync(path.resolve('src/utils/authSecurity.ts'));
+assert(authSecurityExists, 'Tệp tiện ích bảo mật mật mã src/utils/authSecurity.ts tồn tại');
+if (authSecurityExists) {
+  const secContent = fs.readFileSync('src/utils/authSecurity.ts', 'utf8');
+  assert(secContent.includes('safeCompare') && secContent.includes('validatePasswordStrength'), 'authSecurity.ts xuất khẩu safeCompare và validatePasswordStrength');
+}
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

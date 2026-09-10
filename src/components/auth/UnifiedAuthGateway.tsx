@@ -26,8 +26,16 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
 }) => {
   const [role, setRole] = useState<'student' | 'admin'>(() => {
     if (initialRole) return initialRole;
-    if (typeof window !== 'undefined' && (window.location.pathname.toLowerCase().includes('admin') || window.location.hash.toLowerCase().includes('admin'))) {
-      return 'admin';
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname.toLowerCase();
+      const h = window.location.hash.toLowerCase();
+      const s = window.location.search.toLowerCase();
+      if (s.includes('portal=admin') || s.includes('portal=teacher') || p.includes('admin') || h.includes('admin')) {
+        return 'admin';
+      }
+      if (s.includes('portal=student')) {
+        return 'student';
+      }
     }
     return 'student';
   });

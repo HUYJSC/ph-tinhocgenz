@@ -167,7 +167,8 @@ export function App() {
       if (isAdminPath()) return true;
       if (typeof window !== 'undefined') {
         const p = window.location.pathname.toLowerCase();
-        if (p.includes('login') || p.includes('auth')) return true;
+        const s = window.location.search.toLowerCase();
+        if (p.includes('login') || p.includes('auth') || s.includes('portal=')) return true;
       }
       return localStorage.getItem('phtgz_show_auth') === 'true';
     } catch { return false; }
@@ -465,6 +466,62 @@ export function App() {
   // 0. DEDICATED STANDALONE ADMIN ROUTE (/admin)
   const isExplicitAdminUrl = typeof window !== 'undefined' && (window.location.pathname.toLowerCase() === '/admin' || window.location.pathname.toLowerCase() === '/admin/' || window.location.hash.toLowerCase().includes('admin'));
   const isCurrentlyOnAdmin = isExplicitAdminUrl && activeTab !== 'attendance' && activeTab !== 'schedule' && activeTab !== 'assignments';
+
+  // RBAC Access Control Guard: Reject student role from accessing admin route
+  if (isCurrentlyOnAdmin && isSessionActive && user.role === 'student') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        background: '#0f172a',
+        color: '#f8fafc',
+        textAlign: 'center',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}>
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: '16px',
+          padding: '32px 24px',
+          maxWidth: '480px',
+          width: '100%'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#F87171', margin: '0 0 8px' }}>
+            403 — Quyền Truy Cập Bị Từ Chối (RBAC)
+          </h2>
+          <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.6, margin: '0 0 24px' }}>
+            Tài khoản học viên <strong>{user.name} ({user.studentCode})</strong> không có đặc quyền truy cập phân hệ Quản trị viên. Vui lòng quay lại không gian học tập của bạn.
+          </p>
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.history.pushState(null, '', '/');
+              }
+              setActiveTab('dashboard');
+            }}
+            style={{
+              background: '#2563EB',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Quay lại Góc học tập
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isCurrentlyOnAdmin) {
     return (
       <Suspense fallback={<PageLoadingFallback />}>

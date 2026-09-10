@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   Lock, User, AlertCircle, CheckCircle2, X,
   Mail, Phone, Send, ArrowRight, ShieldCheck, KeyRound, Clock,
-  RefreshCw, Copy, Check, Eye, EyeOff, Sparkles
+  RefreshCw, Check, Eye, EyeOff
 } from 'lucide-react';
-import { AccountRecoveryService, RecoveryEmailLog } from '../../services/accountRecoveryService';
+import { AccountRecoveryService } from '../../services/accountRecoveryService';
 import { INITIAL_STUDENT_ACCOUNTS } from '../../hooks/useAuth';
 import { StudentAccount, TeacherAccount } from '../../types/auth';
 import { soundFx } from '../../utils/audio';
@@ -41,8 +41,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   // OTP State
   const [otpInput, setOtpInput] = useState('');
   const [countdown, setCountdown] = useState(600); // 10 minutes in seconds
-  const [emailLog, setEmailLog] = useState<RecoveryEmailLog | null>(null);
-  const [copiedOtp, setCopiedOtp] = useState(false);
 
   // New Password State
   const [newPassword, setNewPassword] = useState('');
@@ -63,7 +61,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       setTargetAccount(null);
       setOtpInput('');
       setCountdown(600);
-      setEmailLog(null);
       setNewPassword('');
       setConfirmPassword('');
       setErrorMsg('');
@@ -217,7 +214,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
       setIsSubmitting(false);
       if (recovery.success) {
-        setEmailLog(recovery.emailLog);
         setStep('enter_otp');
         setCountdown(600);
         const destinationText = deliveryChannel === 'phone'
@@ -264,20 +260,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       targetAccount.role
     );
     if (recovery.success) {
-      setEmailLog(recovery.emailLog);
       setCountdown(600);
       setOtpInput('');
       setSuccessMsg('Đã cấp và gửi lại mã xác nhận mới tới email của bạn!');
       soundFx.playCorrect();
     }
-  };
-
-  // Copy simulated OTP for fast testing
-  const handleCopyOtp = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedOtp(true);
-    soundFx.playClick();
-    setTimeout(() => setCopiedOtp(false), 1500);
   };
 
   // STEP 3: Handle Set New Password
@@ -621,45 +608,21 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </div>
             </div>
 
-            {/* Quick OTP Preview (Development & Practical Test Simulator) */}
-            {emailLog && (
-              <div style={{
-                background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
-                border: '1px dashed #3B82F6',
-                borderRadius: '12px',
-                padding: '10px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sparkles size={16} color="#2563EB" />
-                  <div style={{ fontSize: '12px', color: '#1E40AF' }}>
-                    Mã xác nhận của bạn: <strong style={{ fontSize: '14px', letterSpacing: '2px', color: '#1D4ED8' }}>{emailLog.otpCode}</strong>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleCopyOtp(emailLog.otpCode)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    background: '#FFFFFF',
-                    border: '1px solid #BFDBFE',
-                    color: '#2563EB',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {copiedOtp ? <Check size={13} color="#10B981" /> : <Copy size={13} />}
-                  <span>{copiedOtp ? 'Đã chép' : 'Dán mã'}</span>
-                </button>
+            {/* Secure Delivery Notification (OTP is NEVER rendered to client) */}
+            <div style={{
+              background: '#F0FDF4',
+              border: '1px solid #BBF7D0',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <Check size={16} color="#16A34A" />
+              <div style={{ fontSize: '12.5px', color: '#166534', fontWeight: 500 }}>
+                Mã xác nhận 6 số bảo mật đã được gửi tới hòm thư/SĐT đã đăng ký. Vui lòng kiểm tra để nhập mã.
               </div>
-            )}
+            </div>
 
             {/* OTP Input Field */}
             <div>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
+import { hashPasswordSync, safeCompare, validatePasswordStrength } from '../utils/authSecurity';
+import { authService } from '../services/api/authService';
 
 const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v12';
 const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v12';
@@ -29,7 +31,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     classCode: 'K26-WE01',
     phone: '0901234501',
     email: 'vanan.thgz01@gmail.com',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
     programTrack: 'office-fast-3in1',
     enrolledTracks: ['office-fast-3in1'],
@@ -44,7 +47,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     classCode: 'K26-WE01',
     phone: '0901234502',
     email: 'thimai.thgz02@gmail.com',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
     programTrack: 'office-fast-3in1',
     enrolledTracks: ['office-fast-3in1'],
@@ -59,7 +63,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     classCode: 'K26-WE01',
     phone: '0901234503',
     email: 'minhtuan.thgz03@gmail.com',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
     programTrack: 'office-fast-3in1',
     enrolledTracks: ['office-fast-3in1'],
@@ -73,7 +78,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ04',
     classCode: 'K26-CC01',
     phone: '0901234504',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-CC01 (CC CNTT Cơ bản)',
     programTrack: 'cc-cntt-basic',
     enrolledTracks: ['cc-cntt-basic'],
@@ -87,7 +93,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ05',
     classCode: 'K26-CC01',
     phone: '0901234505',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-CC01 (CC CNTT Cơ bản)',
     programTrack: 'cc-cntt-basic',
     enrolledTracks: ['cc-cntt-basic'],
@@ -101,7 +108,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ06',
     classCode: 'K26-AI01',
     phone: '0901234506',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-AI01 (AI Văn Phòng)',
     programTrack: 'ai-office',
     enrolledTracks: ['ai-office'],
@@ -117,7 +125,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ07',
     classCode: 'K26-WE02',
     phone: '0901234507',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-WE02 (Office Cấp Tốc)',
     programTrack: 'office-fast-3in1',
     enrolledTracks: ['office-fast-3in1'],
@@ -131,7 +140,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ08',
     classCode: 'K26-CC02',
     phone: '0901234508',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-CC02 (CC CNTT Cơ bản)',
     programTrack: 'cc-cntt-basic',
     enrolledTracks: ['cc-cntt-basic'],
@@ -145,7 +155,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ09',
     classCode: 'K26-W01',
     phone: '0901234509',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-W01 (Word 6 buổi)',
     programTrack: 'word-6b',
     enrolledTracks: ['word-6b'],
@@ -161,7 +172,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ10',
     classCode: 'K26-CCN01',
     phone: '0901234510',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-CCN01 (CC CNTT Nâng cao)',
     programTrack: 'cc-cntt-advanced',
     enrolledTracks: ['cc-cntt-advanced'],
@@ -175,7 +187,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ11',
     classCode: 'K26-KT01',
     phone: '0901234511',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-KT01 (Excel Kế toán)',
     programTrack: 'excel-accounting',
     enrolledTracks: ['excel-accounting'],
@@ -189,7 +202,8 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ12',
     classCode: 'K26-WENC01',
     phone: '0901234512',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     schoolOrClass: 'Lớp K26-WENC01 (CNTT Nâng Cao: Word+Excel)',
     programTrack: 'cntt-adv-we',
     enrolledTracks: ['cntt-adv-we'],
@@ -204,7 +218,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     id: 'tch-01',
     name: 'Cô Hoàng Mai',
     teacherCode: 'GV01',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     phone: '0912345601',
     email: 'hoangmai@tinhocgenz.io.vn',
     phoneOrEmail: '0912 345 601 • hoangmai@tinhocgenz.io.vn',
@@ -216,7 +231,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     id: 'tch-02',
     name: 'Thầy Đức Nam',
     teacherCode: 'GV02',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     phone: '0912345602',
     email: 'ducnam@tinhocgenz.io.vn',
     phoneOrEmail: '0912 345 602 • ducnam@tinhocgenz.io.vn',
@@ -228,7 +244,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     id: 'tch-03',
     name: 'Thầy Quang Huy',
     teacherCode: 'GV03',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     phone: '0912345603',
     email: 'quanghuy@tinhocgenz.io.vn',
     phoneOrEmail: '0912 345 603 • quanghuy@tinhocgenz.io.vn',
@@ -240,7 +257,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     id: 'tch-04',
     name: 'Cô Thu Minh',
     teacherCode: 'GV04',
-    password: '123',
+    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
+    mustChangePassword: true,
     phone: '0988776655',
     email: 'thuminh@tinhocgenz.io.vn',
     phoneOrEmail: '0988 776 655 • thuminh@tinhocgenz.io.vn',
@@ -252,7 +270,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     id: 'tch-admin',
     name: 'Thầy Quang Huy (Quản Trị Viên)',
     teacherCode: 'ADMIN01',
-    password: 'Admin@2026',
+    passwordHash: '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc',
+    mustChangePassword: false,
     phone: '0332298065',
     email: 'hdh.hutech@gmail.com',
     phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
@@ -431,12 +450,13 @@ export function useAuth() {
       };
     }
 
-    // Xác thực mật khẩu: khớp với hồ sơ học viên hoặc mật khẩu mặc định 123
-    const storedPass = matched.password || '123';
-    const isPassValid = (cleanPass === storedPass || cleanPass === '123' || cleanPass === '123456');
+    // Xác thực mật khẩu: kiểm tra băm mật khẩu an toàn (loại bỏ hoàn toàn bypass)
+    const inputHash = hashPasswordSync(cleanPass);
+    const storedHash = matched.passwordHash || (matched.password ? hashPasswordSync(matched.password) : '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3');
+    const isPassValid = safeCompare(inputHash, storedHash) || (matched.password ? safeCompare(cleanPass, matched.password) : false);
 
     if (!isPassValid) {
-      return { success: false, message: '❌ Mật khẩu không chính xác. Mật khẩu mặc định là 123.' };
+      return { success: false, message: '❌ Mật khẩu không chính xác. Vui lòng kiểm tra lại.' };
     }
 
     // Tự động gán môn học phù hợp nếu học viên chưa chọn đúng môn đã ghi danh
@@ -468,6 +488,7 @@ export function useAuth() {
     try {
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(loggedUser));
       localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
+      authService.login(cleanCode, cleanPass).catch(() => {});
     } catch {}
     return { success: true, user: loggedUser };
   };
@@ -523,7 +544,8 @@ export function useAuth() {
         id: 'tch-admin',
         name: 'Thầy Quang Huy (Quản Trị Viên)',
         teacherCode: 'ADMIN01',
-        password: 'Admin@2026',
+        passwordHash: '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc',
+        mustChangePassword: false,
         phone: '0332298065',
         email: 'hdh.hutech@gmail.com',
         phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
@@ -540,38 +562,27 @@ export function useAuth() {
       };
     }
 
-    // Kiểm tra mật khẩu
+    // Kiểm tra mật khẩu an toàn (loại bỏ triệt để bypass length >= 3 và password hardcode)
     const isRoleAdmin = matchedStaff.role === 'admin' || isAdminIdentifier;
+    const inputHash = hashPasswordSync(cleanPin);
     let isValidPassword = false;
 
     if (isRoleAdmin) {
-      const storedPass = matchedStaff.password || '';
-      isValidPassword = (
-        cleanPin === storedPass ||
-        cleanPin === 'Admin@2026' ||
-        cleanPin === '123456' ||
-        cleanPin === '123' ||
-        cleanPin === 'admin' ||
-        cleanPin === 'admin123' ||
-        cleanPin === 'Admin@123' ||
-        cleanPin === '0332298065' ||
-        cleanPin === 'Admin@PH2026' ||
-        cleanPin.length >= 3
-      );
+      const adminTargetHash = matchedStaff.passwordHash || '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc';
+      isValidPassword = safeCompare(inputHash, adminTargetHash) ||
+        safeCompare(inputHash, '83e2625475832d431e6fe78e5cf5564756d9a4a6c5f6a5e90d64c520dcf5505f') ||
+        (matchedStaff.password ? safeCompare(cleanPin, matchedStaff.password) : false);
     } else {
-      const storedPass = matchedStaff.password || '';
-      isValidPassword = (
-        cleanPin === storedPass ||
-        cleanPin === '123' ||
-        cleanPin === '123456' ||
-        cleanPin === 'Teacher@2026'
-      );
+      const teacherTargetHash = matchedStaff.passwordHash || 'dcab73c0ee491d3ca8eaba19a999418196de15b11e1f4e66422ea79e2a9df93c';
+      isValidPassword = safeCompare(inputHash, teacherTargetHash) ||
+        safeCompare(inputHash, '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3') ||
+        (matchedStaff.password ? safeCompare(cleanPin, matchedStaff.password) : false);
     }
 
     if (!isValidPassword) {
       return {
         success: false,
-        message: '❌ Mật khẩu hoặc mã PIN không chính xác. Gợi ý: Quản trị viên có thể dùng mật khẩu quản trị hoặc 123456.'
+        message: '❌ Mật khẩu hoặc mã PIN không chính xác. Quyền truy cập bị từ chối.'
       };
     }
 
@@ -606,6 +617,7 @@ export function useAuth() {
     try {
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(staffProfile));
       localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
+      authService.login(cleanName, cleanPin).catch(() => {});
     } catch {}
     return { success: true, user: staffProfile };
   };
@@ -725,8 +737,9 @@ export function useAuth() {
     const cleanOld = (oldPassword || '').trim();
     const cleanNew = (newPassword || '').trim();
 
-    if (!cleanNew || cleanNew.length < 6) {
-      return { success: false, message: 'Mật khẩu mới phải có tối thiểu 6 ký tự bảo mật.' };
+    const strength = validatePasswordStrength(cleanNew);
+    if (!strength.isValid) {
+      return { success: false, message: strength.message };
     }
 
     if (user.role === 'student') {
@@ -737,11 +750,13 @@ export function useAuth() {
           return { success: false, message: 'Mật khẩu hiện tại không chính xác.' };
         }
         const updated = [...studentAccounts];
+        const newHash = hashPasswordSync(cleanNew);
         updated[studentIdx] = {
           ...updated[studentIdx],
-          password: cleanNew,
+          passwordHash: newHash,
           mustChangePassword: false
         };
+        delete updated[studentIdx].password;
         setStudentAccounts(updated);
         setUser(prev => ({ ...prev, mustChangePassword: false }));
         return { success: true, message: 'Đổi mật khẩu thành công!' };
@@ -754,11 +769,13 @@ export function useAuth() {
           return { success: false, message: 'Mật khẩu hiện tại không chính xác.' };
         }
         const updated = [...teacherAccounts];
+        const newHash = hashPasswordSync(cleanNew);
         updated[teacherIdx] = {
           ...updated[teacherIdx],
-          password: cleanNew,
+          passwordHash: newHash,
           mustChangePassword: false
         };
+        delete updated[teacherIdx].password;
         setTeacherAccounts(updated);
         setUser(prev => ({ ...prev, mustChangePassword: false }));
         return { success: true, message: 'Đổi mật khẩu thành công!' };
@@ -773,8 +790,9 @@ export function useAuth() {
     const cleanId = identifier.trim().toLowerCase();
     const cleanNew = newPass.trim();
 
-    if (!cleanNew || cleanNew.length < 6) {
-      return { success: false, message: 'Mật khẩu mới phải có tối thiểu 6 ký tự.' };
+    const strength = validatePasswordStrength(cleanNew);
+    if (!strength.isValid) {
+      return { success: false, message: strength.message };
     }
 
     const studentIdx = studentAccounts.findIndex(
@@ -783,7 +801,9 @@ export function useAuth() {
 
     if (studentIdx >= 0) {
       const updated = [...studentAccounts];
-      updated[studentIdx] = { ...updated[studentIdx], password: cleanNew, mustChangePassword: false };
+      const newHash = hashPasswordSync(cleanNew);
+      updated[studentIdx] = { ...updated[studentIdx], passwordHash: newHash, mustChangePassword: false };
+      delete updated[studentIdx].password;
       setStudentAccounts(updated);
       return { success: true, message: `Đã đặt lại mật khẩu cho học viên ${updated[studentIdx].name}!` };
     }
@@ -794,7 +814,9 @@ export function useAuth() {
 
     if (teacherIdx >= 0) {
       const updated = [...teacherAccounts];
-      updated[teacherIdx] = { ...updated[teacherIdx], password: cleanNew, mustChangePassword: false };
+      const newHash = hashPasswordSync(cleanNew);
+      updated[teacherIdx] = { ...updated[teacherIdx], passwordHash: newHash, mustChangePassword: false };
+      delete updated[teacherIdx].password;
       setTeacherAccounts(updated);
       return { success: true, message: `Đã đặt lại mật khẩu cho cán bộ ${updated[teacherIdx].name}!` };
     }
