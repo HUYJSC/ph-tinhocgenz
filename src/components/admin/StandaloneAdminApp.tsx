@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
+import { LearningResourceService } from '../../services/learningResourceService';
 
 interface MenuItem {
   id: AdminPortalSubTab;
@@ -337,6 +338,11 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   }
 
   // ── 2. NẾU ĐÃ LÀ SUPER ADMIN: RENDER TOÀN BỘ GIAO DIỆN QUẢN TRỊ RIÊNG BIỆT ──
+  const sourcesCount = LearningResourceService.getSources().length;
+  const pendingQueueCount = LearningResourceService.getReviewQueue().filter(q => q.review_status === 'pending').length;
+  const internalMaterialsCount = LearningResourceService.getInternalMaterials().length;
+  const failingSourcesCount = LearningResourceService.getSources().filter(s => s.status === 'failing' || s.status === 'error').length;
+
   const menuSections: MenuSection[] = [
     {
       group: 'QUẢN TRỊ ĐÀO TẠO',
@@ -353,12 +359,12 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
       items: [
         { id: 'exams', label: 'Kho Đề Thi Chuẩn', icon: BookOpen, badge: props.quizzes.length },
         { id: 'question_bank', label: 'Ngân Hàng Câu Hỏi', icon: FileSpreadsheet, badge: null },
-        { id: 'learning_sources', label: 'Trung Tâm Nguồn Học Liệu', icon: Globe, badge: '4' },
-        { id: 'review_queue', label: 'Nội Dung Chờ Kiểm Duyệt', icon: Clock, badge: '1' },
-        { id: 'tinhocgenz_studio', label: 'Kho Tài Liệu TIN HỌC GEN Z', icon: Award, badge: '2' },
+        { id: 'learning_sources', label: 'Trung Tâm Nguồn Học Liệu', icon: Globe, badge: sourcesCount || null },
+        { id: 'review_queue', label: 'Nội Dung Chờ Kiểm Duyệt', icon: Clock, badge: pendingQueueCount > 0 ? pendingQueueCount : null },
+        { id: 'tinhocgenz_studio', label: 'Kho Tài Liệu TIN HỌC GEN Z', icon: Award, badge: internalMaterialsCount || null },
         { id: 'sync_history', label: 'Lịch Sử Đồng Bộ', icon: RefreshCw, badge: null },
         { id: 'quality_reports', label: 'Báo Cáo Chất Lượng', icon: CheckSquare, badge: null },
-        { id: 'failing_sources', label: 'Nguồn Bị Lỗi', icon: XCircle, badge: '0' },
+        { id: 'failing_sources', label: 'Nguồn Bị Lỗi', icon: XCircle, badge: failingSourcesCount > 0 ? failingSourcesCount : null },
         { id: 'automation_settings', label: 'Thiết Lập Tự Động Hóa', icon: Sliders, badge: null },
         { id: 'early_warning', label: 'Cảnh Báo Học Vụ Sớm', icon: AlertTriangle, badge: '🚨' },
         { id: 'meet_hub', label: 'Phòng Google Meet', icon: Video, badge: '10' },

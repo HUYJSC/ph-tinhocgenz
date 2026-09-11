@@ -418,6 +418,15 @@ export class LearningResourceService {
   }
 
   /**
+   * Thêm tài liệu mới vào Kho Học Liệu Độc Quyền TIN HỌC GEN Z
+   */
+  static addInternalMaterial(material: InternalLearningMaterial): void {
+    const list = this.getInternalMaterials();
+    list.unshift(material);
+    this.saveInternalMaterials(list);
+  }
+
+  /**
    * Lấy danh sách thông báo Hội đồng Master
    */
   static getNotifications(): TeamNotification[] {

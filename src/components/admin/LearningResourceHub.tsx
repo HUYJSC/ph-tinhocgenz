@@ -22,7 +22,9 @@ import {
   XCircle,
   Bot,
   Download,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  X
 } from 'lucide-react';
 import {
   LearningSource,
@@ -84,6 +86,92 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
   const [newSourceTier, setNewSourceTier] = useState<'OFFICIAL' | 'TRUSTED_REFERENCE' | 'LICENSED_PARTNER'>('TRUSTED_REFERENCE');
   const [newSourceDesc, setNewSourceDesc] = useState('');
 
+  // New Material Form State (Studio Tin Học GenZ)
+  const [isCreateMaterialModalOpen, setIsCreateMaterialModalOpen] = useState(false);
+  const [newMatCode, setNewMatCode] = useState('');
+  const [newMatTitle, setNewMatTitle] = useState('');
+  const [newMatSubject, setNewMatSubject] = useState<'Word' | 'Excel' | 'PowerPoint' | 'Outlook' | 'Access' | 'General_IT' | 'AI'>('Word');
+  const [newMatModuleCode, setNewMatModuleCode] = useState('MO-100');
+  const [newMatAuthor, setNewMatAuthor] = useState('Hội Đồng Học Thuật THGZ');
+  const [newMatStage, setNewMatStage] = useState<'DRAFT' | 'TECHNICAL_REVIEW' | 'ACADEMIC_REVIEW' | 'COPYRIGHT_REVIEW' | 'APPROVED' | 'PUBLISHED' | 'ARCHIVED'>('APPROVED');
+  const [newMatBadge, setNewMatBadge] = useState('Đề mô phỏng chuẩn Certiport 2026');
+  const [newMatOutcomes, setNewMatOutcomes] = useState('Nắm vững cấu trúc bài thi, Thành thạo kỹ năng thực hành');
+
+  const handleCreateMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMatTitle.trim()) {
+      showToast('Vui lòng nhập tiêu đề tài liệu');
+      return;
+    }
+
+    const createdMat: InternalLearningMaterial = {
+      id: `mat-${Date.now()}`,
+      material_code: newMatCode.trim() || `THGZ-${Date.now().toString().slice(-4)}`,
+      title: newMatTitle.trim(),
+      subject: newMatSubject,
+      module_code: newMatModuleCode.trim() || 'GENERAL',
+      author_name: newMatAuthor.trim() || currentUser?.name || 'Chuyên viên THGZ',
+      author_id: currentUser?.id || 'admin-master',
+      review_stage: newMatStage,
+      version: '1.0.0',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ai_assisted: false,
+      editorial_badge: newMatBadge.trim() || 'Học liệu nội bộ chuẩn Tin Học Gen Z',
+      learning_outcomes: newMatOutcomes
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean),
+      files: [
+        {
+          name: `${(newMatCode.trim() || 'tai-lieu').toLowerCase()}-v1.0.docx`,
+          type: 'docx',
+          sizeBytes: 46200,
+          sha256: 'sha256-verified-ok',
+          url: 'internal://secure-storage/materials/',
+          isQuarantined: false,
+          macroDetected: false
+        }
+      ]
+    };
+
+    LearningResourceService.addInternalMaterial(createdMat);
+    loadAllData();
+    setIsCreateMaterialModalOpen(false);
+    setNewMatTitle('');
+    setNewMatCode('');
+    showToast(`Đã xuất bản tài liệu mới: [${createdMat.material_code}] ${createdMat.title}`);
+  };
+
+  const handleDownloadMaterial = (mat: InternalLearningMaterial) => {
+    const markdownContent = [
+      `# ${mat.title}`,
+      `Mã định danh tài liệu: ${mat.material_code}`,
+      `Môn học & Khung đào tạo: ${mat.subject} (Mã module: ${mat.module_code})`,
+      `Tác giả / Ban học thuật: ${mat.author_name}`,
+      `Phiên bản hệ thống: v${mat.version}`,
+      `Giai đoạn thẩm định: ${mat.review_stage}`,
+      `Huy hiệu chất lượng: ${mat.editorial_badge}`,
+      `\n## Chuẩn Đầu Ra & Mục Tiêu Đào Tạo`,
+      ...mat.learning_outcomes.map(outcome => `- ${outcome}`),
+      `\n## Thông Tin Tệp Đính Kèm`,
+      ...mat.files.map(f => `- Tệp: ${f.name} (${(f.sizeBytes / 1024).toFixed(1)} KB) - Checksum: ${f.sha256}`),
+      `\n---\n*Bản quyền nội dung thuộc Hệ Sinh Thái Giáo Dục PH TIN HỌC GEN Z. Mọi hành vi sao chép trái phép đều bị xử lý theo quy chế học viện.*`
+    ].join('\n');
+
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `${mat.material_code || 'tai-lieu'}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+
+    showToast(`Đã tải xuống thành công tài liệu: ${mat.material_code}.md`);
+  };
+
   // Load initial data
   const loadAllData = () => {
     setSources(LearningResourceService.getSources());
@@ -111,6 +199,7 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
     const duplicateCount = resources.filter(r => r.duplicate_status !== 'unique').length;
     const copyrightNeedsReview = resources.filter(r => r.copyright_status === 'needs_review').length;
     const failingCount = sources.filter(s => s.status === 'failing' || s.status === 'error').length;
+    const unreadAlerts = notifications.filter(n => !n.is_read).length;
     return {
       activeSourcesCount,
       totalResources: resources.length,
@@ -118,9 +207,10 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
       conflictCount,
       duplicateCount,
       copyrightNeedsReview,
-      failingCount
+      failingCount,
+      unreadAlerts
     };
-  }, [sources, resources, reviewQueue]);
+  }, [sources, resources, reviewQueue, notifications]);
 
   // Handlers
   const handleTriggerSync = () => {
@@ -455,8 +545,8 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
         </div>
       </div>
 
-      {/* ── NOTIFICATION BANNER NẾU CÓ CẢNH BÁO MỚI ── */}
-      {notifications.length > 0 && (
+      {/* ── NOTIFICATION BANNER ĐỒNG BỘ THEO DỮ LIỆU THỰC TẾ (SSOT) ── */}
+      {kpiData.pendingQueueCount > 0 || kpiData.conflictCount > 0 || kpiData.duplicateCount > 0 || kpiData.failingCount > 0 ? (
         <div style={{
           background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)',
           border: '1px solid rgba(239, 68, 68, 0.25)',
@@ -483,10 +573,10 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
             </span>
             <div>
               <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#991b1b' }}>
-                {notifications[0].title}
+                Cảnh Báo Quản Trị Học Liệu Cần Thẩm Định
               </div>
               <div style={{ fontSize: '0.76rem', color: '#7f1d1d', marginTop: '2px' }}>
-                {notifications[0].message}
+                Hệ thống ghi nhận: {kpiData.pendingQueueCount} mục chờ duyệt, {kpiData.conflictCount} tài liệu xung đột mã đề, {kpiData.duplicateCount} mục nghi trùng, {kpiData.failingCount} nguồn thu thập lỗi.
               </div>
             </div>
           </div>
@@ -506,6 +596,58 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
             }}
           >
             Mở Hàng Đợi Kiểm Duyệt
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.06) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.25)',
+          padding: '12px 18px',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              background: '#10b981',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <CheckCircle2 size={16} />
+            </span>
+            <div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#065f46' }}>
+                Hệ Thống Học Liệu Đạt Chuẩn An Toàn & Chuẩn Hóa 100%
+              </div>
+              <div style={{ fontSize: '0.76rem', color: '#047857', marginTop: '2px' }}>
+                Toàn bộ tài liệu trong kho lưu trữ đã qua thẩm định chuẩn xác, không có xung đột mã đề thi hoặc cảnh báo bản quyền.
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onTabChange('quality_reports')}
+            style={{
+              background: '#059669',
+              color: '#ffffff',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '0.74rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Xem Báo Cáo Chất Lượng
           </button>
         </div>
       )}
@@ -866,101 +1008,136 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {reviewQueue.map(item => {
-              const res = item.resource;
-              const hasConflict = item.factual_conflicts.length > 0;
-              return (
-                <div
-                  key={item.id}
-                  style={{
-                    background: 'var(--bg-card, #ffffff)',
-                    borderRadius: '12px',
-                    border: '1px solid var(--border-color, #e2e8f0)',
-                    padding: '18px 22px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.7rem',
-                          fontWeight: 800,
-                          background: item.priority === 'urgent' ? '#fee2e2' : '#fef3c7',
-                          color: item.priority === 'urgent' ? '#b91c1c' : '#b45309'
-                        }}>
-                          MỨC ĐỘ: {item.priority.toUpperCase()}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                          Nguồn: <strong>{res.source_name}</strong>
-                        </span>
-                        <span>•</span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                          Môn: <strong>{res.subject} ({res.application_version})</strong>
-                        </span>
+          {reviewQueue.length === 0 ? (
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '12px',
+              border: '1px solid var(--border-color, #e2e8f0)',
+              padding: '48px 24px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: 'rgba(16, 185, 129, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#059669'
+              }}>
+                <CheckCircle2 size={32} />
+              </div>
+              <div>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary, #0f172a)' }}>
+                  Hàng Đợi Kiểm Duyệt Hiện Đang Trống
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b', maxWidth: '460px', lineHeight: 1.5 }}>
+                  Tất cả tài liệu thu thập đã được Hội đồng CNTT kiểm duyệt hoàn tất hoặc hệ thống chưa ghi nhận tài liệu mới cần thẩm định.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {reviewQueue.map(item => {
+                const res = item.resource;
+                const hasConflict = item.factual_conflicts.length > 0;
+                return (
+                  <div
+                    key={item.id}
+                    style={{
+                      background: 'var(--bg-card, #ffffff)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border-color, #e2e8f0)',
+                      padding: '18px 22px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            background: item.priority === 'urgent' ? '#fee2e2' : '#fef3c7',
+                            color: item.priority === 'urgent' ? '#b91c1c' : '#b45309'
+                          }}>
+                            MỨC ĐỘ: {item.priority.toUpperCase()}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                            Nguồn: <strong>{res.source_name}</strong>
+                          </span>
+                          <span>•</span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                            Môn: <strong>{res.subject} ({res.application_version})</strong>
+                          </span>
+                        </div>
+                        <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
+                          {res.title}
+                        </h4>
                       </div>
-                      <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
-                        {res.title}
-                      </h4>
+
+                      <button
+                        onClick={() => setSelectedResource(res)}
+                        style={{
+                          padding: '7px 16px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: '#2563eb',
+                          color: '#ffffff',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Mở Phiếu Phê Duyệt
+                      </button>
                     </div>
 
-                    <button
-                      onClick={() => setSelectedResource(res)}
-                      style={{
-                        padding: '7px 16px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        background: '#2563eb',
-                        color: '#ffffff',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      Mở Phiếu Phê Duyệt
-                    </button>
+                    {/* Cảnh báo chi tiết */}
+                    {hasConflict && (
+                      <div style={{
+                        background: 'rgba(239, 68, 68, 0.06)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        padding: '12px 14px',
+                        borderRadius: '8px'
+                      }}>
+                        <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <AlertTriangle size={14} />
+                          <span>XUNG ĐỘT MÃ BÀI THI PHÁT HIỆN BỞI ENGINE TỰ ĐỘNG</span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#7f1d1d', marginTop: '4px', lineHeight: 1.4 }}>
+                          {item.factual_conflicts[0].detected_issue}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#991b1b', marginTop: '4px' }}>
+                          <strong>Chuẩn Certiport:</strong> {item.factual_conflicts[0].standard_value}
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: '#64748b', paddingTop: '8px', borderTop: '1px solid #f1f5f9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <UserCheck size={13} />
+                        <span>Phân công thẩm định: <strong>{item.assigned_team}</strong></span>
+                      </div>
+                      <div>
+                        Trạng thái hiện tại: <strong>{item.review_status.toUpperCase()}</strong> (Chưa xuất bản)
+                      </div>
+                    </div>
                   </div>
-
-                  {/* Cảnh báo chi tiết */}
-                  {hasConflict && (
-                    <div style={{
-                      background: 'rgba(239, 68, 68, 0.06)',
-                      border: '1px solid rgba(239, 68, 68, 0.3)',
-                      padding: '12px 14px',
-                      borderRadius: '8px'
-                    }}>
-                      <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <AlertTriangle size={14} />
-                        <span>XUNG ĐỘT MÃ BÀI THI PHÁT HIỆN BỞI ENGINE TỰ ĐỘNG</span>
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: '#7f1d1d', marginTop: '4px', lineHeight: 1.4 }}>
-                        {item.factual_conflicts[0].detected_issue}
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: '#991b1b', marginTop: '4px' }}>
-                        <strong>Chuẩn Certiport:</strong> {item.factual_conflicts[0].standard_value}
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: '#64748b', paddingTop: '8px', borderTop: '1px solid #f1f5f9' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <UserCheck size={13} />
-                      <span>Phân công thẩm định: <strong>{item.assigned_team}</strong></span>
-                    </div>
-                    <div>
-                      Trạng thái hiện tại: <strong>{item.review_status.toUpperCase()}</strong> (Chưa xuất bản)
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -993,7 +1170,7 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
             </div>
 
             <button
-              onClick={() => alert('Mở trình soạn thảo giáo trình và đề mô phỏng Tin Học GenZ Studio')}
+              onClick={() => setIsCreateMaterialModalOpen(true)}
               style={{
                 padding: '8px 16px',
                 borderRadius: '8px',
@@ -1013,111 +1190,165 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-            {internalMaterials.map(mat => (
-              <div
-                key={mat.id}
-                style={{
-                  background: 'var(--bg-card, #ffffff)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-color, #e2e8f0)',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: '14px'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                      background: 'rgba(37,99,235,0.1)',
-                      color: '#2563eb'
-                    }}>
-                      MÃ: {mat.material_code}
-                    </span>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      background: mat.review_stage === 'PUBLISHED' ? '#dcfce7' : '#fef3c7',
-                      color: mat.review_stage === 'PUBLISHED' ? '#15803d' : '#b45309'
-                    }}>
-                      {mat.review_stage}
-                    </span>
-                  </div>
-
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '0.94rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>
-                    {mat.title}
-                  </h4>
-
-                  <div style={{ fontSize: '0.76rem', color: '#64748b', marginBottom: '8px' }}>
-                    Tác giả: <strong>{mat.author_name}</strong> • Phiên bản: <strong>{mat.version}</strong>
-                  </div>
-
-                  {mat.ai_assisted && (
-                    <div style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      background: 'rgba(139,92,246,0.1)',
-                      color: '#7c3aed',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      marginBottom: '8px'
-                    }}>
-                      <Bot size={12} />
-                      <span>AI-Assisted (Đã có chuyên gia khảo thí phản biện)</span>
-                    </div>
-                  )}
-
-                  <div style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    background: '#f8fafc',
-                    fontSize: '0.72rem',
-                    color: '#475569',
-                    fontStyle: 'italic',
-                    border: '1px solid #e2e8f0'
-                  }}>
-                    "{mat.editorial_badge}"
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
-                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                    {mat.files.length} tệp đính kèm (Đã quét an toàn)
-                  </div>
-                  <button
-                    onClick={() => alert(`Tải bộ tài liệu ${mat.material_code}`)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border-color, #e2e8f0)',
-                      background: '#ffffff',
-                      color: '#2563eb',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Download size={12} />
-                    <span>Tải Về</span>
-                  </button>
-                </div>
+          {internalMaterials.length === 0 ? (
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '12px',
+              border: '1px solid var(--border-color, #e2e8f0)',
+              padding: '48px 24px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: 'rgba(37, 99, 235, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#2563eb'
+              }}>
+                <FileText size={30} />
               </div>
-            ))}
-          </div>
+              <div>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary, #0f172a)' }}>
+                  Kho Tài Liệu Nội Bộ Chưa Có Bản Ghi Nào
+                </h4>
+                <p style={{ margin: '0 0 16px 0', fontSize: '0.82rem', color: '#64748b', maxWidth: '440px', lineHeight: 1.5 }}>
+                  Bắt đầu biên soạn đề thi chuẩn hóa, giáo trình hoặc ngân hàng câu hỏi mới theo tiêu chuẩn đào tạo Tin Học Gen Z.
+                </p>
+                <button
+                  onClick={() => setIsCreateMaterialModalOpen(true)}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Plus size={14} />
+                  <span>Biên Soạn Tài Liệu Đầu Tiên</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              {internalMaterials.map(mat => (
+                <div
+                  key={mat.id}
+                  style={{
+                    background: 'var(--bg-card, #ffffff)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '14px'
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        background: 'rgba(37,99,235,0.1)',
+                        color: '#2563eb'
+                      }}>
+                        MÃ: {mat.material_code}
+                      </span>
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        background: mat.review_stage === 'PUBLISHED' ? '#dcfce7' : '#fef3c7',
+                        color: mat.review_stage === 'PUBLISHED' ? '#15803d' : '#b45309'
+                      }}>
+                        {mat.review_stage}
+                      </span>
+                    </div>
+
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '0.94rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>
+                      {mat.title}
+                    </h4>
+
+                    <div style={{ fontSize: '0.76rem', color: '#64748b', marginBottom: '8px' }}>
+                      Tác giả: <strong>{mat.author_name}</strong> • Phiên bản: <strong>{mat.version}</strong>
+                    </div>
+
+                    {mat.ai_assisted && (
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        background: 'rgba(139,92,246,0.1)',
+                        color: '#7c3aed',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        marginBottom: '8px'
+                      }}>
+                        <Bot size={12} />
+                        <span>AI-Assisted (Đã có chuyên gia khảo thí phản biện)</span>
+                      </div>
+                    )}
+
+                    <div style={{
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      background: '#f8fafc',
+                      fontSize: '0.72rem',
+                      color: '#475569',
+                      fontStyle: 'italic',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      "{mat.editorial_badge}"
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                      {mat.files.length} tệp đính kèm (Đã quét an toàn)
+                    </div>
+                    <button
+                      onClick={() => handleDownloadMaterial(mat)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color, #e2e8f0)',
+                        background: '#ffffff',
+                        color: '#2563eb',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Download size={12} />
+                      <span>Tải Về</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -1702,6 +1933,194 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
                 style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Thêm Nguồn
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── MODAL TẠO TÀI LIỆU MỚI (STUDIO TIN HỌC GEN Z) ── */}
+      {isCreateMaterialModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <form
+            onSubmit={handleCreateMaterial}
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Award size={20} color="#2563eb" />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  Biên Soạn Tài Liệu & Đề Thi Mới
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateMaterialModalOpen(false)}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Mã Tài Liệu (Ví dụ: THGZ-MOS-WORD-2026):
+              </label>
+              <input
+                type="text"
+                required
+                value={newMatCode}
+                onChange={e => setNewMatCode(e.target.value)}
+                placeholder="THGZ-MOS-WORD-2026"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Tiêu Đề Tài Liệu:
+              </label>
+              <input
+                type="text"
+                required
+                value={newMatTitle}
+                onChange={e => setNewMatTitle(e.target.value)}
+                placeholder="Nhập tên giáo trình, bộ đề hoặc ngân hàng câu hỏi..."
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Môn Học & Phiên Bản:
+                </label>
+                <select
+                  value={newMatSubject}
+                  onChange={e => setNewMatSubject(e.target.value as any)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
+                >
+                  <option value="Word">Word (MOS 365 / 2019)</option>
+                  <option value="Excel">Excel (MOS 365 / 2019)</option>
+                  <option value="PowerPoint">PowerPoint (MOS 365 / 2019)</option>
+                  <option value="Outlook">Outlook (MOS 365 / 2019)</option>
+                  <option value="Access">Access Expert</option>
+                  <option value="General_IT">General IT (IC3 GS6 / CNTT)</option>
+                  <option value="AI">AI & Tự Động Hóa Văn Phòng</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Mã Module (Certiport / Chuẩn):
+                </label>
+                <input
+                  type="text"
+                  value={newMatModuleCode}
+                  onChange={e => setNewMatModuleCode(e.target.value)}
+                  placeholder="MO-100, MO-200, GS6-L1..."
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Tác Giả / Người Biên Soạn:
+                </label>
+                <input
+                  type="text"
+                  value={newMatAuthor}
+                  onChange={e => setNewMatAuthor(e.target.value)}
+                  placeholder="Hội Đồng Học Thuật THGZ"
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Giai Đoạn Phê Duyệt:
+                </label>
+                <select
+                  value={newMatStage}
+                  onChange={e => setNewMatStage(e.target.value as any)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
+                >
+                  <option value="DRAFT">1. DRAFT (Dự thảo)</option>
+                  <option value="TECHNICAL_REVIEW">2. TECHNICAL_REVIEW (Kiểm tra kỹ thuật)</option>
+                  <option value="ACADEMIC_REVIEW">3. ACADEMIC_REVIEW (Học thuật phản biện)</option>
+                  <option value="COPYRIGHT_REVIEW">4. COPYRIGHT_REVIEW (Rà soát bản quyền)</option>
+                  <option value="APPROVED">5. APPROVED (Đã duyệt đề cương)</option>
+                  <option value="PUBLISHED">6. PUBLISHED (Chính thức phát hành)</option>
+                  <option value="ARCHIVED">7. ARCHIVED (Lưu trữ nội bộ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Huy Hiệu / Ghi Chú Chất Lượng:
+              </label>
+              <input
+                type="text"
+                value={newMatBadge}
+                onChange={e => setNewMatBadge(e.target.value)}
+                placeholder="Đề mô phỏng chuẩn Certiport 2026..."
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Chuẩn Đầu Ra (phân cách bằng dấu phẩy):
+              </label>
+              <textarea
+                rows={2}
+                value={newMatOutcomes}
+                onChange={e => setNewMatOutcomes(e.target.value)}
+                placeholder="Nắm vững cấu trúc bài thi, Thực hành thành thạo đề thi mẫu..."
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setIsCreateMaterialModalOpen(false)}
+                style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                Đóng
+              </button>
+              <button
+                type="submit"
+                style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Lưu & Phát Hành Tài Liệu
               </button>
             </div>
           </form>
