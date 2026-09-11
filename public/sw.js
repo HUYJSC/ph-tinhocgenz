@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v4)
-// Nâng cấp: Web Push Notifications + Offline Caching + Purge V3 Cache
-const CACHE_NAME = 'ph-eduquest-v4';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v5-live)
+// Nâng cấp: Network-First cho Navigation (luôn tải code mới nhất) + Offline Fallback + Purge V4 Cache
+const CACHE_NAME = 'ph-eduquest-v5-live';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -24,7 +24,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// ── ACTIVATE ──
+// ── ACTIVATE: Xóa sạch toàn bộ cache cũ ──
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -36,7 +36,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// ── FETCH (Stale-While-Revalidate) ──
+// ── FETCH STRATEGY ──
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
@@ -55,9 +55,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 1. Navigation / HTML: Network-First (Luôn lấy mã nguồn mới nhất từ Vercel, offline mới fallback về cache)
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match('/index.html');
+        })
+    );
+    return;
+  }
+
+  // 2. Static Assets (JS, CSS có hash, hình ảnh): Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Stale-While-Revalidate cho static assets (JS, CSS, hình ảnh, font chữ)
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
@@ -68,12 +88,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
-          // Fallback khi offline cho navigation
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-        });
+        .catch(() => cachedResponse);
 
       return cachedResponse || fetchPromise;
     })
