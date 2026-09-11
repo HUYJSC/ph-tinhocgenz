@@ -9,11 +9,12 @@ import {
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
   ExternalLink, Key, Menu, X, ChevronRight,
   Server, BarChart3, Eye, EyeOff, GraduationCap,
-  Clock, Award, RefreshCw, XCircle, Sliders
+  Clock, Award, RefreshCw, XCircle, Sliders, Database
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
 import { LearningResourceService } from '../../services/learningResourceService';
+import { SystemDataCenterModal } from './SystemDataCenterModal';
 
 interface MenuItem {
   id: AdminPortalSubTab;
@@ -90,6 +91,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const [loginError, setLoginError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>('overview');
+  const [showDataCenter, setShowDataCenter] = useState(false);
 
   const handleAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -663,6 +665,32 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Live Data Engine & Backup Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowDataCenter(true);
+                soundFx.playClick();
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 13px',
+                borderRadius: '8px',
+                background: 'rgba(37, 99, 235, 0.08)',
+                border: '1.5px solid rgba(37, 99, 235, 0.25)',
+                color: '#2563eb',
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+              title="Mở Trung Tâm CSDL, Sao Lưu & Đồng Bộ"
+            >
+              <Database size={14} />
+              <span>CSDL & Sao Lưu (Data SSOT)</span>
+            </button>
+
             {/* Live System Indicator */}
             <div style={{
               display: 'inline-flex',
@@ -722,6 +750,13 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           />
         </main>
       </div>
+
+      {/* System Data Center Modal */}
+      <SystemDataCenterModal
+        isOpen={showDataCenter}
+        onClose={() => setShowDataCenter(false)}
+        currentUser={currentUser}
+      />
     </div>
   );
 };

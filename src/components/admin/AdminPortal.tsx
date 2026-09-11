@@ -13,10 +13,12 @@ import {
   BookOpen, Users, BarChart3, PlusCircle, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
-  Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText
+  Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText,
+  Database
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { LearningResourceHub, LearningHubSubTab } from './LearningResourceHub';
+import { SystemDataCenterModal } from './SystemDataCenterModal';
 
 export type AdminPortalSubTab =
   | 'overview'
@@ -150,6 +152,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }, [initialSubTab]);
 
   const [showFileSplitterModal, setShowFileSplitterModal] = useState(false);
+  const [showDataCenterModal, setShowDataCenterModal] = useState(false);
 
   const handleProceedFromSplitterToCreator = (result: SingleFileSplitResult) => {
     try {
@@ -780,6 +783,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDataCenterModal(true);
+                  soundFx.playClick();
+                }}
+                className="btn btn-secondary"
+                style={{
+                  padding: '9px 16px',
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  border: '1.5px solid rgba(37, 99, 235, 0.35)',
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  color: 'var(--accent-primary, #2563eb)',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Quản lý CSDL thực tế, Sao lưu 1-Click, Khôi phục và Đồng bộ đa tab"
+              >
+                <Database size={16} />
+                <span>CSDL & Sao Lưu (Data SSOT)</span>
+              </button>
+
               <button
                 onClick={exportGradebookExcel}
                 className="btn btn-secondary"
@@ -3623,6 +3653,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         onClose={() => setShowFileSplitterModal(false)}
         onProceedToCreator={handleProceedFromSplitterToCreator}
         onOpenBlankCreator={handleOpenBlankCreator}
+      />
+
+      {/* System Data Center & Enterprise Backup Modal */}
+      <SystemDataCenterModal
+        isOpen={showDataCenterModal}
+        onClose={() => setShowDataCenterModal(false)}
+        currentUser={currentUser}
       />
     </div>
   );

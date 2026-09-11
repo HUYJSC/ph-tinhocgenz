@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Quiz, QuizAttempt, UserStats, Question } from '../types/quiz';
 import { DEFAULT_QUIZZES } from '../data/defaultQuizzes';
 import { DEFAULT_BADGES } from '../data/badges';
+import { SystemBackupService } from '../services/systemBackupService';
 
 const STATS_KEY = 'phtinhocgenz_user_stats_v1';
 const LEGACY_STATS_KEY = 'eduquest_user_stats_v1';
@@ -130,6 +131,25 @@ export function useAppStorage() {
     }
   }, [deletedQuizIds]);
 
+  // Listen to cross-tab synchronization events
+  useEffect(() => {
+    const unsub = SystemBackupService.onSync((event) => {
+      if (['QUIZ_CREATED', 'QUIZ_UPDATED', 'QUIZ_DELETED', 'QUESTION_UPDATED', 'QUESTION_DELETED', 'SYSTEM_RESTORE'].includes(event.type)) {
+        try {
+          const savedCustom = localStorage.getItem(CUSTOM_QUIZZES_KEY);
+          if (savedCustom) setCustomQuizzes(JSON.parse(savedCustom));
+          const savedOverrides = localStorage.getItem(QUIZ_OVERRIDES_KEY);
+          if (savedOverrides) setQuizOverrides(JSON.parse(savedOverrides));
+          const savedDeleted = localStorage.getItem(DELETED_QUIZZES_KEY);
+          if (savedDeleted) setDeletedQuizIds(JSON.parse(savedDeleted));
+        } catch (e) {
+          console.error('Failed to reload synced quiz state', e);
+        }
+      }
+    });
+    return unsub;
+  }, []);
+
   // Combine default quizzes and custom quizzes with overrides & deleted filters (Admin full edit power)
   const allQuizzes: Quiz[] = useMemo(() => {
     const combined = [...DEFAULT_QUIZZES, ...customQuizzes];
@@ -155,6 +175,10 @@ export function useAppStorage() {
     };
     setCustomQuizzes(prev => [newQuiz, ...prev]);
 
+    // Record Audit & Broadcast
+    SystemBackupService.recordAuditLog('CREATE', 'QUIZ', `Tạo đề thi mới: ${newQuiz.title}`);
+    SystemBackupService.broadcastEvent('QUIZ_CREATED', { id: newQuiz.id });
+
     // Check custom quiz badge
     checkAndUnlockBadges({ ...stats }, 1);
     return newQuiz;
@@ -167,11 +191,20 @@ export function useAppStorage() {
     } else {
       setQuizOverrides(prev => ({ ...prev, [updatedQuiz.id]: updatedQuiz }));
     }
+
+    // Record Audit & Broadcast
+    SystemBackupService.recordAuditLog('UPDATE', 'QUIZ', `Cập nhật đề thi: ${updatedQuiz.title}`);
+    SystemBackupService.broadcastEvent('QUIZ_UPDATED', { id: updatedQuiz.id });
   };
 
   const deleteQuiz = (quizId: string) => {
+    const target = allQuizzes.find(q => q.id === quizId);
     setCustomQuizzes(prev => prev.filter(q => q.id !== quizId));
     setDeletedQuizIds(prev => prev.includes(quizId) ? prev : [...prev, quizId]);
+
+    // Record Audit & Broadcast
+    SystemBackupService.recordAuditLog('DELETE', 'QUIZ', `Xóa đề thi: ${target?.title || quizId}`);
+    SystemBackupService.broadcastEvent('QUIZ_DELETED', { id: quizId });
   };
 
   const deleteCustomQuiz = (quizId: string) => {
@@ -185,6 +218,10 @@ export function useAppStorage() {
     if (questionIndex >= 0 && questionIndex < newQuestions.length) {
       newQuestions[questionIndex] = { ...newQuestions[questionIndex], ...updatedQuestion } as Question;
       updateQuiz({ ...targetQuiz, questions: newQuestions });
+
+      // Record Audit & Broadcast
+      SystemBackupService.recordAuditLog('UPDATE', 'QUESTION', `Sửa câu hỏi #${questionIndex + 1} đề "${targetQuiz.title}"`);
+      SystemBackupService.broadcastEvent('QUESTION_UPDATED', { quizId, questionIndex });
     }
   };
 
@@ -193,6 +230,10 @@ export function useAppStorage() {
     if (!targetQuiz) return;
     const newQuestions = targetQuiz.questions.filter((_, idx) => idx !== questionIndex);
     updateQuiz({ ...targetQuiz, questions: newQuestions });
+
+    // Record Audit & Broadcast
+    SystemBackupService.recordAuditLog('DELETE', 'QUESTION', `Xóa câu hỏi #${questionIndex + 1} khỏi đề "${targetQuiz.title}"`);
+    SystemBackupService.broadcastEvent('QUESTION_DELETED', { quizId, questionIndex });
   };
 
   const toggleBookmark = (questionId: string) => {
