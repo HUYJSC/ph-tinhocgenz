@@ -572,7 +572,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 <div>
                   <label htmlFor="admin-name" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    <User size={14} color="#2563EB" /> Họ và tên Giảng viên
+                    <User size={14} color="#2563EB" /> Họ tên / Mã cán bộ / Quản trị
                   </label>
                   <input
                     id="admin-name"
@@ -580,7 +580,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     type="text"
                     value={adminName}
                     onChange={e => { setAdminName(e.target.value); setAdminError(''); }}
-                    placeholder="Nhập tên Giảng viên (VD: Thầy Quang Huy)"
+                    placeholder="Mã cán bộ hoặc tên (VD: ADMIN, ADMIN01, Thầy Quang Huy)"
                     style={{
                       width: '100%',
                       height: '44px',
@@ -598,7 +598,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
 
                 <div>
                   <label htmlFor="admin-pin" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    <Shield size={14} color="#2563EB" /> Mã PIN Quản trị
+                    <Shield size={14} color="#2563EB" /> Mật khẩu / Mã PIN Quản trị
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
@@ -607,7 +607,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                       type={showPassword ? 'text' : 'password'}
                       value={adminPin}
                       onChange={e => { setAdminPin(e.target.value); setAdminError(''); }}
-                      placeholder="Nhập mã PIN giảng viên"
+                      placeholder="Mật khẩu hoặc PIN (VD: admin123)"
                       style={{
                         width: '100%',
                         height: '44px',
@@ -674,6 +674,19 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div style={{
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  background: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  fontSize: '12px',
+                  color: '#166534',
+                  lineHeight: 1.5
+                }}>
+                  <div style={{ fontWeight: 700, marginBottom: '2px', color: '#15803D' }}>💡 Tài khoản Quản trị viên mẫu:</div>
+                  <div>Mã cán bộ: <strong>ADMIN</strong> hoặc <strong>ADMIN01</strong> • Mật khẩu: <strong>admin123</strong></div>
                 </div>
 
                 <button

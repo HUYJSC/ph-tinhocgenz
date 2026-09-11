@@ -298,6 +298,25 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               </div>
             )}
 
+            {/* Quick credentials hint */}
+            <div style={{
+              padding: '10px 14px',
+              borderRadius: '8px',
+              background: 'rgba(245, 158, 11, 0.08)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              fontSize: '0.8rem',
+              color: '#cbd5e1',
+              lineHeight: 1.5
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: 700, marginBottom: '4px' }}>
+                <span>💡 Tài khoản Quản trị viên tiêu chuẩn:</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.78rem' }}>
+                <span>Mã cán bộ: <strong style={{ color: '#fde047', background: 'rgba(0,0,0,0.35)', padding: '2px 6px', borderRadius: '4px' }}>ADMIN</strong> hoặc <strong style={{ color: '#fde047', background: 'rgba(0,0,0,0.35)', padding: '2px 6px', borderRadius: '4px' }}>ADMIN01</strong></span>
+                <span>Mật khẩu: <strong style={{ color: '#fde047', background: 'rgba(0,0,0,0.35)', padding: '2px 6px', borderRadius: '4px' }}>admin123</strong></span>
+              </div>
+            </div>
+
             <button
               type="submit"
               style={{
