@@ -54,7 +54,11 @@ interface AdminPortalProps {
   onGradeSubmission?: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
   onMarkNotificationAsRead?: (id: string) => void;
   onAddQuiz: (quiz: Quiz) => void;
+  onUpdateQuiz?: (quiz: Quiz) => void;
+  onDeleteQuiz?: (quizId: string) => void;
   onDeleteCustomQuiz: (quizId: string) => void;
+  onUpdateQuestion?: (quizId: string, questionIndex: number, updatedQuestion: any) => void;
+  onDeleteQuestion?: (quizId: string, questionIndex: number) => void;
   onNavigateToCreator: () => void;
   onCreateStudentAccount: (name: string, studentCode: string, password?: string, schoolOrClass?: string, programTrack?: CurriculumTrack, enrolledTracks?: CurriculumTrack[]) => void;
   onUpdateStudentAccount?: (updatedAccount: StudentAccount) => void;
@@ -102,7 +106,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onToggleOpen,
   onGradeSubmission,
   onMarkNotificationAsRead,
+  onUpdateQuiz,
+  onDeleteQuiz,
   onDeleteCustomQuiz,
+  onUpdateQuestion,
+  onDeleteQuestion,
   onNavigateToCreator,
   onCreateStudentAccount,
   onUpdateStudentAccount,
@@ -122,6 +130,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 }) => {
   const isSuperAdmin = currentUser.role === 'admin';
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
+
+  // Admin Edit Quiz & Question State (Toàn Quyền Sửa)
+  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<{ quizId: string; questionIndex: number; question: any } | null>(null);
 
   const handleSelectSubTab = (tab: AdminPortalSubTab) => {
     setActiveSubTab(tab);
@@ -189,6 +201,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [examFamilyFilter, setExamFamilyFilter] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
+  const [questionSearch, setQuestionSearch] = useState('');
 
   // Master Google Meet Hub State (Admin Only) - Synced with schedules
   const [masterMeetUrlInput, setMasterMeetUrlInput] = useState('');
@@ -2295,15 +2308,61 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
                       {TRACK_LABELS[q.category as CurriculumTrack] || q.category}
                     </span>
-                    {q.isCustom && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button
-                        onClick={() => onDeleteCustomQuiz(q.id)}
-                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
-                        title="Xóa đề thi tự tạo"
+                        onClick={() => {
+                          setEditingQuiz({ ...q });
+                          soundFx.playClick();
+                        }}
+                        style={{
+                          background: 'rgba(37, 99, 235, 0.08)',
+                          border: '1px solid rgba(37, 99, 235, 0.25)',
+                          color: '#2563eb',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700
+                        }}
+                        title="Chỉnh sửa đề thi này (Admin toàn quyền)"
                       >
-                        <Trash2 size={15} />
+                        <Edit3 size={13} />
+                        <span>Sửa Đề</span>
                       </button>
-                    )}
+
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Xác nhận xóa đề thi: "${q.title}"?`)) {
+                            if (onDeleteQuiz) {
+                              onDeleteQuiz(q.id);
+                            } else {
+                              onDeleteCustomQuiz(q.id);
+                            }
+                            soundFx.playClick();
+                          }
+                        }}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.08)',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          color: '#ef4444',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700
+                        }}
+                        title="Xóa đề thi này khỏi hệ thống"
+                      >
+                        <Trash2 size={13} />
+                        <span>Xóa</span>
+                      </button>
+                    </div>
                   </div>
 
                   <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -2351,58 +2410,186 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       )}
 
       {/* 5. QUESTION BANK TAB */}
-      {activeSubTab === 'question_bank' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div className="card" style={{ padding: '18px' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '6px' }}>
-              Ngân Hàng Toàn Bộ {totalQuestions} Câu Hỏi Khảo Thí
-            </h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              Danh sách chi tiết câu hỏi, đáp án đúng và phần giải thích chi tiết đã được chuẩn hóa theo chương trình tin học.
-            </p>
-          </div>
+      {activeSubTab === 'question_bank' && (() => {
+        const allQuestions = quizzes.flatMap(q =>
+          q.questions.map((ques, idx) => ({
+            ...ques,
+            quizId: q.id,
+            quizTitle: q.title,
+            cat: q.category,
+            quesIdx: idx + 1,
+            originalIdx: idx
+          }))
+        );
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {quizzes.flatMap(q => q.questions.map((ques, idx) => ({ ...ques, quizTitle: q.title, cat: q.category, quesIdx: idx + 1 }))).slice(0, 50).map((ques, qidx) => (
-              <div key={ques.id || qidx} className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                  <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                    {ques.quizTitle} • Câu {ques.quesIdx}
-                  </span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{ques.points || 10} điểm</span>
-                </div>
+        const filteredQuestions = allQuestions.filter(q => {
+          if (!questionSearch.trim()) return true;
+          const term = questionSearch.toLowerCase();
+          return (
+            q.prompt.toLowerCase().includes(term) ||
+            q.quizTitle.toLowerCase().includes(term) ||
+            (q.explanation && q.explanation.toLowerCase().includes(term))
+          );
+        });
 
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {ques.prompt}
-                </div>
-
-                {ques.options && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '6px', fontSize: '0.82rem' }}>
-                    {ques.options.map((opt, oidx) => {
-                      const isCorrect = Array.isArray(ques.correctAnswer) ? ques.correctAnswer.includes(oidx) : ques.correctAnswer === oidx;
-                      return (
-                        <div
-                          key={oidx}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: 'var(--radius-sm)',
-                            background: isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-primary)',
-                            border: isCorrect ? '1px solid #10b981' : '1px solid var(--border-color)',
-                            color: isCorrect ? '#059669' : 'var(--text-secondary)',
-                            fontWeight: isCorrect ? 700 : 400
-                          }}
-                        >
-                          {String.fromCharCode(65 + oidx)}. {opt} {isCorrect && '✓'}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="card" style={{ padding: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '6px' }}>
+                  Ngân Hàng Toàn Bộ {allQuestions.length} Câu Hỏi Khảo Thí
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  Quản trị viên có toàn quyền Sửa nội dung prompt, 4 phương án, đáp án đúng, giải thích và Xóa câu hỏi trực tiếp.
+                </p>
               </div>
-            ))}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '260px', flex: 1, maxWidth: '400px' }}>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <Search size={15} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    placeholder="Tìm câu hỏi theo nội dung, đề thi..."
+                    value={questionSearch}
+                    onChange={e => setQuestionSearch(e.target.value)}
+                    className="form-control"
+                    style={{ paddingLeft: '32px', fontSize: '0.82rem', width: '100%' }}
+                  />
+                  {questionSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setQuestionSearch('')}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {filteredQuestions.length === 0 ? (
+                <div className="card" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  Không tìm thấy câu hỏi nào phù hợp với từ khóa "{questionSearch}".
+                </div>
+              ) : (
+                filteredQuestions.slice(0, 100).map((ques, qidx) => (
+                  <div key={`${ques.quizId}-${ques.originalIdx}-${qidx}`} className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-primary)', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
+                          {ques.quizTitle} • Câu {ques.quesIdx}
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>{ques.points || 10} điểm</span>
+                      </div>
+
+                      {isSuperAdmin && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            onClick={() => {
+                              setEditingQuestion({
+                                quizId: ques.quizId,
+                                questionIndex: ques.originalIdx,
+                                question: {
+                                  id: ques.id,
+                                  prompt: ques.prompt,
+                                  options: Array.isArray(ques.options) ? [...ques.options] : ['', '', '', ''],
+                                  correctAnswer: ques.correctAnswer ?? 0,
+                                  explanation: ques.explanation || '',
+                                  points: ques.points || 10
+                                }
+                              });
+                              soundFx.playClick();
+                            }}
+                            className="btn btn-secondary"
+                            style={{
+                              background: 'rgba(37, 99, 235, 0.1)',
+                              color: 'var(--accent-primary)',
+                              border: '1px solid rgba(37, 99, 235, 0.25)',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700
+                            }}
+                            title="Sửa câu hỏi này"
+                          >
+                            <Edit3 size={12} />
+                            <span>Sửa</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Xác nhận xóa câu hỏi "${ques.prompt.slice(0, 50)}..." khỏi đề thi "${ques.quizTitle}"?`)) {
+                                onDeleteQuestion?.(ques.quizId, ques.originalIdx);
+                                soundFx.playClick();
+                              }
+                            }}
+                            className="btn btn-secondary"
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              color: '#ef4444',
+                              border: '1px solid rgba(239, 68, 68, 0.25)',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700
+                            }}
+                            title="Xóa câu hỏi này"
+                          >
+                            <Trash2 size={12} />
+                            <span>Xóa</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                      {ques.prompt}
+                    </div>
+
+                    {ques.options && ques.options.length > 0 && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '6px', fontSize: '0.82rem' }}>
+                        {ques.options.map((opt, oidx) => {
+                          const isCorrect = Array.isArray(ques.correctAnswer) ? ques.correctAnswer.includes(oidx) : ques.correctAnswer === oidx;
+                          return (
+                            <div
+                              key={oidx}
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: 'var(--radius-sm)',
+                                background: isCorrect ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-primary)',
+                                border: isCorrect ? '1.5px solid #10b981' : '1px solid var(--border-color)',
+                                color: isCorrect ? '#065f46' : 'var(--text-secondary)',
+                                fontWeight: isCorrect ? 800 : 400
+                              }}
+                            >
+                              {String.fromCharCode(65 + oidx)}. {opt} {isCorrect && ' ✓ (Đáp án đúng)'}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {ques.explanation && (
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', background: 'rgba(79, 110, 247, 0.06)', padding: '6px 10px', borderRadius: '6px', borderLeft: '3px solid var(--brand)' }}>
+                        <strong>💡 Giải thích:</strong> {ques.explanation}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 6. SEO & GOOGLE TOP RANKING CENTER */}
       {activeSubTab === 'seo_center' && (
@@ -3094,6 +3281,338 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 Đóng Đề Thi
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT QUIZ MODAL (Super Admin) */}
+      {editingQuiz && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
+          }}
+          onClick={() => setEditingQuiz(null)}
+        >
+          <div
+            className="card animate-scale-up"
+            style={{
+              width: '100%',
+              maxWidth: '560px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit3 size={20} color="var(--accent-primary)" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>
+                  Chỉnh Sửa Đề Thi (Admin Master)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingQuiz(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (!editingQuiz.title.trim()) {
+                  alert('Tiêu đề đề thi không được để trống!');
+                  return;
+                }
+                onUpdateQuiz?.(editingQuiz);
+                setEditingQuiz(null);
+                soundFx.playVictory();
+              }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+            >
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Tiêu Đề Đề Thi *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingQuiz.title}
+                  onChange={e => setEditingQuiz({ ...editingQuiz, title: e.target.value })}
+                  className="form-control"
+                  style={{ width: '100%', fontSize: '0.86rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Mô Tả Đề Thi
+                </label>
+                <textarea
+                  rows={3}
+                  value={editingQuiz.description}
+                  onChange={e => setEditingQuiz({ ...editingQuiz, description: e.target.value })}
+                  className="form-control"
+                  style={{ width: '100%', fontSize: '0.84rem', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                    Phân Hệ Đào Tạo
+                  </label>
+                  <select
+                    value={editingQuiz.category}
+                    onChange={e => setEditingQuiz({ ...editingQuiz, category: e.target.value as any })}
+                    className="form-control"
+                    style={{ width: '100%', fontSize: '0.84rem' }}
+                  >
+                    {ALL_TRACK_OPTIONS.map(track => (
+                      <option key={track.id} value={track.id}>{track.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                    Thời Gian Làm Bài (phút)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={180}
+                    value={editingQuiz.timeLimitMinutes || 0}
+                    onChange={e => setEditingQuiz({ ...editingQuiz, timeLimitMinutes: parseInt(e.target.value) || 0 })}
+                    className="form-control"
+                    style={{ width: '100%', fontSize: '0.84rem' }}
+                  />
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>0 = Không giới hạn thời gian</span>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Độ Khó Đề Thi
+                </label>
+                <select
+                  value={editingQuiz.difficulty || 'medium'}
+                  onChange={e => setEditingQuiz({ ...editingQuiz, difficulty: e.target.value as any })}
+                  className="form-control"
+                  style={{ width: '100%', fontSize: '0.84rem' }}
+                >
+                  <option value="easy">Cơ Bản (Easy)</option>
+                  <option value="medium">Trung Bình (Medium)</option>
+                  <option value="hard">Nâng Cao (Hard)</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingQuiz(null)}
+                  className="btn btn-secondary"
+                  style={{ padding: '8px 18px', fontSize: '0.84rem' }}
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ padding: '8px 22px', fontSize: '0.84rem', fontWeight: 700 }}
+                >
+                  Lưu Thay Đổi Đề Thi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT QUESTION MODAL (Super Admin) */}
+      {editingQuestion && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
+          }}
+          onClick={() => setEditingQuestion(null)}
+        >
+          <div
+            className="card animate-scale-up"
+            style={{
+              width: '100%',
+              maxWidth: '640px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit3 size={20} color="var(--accent-primary)" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>
+                  Chỉnh Sửa Câu Hỏi Khảo Thí (Admin Master)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingQuestion(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (!editingQuestion.question.prompt.trim()) {
+                  alert('Nội dung câu hỏi không được để trống!');
+                  return;
+                }
+                onUpdateQuestion?.(editingQuestion.quizId, editingQuestion.questionIndex, editingQuestion.question);
+                setEditingQuestion(null);
+                soundFx.playVictory();
+              }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+            >
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Nội Dung Câu Hỏi (Prompt) *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={editingQuestion.question.prompt}
+                  onChange={e => setEditingQuestion({
+                    ...editingQuestion,
+                    question: { ...editingQuestion.question, prompt: e.target.value }
+                  })}
+                  className="form-control"
+                  style={{ width: '100%', fontSize: '0.86rem', resize: 'vertical' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
+                  4 Phương Án Trả Lời & Chọn Đáp Án Đúng *
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {['A', 'B', 'C', 'D'].map((letter, idx) => {
+                    const isCorrect = Array.isArray(editingQuestion.question.correctAnswer)
+                      ? editingQuestion.question.correctAnswer.includes(idx)
+                      : editingQuestion.question.correctAnswer === idx;
+
+                    return (
+                      <div key={letter} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingQuestion({
+                              ...editingQuestion,
+                              question: { ...editingQuestion.question, correctAnswer: idx }
+                            });
+                          }}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            border: isCorrect ? '2px solid #10b981' : '1px solid var(--border-color)',
+                            background: isCorrect ? '#10b981' : 'var(--bg-primary)',
+                            color: isCorrect ? '#ffffff' : 'var(--text-secondary)',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            minWidth: '52px',
+                            fontSize: '0.78rem'
+                          }}
+                          title="Bấm để chọn đáp án này là ĐÚNG"
+                        >
+                          {letter} {isCorrect ? '✓' : ''}
+                        </button>
+                        <input
+                          type="text"
+                          required
+                          value={editingQuestion.question.options?.[idx] || ''}
+                          onChange={e => {
+                            const newOpts = [...(editingQuestion.question.options || ['', '', '', ''])];
+                            newOpts[idx] = e.target.value;
+                            setEditingQuestion({
+                              ...editingQuestion,
+                              question: { ...editingQuestion.question, options: newOpts }
+                            });
+                          }}
+                          className="form-control"
+                          placeholder={`Phương án ${letter}`}
+                          style={{ flex: 1, fontSize: '0.84rem' }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
+                  Giải Thích Chi Tiết & Hướng Dẫn Thao Tác
+                </label>
+                <textarea
+                  rows={2}
+                  value={editingQuestion.question.explanation || ''}
+                  onChange={e => setEditingQuestion({
+                    ...editingQuestion,
+                    question: { ...editingQuestion.question, explanation: e.target.value }
+                  })}
+                  className="form-control"
+                  placeholder="Ví dụ: Vào thẻ Home > nhóm Paragraph > chọn Line Spacing 1.5 lines..."
+                  style={{ width: '100%', fontSize: '0.84rem', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingQuestion(null)}
+                  className="btn btn-secondary"
+                  style={{ padding: '8px 18px', fontSize: '0.84rem' }}
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ padding: '8px 22px', fontSize: '0.84rem', fontWeight: 700 }}
+                >
+                  Lưu Câu Hỏi
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

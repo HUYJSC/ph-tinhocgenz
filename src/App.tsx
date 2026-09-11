@@ -89,7 +89,11 @@ export function App() {
     toggleTheme,
     updateStudentName,
     addCustomQuiz,
+    updateQuiz,
+    deleteQuiz,
     deleteCustomQuiz,
+    updateQuestion,
+    deleteQuestion,
     toggleBookmark,
     recordAttempt,
     resetAllProgress
@@ -545,7 +549,11 @@ export function App() {
           onGradeSubmission={gradeSubmission}
           onMarkNotificationAsRead={markNotificationAsRead}
           onAddQuiz={addCustomQuiz}
+          onUpdateQuiz={updateQuiz}
+          onDeleteQuiz={deleteQuiz}
           onDeleteCustomQuiz={deleteCustomQuiz}
+          onUpdateQuestion={updateQuestion}
+          onDeleteQuestion={deleteQuestion}
           onNavigateToCreator={() => {
             setActiveTab('creator');
           }}
@@ -806,7 +814,11 @@ export function App() {
                   onGradeSubmission={gradeSubmission}
                   onMarkNotificationAsRead={markNotificationAsRead}
                   onAddQuiz={addCustomQuiz}
+                  onUpdateQuiz={updateQuiz}
+                  onDeleteQuiz={deleteQuiz}
                   onDeleteCustomQuiz={deleteCustomQuiz}
+                  onUpdateQuestion={updateQuestion}
+                  onDeleteQuestion={deleteQuestion}
                   onNavigateToCreator={() => handleNavigateTab('creator')}
                   onCreateStudentAccount={createStudentAccount}
                   onUpdateStudentAccount={updateStudentAccount}

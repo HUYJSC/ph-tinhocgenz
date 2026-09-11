@@ -47,7 +47,11 @@ interface StandaloneAdminAppProps {
   onGradeSubmission?: (submissionId: string, score: number, maxScore: number, feedback: string) => void;
   onMarkNotificationAsRead?: (id: string) => void;
   onAddQuiz: (quiz: Quiz) => void;
+  onUpdateQuiz?: (quiz: Quiz) => void;
+  onDeleteQuiz?: (quizId: string) => void;
   onDeleteCustomQuiz: (quizId: string) => void;
+  onUpdateQuestion?: (quizId: string, questionIndex: number, updatedQuestion: any) => void;
+  onDeleteQuestion?: (quizId: string, questionIndex: number) => void;
   onNavigateToCreator: () => void;
   onCreateStudentAccount: (name: string, studentCode: string, password?: string, schoolOrClass?: string, programTrack?: CurriculumTrack, enrolledTracks?: CurriculumTrack[]) => void;
   onUpdateStudentAccount?: (updatedAccount: StudentAccount) => void;
@@ -571,7 +575,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                   </div>
                   <div style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                    <span>Super Admin</span>
+                    <span>Super Admin • Toàn Quyền Sửa</span>
                   </div>
                 </div>
               </div>

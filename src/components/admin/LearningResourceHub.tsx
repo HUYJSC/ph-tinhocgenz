@@ -24,7 +24,10 @@ import {
   Download,
   AlertCircle,
   FileText,
-  X
+  X,
+  Edit3,
+  Trash2,
+  Power
 } from 'lucide-react';
 import {
   LearningSource,
@@ -79,6 +82,86 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
   const [testUrlResult, setTestUrlResult] = useState<any>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
+
+  // Super Admin CRUD Modals
+  const [editingSource, setEditingSource] = useState<LearningSource | null>(null);
+  const [editingResource, setEditingResource] = useState<LearningResource | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<InternalLearningMaterial | null>(null);
+
+  // Handlers for Sources CRUD
+  const handleUpdateSource = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSource) return;
+    const ok = LearningResourceService.updateSource(editingSource.id, editingSource);
+    if (ok) {
+      setSources(LearningResourceService.getSources());
+      setEditingSource(null);
+      showToast(`Đã cập nhật nguồn '${editingSource.name}' thành công!`);
+    }
+  };
+
+  const handleDeleteSource = (source: LearningSource) => {
+    if (window.confirm(`Xác nhận xóa vĩnh viễn nguồn "${source.name}"? Mọi tiến trình crawl từ nguồn này sẽ dừng lại.`)) {
+      const ok = LearningResourceService.deleteSource(source.id);
+      if (ok) {
+        setSources(LearningResourceService.getSources());
+        showToast(`Đã xóa nguồn '${source.name}' khỏi hệ thống!`);
+      }
+    }
+  };
+
+  const handleToggleSourceStatus = (source: LearningSource) => {
+    const newStatus = source.status === 'active' ? 'paused' : 'active';
+    const ok = LearningResourceService.updateSource(source.id, { status: newStatus });
+    if (ok) {
+      setSources(LearningResourceService.getSources());
+      showToast(`Đã ${newStatus === 'active' ? 'kích hoạt' : 'tạm dừng'} nguồn '${source.name}'!`);
+    }
+  };
+
+  // Handlers for Resources CRUD
+  const handleUpdateResource = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingResource) return;
+    const ok = LearningResourceService.updateResource(editingResource.id, editingResource);
+    if (ok) {
+      setResources(LearningResourceService.getResources());
+      setEditingResource(null);
+      showToast(`Đã cập nhật thông tin tài liệu '${editingResource.title}'!`);
+    }
+  };
+
+  const handleDeleteResource = (res: LearningResource) => {
+    if (window.confirm(`Xác nhận xóa tài liệu "${res.title}" khỏi hệ thống?`)) {
+      const ok = LearningResourceService.deleteResource(res.id);
+      if (ok) {
+        setResources(LearningResourceService.getResources());
+        showToast(`Đã xóa tài liệu '${res.title}'!`);
+      }
+    }
+  };
+
+  // Handlers for Internal Material CRUD
+  const handleUpdateInternalMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMaterial) return;
+    const ok = LearningResourceService.updateInternalMaterial(editingMaterial.id, editingMaterial);
+    if (ok) {
+      setInternalMaterials(LearningResourceService.getInternalMaterials());
+      setEditingMaterial(null);
+      showToast(`Đã cập nhật tài liệu nội bộ [${editingMaterial.material_code}]!`);
+    }
+  };
+
+  const handleDeleteInternalMaterial = (mat: InternalLearningMaterial) => {
+    if (window.confirm(`Xác nhận xóa tài liệu nội bộ "${mat.title}" [${mat.material_code}]?`)) {
+      const ok = LearningResourceService.deleteInternalMaterial(mat.id);
+      if (ok) {
+        setInternalMaterials(LearningResourceService.getInternalMaterials());
+        showToast(`Đã xóa tài liệu nội bộ [${mat.material_code}]!`);
+      }
+    }
+  };
 
   // New Source Form State
   const [newSourceName, setNewSourceName] = useState('');
@@ -717,6 +800,174 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
       {/* ─────────────────────────────────────────────────────────── */}
       {currentTab === 'learning_sources' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* CRAWLER SOURCES MANAGEMENT (SUPER ADMIN) */}
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '12px',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            padding: '16px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '0.96rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Globe size={16} color="#2563eb" />
+                  <span>Cấu Hình & Danh Sách Nguồn Khảo Thí ({sources.length} Nguồn)</span>
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b' }}>
+                  Toàn quyền Thêm, Sửa URL/Tần suất, Bật/Tắt Crawl và Xóa nguồn kiểm định.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsAddSourceModalOpen(true)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Plus size={14} />
+                <span>Thêm Nguồn Mới</span>
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px' }}>
+              {sources.map(src => {
+                const isActive = src.status === 'active';
+                return (
+                  <div
+                    key={src.id}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color, #e2e8f0)',
+                      background: isActive ? '#f8fafc' : '#f1f5f9',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '8px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 800,
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: src.source_tier === 'OFFICIAL' ? 'rgba(16,185,129,0.12)' : 'rgba(37,99,235,0.12)',
+                          color: src.source_tier === 'OFFICIAL' ? '#059669' : '#2563eb'
+                        }}>
+                          {src.source_tier}
+                        </span>
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: isActive ? '#dcfce7' : '#fee2e2',
+                          color: isActive ? '#15803d' : '#b91c1c',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isActive ? '#15803d' : '#b91c1c' }} />
+                          {isActive ? 'Đang Crawl' : 'Tạm Dừng'}
+                        </span>
+                      </div>
+
+                      <div style={{ fontWeight: 700, fontSize: '0.84rem', color: '#0f172a', lineHeight: 1.3 }}>
+                        {src.name}
+                      </div>
+
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <ExternalLink size={10} />
+                        <span style={{ wordBreak: 'break-all' }}>{src.base_url}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid #e2e8f0', fontSize: '0.72rem' }}>
+                      <span style={{ color: '#64748b' }}>Tần suất: <strong>{src.sync_frequency}</strong></span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSourceStatus(src)}
+                          style={{
+                            padding: '3px 7px',
+                            borderRadius: '4px',
+                            border: '1px solid #cbd5e1',
+                            background: '#ffffff',
+                            color: isActive ? '#d97706' : '#10b981',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontWeight: 700
+                          }}
+                          title={isActive ? 'Tạm dừng crawl nguồn này' : 'Kích hoạt crawl nguồn này'}
+                        >
+                          <Power size={11} />
+                          <span>{isActive ? 'Dừng' : 'Bật'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSource({ ...src })}
+                          style={{
+                            padding: '3px 7px',
+                            borderRadius: '4px',
+                            border: '1px solid rgba(37,99,235,0.25)',
+                            background: 'rgba(37,99,235,0.08)',
+                            color: '#2563eb',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontWeight: 700
+                          }}
+                          title="Chỉnh sửa thông tin nguồn"
+                        >
+                          <Edit3 size={11} />
+                          <span>Sửa</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSource(src)}
+                          style={{
+                            padding: '3px 7px',
+                            borderRadius: '4px',
+                            border: '1px solid rgba(239,68,68,0.25)',
+                            background: 'rgba(239,68,68,0.08)',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontWeight: 700
+                          }}
+                          title="Xóa nguồn này"
+                        >
+                          <Trash2 size={11} />
+                          <span>Xóa</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Filters Bar */}
           <div style={{
             background: 'var(--bg-card, #ffffff)',
@@ -958,21 +1209,66 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
                         </td>
 
                         <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                          <button
-                            onClick={() => setSelectedResource(res)}
-                            style={{
-                              padding: '5px 12px',
-                              borderRadius: '6px',
-                              border: '1px solid var(--border-color, #e2e8f0)',
-                              background: '#ffffff',
-                              color: '#2563eb',
-                              fontSize: '0.74rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Thẩm Định
-                          </button>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedResource(res)}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border-color, #e2e8f0)',
+                                background: '#ffffff',
+                                color: '#2563eb',
+                                fontSize: '0.74rem',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Thẩm Định
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingResource({ ...res })}
+                              style={{
+                                padding: '5px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid rgba(37,99,235,0.25)',
+                                background: 'rgba(37,99,235,0.08)',
+                                color: '#2563eb',
+                                fontSize: '0.74rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}
+                              title="Chỉnh sửa thông tin tài liệu"
+                            >
+                              <Edit3 size={12} />
+                              <span>Sửa</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteResource(res)}
+                              style={{
+                                padding: '5px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid rgba(239,68,68,0.25)',
+                                background: 'rgba(239,68,68,0.08)',
+                                color: '#ef4444',
+                                fontSize: '0.74rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}
+                              title="Xóa tài liệu này"
+                            >
+                              <Trash2 size={12} />
+                              <span>Xóa</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1325,25 +1621,70 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
                     <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
                       {mat.files.length} tệp đính kèm (Đã quét an toàn)
                     </div>
-                    <button
-                      onClick={() => handleDownloadMaterial(mat)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--border-color, #e2e8f0)',
-                        background: '#ffffff',
-                        color: '#2563eb',
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <Download size={12} />
-                      <span>Tải Về</span>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditingMaterial({ ...mat })}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(37,99,235,0.25)',
+                          background: 'rgba(37,99,235,0.08)',
+                          color: '#2563eb',
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        title="Chỉnh sửa tài liệu nội bộ"
+                      >
+                        <Edit3 size={12} />
+                        <span>Sửa</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteInternalMaterial(mat)}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(239,68,68,0.25)',
+                          background: 'rgba(239,68,68,0.08)',
+                          color: '#ef4444',
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        title="Xóa tài liệu nội bộ"
+                      >
+                        <Trash2 size={12} />
+                        <span>Xóa</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadMaterial(mat)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--border-color, #e2e8f0)',
+                          background: '#ffffff',
+                          color: '#2563eb',
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Download size={12} />
+                        <span>Tải Về</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2121,6 +2462,487 @@ export const LearningResourceHub: React.FC<LearningResourceHubProps> = ({
                 style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Lưu & Phát Hành Tài Liệu
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      {/* ─────────────────────────────────────────────────────────── */}
+      {/* MODAL 1: CHỈNH SỬA NGUỒN KHẢO THÍ (EDIT SOURCE)             */}
+      {/* ─────────────────────────────────────────────────────────── */}
+      {editingSource && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <form
+            onSubmit={handleUpdateSource}
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '520px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit3 size={18} color="#2563eb" />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  Chỉnh Sửa Nguồn Khảo Thí (Admin Master)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingSource(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Tên Nguồn *
+              </label>
+              <input
+                type="text"
+                required
+                value={editingSource.name}
+                onChange={e => setEditingSource({ ...editingSource, name: e.target.value })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Base URL *
+              </label>
+              <input
+                type="url"
+                required
+                value={editingSource.base_url}
+                onChange={e => setEditingSource({ ...editingSource, base_url: e.target.value })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Cấp Bậc Nguồn
+                </label>
+                <select
+                  value={editingSource.source_tier}
+                  onChange={e => setEditingSource({ ...editingSource, source_tier: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="OFFICIAL">OFFICIAL (Chính thống)</option>
+                  <option value="TRUSTED_REFERENCE">TRUSTED_REFERENCE (Tham khảo)</option>
+                  <option value="LICENSED_PARTNER">LICENSED_PARTNER (Đối tác)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Tần Suất Quét
+                </label>
+                <select
+                  value={editingSource.sync_frequency}
+                  onChange={e => setEditingSource({ ...editingSource, sync_frequency: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="realtime">Realtime</option>
+                  <option value="daily">Hàng ngày (Daily)</option>
+                  <option value="weekly">Hàng tuần (Weekly)</option>
+                  <option value="monthly">Hàng tháng (Monthly)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Trạng Thái Hoạt Động
+              </label>
+              <select
+                value={editingSource.status}
+                onChange={e => setEditingSource({ ...editingSource, status: e.target.value as any })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              >
+                <option value="active">Active (Đang quét)</option>
+                <option value="paused">Paused (Tạm dừng)</option>
+                <option value="error">Error (Lỗi)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setEditingSource(null)}
+                style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="submit"
+                style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Lưu Thay Đổi Nguồn
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────── */}
+      {/* MODAL 2: CHỈNH SỬA TÀI LIỆU THU THẬP (EDIT RESOURCE)         */}
+      {/* ─────────────────────────────────────────────────────────── */}
+      {editingResource && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <form
+            onSubmit={handleUpdateResource}
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit3 size={18} color="#2563eb" />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  Chỉnh Sửa Tài Liệu Thu Thập (Admin Master)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingResource(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Tiêu Đề Tài Liệu *
+              </label>
+              <input
+                type="text"
+                required
+                value={editingResource.title}
+                onChange={e => setEditingResource({ ...editingResource, title: e.target.value })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Canonical URL
+              </label>
+              <input
+                type="url"
+                value={editingResource.canonical_url}
+                onChange={e => setEditingResource({ ...editingResource, canonical_url: e.target.value })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Môn Học
+                </label>
+                <select
+                  value={editingResource.subject}
+                  onChange={e => setEditingResource({ ...editingResource, subject: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="Word">Word</option>
+                  <option value="Excel">Excel</option>
+                  <option value="PowerPoint">PowerPoint</option>
+                  <option value="Outlook">Outlook</option>
+                  <option value="Access">Access</option>
+                  <option value="General_IT">General_IT (CNTT CB / IC3)</option>
+                  <option value="AI">AI Ứng Dụng</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Mã Bài Thi (Exam Code)
+                </label>
+                <input
+                  type="text"
+                  value={editingResource.exam_code || ''}
+                  onChange={e => setEditingResource({ ...editingResource, exam_code: e.target.value.toUpperCase() })}
+                  placeholder="MO-100, MO-200..."
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Trạng Thái Thẩm Định
+                </label>
+                <select
+                  value={editingResource.review_status}
+                  onChange={e => setEditingResource({ ...editingResource, review_status: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="pending">Chờ thẩm định (Pending)</option>
+                  <option value="approved">Đã phê duyệt (Approved)</option>
+                  <option value="rejected">Từ chối (Rejected)</option>
+                  <option value="needs_revision">Yêu cầu chỉnh sửa</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Tính Chính Xác (Factual Status)
+                </label>
+                <select
+                  value={editingResource.factual_status}
+                  onChange={e => setEditingResource({ ...editingResource, factual_status: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="verified">Verified (Đã kiểm chứng)</option>
+                  <option value="unverified">Unverified (Chưa thẩm định)</option>
+                  <option value="conflict">Conflict (Xung đột mã đề)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Điểm Chất Lượng (Quality Score: 0 - 100)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={editingResource.quality_score}
+                onChange={e => setEditingResource({ ...editingResource, quality_score: parseInt(e.target.value) || 0 })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setEditingResource(null)}
+                style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="submit"
+                style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Lưu Thay Đổi Tài Liệu
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────── */}
+      {/* MODAL 3: CHỈNH SỬA TÀI LIỆU NỘI BỘ STUDIO (EDIT MATERIAL)   */}
+      {/* ─────────────────────────────────────────────────────────── */}
+      {editingMaterial && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <form
+            onSubmit={handleUpdateInternalMaterial}
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit3 size={18} color="#2563eb" />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  Chỉnh Sửa Tài Liệu Nội Bộ THGZ (Admin Master)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMaterial(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Mã Tài Liệu *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingMaterial.material_code}
+                  onChange={e => setEditingMaterial({ ...editingMaterial, material_code: e.target.value.toUpperCase() })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Tiêu Đề Tài Liệu *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingMaterial.title}
+                  onChange={e => setEditingMaterial({ ...editingMaterial, title: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Môn Học
+                </label>
+                <select
+                  value={editingMaterial.subject}
+                  onChange={e => setEditingMaterial({ ...editingMaterial, subject: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="Word">Word</option>
+                  <option value="Excel">Excel</option>
+                  <option value="PowerPoint">PowerPoint</option>
+                  <option value="Outlook">Outlook</option>
+                  <option value="Access">Access</option>
+                  <option value="General_IT">General_IT</option>
+                  <option value="AI">AI</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Mã Module (MO-100, etc.)
+                </label>
+                <input
+                  type="text"
+                  value={editingMaterial.module_code}
+                  onChange={e => setEditingMaterial({ ...editingMaterial, module_code: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Tác Giả Biên Soạn
+                </label>
+                <input
+                  type="text"
+                  value={editingMaterial.author_name}
+                  onChange={e => setEditingMaterial({ ...editingMaterial, author_name: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  Giai Đoạn Kiểm Duyệt
+                </label>
+                <select
+                  value={editingMaterial.review_stage}
+                  onChange={e => setEditingMaterial({ ...editingMaterial, review_stage: e.target.value as any })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+                >
+                  <option value="DRAFT">1. DRAFT (Bản thảo)</option>
+                  <option value="TECHNICAL_REVIEW">2. TECHNICAL_REVIEW (Kỹ thuật)</option>
+                  <option value="ACADEMIC_REVIEW">3. ACADEMIC_REVIEW (Học thuật)</option>
+                  <option value="COPYRIGHT_REVIEW">4. COPYRIGHT_REVIEW (Bản quyền)</option>
+                  <option value="APPROVED">5. APPROVED (Đã duyệt)</option>
+                  <option value="PUBLISHED">6. PUBLISHED (Đã phát hành)</option>
+                  <option value="ARCHIVED">7. ARCHIVED (Lưu trữ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Huy Hiệu / Ghi Chú Chất Lượng
+              </label>
+              <input
+                type="text"
+                value={editingMaterial.editorial_badge || ''}
+                onChange={e => setEditingMaterial({ ...editingMaterial, editorial_badge: e.target.value })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setEditingMaterial(null)}
+                style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="submit"
+                style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Lưu Thay Đổi
               </button>
             </div>
           </form>

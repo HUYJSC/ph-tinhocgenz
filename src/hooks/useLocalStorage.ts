@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Quiz, QuizAttempt, UserStats } from '../types/quiz';
+import { useState, useEffect, useMemo } from 'react';
+import { Quiz, QuizAttempt, UserStats, Question } from '../types/quiz';
 import { DEFAULT_QUIZZES } from '../data/defaultQuizzes';
 import { DEFAULT_BADGES } from '../data/badges';
 
@@ -7,6 +7,8 @@ const STATS_KEY = 'phtinhocgenz_user_stats_v1';
 const LEGACY_STATS_KEY = 'eduquest_user_stats_v1';
 const CUSTOM_QUIZZES_KEY = 'phtinhocgenz_custom_quizzes_v1';
 const LEGACY_CUSTOM_QUIZZES_KEY = 'eduquest_custom_quizzes_v1';
+const QUIZ_OVERRIDES_KEY = 'phtinhocgenz_quiz_overrides_v1';
+const DELETED_QUIZZES_KEY = 'phtinhocgenz_deleted_quizzes_v1';
 const THEME_KEY = 'phtinhocgenz_theme_mode';
 
 function getTodayString(): string {
@@ -47,6 +49,26 @@ export function useAppStorage() {
       }
     } catch (e) {
       console.error('Failed to load custom quizzes from localStorage', e);
+    }
+    return [];
+  });
+
+  const [quizOverrides, setQuizOverrides] = useState<Record<string, Quiz>>(() => {
+    try {
+      const saved = localStorage.getItem(QUIZ_OVERRIDES_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to load quiz overrides', e);
+    }
+    return {};
+  });
+
+  const [deletedQuizIds, setDeletedQuizIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(DELETED_QUIZZES_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to load deleted quiz ids', e);
     }
     return [];
   });
@@ -92,8 +114,29 @@ export function useAppStorage() {
     }
   }, [theme]);
 
-  // Combine default quizzes and custom quizzes
-  const allQuizzes: Quiz[] = [...DEFAULT_QUIZZES, ...customQuizzes];
+  useEffect(() => {
+    try {
+      localStorage.setItem(QUIZ_OVERRIDES_KEY, JSON.stringify(quizOverrides));
+    } catch (e) {
+      console.error('Failed to save quiz overrides', e);
+    }
+  }, [quizOverrides]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DELETED_QUIZZES_KEY, JSON.stringify(deletedQuizIds));
+    } catch (e) {
+      console.error('Failed to save deleted quiz ids', e);
+    }
+  }, [deletedQuizIds]);
+
+  // Combine default quizzes and custom quizzes with overrides & deleted filters (Admin full edit power)
+  const allQuizzes: Quiz[] = useMemo(() => {
+    const combined = [...DEFAULT_QUIZZES, ...customQuizzes];
+    return combined
+      .filter(q => !deletedQuizIds.includes(q.id))
+      .map(q => quizOverrides[q.id] ? { ...q, ...quizOverrides[q.id] } : q);
+  }, [customQuizzes, quizOverrides, deletedQuizIds]);
 
   const toggleTheme = () => {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
@@ -117,8 +160,39 @@ export function useAppStorage() {
     return newQuiz;
   };
 
-  const deleteCustomQuiz = (quizId: string) => {
+  const updateQuiz = (updatedQuiz: Quiz) => {
+    const isCustom = customQuizzes.some(q => q.id === updatedQuiz.id);
+    if (isCustom) {
+      setCustomQuizzes(prev => prev.map(q => q.id === updatedQuiz.id ? updatedQuiz : q));
+    } else {
+      setQuizOverrides(prev => ({ ...prev, [updatedQuiz.id]: updatedQuiz }));
+    }
+  };
+
+  const deleteQuiz = (quizId: string) => {
     setCustomQuizzes(prev => prev.filter(q => q.id !== quizId));
+    setDeletedQuizIds(prev => prev.includes(quizId) ? prev : [...prev, quizId]);
+  };
+
+  const deleteCustomQuiz = (quizId: string) => {
+    deleteQuiz(quizId);
+  };
+
+  const updateQuestion = (quizId: string, questionIndex: number, updatedQuestion: Partial<Question>) => {
+    const targetQuiz = allQuizzes.find(q => q.id === quizId);
+    if (!targetQuiz) return;
+    const newQuestions = [...targetQuiz.questions];
+    if (questionIndex >= 0 && questionIndex < newQuestions.length) {
+      newQuestions[questionIndex] = { ...newQuestions[questionIndex], ...updatedQuestion } as Question;
+      updateQuiz({ ...targetQuiz, questions: newQuestions });
+    }
+  };
+
+  const deleteQuestion = (quizId: string, questionIndex: number) => {
+    const targetQuiz = allQuizzes.find(q => q.id === quizId);
+    if (!targetQuiz) return;
+    const newQuestions = targetQuiz.questions.filter((_, idx) => idx !== questionIndex);
+    updateQuiz({ ...targetQuiz, questions: newQuestions });
   };
 
   const toggleBookmark = (questionId: string) => {
@@ -221,7 +295,11 @@ export function useAppStorage() {
     toggleTheme,
     updateStudentName,
     addCustomQuiz,
+    updateQuiz,
+    deleteQuiz,
     deleteCustomQuiz,
+    updateQuestion,
+    deleteQuestion,
     toggleBookmark,
     recordAttempt,
     resetAllProgress

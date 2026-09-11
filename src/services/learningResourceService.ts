@@ -346,6 +346,29 @@ export class LearningResourceService {
   }
 
   /**
+   * Cập nhật nguồn học liệu (Admin Toàn Quyền)
+   */
+  static updateSource(id: string, updated: Partial<LearningSource>): boolean {
+    const list = this.getSources();
+    const index = list.findIndex(s => s.id === id);
+    if (index === -1) return false;
+    list[index] = { ...list[index], ...updated, updated_at: new Date().toISOString() };
+    this.saveSources(list);
+    return true;
+  }
+
+  /**
+   * Xóa nguồn học liệu (Admin Toàn Quyền)
+   */
+  static deleteSource(id: string): boolean {
+    const list = this.getSources();
+    const filtered = list.filter(s => s.id !== id);
+    if (filtered.length === list.length) return false;
+    this.saveSources(filtered);
+    return true;
+  }
+
+  /**
    * Lấy danh sách tài liệu
    */
   static getResources(): LearningResource[] {
@@ -367,6 +390,29 @@ export class LearningResourceService {
     } catch (e) {
       console.error('Error saving resources', e);
     }
+  }
+
+  /**
+   * Cập nhật tài liệu thu thập (Admin Toàn Quyền)
+   */
+  static updateResource(id: string, updated: Partial<LearningResource>): boolean {
+    const list = this.getResources();
+    const index = list.findIndex(r => r.id === id);
+    if (index === -1) return false;
+    list[index] = { ...list[index], ...updated, updated_at: new Date().toISOString() };
+    this.saveResources(list);
+    return true;
+  }
+
+  /**
+   * Xóa tài liệu thu thập (Admin Toàn Quyền)
+   */
+  static deleteResource(id: string): boolean {
+    const list = this.getResources();
+    const filtered = list.filter(r => r.id !== id);
+    if (filtered.length === list.length) return false;
+    this.saveResources(filtered);
+    return true;
   }
 
   /**
@@ -424,6 +470,29 @@ export class LearningResourceService {
     const list = this.getInternalMaterials();
     list.unshift(material);
     this.saveInternalMaterials(list);
+  }
+
+  /**
+   * Cập nhật tài liệu nội bộ (Admin Toàn Quyền)
+   */
+  static updateInternalMaterial(id: string, updated: Partial<InternalLearningMaterial>): boolean {
+    const list = this.getInternalMaterials();
+    const index = list.findIndex(m => m.id === id);
+    if (index === -1) return false;
+    list[index] = { ...list[index], ...updated, updated_at: new Date().toISOString() };
+    this.saveInternalMaterials(list);
+    return true;
+  }
+
+  /**
+   * Xóa tài liệu nội bộ (Admin Toàn Quyền)
+   */
+  static deleteInternalMaterial(id: string): boolean {
+    const list = this.getInternalMaterials();
+    const filtered = list.filter(m => m.id !== id);
+    if (filtered.length === list.length) return false;
+    this.saveInternalMaterials(filtered);
+    return true;
   }
 
   /**
