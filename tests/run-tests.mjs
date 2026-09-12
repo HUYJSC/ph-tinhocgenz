@@ -317,6 +317,44 @@ if (authSecurityExists) {
   assert(secContent.includes('safeCompare') && secContent.includes('validatePasswordStrength'), 'authSecurity.ts xuất khẩu safeCompare và validatePasswordStrength');
 }
 
+// 16. Test P0.1: Serverless Session Auth & Triệt Tiêu Hoàn Toàn Rò Rỉ Thông Tin Mẫu
+console.log('\n🔐 NHÓM 16: Kiểm tra P0.1 — Serverless Session Auth & Triệt Tiêu Hoàn Toàn Rò Rỉ Thông Tin Mẫu');
+
+const loginEndpointExists = fs.existsSync(path.resolve('api/auth/login.ts'));
+assert(loginEndpointExists, 'Endpoint xác thực Serverless api/auth/login.ts tồn tại');
+if (loginEndpointExists) {
+  const loginCode = fs.readFileSync('api/auth/login.ts', 'utf8');
+  assert(loginCode.includes('signSessionToken') && loginCode.includes('setSessionCookie'), 'api/auth/login.ts có cơ chế ký token và lưu HttpOnly Cookie');
+  assert(loginCode.includes('checkRateLimit'), 'api/auth/login.ts có lớp bảo vệ Rate Limiting chống Brute-force');
+}
+
+const sessionEndpointExists = fs.existsSync(path.resolve('api/auth/session.ts'));
+assert(sessionEndpointExists, 'Endpoint kiểm tra phiên api/auth/session.ts tồn tại');
+
+const logoutEndpointExists = fs.existsSync(path.resolve('api/auth/logout.ts'));
+assert(logoutEndpointExists, 'Endpoint đăng xuất api/auth/logout.ts tồn tại');
+
+const authSessionExists = fs.existsSync(path.resolve('api/_lib/authSession.ts'));
+assert(authSessionExists, 'Module quản lý phiên Serverless api/_lib/authSession.ts tồn tại');
+if (authSessionExists) {
+  const sessionCode = fs.readFileSync('api/_lib/authSession.ts', 'utf8');
+  assert(sessionCode.includes('signSessionToken') && sessionCode.includes('verifySessionToken'), 'authSession.ts cung cấp đầy đủ hàm ký và kiểm tra chữ ký HMAC-SHA256');
+}
+
+const authTypes = fs.readFileSync('src/types/auth.ts', 'utf8');
+assert(authTypes.includes('AUTH_ERROR_MESSAGES') && authTypes.includes('AuthErrorCode'), 'src/types/auth.ts chuẩn hóa 10 mã lỗi xác thực hệ thống');
+
+const standaloneAdminCode = fs.readFileSync('src/components/admin/StandaloneAdminApp.tsx', 'utf8');
+assert(!standaloneAdminCode.includes('admin123'), 'P0.2: StandaloneAdminApp đã xóa bỏ hoàn toàn mật khẩu admin123 khỏi placeholder và giao diện');
+assert(!standaloneAdminCode.includes('Mã cán bộ: ADMIN hoặc ADMIN01'), 'P0.2: StandaloneAdminApp đã xóa bỏ toàn bộ gợi ý tài khoản quản trị mẫu');
+
+const unifiedGatewayCode = fs.readFileSync('src/components/auth/UnifiedAuthGateway.tsx', 'utf8');
+assert(!unifiedGatewayCode.includes('admin123'), 'P0.2: UnifiedAuthGateway đã xóa bỏ hoàn toàn mật khẩu admin123 khỏi placeholder và giao diện');
+assert(!unifiedGatewayCode.includes('Mã cán bộ: ADMIN'), 'P0.2: UnifiedAuthGateway đã xóa bỏ toàn bộ gợi ý tài khoản quản trị mẫu');
+
+const heroBannerCode = fs.readFileSync('src/components/landing/HeroBanner.tsx', 'utf8');
+assert(!heroBannerCode.includes('href="https://hoctructuyen.tinhocgenz.io.vn/"'), 'P0-UX: Nút Vào hệ thống học tập không còn trỏ cứng về URL trang chủ gây tải lại trang');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

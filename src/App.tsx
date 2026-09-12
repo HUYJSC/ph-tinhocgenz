@@ -101,11 +101,13 @@ export function App() {
 
   const {
     user,
+    setUser,
     isStaff,
     studentAccounts,
     teacherAccounts,
     loginWithStudentCode,
-    loginAsStaff,
+    loginAsStaffAsync,
+    logoutUser,
     changeUserPassword,
     resetUserPassword,
     createStudentAccount,
@@ -357,9 +359,10 @@ export function App() {
   };
 
   // Unified Admin / Teacher Login (Choose track or All tracks + PIN/Password)
-  const handleAdminUnifiedLogin = (pinOrPassword: string, name?: string, selectedTrack?: CurriculumTrack | 'all') => {
-    const res = loginAsStaff(pinOrPassword, name, selectedTrack);
+  const handleAdminUnifiedLogin = async (pinOrPassword: string, name?: string, selectedTrack?: CurriculumTrack | 'all') => {
+    const res = await loginAsStaffAsync(pinOrPassword, name, selectedTrack);
     if (res.success && res.user) {
+      setUser(res.user);
       if (selectedTrack && selectedTrack !== 'all') {
         switchStudentTrack(selectedTrack);
       }
@@ -377,6 +380,7 @@ export function App() {
 
   // Logout / Switch track handler
   const handleLogout = () => {
+    logoutUser();
     setIsSessionActive(false);
     setActiveQuiz(null);
     setLatestAttempt(null);
@@ -566,10 +570,12 @@ export function App() {
           onCreateSchedule={createSchedule}
           onUpdateSchedule={updateSchedule}
           onDeleteSchedule={deleteSchedule}
-          onLoginAsAdmin={(pass, name) => {
-            const res = loginAsStaff(pass, name, 'all');
+          onLoginAsAdmin={async (pass, name) => {
+            const res = await loginAsStaffAsync(pass, name, 'all');
             if (res.success && res.user) {
+              setUser(res.user);
               setIsSessionActive(true);
+              setActiveTab('admin');
               try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
             }
             return res;

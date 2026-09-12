@@ -96,3 +96,37 @@ export interface AuthState {
   currentUser: UserProfile;
   isAuthenticated: boolean;
 }
+
+export type AuthErrorCode =
+  | 'INVALID_CREDENTIALS'
+  | 'ACCOUNT_LOCKED'
+  | 'ACCOUNT_DISABLED'
+  | 'EMAIL_NOT_VERIFIED'
+  | 'INSUFFICIENT_ROLE'
+  | 'SESSION_EXPIRED'
+  | 'RATE_LIMITED'
+  | 'NETWORK_ERROR'
+  | 'SERVER_ERROR'
+  | 'DATABASE_UNAVAILABLE';
+
+export const AUTH_ERROR_MESSAGES: Record<AuthErrorCode, string> = {
+  INVALID_CREDENTIALS: 'Thông tin tài khoản hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.',
+  ACCOUNT_LOCKED: 'Tài khoản đã tạm thời bị khóa do nhiều lần đăng nhập không thành công. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.',
+  ACCOUNT_DISABLED: 'Tài khoản hiện đang bị vô hiệu hóa. Vui lòng liên hệ ban quản trị.',
+  EMAIL_NOT_VERIFIED: 'Email tài khoản chưa được xác minh. Vui lòng kiểm tra hòm thư của bạn.',
+  INSUFFICIENT_ROLE: 'Bạn không có quyền truy cập vào phân hệ này.',
+  SESSION_EXPIRED: 'Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.',
+  RATE_LIMITED: 'Quá nhiều yêu cầu đăng nhập từ thiết bị của bạn. Vui lòng chờ 1 phút trước khi thử lại.',
+  NETWORK_ERROR: 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra đường truyền mạng.',
+  SERVER_ERROR: 'Lỗi hệ thống xác thực. Vui lòng thử lại sau giây lát.',
+  DATABASE_UNAVAILABLE: 'Hệ thống cơ sở dữ liệu đang bảo trì. Vui lòng thử lại sau.'
+};
+
+export interface ServerAuthResponse {
+  success: boolean;
+  code?: AuthErrorCode;
+  message: string;
+  user?: UserProfile;
+  token?: string;
+}
+

@@ -390,6 +390,19 @@ export function useAuth() {
     };
   }, []);
 
+  // Khôi phục phiên làm việc an toàn từ Serverless HttpOnly Cookie
+  useEffect(() => {
+    authService.getServerSession().then(res => {
+      if (res.authenticated && res.user) {
+        setUser(res.user);
+        try {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
+          localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
+        } catch {}
+      }
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem(STUDENT_ACCOUNTS_KEY, JSON.stringify(studentAccounts));
@@ -855,6 +868,50 @@ export function useAuth() {
     return { success: false, message: 'Không tìm thấy tài khoản tương ứng với mã hoặc email đã nhập.' };
   };
 
+  /**
+   * Đăng nhập Giảng viên & Quản trị viên bất đồng bộ qua Serverless API
+   */
+  const loginAsStaffAsync = async (
+    passwordOrPin: string,
+    staffNameOrCode?: string,
+    selectedTrack?: CurriculumTrack | 'all'
+  ) => {
+    try {
+      const serverRes = await authService.serverLogin(
+        staffNameOrCode || '',
+        passwordOrPin,
+        'admin',
+        selectedTrack === 'all' ? 'office-fast-3in1' : selectedTrack
+      );
+      if (serverRes.success && serverRes.user) {
+        setUser(serverRes.user);
+        try {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(serverRes.user));
+          localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
+        } catch {}
+        return { success: true, user: serverRes.user, code: serverRes.code };
+      }
+      if (serverRes.code === 'INSUFFICIENT_ROLE' || serverRes.code === 'RATE_LIMITED' || serverRes.code === 'ACCOUNT_LOCKED') {
+        return { success: false, message: serverRes.message, code: serverRes.code };
+      }
+    } catch {
+      // Fallback sang local logic
+    }
+    return loginAsStaff(passwordOrPin, staffNameOrCode, selectedTrack);
+  };
+
+  /**
+   * Đăng xuất xóa toàn bộ Session cookie máy chủ và bộ nhớ tạm
+   */
+  const logoutUser = async () => {
+    try {
+      await authService.serverLogout();
+      localStorage.removeItem('phtinhocgenz_session_active_v4');
+      localStorage.removeItem(AUTH_USER_KEY);
+    } catch {}
+    setUser(GUEST_USER);
+  };
+
   return {
     user,
     setUser,
@@ -863,6 +920,8 @@ export function useAuth() {
     teacherAccounts,
     loginWithStudentCode,
     loginAsStaff,
+    loginAsStaffAsync,
+    logoutUser,
     switchStudentTrack,
     createStudentAccount,
     updateStudentAccount,

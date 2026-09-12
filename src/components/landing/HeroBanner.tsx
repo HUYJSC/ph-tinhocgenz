@@ -24,9 +24,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   };
 
   const handleSecondaryClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (onEnterLMS) {
-      e.preventDefault();
       onEnterLMS();
+    } else if (typeof window !== 'undefined') {
+      window.location.search = '?portal=student';
     }
   };
 
@@ -196,7 +198,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
             {/* Secondary CTA */}
             <a
-              href="https://hoctructuyen.tinhocgenz.io.vn/"
+              href="/?portal=student"
               onClick={handleSecondaryClick}
               className="hero-btn-secondary"
               style={{

@@ -63,7 +63,7 @@ interface StandaloneAdminAppProps {
   onCreateSchedule?: (data: Omit<ClassScheduleItem, 'id' | 'createdAt'>) => void;
   onUpdateSchedule?: (updated: ClassScheduleItem) => void;
   onDeleteSchedule?: (id: string) => void;
-  onLoginAsAdmin: (passwordOrPin: string, staffName?: string) => { success: boolean; message?: string };
+  onLoginAsAdmin: (passwordOrPin: string, staffName?: string) => { success: boolean; message?: string } | Promise<{ success: boolean; message?: string }>;
   onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
   onLogout: () => void;
   onBackToStudentPortal: () => void;
@@ -93,15 +93,26 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>('overview');
   const [showDataCenter, setShowDataCenter] = useState(false);
 
-  const handleAdminSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setLoginError('');
-    const res = onLoginAsAdmin(adminPassword, adminUsername);
-    if (!res.success) {
-      setLoginError(res.message || 'Mật khẩu quản trị không chính xác.');
+    setIsSubmitting(true);
+    try {
+      const res = await onLoginAsAdmin(adminPassword, adminUsername);
+      if (!res.success) {
+        setLoginError(res.message || 'Thông tin tài khoản hoặc mật khẩu không chính xác. Quyền truy cập bị từ chối.');
+        soundFx.playIncorrect();
+      } else {
+        soundFx.playCorrect();
+      }
+    } catch {
+      setLoginError('Lỗi kết nối xác thực hệ thống. Vui lòng thử lại sau giây lát.');
       soundFx.playIncorrect();
-    } else {
-      soundFx.playCorrect();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -208,7 +219,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                   type="text"
                   value={adminUsername}
                   onChange={(e) => setAdminUsername(e.target.value)}
-                  placeholder="Nhập mã cán bộ hoặc tài khoản quản trị..."
+                  placeholder="Nhập tài khoản hoặc email"
                   required
                   style={{
                     width: '100%',
@@ -234,7 +245,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                   type={showPassword ? 'text' : 'password'}
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="Nhập mã PIN hoặc mật khẩu admin..."
+                  placeholder="Nhập mật khẩu"
                   required
                   style={{
                     width: '100%',
@@ -298,47 +309,30 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               </div>
             )}
 
-            {/* Quick credentials hint */}
-            <div style={{
-              padding: '10px 14px',
-              borderRadius: '8px',
-              background: 'rgba(245, 158, 11, 0.08)',
-              border: '1px solid rgba(245, 158, 11, 0.25)',
-              fontSize: '0.8rem',
-              color: '#cbd5e1',
-              lineHeight: 1.5
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: 700, marginBottom: '4px' }}>
-                <span>💡 Tài khoản Quản trị viên tiêu chuẩn:</span>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.78rem' }}>
-                <span>Mã cán bộ: <strong style={{ color: '#fde047', background: 'rgba(0,0,0,0.35)', padding: '2px 6px', borderRadius: '4px' }}>ADMIN</strong> hoặc <strong style={{ color: '#fde047', background: 'rgba(0,0,0,0.35)', padding: '2px 6px', borderRadius: '4px' }}>ADMIN01</strong></span>
-                <span>Mật khẩu: <strong style={{ color: '#fde047', background: 'rgba(0,0,0,0.35)', padding: '2px 6px', borderRadius: '4px' }}>admin123</strong></span>
-              </div>
-            </div>
-
             <button
               type="submit"
+              disabled={isSubmitting}
               style={{
                 width: '100%',
                 padding: '12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                background: isSubmitting ? 'rgba(217, 119, 6, 0.6)' : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
                 color: '#ffffff',
                 fontWeight: 700,
                 fontSize: '0.92rem',
-                cursor: 'pointer',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 boxShadow: '0 4px 12px rgba(217, 119, 6, 0.35)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                marginTop: '4px'
+                marginTop: '4px',
+                opacity: isSubmitting ? 0.8 : 1
               }}
             >
               <Key size={16} />
-              <span>Đăng Nhập Cổng Quản Trị</span>
+              <span>{isSubmitting ? 'Đang xác thực hệ thống...' : 'Đăng Nhập Cổng Quản Trị'}</span>
             </button>
           </form>
         </div>

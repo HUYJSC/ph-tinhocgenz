@@ -59,6 +59,64 @@ export const authService = {
   },
 
   /**
+   * Đăng nhập qua Serverless Vercel Endpoint có HttpOnly Cookie (/api/auth/login)
+   */
+  async serverLogin(
+    username: string,
+    password: string,
+    portal: 'student' | 'teacher' | 'admin' = 'student',
+    selectedTrack?: string
+  ): Promise<{ success: boolean; code?: string; message: string; user?: UserProfile }> {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password, portal, selectedTrack })
+      });
+      const data = await res.json();
+      return data;
+    } catch {
+      return {
+        success: false,
+        code: 'NETWORK_ERROR',
+        message: 'Không thể kết nối đến máy chủ xác thực. Vui lòng kiểm tra đường truyền mạng.'
+      };
+    }
+  },
+
+  /**
+   * Kiểm tra phiên làm việc từ Serverless Session Cookie (/api/auth/session)
+   */
+  async getServerSession(): Promise<{ authenticated: boolean; code?: string; user?: UserProfile }> {
+    try {
+      const res = await fetch('/api/auth/session', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      return data;
+    } catch {
+      return { authenticated: false, code: 'NETWORK_ERROR' };
+    }
+  },
+
+  /**
+   * Hủy phiên làm việc và xóa cookie trên máy chủ (/api/auth/logout)
+   */
+  async serverLogout(): Promise<{ success: boolean }> {
+    try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      return await res.json();
+    } catch {
+      return { success: true };
+    }
+  },
+
+  /**
    * Đổi mật khẩu tài khoản
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<{ message: string }>> {

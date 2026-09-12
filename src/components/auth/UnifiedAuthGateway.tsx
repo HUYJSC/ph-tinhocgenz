@@ -11,7 +11,7 @@ interface UnifiedAuthGatewayProps {
   initialRole?: 'student' | 'admin';
   studentAccounts?: StudentAccount[];
   onStudentLogin: (studentCode: string, password: string, selectedTrack: CurriculumTrack) => { success: boolean; user?: UserProfile; message?: string };
-  onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string };
+  onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string } | Promise<{ success: boolean; user?: UserProfile; message?: string }>;
   onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
   onBackToLanding?: () => void;
 }
@@ -90,31 +90,42 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
     }
   };
 
-  const handleAdminSubmit = (e: React.FormEvent) => {
+  const [isAdminSubmitting, setIsAdminSubmitting] = useState(false);
+
+  const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isAdminSubmitting) return;
     setAdminError('');
 
     const cleanName = adminName.trim();
     const cleanPin = adminPin.trim();
 
     if (!cleanName) {
-      setAdminError('Vui lòng nhập họ và tên giảng viên!');
+      setAdminError('Vui lòng nhập tài khoản hoặc email!');
       soundFx.playIncorrect();
       return;
     }
 
     if (!cleanPin) {
-      setAdminError('Vui lòng nhập mã PIN quản trị!');
+      setAdminError('Vui lòng nhập mật khẩu!');
       soundFx.playIncorrect();
       return;
     }
 
-    const res = onAdminLogin(cleanPin, cleanName, adminTrackChoice);
-    if (res.success) {
-      soundFx.playVictory();
-    } else {
+    setIsAdminSubmitting(true);
+    try {
+      const res = await onAdminLogin(cleanPin, cleanName, adminTrackChoice);
+      if (res.success) {
+        soundFx.playVictory();
+      } else {
+        soundFx.playIncorrect();
+        setAdminError(res.message || 'Thông tin tài khoản hoặc mật khẩu không chính xác. Quyền truy cập bị từ chối.');
+      }
+    } catch {
       soundFx.playIncorrect();
-      setAdminError(res.message || 'Thông tin giảng viên hoặc mã PIN không đúng. Không thể truy cập!');
+      setAdminError('Lỗi kết nối tới máy chủ xác thực. Vui lòng thử lại sau giây lát.');
+    } finally {
+      setIsAdminSubmitting(false);
     }
   };
 
@@ -580,7 +591,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                     type="text"
                     value={adminName}
                     onChange={e => { setAdminName(e.target.value); setAdminError(''); }}
-                    placeholder="Mã cán bộ hoặc tên (VD: ADMIN, ADMIN01, Thầy Quang Huy)"
+                    placeholder="Nhập tài khoản hoặc email"
                     style={{
                       width: '100%',
                       height: '44px',
@@ -607,7 +618,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                       type={showPassword ? 'text' : 'password'}
                       value={adminPin}
                       onChange={e => { setAdminPin(e.target.value); setAdminError(''); }}
-                      placeholder="Mật khẩu hoặc PIN (VD: admin123)"
+                      placeholder="Nhập mật khẩu"
                       style={{
                         width: '100%',
                         height: '44px',
@@ -676,39 +687,28 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   </select>
                 </div>
 
-                <div style={{
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  background: '#F0FDF4',
-                  border: '1px solid #BBF7D0',
-                  fontSize: '12px',
-                  color: '#166534',
-                  lineHeight: 1.5
-                }}>
-                  <div style={{ fontWeight: 700, marginBottom: '2px', color: '#15803D' }}>💡 Tài khoản Quản trị viên mẫu:</div>
-                  <div>Mã cán bộ: <strong>ADMIN</strong> hoặc <strong>ADMIN01</strong> • Mật khẩu: <strong>admin123</strong></div>
-                </div>
-
                 <button
                   type="submit"
+                  disabled={isAdminSubmitting}
                   style={{
                     width: '100%',
                     height: '46px',
                     borderRadius: '12px',
                     border: 'none',
-                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                    background: isAdminSubmitting ? 'rgba(37, 99, 235, 0.6)' : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
                     color: '#FFFFFF',
                     fontSize: '14.5px',
                     fontWeight: 700,
-                    cursor: 'pointer',
+                    cursor: isAdminSubmitting ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                    opacity: isAdminSubmitting ? 0.8 : 1
                   }}
                 >
-                  <span>Đăng nhập Cổng Giảng viên</span>
+                  <span>{isAdminSubmitting ? 'Đang xác thực hệ thống...' : 'Đăng nhập Cổng Giảng viên / Quản trị'}</span>
                   <ArrowRight size={16} />
                 </button>
               </form>
