@@ -14,14 +14,16 @@ import {
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X, GraduationCap,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
   Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Clock, Bot, FileText,
-  Database
+  Database, Award
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { LearningResourceHub, LearningHubSubTab } from './LearningResourceHub';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
+import { CertificateManager } from './CertificateManager';
 
 export type AdminPortalSubTab =
   | 'overview'
+  | 'certificates'
   | 'schedules'
   | 'grading_assignments'
   | 'student_directory'
@@ -649,6 +651,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         >
           {[
             { id: 'overview', label: 'Tổng quan', icon: BarChart3 },
+            { id: 'certificates', label: 'Quản lý Chứng chỉ', icon: Award },
             { id: 'schedules', label: 'Lịch dạy & Phòng học', count: schedules.length, icon: Calendar },
             { id: 'grading_assignments', label: 'Khảo thí & Chấm điểm', count: assignments.length, icon: CheckSquare },
             { id: 'student_directory', label: 'Hồ sơ học viên', count: studentAccounts.length, icon: Users },
@@ -703,6 +706,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             );
           })}
         </nav>
+      )}
+
+      {/* ── 00. QUẢN LÝ KHUNG MẪU & CẤP PHÁT CHỨNG CHỈ (NEW 2026) ── */}
+      {activeSubTab === 'certificates' && (
+        <CertificateManager
+          studentAccounts={studentAccounts}
+          currentUserRole={currentUser.role}
+        />
       )}
 
       {/* ── 0A. THỜI KHÓA BIỂU & LỊCH DẠY SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}

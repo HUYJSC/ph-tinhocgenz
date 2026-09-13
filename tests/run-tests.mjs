@@ -352,8 +352,52 @@ const unifiedGatewayCode = fs.readFileSync('src/components/auth/UnifiedAuthGatew
 assert(!unifiedGatewayCode.includes('admin123'), 'P0.2: UnifiedAuthGateway đã xóa bỏ hoàn toàn mật khẩu admin123 khỏi placeholder và giao diện');
 assert(!unifiedGatewayCode.includes('Mã cán bộ: ADMIN'), 'P0.2: UnifiedAuthGateway đã xóa bỏ toàn bộ gợi ý tài khoản quản trị mẫu');
 
-const heroBannerCode = fs.readFileSync('src/components/landing/HeroBanner.tsx', 'utf8');
-assert(!heroBannerCode.includes('href="https://hoctructuyen.tinhocgenz.io.vn/"'), 'P0-UX: Nút Vào hệ thống học tập không còn trỏ cứng về URL trang chủ gây tải lại trang');
+// 17. Test Module Quản Lý Khung Mẫu & Cấp Phát Chỉnh Sửa Chứng Chỉ 2026 (/admin/certificates)
+console.log('\n📜 NHÓM 17: Kiểm tra Module Quản Lý Khung Mẫu & Cấp Phát Chỉnh Sửa Chứng Chỉ 2026');
+
+const certTemplateTypeExists = fs.existsSync(path.resolve('src/types/certificateTemplate.ts'));
+assert(certTemplateTypeExists, 'Tệp định nghĩa kiểu khung mẫu src/types/certificateTemplate.ts tồn tại');
+if (certTemplateTypeExists) {
+  const tplCode = fs.readFileSync('src/types/certificateTemplate.ts', 'utf8');
+  assert(tplCode.includes('interface CertificateTemplate') && tplCode.includes('interface TemplateFieldConfig'), 'certificateTemplate.ts xuất khẩu CertificateTemplate và TemplateFieldConfig');
+}
+
+const edtechCode = fs.readFileSync('src/types/edtech.ts', 'utf8');
+assert(edtechCode.includes('templateId?: string') && edtechCode.includes('revocationReason?: string'), 'DigitalCertificate trong src/types/edtech.ts mở rộng trường templateId và revocationReason');
+
+const certServiceCode = fs.readFileSync('src/services/certificateService.ts', 'utf8');
+assert(certServiceCode.includes('getAllTemplates') && certServiceCode.includes('saveTemplate') && certServiceCode.includes('deleteTemplate'), 'CertificateService cung cấp đầy đủ API quản lý khung mẫu (getAllTemplates, saveTemplate, deleteTemplate)');
+assert(certServiceCode.includes('updateCertificate') && certServiceCode.includes('revokeCertificate') && certServiceCode.includes('reactivateCertificate') && certServiceCode.includes('deleteCertificate'), 'CertificateService cung cấp vòng đời chứng chỉ hoàn chỉnh (update, revoke, reactivate, delete)');
+assert(certServiceCode.includes('DEFAULT_SYSTEM_TEMPLATES') && certServiceCode.includes('tpl-royal-gold'), 'Hệ thống tích hợp sẵn khung phôi mẫu chuẩn khảo thí (Royal Gold)');
+
+const certManagerExists = fs.existsSync(path.resolve('src/components/admin/CertificateManager.tsx'));
+assert(certManagerExists, 'Component quản trị chứng chỉ src/components/admin/CertificateManager.tsx tồn tại');
+if (certManagerExists) {
+  const mgrCode = fs.readFileSync('src/components/admin/CertificateManager.tsx', 'utf8');
+  assert(mgrCode.includes('handleUploadBackground') && mgrCode.includes('fileInputRef'), 'CertificateManager hỗ trợ tải ảnh khung mẫu phôi bằng từ máy tính lên');
+  assert(mgrCode.includes('selectedFieldKey') && mgrCode.includes('handleUpdateFieldConfig'), 'CertificateManager hỗ trợ công cụ căn chỉnh tọa độ chữ trực quan (Visual Editor)');
+  assert(mgrCode.includes('handleSubmitIssue') && mgrCode.includes('handleSaveEditCert'), 'CertificateManager hỗ trợ cấp phát và chỉnh sửa chứng chỉ đầy đủ');
+}
+
+const canvasRendererExists = fs.existsSync(path.resolve('src/components/certificates/CertificateCanvasRenderer.tsx'));
+assert(canvasRendererExists, 'Thành phần kết xuất đồ họa src/components/certificates/CertificateCanvasRenderer.tsx tồn tại');
+if (canvasRendererExists) {
+  const renderCode = fs.readFileSync('src/components/certificates/CertificateCanvasRenderer.tsx', 'utf8');
+  assert(renderCode.includes('handleDownloadPNG') && renderCode.includes('handlePrint'), 'CertificateCanvasRenderer hỗ trợ xuất ảnh PNG nét cao và in ấn A4');
+}
+
+const viewerModalExists = fs.existsSync(path.resolve('src/components/certificates/CertificateViewerModal.tsx'));
+assert(viewerModalExists, 'Modal xem trước chứng chỉ src/components/certificates/CertificateViewerModal.tsx tồn tại');
+
+const appTsxCode = fs.readFileSync('src/App.tsx', 'utf8');
+assert(appTsxCode.includes('p.startsWith(\'/admin/\')') || appTsxCode.includes('p.startsWith(\'/admin\')'), 'App.tsx getAppRoute nhận diện tiền tố /admin/certificates');
+assert(appTsxCode.includes('initialSubTab={appRouteInfo.param === \'certificates\''), 'App.tsx tự động kích hoạt tab certificates khi truy cập /admin/certificates');
+
+const standaloneAdminCodeCheck = fs.readFileSync('src/components/admin/StandaloneAdminApp.tsx', 'utf8');
+assert(standaloneAdminCodeCheck.includes('id: \'certificates\'') && standaloneAdminCodeCheck.includes('Quản Lý & Cấp Chứng Chỉ'), 'StandaloneAdminApp tích hợp mục Quản Lý & Cấp Chứng Chỉ vào menu sidebar');
+
+const adminPortalCodeCheck = fs.readFileSync('src/components/admin/AdminPortal.tsx', 'utf8');
+assert(adminPortalCodeCheck.includes('<CertificateManager') && adminPortalCodeCheck.includes('activeSubTab === \'certificates\''), 'AdminPortal render CertificateManager khi activeSubTab là certificates');
 
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);

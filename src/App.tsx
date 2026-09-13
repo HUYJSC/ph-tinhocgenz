@@ -63,7 +63,15 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
   if (typeof window === 'undefined') return { route: 'landing' };
   const p = window.location.pathname.toLowerCase();
   const h = window.location.hash.toLowerCase();
-  if (p === '/admin' || p === '/admin/' || h === '#admin' || h === '#/admin') return { route: 'admin' };
+  if (p === '/admin' || p.startsWith('/admin/') || h === '#admin' || h.startsWith('#admin/') || h.startsWith('#/admin')) {
+    let sub = '';
+    if (p.startsWith('/admin/')) {
+      sub = p.replace(/^\/admin\/?/, '').split('/')[0];
+    } else if (h.includes('admin/')) {
+      sub = h.split('admin/')[1]?.split('/')[0] || '';
+    }
+    return { route: 'admin', param: sub };
+  }
   if (p.startsWith('/attendance') || h.includes('attendance')) return { route: 'attendance' };
   if (p.startsWith('/schedule') || h.includes('schedule')) return { route: 'schedule' };
   if (p.includes('/teacher') || h.includes('teacher')) return { route: 'teacher' };
@@ -471,8 +479,12 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 0. DEDICATED STANDALONE ADMIN ROUTE (/admin)
-  const isExplicitAdminUrl = typeof window !== 'undefined' && (window.location.pathname.toLowerCase() === '/admin' || window.location.pathname.toLowerCase() === '/admin/' || window.location.hash.toLowerCase().includes('admin'));
+  // 0. DEDICATED STANDALONE ADMIN ROUTE (/admin và /admin/*)
+  const appRouteInfo = getAppRoute();
+  const isExplicitAdminUrl = typeof window !== 'undefined' && (
+    window.location.pathname.toLowerCase().startsWith('/admin') ||
+    window.location.hash.toLowerCase().includes('admin')
+  );
   const isCurrentlyOnAdmin = isExplicitAdminUrl && activeTab !== 'attendance' && activeTab !== 'schedule' && activeTab !== 'assignments';
 
   // RBAC Access Control Guard: Reject student role from accessing admin route
@@ -534,6 +546,7 @@ export function App() {
     return (
       <Suspense fallback={<PageLoadingFallback />}>
         <StandaloneAdminApp
+          initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : undefined}
           currentUser={user}
           isSessionActive={isSessionActive}
           quizzes={allQuizzes}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Quiz, QuizAttempt } from '../../types/quiz';
 import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack } from '../../types/auth';
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
@@ -14,6 +14,7 @@ import {
 import { soundFx } from '../../utils/audio';
 import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
 import { LearningResourceService } from '../../services/learningResourceService';
+import { CertificateService } from '../../services/certificateService';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
 
 interface MenuItem {
@@ -67,6 +68,7 @@ interface StandaloneAdminAppProps {
   onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
   onLogout: () => void;
   onBackToStudentPortal: () => void;
+  initialSubTab?: AdminPortalSubTab;
 }
 
 export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => {
@@ -78,7 +80,8 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
     onLoginAsAdmin,
     onResetPassword,
     onLogout,
-    onBackToStudentPortal
+    onBackToStudentPortal,
+    initialSubTab = 'overview'
   } = props;
 
   const isAdmin = isSessionActive && currentUser.role === 'admin';
@@ -90,8 +93,14 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>('overview');
+  const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
   const [showDataCenter, setShowDataCenter] = useState(false);
+
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -361,12 +370,14 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const pendingQueueCount = LearningResourceService.getReviewQueue().filter(q => q.review_status === 'pending').length;
   const internalMaterialsCount = LearningResourceService.getInternalMaterials().length;
   const failingSourcesCount = LearningResourceService.getSources().filter(s => s.status === 'failing' || s.status === 'error').length;
+  const certificatesCount = CertificateService.getAllCertificates().length;
 
   const menuSections: MenuSection[] = [
     {
       group: 'QUẢN TRỊ ĐÀO TẠO',
       items: [
         { id: 'overview', label: 'Tổng Quan Hệ Thống', icon: BarChart3, badge: null },
+        { id: 'certificates', label: 'Quản Lý & Cấp Chứng Chỉ', icon: Award, badge: certificatesCount || null },
         { id: 'student_directory', label: 'Quản Lý Học Viên', icon: Users, badge: studentAccounts.length },
         { id: 'teachers', label: 'Quản Lý Giảng Viên', icon: UserCheck, badge: teacherAccounts.length },
         { id: 'schedules', label: 'Lịch Dạy & Phòng Học', icon: Calendar, badge: (props.schedules || []).length },

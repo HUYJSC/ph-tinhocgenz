@@ -155,6 +155,12 @@ export interface DigitalCertificate {
   verificationUrl: string;
   status: 'valid' | 'revoked';
   blockchainProof?: BlockchainProof; // On-chain verifiable proof
+  templateId?: string; // ID khung mẫu chứng chỉ áp dụng
+  signatoryName?: string; // Người ký (Giám đốc khảo thí)
+  signatoryTitle?: string; // Chức danh người ký
+  organization?: string; // Đơn vị cấp
+  revocationReason?: string; // Lý do thu hồi nếu status === 'revoked'
+  revokedAt?: string; // Thời điểm thu hồi
 }
 
 // ── 8. LEARNING EVENTS (EDTECH ANALYTICS) ──
