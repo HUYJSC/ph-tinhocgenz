@@ -27,10 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // 2. Feature Flag kiểm soát
-  const isMonthlySyncEnabled = process.env.MONTHLY_SOURCE_SYNC_ENABLED === 'true';
+  const isMonthlySyncEnabled = process.env.MONTHLY_SOURCE_SYNC_ENABLED !== 'false';
   const isHubEnabled = process.env.LEARNING_SOURCE_HUB_ENABLED !== 'false';
 
-  if (!isHubEnabled) {
+  if (!isHubEnabled || !isMonthlySyncEnabled) {
     return res.status(200).json({
       status: 'skipped',
       message: 'Learning Source Hub feature flag is currently disabled.'
