@@ -12,4 +12,8 @@ export * from './assignmentService';
 export * from './certificateService';
 export * from './analyticsService';
 export * from './backendApiClient';
+// LMS Sprint 1 — Server-side security services
+export * from './examService';
+export * from './lessonService';
+export * from './enrollmentService';
 

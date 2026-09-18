@@ -78,3 +78,4 @@ Frontend kết nối Backend thông qua SDK trung tâm `src/services/api/`:
   // Ví dụ gọi endpoint kiểm tra phiên
   const session = await BackendApiClient.get('/api/auth/session');
   ```
+

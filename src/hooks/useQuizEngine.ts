@@ -22,9 +22,10 @@ interface UseQuizEngineProps {
   mode: QuizMode;
   onFinish: (attempt: QuizAttempt) => void;
   userId?: string; // for autosave scoping
+  serverMode?: boolean;
 }
 
-export function useQuizEngine({ quiz, mode, onFinish, userId }: UseQuizEngineProps) {
+export function useQuizEngine({ quiz, mode, onFinish, userId, serverMode = false }: UseQuizEngineProps) {
   // [BA FIX] Try to restore autosave state for exam mode
   const autosaveKey = getAutosaveKey(quiz.id, userId);
   const savedState: AutosaveState | null = (() => {
@@ -67,6 +68,8 @@ export function useQuizEngine({ quiz, mode, onFinish, userId }: UseQuizEnginePro
 
   // Evaluate single question answer
   const isQuestionCorrect = useCallback((question: Question, userAnswer: any): boolean => {
+    if (serverMode) return false;
+    
     if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
       return false;
     }
