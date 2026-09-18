@@ -11,4 +11,5 @@ export * from './attendanceService';
 export * from './assignmentService';
 export * from './certificateService';
 export * from './analyticsService';
+export * from './backendApiClient';
 

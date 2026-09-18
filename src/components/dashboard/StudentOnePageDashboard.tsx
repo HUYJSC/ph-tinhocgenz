@@ -819,17 +819,17 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
           {/* Widget 4: Trợ lý Học vụ AI nhanh */}
           <div
             style={{
-              background: 'linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)',
-              border: '1px solid #DDD6FE',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
               borderRadius: '16px',
               padding: '20px',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
-              boxShadow: '0 4px 16px -2px rgba(139, 92, 246, 0.08)'
+              boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14.5px', fontWeight: 700, color: '#6D28D9' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14.5px', fontWeight: 700, color: '#0057B8' }}>
               <Bot size={18} />
               <span>Trợ lý Học vụ AI (24/7)</span>
             </div>
@@ -840,12 +840,12 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                 type="button"
                 onClick={() => handleQuickPrompt('Giải thích sự khác nhau giữa VLOOKUP và XLOOKUP trong Excel')}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.85)',
-                  border: '1px solid #C4B5FD',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '6px',
                   padding: '6px 10px',
                   fontSize: '12px',
-                  color: '#5B21B6',
+                  color: '#1E293B',
                   textAlign: 'left',
                   cursor: 'pointer',
                   fontWeight: 500
@@ -858,12 +858,12 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                 type="button"
                 onClick={() => handleQuickPrompt('Mẹo làm bài thi trắc nghiệm Tin học đạt điểm tối đa')}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.85)',
-                  border: '1px solid #C4B5FD',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '6px',
                   padding: '6px 10px',
                   fontSize: '12px',
-                  color: '#5B21B6',
+                  color: '#1E293B',
                   textAlign: 'left',
                   cursor: 'pointer',
                   fontWeight: 500
@@ -884,7 +884,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                   height: '38px',
                   borderRadius: '8px',
                   background: '#FFFFFF',
-                  border: '1px solid #C4B5FD',
+                  border: '1px solid #CBD5E1',
                   fontSize: '13px',
                   padding: '0 12px',
                   outline: 'none'
@@ -896,7 +896,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                   width: '38px',
                   height: '38px',
                   borderRadius: '8px',
-                  background: '#7C3AED',
+                  background: '#0057B8',
                   color: '#FFFFFF',
                   border: 'none',
                   cursor: 'pointer',
@@ -918,22 +918,22 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
             return (
               <div
                 style={{
-                  background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)',
-                  border: '1px solid #BAE6FD',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '12px',
-                  boxShadow: '0 4px 16px -2px rgba(2, 132, 199, 0.08)'
+                  boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14.5px', fontWeight: 700, color: '#0369A1' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14.5px', fontWeight: 700, color: '#0057B8' }}>
                     <Bell size={17} />
                     <span>Lịch Nhắc Nhở & Báo Cáo AI</span>
                   </div>
-                  <span style={{ fontSize: '11px', background: '#0284C7', color: '#FFFFFF', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                  <span style={{ fontSize: '11px', background: '#EAF3FC', color: '#0057B8', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
                     Web Push & In-App 🔔
                   </span>
                 </div>

@@ -36,10 +36,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, onResetProgress }) 
         className="card"
         style={{
           padding: '24px',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)',
+          background: 'linear-gradient(135deg, rgba(0, 87, 184, 0.08) 0%, rgba(37, 99, 235, 0.04) 100%)',
           borderRadius: 'var(--radius-lg)',
           marginBottom: '24px',
-          border: '1px solid rgba(99, 102, 241, 0.3)'
+          border: '1px solid rgba(0, 87, 184, 0.16)'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>

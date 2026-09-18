@@ -13,7 +13,9 @@ export type SubjectCategory =
   | 'excel-accounting'
   | 'word-6b'
   | 'excel-6b'
-  | 'ppt-6b';
+  | 'ppt-6b'
+  | 'web-frontend'
+  | 'web-backend';
 
 export interface MatchingPair {
   id: string;

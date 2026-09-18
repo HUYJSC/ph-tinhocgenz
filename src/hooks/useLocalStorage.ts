@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Quiz, QuizAttempt, UserStats, Question } from '../types/quiz';
 import { DEFAULT_QUIZZES } from '../data/defaultQuizzes';
+import { webDevQuizzes } from '../data/webDevQuizzes';
 import { DEFAULT_BADGES } from '../data/badges';
 import { SystemBackupService } from '../services/systemBackupService';
 
@@ -150,9 +151,9 @@ export function useAppStorage() {
     return unsub;
   }, []);
 
-  // Combine default quizzes and custom quizzes with overrides & deleted filters (Admin full edit power)
+  // Combine default quizzes, web dev (FE/BE) quizzes and custom quizzes with overrides & deleted filters (Admin full edit power)
   const allQuizzes: Quiz[] = useMemo(() => {
-    const combined = [...DEFAULT_QUIZZES, ...customQuizzes];
+    const combined = [...DEFAULT_QUIZZES, ...webDevQuizzes, ...customQuizzes];
     return combined
       .filter(q => !deletedQuizIds.includes(q.id))
       .map(q => quizOverrides[q.id] ? { ...q, ...quizOverrides[q.id] } : q);
