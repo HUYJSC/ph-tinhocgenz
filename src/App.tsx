@@ -47,6 +47,8 @@ const DiagnosticOnboardingModal = lazy(() => import('./components/onboarding/Dia
 const CertificateVerificationModal = lazy(() => import('./components/certificates/CertificateVerificationModal').then(m => ({ default: m.CertificateVerificationModal })));
 const AcademicNoticeModal = lazy(() => import('./components/modals/AcademicNoticeModal').then(m => ({ default: m.AcademicNoticeModal })));
 const AcademicFeedbackModal = lazy(() => import('./components/modals/AcademicFeedbackModal').then(m => ({ default: m.AcademicFeedbackModal })));
+const GiaoVuDashboard = lazy(() => import('./components/giaovu/GiaoVuDashboard').then(m => ({ default: m.GiaoVuDashboard })));
+const CourseCatalogPage = lazy(() => import('./components/courses/CourseCatalogPage').then(m => ({ default: m.CourseCatalogPage })));
 
 export const PageLoadingFallback = () => (
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px', color: '#2563eb' }}>
@@ -57,7 +59,7 @@ export const PageLoadingFallback = () => (
 
 const SESSION_ACTIVE_KEY = 'phtinhocgenz_session_active_v4';
 
-export type AppRoute = 'landing' | 'student' | 'teacher' | 'academic' | 'admin' | 'verify' | 'attendance' | 'schedule';
+export type AppRoute = 'landing' | 'student' | 'teacher' | 'academic' | 'giaovu' | 'admin' | 'courses' | 'verify' | 'attendance' | 'schedule';
 
 export const getAppRoute = (): { route: AppRoute; param?: string } => {
   if (typeof window === 'undefined') return { route: 'landing' };
@@ -72,6 +74,8 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
     }
     return { route: 'admin', param: sub };
   }
+  if (p.startsWith('/giaovu') || h.includes('giaovu')) return { route: 'giaovu' };
+  if (p.startsWith('/courses') || h.includes('courses')) return { route: 'courses' };
   if (p.startsWith('/attendance') || h.includes('attendance')) return { route: 'attendance' };
   if (p.startsWith('/schedule') || h.includes('schedule')) return { route: 'schedule' };
   if (p.includes('/teacher') || h.includes('teacher')) return { route: 'teacher' };
@@ -606,6 +610,22 @@ export function App() {
     );
   }
 
+  // 0.1 Public Courses Catalog Route (/courses)
+  if (appRouteInfo.route === 'courses') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <CourseCatalogPage
+            showHeader={true}
+            onCourseSelect={() => {
+              setShowAuthGateway(true);
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
   // 1. NOT authenticated: show Landing Page for guests, Auth Gateway when they click CTA
   if (!isSessionActive) {
     if (!showAuthGateway) {
@@ -744,8 +764,18 @@ export function App() {
           {/* 3. Normal Tab Views */}
           {!activeQuiz && (
             <>
+              {/* Academic Operations Portal (Giáo Vụ - Image 05) */}
+              {(user.role === 'academic_staff' || appRouteInfo.route === 'giaovu') && activeTab === 'dashboard' && (
+                <GiaoVuDashboard
+                  currentUser={user}
+                  onOpenScheduleCalendar={() => setActiveTab('schedule')}
+                  onOpenAttendance={() => setActiveTab('attendance')}
+                  onOpenAI={() => handleOpenAITutor()}
+                />
+              )}
+
               {/* Teacher Academic Portal (Modern University Academic Style) */}
-              {isStaff && activeTab === 'dashboard' && (
+              {isStaff && user.role !== 'academic_staff' && appRouteInfo.route !== 'giaovu' && activeTab === 'dashboard' && (
                 <TeacherAcademicPortal
                   currentUser={user}
                   studentAccounts={studentAccounts}

@@ -18,7 +18,7 @@ function getAuthSecret(): string {
 
 export interface SessionPayload {
   userId: string;
-  role: 'student' | 'teacher' | 'admin' | 'super_admin';
+  role: 'student' | 'teacher' | 'academic_staff' | 'admin' | 'super_admin';
   name: string;
   studentCode?: string;
   teacherCode?: string;

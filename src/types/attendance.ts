@@ -1,6 +1,6 @@
 import { CurriculumTrack } from './auth';
 
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused' | 'makeup';
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused' | 'makeup' | 'need_verification' | 'rejected';
 
 export interface AttendanceRecord {
   studentId: string;
@@ -16,6 +16,9 @@ export interface AttendanceRecord {
   clientIp?: string;       // IP address recorded during check-in
   deviceFp?: string;       // Device fingerprint to prevent proxy check-in
   distanceMeters?: number; // Distance to classroom if GPS enabled
+  gpsAccuracy?: number;    // GPS Accuracy in meters
+  riskScore?: number;      // Anti-fraud risk score (0-100)
+  fraudFlags?: string[];   // List of detected anomaly codes e.g. ['OUTSIDE_GEOFENCE', 'POOR_GPS']
   note?: string;
 }
 

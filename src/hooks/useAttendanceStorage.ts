@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AttendanceSession, AttendanceRecord, AttendanceStatus, MakeupAttendanceReport } from '../types/attendance';
 import { StudentAccount, CurriculumTrack, TRACK_LABELS } from '../types/auth';
 import { getClientIp, getDeviceFingerprint, calculateDistanceMeters } from '../utils/securityUtils';
+import { evaluateAttendanceRisk } from '../services/antiFraudService';
 
 // Storage key updated for 5-minute rotation & GPS Anti-cheat v8 (Official Meet links)
 const ATTENDANCE_SESSIONS_KEY = 'phtinhocgenz_attendance_sessions_v8_official_meet';
@@ -604,8 +605,28 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
     const studentCodeToUse = matchedStudent ? matchedStudent.studentCode : studentCode;
     const studentClassToUse = matchedStudent?.classCode || matchedSession.classCode;
 
+    // Evaluate anti-fraud risk
+    const fraudEval = evaluateAttendanceRisk({
+      classroomLocation: (matchedSession.classroomLat && matchedSession.classroomLng) ? {
+        latitude: matchedSession.classroomLat,
+        longitude: matchedSession.classroomLng
+      } : undefined,
+      studentLocation: studentCoords,
+      allowedRadiusMeters: matchedSession.allowedRadiusMeters,
+      qrExpiresAt: matchedSession.qrExpiresAt,
+      currentTimeMs: Date.now(),
+      clientIp,
+      teacherIp: matchedSession.teacherIp,
+      requireSameIp: matchedSession.requireSameIp,
+      deviceFp,
+      studentId: studentIdToUse
+    });
+
+    const finalStatus: AttendanceStatus = isMakeupAttendance
+      ? 'makeup'
+      : (fraudEval.recommendedStatus === 'need_verification' ? 'need_verification' : 'present');
+
     let isFoundInRecords = false;
-    const finalStatus: AttendanceStatus = isMakeupAttendance ? 'makeup' : 'present';
 
     const updatedRecords = matchedSession.records.map(rec => {
       if (rec.studentCode.trim().toLowerCase() === studentCodeToUse.trim().toLowerCase()) {
@@ -618,7 +639,9 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
           checkInMethod,
           clientIp,
           deviceFp,
-          distanceMeters: calculatedDistance,
+          distanceMeters: fraudEval.distanceMeters || calculatedDistance,
+          riskScore: fraudEval.riskScore,
+          fraudFlags: fraudEval.fraudFlags,
           note: isMakeupAttendance ? `Học Bù từ lớp ${matchedStudent?.classCode || 'Khác'}` : rec.note
         };
       }
@@ -638,7 +661,9 @@ export function useAttendanceStorage(studentAccounts: StudentAccount[]) {
         checkInMethod,
         clientIp,
         deviceFp,
-        distanceMeters: calculatedDistance,
+        distanceMeters: fraudEval.distanceMeters || calculatedDistance,
+        riskScore: fraudEval.riskScore,
+        fraudFlags: fraudEval.fraudFlags,
         note: isMakeupAttendance ? `Học Bù từ lớp ${matchedStudent?.classCode || 'Khác'}` : ''
       });
     }

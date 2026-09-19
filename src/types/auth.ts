@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher' | 'admin';
+export type UserRole = 'student' | 'teacher' | 'academic_staff' | 'admin' | 'super_admin';
 
 export type CurriculumTrack =
   | 'office-fast-3in1'
