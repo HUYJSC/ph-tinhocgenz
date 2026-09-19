@@ -329,17 +329,53 @@ export function CourseCatalogPage({ onCourseSelect, showHeader = true }: CourseC
   return (
     <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
       {showHeader && (
-        <div style={{
-          background: 'linear-gradient(135deg, #0057B8 0%, #1D4ED8 100%)',
-          color: '#ffffff', padding: '48px 24px', textAlign: 'center'
-        }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: '32px', fontWeight: '800' }}>
-            Danh Sách Khóa Học
-          </h1>
-          <p style={{ margin: 0, opacity: 0.85, fontSize: '16px' }}>
-            Chọn lộ trình học phù hợp — từ tin học văn phòng đến lập trình chuyên nghiệp
-          </p>
-        </div>
+        <>
+          {/* Top navigation header */}
+          <div style={{
+            background: '#ffffff', borderBottom: '1px solid #E2E8F0', padding: '0 24px',
+            height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            position: 'sticky', top: 0, zIndex: 50
+          }}>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#0B2545' }}>
+              <img src="/logo-icon.png" alt="Tin Học Gen Z" width="36" height="36" style={{ objectFit: 'contain' }} />
+              <div>
+                <strong style={{ fontSize: '15px', fontWeight: 800, display: 'block', lineHeight: 1.1 }}>Tin Học Gen Z</strong>
+                <small style={{ color: '#0057B8', fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em' }}>PH DIGITAL EDUCATION</small>
+              </div>
+            </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <a href="/" style={{ fontSize: '13px', fontWeight: 600, color: '#38536D', textDecoration: 'none', padding: '6px 12px', borderRadius: '6px' }}>Trang chủ</a>
+              <a href="/verify" style={{ fontSize: '13px', fontWeight: 600, color: '#38536D', textDecoration: 'none', padding: '6px 12px', borderRadius: '6px' }}>Tra cứu chứng chỉ</a>
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('phtgz_show_auth', 'true');
+                    window.location.href = '/';
+                  }
+                }}
+                style={{
+                  background: '#0057B8', color: '#ffffff', border: 'none',
+                  padding: '8px 16px', borderRadius: '8px', fontSize: '13px',
+                  fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                Đăng nhập
+              </button>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, #0057B8 0%, #003F88 100%)',
+            color: '#ffffff', padding: '48px 24px', textAlign: 'center'
+          }}>
+            <h1 style={{ margin: '0 0 8px', fontSize: '32px', fontWeight: '800' }}>
+              Chương Trình Đào Tạo & Khóa Học
+            </h1>
+            <p style={{ margin: 0, opacity: 0.85, fontSize: '16px' }}>
+              Hệ thống LMS AI + Blockchain — Từ tin học văn phòng thực chiến đến lập trình chuyên nghiệp
+            </p>
+          </div>
+        </>
       )}
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>

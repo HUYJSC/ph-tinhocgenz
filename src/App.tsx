@@ -637,6 +637,12 @@ export function App() {
                 setShowAuthGateway(true);
                 try { localStorage.setItem('phtgz_show_auth', 'true'); } catch { }
               }}
+              onNavigateToCourses={() => {
+                if (typeof window !== 'undefined') {
+                  window.history.pushState(null, '', '/courses');
+                  window.location.href = '/courses';
+                }
+              }}
             />
           </Suspense>
         </div>

@@ -6,7 +6,10 @@ import {
 } from 'lucide-react';
 import './landing.css';
 
-interface LandingPageProps { onGetStarted: () => void; }
+interface LandingPageProps {
+  onGetStarted: () => void;
+  onNavigateToCourses?: () => void;
+}
 type CourseCategory = 'all' | 'web-dev' | 'mos-ic3' | 'cntt' | 'office';
 
 interface Course {
@@ -61,7 +64,7 @@ const COURSE_TABS: Array<{ key: CourseCategory; label: string }> = [
   { key: 'office', label: 'Kỹ năng văn phòng' }
 ];
 
-export function LandingPage({ onGetStarted }: LandingPageProps) {
+export function LandingPage({ onGetStarted, onNavigateToCourses }: LandingPageProps) {
   const [category, setCategory] = useState<CourseCategory>('all');
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -97,8 +100,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <span className="brand__copy"><strong>Tin Học Gen Z</strong><small>PH DIGITAL EDUCATION</small></span>
           </button>
           <nav className="landing-nav" aria-label="Điều hướng chính">
-            <button type="button" onClick={() => goTo('courses')}>Khóa học</button>
+            <button type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else goTo('courses'); }}>Khóa học</button>
             <button type="button" onClick={() => goTo('learning-path')}>Lộ trình</button>
+            <a href="/verify" style={{ border: 0, background: 'transparent', color: '#38536d', fontWeight: 600, fontSize: '14px', padding: '10px 14px', borderRadius: '8px', textDecoration: 'none', display: 'inline-block' }}>Thi & Chứng chỉ</a>
             <button type="button" onClick={() => goTo('platform')}>Nền tảng</button>
           </nav>
           <div className="landing-header__actions">
@@ -111,8 +115,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
         {menuOpen && (
           <nav className="mobile-nav" aria-label="Điều hướng di động">
-            <button type="button" onClick={() => goTo('courses')}>Khóa học</button>
+            <button type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else goTo('courses'); }}>Khóa học</button>
             <button type="button" onClick={() => goTo('learning-path')}>Lộ trình học</button>
+            <a href="/verify" style={{ border: 0, background: 'transparent', color: '#38536d', fontWeight: 600, fontSize: '14px', padding: '10px 14px', textDecoration: 'none', display: 'block' }}>Thi & Chứng chỉ</a>
             <button type="button" onClick={() => goTo('platform')}>Nền tảng học tập</button>
             <button className="button button--primary" type="button" onClick={onGetStarted}>Đăng nhập hệ thống</button>
           </nav>
