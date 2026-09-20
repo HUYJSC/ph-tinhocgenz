@@ -9,9 +9,9 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { checkRateLimit } from '../_lib/rateLimiter';
-import { signSessionToken, setSessionCookie } from '../_lib/authSession';
-import { getSupabaseAdminClient } from '../_lib/supabase';
+import { checkRateLimit } from '../_lib/rateLimiter.js';
+import { signSessionToken, setSessionCookie } from '../_lib/authSession.js';
+import { getSupabaseAdminClient } from '../_lib/supabase.js';
 
 const AUTH_SALT = 'tgz_sec_2026_salt_9d8f7e6a5b4c';
 

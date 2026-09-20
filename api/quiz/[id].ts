@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { setCorsHeaders } from '../_lib/cors';
-import { getSessionFromRequest } from '../_lib/authSession';
-import { getQuizForServer, stripQuizAnswers } from '../_lib/quizRegistry';
+import { setCorsHeaders } from '../_lib/cors.js';
+import { getSessionFromRequest } from '../_lib/authSession.js';
+import { getQuizForServer, stripQuizAnswers } from '../_lib/quizRegistry.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (setCorsHeaders(req, res)) return;

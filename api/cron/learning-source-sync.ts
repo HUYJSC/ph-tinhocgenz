@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdminClient } from '../_lib/supabase';
+import { getSupabaseAdminClient } from '../_lib/supabase.js';
 
 /**
  * TÁC VỤ ĐỊNH KỲ TỰ ĐỘNG: RÀ SOÁT NGUỒN HỌC LIỆU MỖI THÁNG
