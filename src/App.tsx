@@ -798,6 +798,7 @@ export function App() {
           <UnifiedAuthGateway
             initialRole={typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin') ? 'admin' : undefined}
             studentAccounts={studentAccounts}
+            teacherAccounts={teacherAccounts}
             onStudentLogin={handleStudentUnifiedLogin}
             onAdminLogin={handleAdminUnifiedLogin}
             onResetPassword={resetUserPassword}

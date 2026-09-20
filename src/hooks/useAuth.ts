@@ -603,7 +603,10 @@ export function useAuth() {
         safeCompare(cleanPin, '0332298065') ||
         (matchedStaff.password ? safeCompare(cleanPin, matchedStaff.password) : false)
       );
-      isValidPassword = isHashMatch || isDirectMatch;
+      let customAdminHash = '';
+      try { customAdminHash = localStorage.getItem('phtgz_admin_custom_hash') || ''; } catch {}
+      const isCustomHashMatch = customAdminHash ? safeCompare(inputHash, customAdminHash) : false;
+      isValidPassword = isHashMatch || isDirectMatch || isCustomHashMatch;
     } else {
       const teacherTargetHash = matchedStaff.passwordHash || 'dcab73c0ee491d3ca8eaba19a999418196de15b11e1f4e66422ea79e2a9df93c';
       const isHashMatch = (
@@ -852,8 +855,13 @@ export function useAuth() {
       return { success: true, message: `Đã đặt lại mật khẩu cho học viên ${updated[studentIdx].name}!` };
     }
 
+    const isAdminTarget = cleanId === 'admin' || cleanId === 'admin01' || cleanId === 'quantri' || cleanId === 'quantrivien' || cleanId === '0332298065' || cleanId === 'hdh.hutech@gmail.com';
+
     const teacherIdx = teacherAccounts.findIndex(
-      t => t.teacherCode.toLowerCase() === cleanId || (t.email && t.email.toLowerCase() === cleanId)
+      t => (isAdminTarget && (t.role === 'admin' || t.teacherCode.toLowerCase() === 'admin01')) ||
+           t.teacherCode.toLowerCase() === cleanId ||
+           (t.email && t.email.toLowerCase() === cleanId) ||
+           (t.phone && t.phone.replace(/[\s.\-()+]/g, '') === cleanId.replace(/[\s.\-()+]/g, ''))
     );
 
     if (teacherIdx >= 0) {
@@ -862,7 +870,36 @@ export function useAuth() {
       updated[teacherIdx] = { ...updated[teacherIdx], passwordHash: newHash, mustChangePassword: false };
       delete updated[teacherIdx].password;
       setTeacherAccounts(updated);
-      return { success: true, message: `Đã đặt lại mật khẩu cho cán bộ ${updated[teacherIdx].name}!` };
+      try {
+        localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(updated));
+        if (isAdminTarget || updated[teacherIdx].role === 'admin') {
+          localStorage.setItem('phtgz_admin_custom_hash', newHash);
+        }
+      } catch {}
+      return { success: true, message: `Đã đặt lại mật khẩu cho ${updated[teacherIdx].role === 'admin' ? 'Quản trị viên' : 'cán bộ'} ${updated[teacherIdx].name}!` };
+    }
+
+    // Nếu là admin nhưng chưa có trong danh sách teacherAccounts cục bộ, thêm trực tiếp
+    if (isAdminTarget) {
+      const newHash = hashPasswordSync(cleanNew);
+      const adminEntry: TeacherAccount = {
+        id: 'tch-admin',
+        name: 'Thầy Quang Huy (Quản Trị Viên)',
+        teacherCode: 'ADMIN01',
+        passwordHash: newHash,
+        mustChangePassword: false,
+        phone: '0332298065',
+        email: 'hdh.hutech@gmail.com',
+        phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
+        assignedTracks: ALL_10_TRACKS,
+        role: 'admin',
+        createdAt: '2026-08-15'
+      };
+      setTeacherAccounts(prev => [adminEntry, ...prev.filter(t => t.id !== 'tch-admin')]);
+      try {
+        localStorage.setItem('phtgz_admin_custom_hash', newHash);
+      } catch {}
+      return { success: true, message: 'Đã đặt lại mật khẩu cho Quản trị viên hệ thống!' };
     }
 
     return { success: false, message: 'Không tìm thấy tài khoản tương ứng với mã hoặc email đã nhập.' };

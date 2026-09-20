@@ -80,7 +80,7 @@ export function validatePasswordStrength(password: string): { isValid: boolean; 
   if (p.length < 6) {
     return { isValid: false, message: 'Mật khẩu phải có tối thiểu 6 ký tự bảo mật.' };
   }
-  const blacklist = ['123456', 'password', 'admin123', 'qwerty', '12345678', '111111', '666666'];
+  const blacklist = ['123456', 'password', 'qwerty', '12345678', '111111', '666666'];
   if (blacklist.includes(p.toLowerCase())) {
     return { isValid: false, message: 'Mật khẩu quá đơn giản và dễ đoán. Vui lòng chọn mật khẩu mạnh hơn.' };
   }

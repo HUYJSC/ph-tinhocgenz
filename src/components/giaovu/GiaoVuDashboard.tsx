@@ -1,6 +1,6 @@
 /**
  * GiaoVuDashboard — Giao diện Giáo Vụ & Quản trị đào tạo
- * Chuẩn đặc tả: TINHOCGENZ LMS AI + Blockchain
+ * Đặc tả theo Ảnh 05: TINHOCGENZ LMS AI + Blockchain
  * 
  * Chức năng:
  * - 5 Thẻ KPI: Lớp mở, Học viên active, Lịch hôm nay, Đơn chờ duyệt, Doanh thu tháng
@@ -160,7 +160,7 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
           </div>
         </div>
 
-        {/* ROW 1: 5 THẺ THỐNG KÊ GIÁO VỤ CHUẨN */}
+        {/* ROW 1: 5 THẺ THỐNG KÊ GIÁO VỤ (Theo Đặc tả Ảnh 05) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
           {/* Card 1: Lớp học đang mở */}
           <div

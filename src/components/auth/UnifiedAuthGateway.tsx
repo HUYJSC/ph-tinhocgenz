@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CurriculumTrack, StudentAccount, UserProfile, TRACK_LIST } from '../../types/auth';
+import { CurriculumTrack, StudentAccount, TeacherAccount, UserProfile, TRACK_LIST } from '../../types/auth';
 import {
   User, Shield, ShieldAlert, BookOpen, ArrowRight, Eye, EyeOff,
   GraduationCap, Lock, Award, Sparkles, ArrowLeft
@@ -10,6 +10,7 @@ import { soundFx } from '../../utils/audio';
 interface UnifiedAuthGatewayProps {
   initialRole?: 'student' | 'admin';
   studentAccounts?: StudentAccount[];
+  teacherAccounts?: TeacherAccount[];
   onStudentLogin: (studentCode: string, password: string, selectedTrack: CurriculumTrack) => { success: boolean; user?: UserProfile; message?: string };
   onAdminLogin: (pin: string, name: string, selectedTrack?: CurriculumTrack | 'all') => { success: boolean; user?: UserProfile; message?: string } | Promise<{ success: boolean; user?: UserProfile; message?: string }>;
   onResetPassword?: (identifier: string, newPass: string) => { success: boolean; message?: string };
@@ -19,6 +20,7 @@ interface UnifiedAuthGatewayProps {
 export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
   initialRole,
   studentAccounts,
+  teacherAccounts,
   onStudentLogin,
   onAdminLogin,
   onResetPassword,
@@ -724,6 +726,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
         onClose={() => setIsForgotModalOpen(false)}
         onResetPassword={onResetPassword || (() => ({ success: false, message: 'Tính năng chưa sẵn sàng' }))}
         studentAccounts={studentAccounts}
+        teacherAccounts={teacherAccounts}
       />
     </div>
   );
