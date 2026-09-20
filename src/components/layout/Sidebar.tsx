@@ -42,7 +42,9 @@ export type ActiveTab =
   | 'payments'
   | 'support'
   | 'rooms'
-  | 'reports';
+  | 'reports'
+  | 'attendance_mgmt'
+  | (string & {});
 
 interface SidebarProps {
   activeTab: ActiveTab;

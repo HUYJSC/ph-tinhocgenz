@@ -16,6 +16,7 @@ import type { QuizMode } from './hooks/useQuizEngine';
 import type { CurriculumTrack } from './types/auth';
 import { AppShell } from './components/layout/AppShell';
 import { updateTitleByRoute } from './utils/documentTitle';
+import type { AdminPortalSubTab } from './components/admin/AdminPortal';
 
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -310,21 +311,25 @@ export function App() {
   }, [isSessionActive, user.role, activeTab]);
 
   // Navigate tab with URL synchronization across separated roles
-  const handleNavigateTab = (newTab: ActiveTab) => {
-    setActiveTab(newTab);
+  const handleNavigateTab = (newTab: ActiveTab | string) => {
+    setActiveTab(newTab as any);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (typeof window !== 'undefined') {
       let targetPath = '/';
-      if (newTab === 'admin') {
+      if (newTab === 'admin' || newTab === 'overview') {
         targetPath = '/admin';
       } else if (newTab === 'attendance') {
         targetPath = '/attendance';
       } else if (newTab === 'schedule') {
         targetPath = '/schedule';
       } else if (newTab === 'assignments') {
-        targetPath = isStaff ? '/teacher' : '/student';
+        targetPath = isStaff ? (user.role === 'admin' ? '/admin' : '/teacher') : '/student';
       } else if (newTab === 'early_warning') {
-        targetPath = isStaff ? '/teacher' : '/student';
+        targetPath = isStaff ? (user.role === 'admin' ? '/admin' : '/teacher') : '/student';
+      } else if (user.role === 'admin') {
+        targetPath = '/admin';
+      } else if (user.role === 'academic_staff' || user.role === 'giaovu') {
+        targetPath = '/giaovu';
       } else if (isStaff) {
         targetPath = '/teacher';
       } else if (isSessionActive) {
@@ -333,6 +338,123 @@ export function App() {
       if (window.location.pathname !== targetPath) {
         window.history.pushState(null, '', targetPath);
       }
+    }
+  };
+
+  // ── Helper mapping for Admin Portal subtabs ──
+  const mapAdminSubTab = (tab: string): AdminPortalSubTab => {
+    switch (tab) {
+      case 'overview':
+      case 'dashboard':
+      case 'admin':
+        return 'overview';
+      case 'users':
+      case 'students_mgmt':
+      case 'student_directory':
+        return 'student_directory';
+      case 'teachers_mgmt':
+      case 'teachers':
+      case 'roles':
+      case 'permissions':
+        return 'teachers';
+      case 'courses_mgmt':
+      case 'exams':
+        return 'exams';
+      case 'classes_mgmt':
+      case 'teaching_schedule':
+      case 'schedules':
+      case 'schedule':
+      case 'tuition_enrollment':
+        return 'schedules';
+      case 'assignments_mgmt':
+      case 'grading_assignments':
+      case 'assignments':
+      case 'grading':
+        return 'grading_assignments';
+      case 'question_bank':
+        return 'question_bank';
+      case 'media_library':
+      case 'learning_sources':
+      case 'lessons_mgmt':
+        return 'learning_sources';
+      case 'review_queue':
+        return 'review_queue';
+      case 'tinhocgenz_studio':
+        return 'tinhocgenz_studio';
+      case 'sync_history':
+      case 'audit_logs':
+        return 'sync_history';
+      case 'quality_reports':
+      case 'revenue_stats':
+      case 'reports':
+      case 'data_analytics':
+        return 'quality_reports';
+      case 'failing_sources':
+        return 'failing_sources';
+      case 'automation_settings':
+      case 'ai_generator':
+        return 'automation_settings';
+      case 'certificates':
+        return 'certificates';
+      case 'attendance_mgmt':
+      case 'attendance':
+      case 'early_warning':
+        return 'early_warning';
+      case 'meet_hub':
+      case 'crm_support':
+        return 'meet_hub';
+      case 'system_settings':
+      case 'seo_center':
+      case 'integrations':
+      case 'backup_security':
+      case 'settings':
+        return 'seo_center';
+      default:
+        return 'overview';
+    }
+  };
+
+  // ── Helper mapping for Teacher Portal subtabs ──
+  const mapTeacherSubTab = (tab: string): 'dashboard' | 'classes' | 'grading' | 'attendance' => {
+    switch (tab) {
+      case 'grading':
+      case 'assignments':
+      case 'question_bank':
+      case 'exams':
+        return 'grading';
+      case 'attendance':
+        return 'attendance';
+      case 'classes':
+      case 'lessons':
+      case 'students':
+      case 'schedule':
+      case 'live':
+        return 'classes';
+      default:
+        return 'dashboard';
+    }
+  };
+
+  // ── Helper mapping for GiaoVu Portal subtabs ──
+  const mapGiaoVuSubTab = (tab: string): 'dashboard' | 'classes' | 'schedules' | 'enrollments' | 'student_care' => {
+    switch (tab) {
+      case 'classes':
+      case 'teachers':
+      case 'rooms':
+        return 'classes';
+      case 'schedules':
+      case 'attendance':
+        return 'schedules';
+      case 'enrollments':
+      case 'payments':
+      case 'students':
+      case 'exams':
+        return 'enrollments';
+      case 'student_care':
+      case 'support':
+        return 'student_care';
+      default:
+        return 'dashboard';
     }
   };
 
@@ -849,106 +971,46 @@ export function App() {
         {/* 3. Normal Tab Views */}
         {!activeQuiz && (
           <>
-            {/* Academic Operations Portal (Giáo Vụ) */}
-            {(user.role === 'academic_staff' || user.role === 'giaovu' || appRouteInfo.route === 'giaovu') &&
-             (activeTab === 'dashboard' || activeTab === 'classes' || activeTab === 'schedules' || activeTab === 'enrollments' || activeTab === 'student_care') && (
-              <GiaoVuDashboard
-                currentUser={user}
-                activeSubTab={activeTab}
-                onNavigateTab={(tab) => handleNavigateTab(tab as any)}
-                onOpenScheduleCalendar={() => setActiveTab('schedule')}
-                onOpenAttendance={() => setActiveTab('attendance')}
-                onOpenAI={() => handleOpenAITutor()}
+            {/* 3.1 Attendance Manager (Staff) & Student Attendance Dashboard */}
+            {(activeTab === 'attendance' || activeTab === 'attendance_mgmt') && (
+              isStaff ? (
+                <AttendanceManager
+                  sessions={attendanceSessions}
+                  studentAccounts={studentAccounts}
+                  makeupReports={makeupReports}
+                  currentUser={user}
+                  onCreateSession={createAttendanceSession}
+                  onRotateQR={rotateAttendanceQR}
+                  onUpdateSessionSecurity={updateAttendanceSessionSecurity}
+                  onToggleSessionOpen={toggleAttendanceSessionOpen}
+                  onUpdateStatus={updateAttendanceStatus}
+                  onMarkAllPresent={markAllAttendancePresent}
+                  onSaveSession={saveAttendanceSession}
+                  onDeleteSession={deleteAttendanceSession}
+                  onClearMakeupReport={clearAttendanceMakeupReport}
+                />
+              ) : (
+                <StudentAttendanceDashboard
+                  currentUser={user}
+                  sessions={attendanceSessions}
+                  onOpenQRScanner={() => setShowCameraScanner(true)}
+                  onOpenPinModal={() => setShowCheckInModal(true)}
+                />
+              )
+            )}
+
+            {/* 3.2 Quiz Creator (Direct access for Admin/Staff) */}
+            {activeTab === 'creator' && (
+              <QuizCreator
+                onAddQuiz={addCustomQuiz}
+                onSuccessNavigate={() => handleNavigateTab('admin')}
               />
             )}
 
-            {/* Teacher Academic Portal */}
-            {(user.role === 'teacher' || (isStaff && user.role !== 'academic_staff' && user.role !== 'giaovu' && appRouteInfo.route !== 'giaovu')) &&
-             (activeTab === 'dashboard' || activeTab === 'grading' || activeTab === 'classes' || activeTab === 'attendance') && (
-              <TeacherAcademicPortal
-                currentUser={user}
-                studentAccounts={studentAccounts}
-                schedules={schedules}
-                assignments={assignments}
-                submissions={submissions}
-                activeSubTab={activeTab}
-                sessions={attendanceSessions}
-                onRotateQR={rotateAttendanceQR}
-                onUpdateStatus={updateAttendanceStatus}
-                onToggleSessionOpen={toggleAttendanceSessionOpen}
-                onNavigateTab={(tab) => handleNavigateTab(tab as any)}
-                onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
-                onOpenEarlyWarning={() => setActiveTab('early_warning')}
-                onOpenAssignmentManager={() => setActiveTab('assignments')}
-                onOpenAdminPortal={() => setActiveTab('admin')}
-                onOpenScheduleCalendar={() => setActiveTab('schedule')}
-                onOpenQuizBank={() => setActiveTab('quizzes')}
-              />
-            )}
-
-            {/* Student OnePage Master Dashboard */}
-            {!isStaff && activeTab === 'dashboard' && (
-              <StudentOnePageDashboard
-                currentUser={user}
-                streak={stats.currentStreak}
-                schedules={schedules}
-                onContinueLearning={() => handleLaunchTrackQuiz('practice')}
-                onStartSmartReview={() => setShowSmartReviewModal(true)}
-                onStartMiniTest={() => handleLaunchTrackQuiz('practice')}
-                onOpenLearningPath={() => setActiveTab('learning_path')}
-                onOpenFlashcards={() => setActiveTab('flashcards')}
-                onOpenBookmarks={() => setActiveTab('bookmarks')}
-                onOpenAssignments={() => setActiveTab('assignments')}
-                onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
-                onOpenQRScanner={() => setShowCameraScanner(true)}
-                onOpenPracticeSkill={handleOpenPracticeSkill}
-              />
-            )}
-
-            {/* Courses Catalog Tab */}
-            {!isStaff && activeTab === 'courses' && (
-              <CourseCatalogPage
-                showHeader={false}
-                onCourseSelect={() => handleLaunchTrackQuiz('practice')}
-              />
-            )}
-
-            {/* Learning Path Roadmap Tab */}
-            {activeTab === 'learning_path' && (
-              <LearningPathRoadmap
-                currentUser={user}
-                onStartNodePractice={(_node) => handleLaunchTrackQuiz('practice')}
-              />
-            )}
-
-            {/* Practice By Skill Tab */}
-            {activeTab === 'practice_skill' && (
-              <PracticeBySkill
-                quizzes={allQuizzes}
-                initialSkillId={practiceSkillId}
-                onBack={() => {
-                  setPracticeSkillId(undefined);
-                  setActiveTab('dashboard');
-                }}
-              />
-            )}
-
-            {/* Smart Review Direct Tab */}
-            {activeTab === 'smart_review' && (
-              <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '20px' }}>
-                <button
-                  onClick={() => setShowSmartReviewModal(true)}
-                  className="btn btn-primary"
-                  style={{ padding: '12px 24px', fontWeight: 800, borderRadius: '12px' }}
-                >
-                  BẮT ĐẦU ÔN TẬP CÂU LÀM SAI (SPACED REPETITION)
-                </button>
-              </div>
-            )}
-
-            {/* Unified Staff Academic & Exam Portal (Schedule + Grading + Admin + Early Warning) */}
-            {isStaff && (activeTab === 'admin' || activeTab === 'schedule' || activeTab === 'assignments' || activeTab === 'early_warning') && (
+            {/* 3.3 ADMIN PORTAL — Render AdminPortal for all admin users across all sidebar items */}
+            {user.role === 'admin' && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
               <AdminPortal
+                key={mapAdminSubTab(activeTab)}
                 quizzes={allQuizzes}
                 attempts={stats.history}
                 studentAccounts={studentAccounts}
@@ -981,18 +1043,108 @@ export function App() {
                 onCreateSchedule={createSchedule}
                 onUpdateSchedule={updateSchedule}
                 onDeleteSchedule={deleteSchedule}
-                initialSubTab={
-                  activeTab === 'schedule' ? 'schedules' :
-                  activeTab === 'assignments' ? 'grading_assignments' :
-                  activeTab === 'early_warning' ? 'early_warning' : 'overview'
-                }
+                initialSubTab={mapAdminSubTab(activeTab)}
+                onSubTabChange={(sub) => setActiveTab(sub as any)}
                 onNavigateToAttendance={() => handleNavigateTab('attendance')}
                 currentUser={user}
               />
             )}
 
-            {/* Student Classroom Assignments View */}
-            {!isStaff && activeTab === 'assignments' && (
+            {/* 3.4 ACADEMIC OPERATIONS PORTAL (Giáo Vụ) */}
+            {(user.role === 'academic_staff' || user.role === 'giaovu' || (appRouteInfo.route === 'giaovu' && user.role !== 'admin')) &&
+             activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
+              <GiaoVuDashboard
+                key={mapGiaoVuSubTab(activeTab)}
+                currentUser={user}
+                activeSubTab={mapGiaoVuSubTab(activeTab)}
+                onNavigateTab={(tab) => handleNavigateTab(tab as any)}
+                onOpenScheduleCalendar={() => setActiveTab('schedule')}
+                onOpenAttendance={() => setActiveTab('attendance')}
+                onOpenAI={() => handleOpenAITutor()}
+              />
+            )}
+
+            {/* 3.5 TEACHER ACADEMIC PORTAL */}
+            {user.role === 'teacher' && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
+              <TeacherAcademicPortal
+                key={mapTeacherSubTab(activeTab)}
+                currentUser={user}
+                studentAccounts={studentAccounts}
+                schedules={schedules}
+                assignments={assignments}
+                submissions={submissions}
+                activeSubTab={mapTeacherSubTab(activeTab)}
+                sessions={attendanceSessions}
+                onRotateQR={rotateAttendanceQR}
+                onUpdateStatus={updateAttendanceStatus}
+                onToggleSessionOpen={toggleAttendanceSessionOpen}
+                onNavigateTab={(tab) => handleNavigateTab(tab as any)}
+                onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
+                onOpenEarlyWarning={() => setActiveTab('early_warning')}
+                onOpenAssignmentManager={() => setActiveTab('assignments')}
+                onOpenAdminPortal={() => setActiveTab('admin')}
+                onOpenScheduleCalendar={() => setActiveTab('schedule')}
+                onOpenQuizBank={() => setActiveTab('quizzes')}
+              />
+            )}
+
+            {/* 3.6 STUDENT VIEWS & COURSE PROGRESS */}
+            {user.role === 'student' && activeTab === 'dashboard' && (
+              <StudentOnePageDashboard
+                currentUser={user}
+                streak={stats.currentStreak}
+                schedules={schedules}
+                onContinueLearning={() => handleLaunchTrackQuiz('practice')}
+                onStartSmartReview={() => setShowSmartReviewModal(true)}
+                onStartMiniTest={() => handleLaunchTrackQuiz('practice')}
+                onOpenLearningPath={() => setActiveTab('learning_path')}
+                onOpenFlashcards={() => setActiveTab('flashcards')}
+                onOpenBookmarks={() => setActiveTab('bookmarks')}
+                onOpenAssignments={() => setActiveTab('assignments')}
+                onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
+                onOpenQRScanner={() => setShowCameraScanner(true)}
+                onOpenPracticeSkill={handleOpenPracticeSkill}
+              />
+            )}
+
+            {user.role === 'student' && activeTab === 'courses' && (
+              <CourseCatalogPage
+                showHeader={false}
+                onCourseSelect={() => handleLaunchTrackQuiz('practice')}
+              />
+            )}
+
+            {user.role === 'student' && activeTab === 'learning_path' && (
+              <LearningPathRoadmap
+                currentUser={user}
+                onStartNodePractice={(_node) => handleLaunchTrackQuiz('practice')}
+              />
+            )}
+
+            {user.role === 'student' && activeTab === 'practice_skill' && (
+              <PracticeBySkill
+                quizzes={allQuizzes}
+                initialSkillId={practiceSkillId}
+                onBack={() => {
+                  setPracticeSkillId(undefined);
+                  setActiveTab('dashboard');
+                }}
+              />
+            )}
+
+            {user.role === 'student' && activeTab === 'smart_review' && (
+              <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '20px' }}>
+                <button
+                  onClick={() => setShowSmartReviewModal(true)}
+                  className="btn btn-primary"
+                  style={{ padding: '12px 24px', fontWeight: 800, borderRadius: '12px' }}
+                >
+                  BẮT ĐẦU ÔN TẬP CÂU LÀM SAI (SPACED REPETITION)
+                </button>
+              </div>
+            )}
+
+            {user.role === 'student' && activeTab === 'assignments' && (
               <StudentAssignmentView
                 assignments={assignments}
                 submissions={submissions}
@@ -1001,8 +1153,7 @@ export function App() {
               />
             )}
 
-            {/* Class Schedule & Teaching Calendar */}
-            {activeTab === 'schedule' && (
+            {user.role === 'student' && activeTab === 'schedule' && (
               <ScheduleCalendar
                 currentUser={user}
                 schedules={schedules}
@@ -1013,42 +1164,14 @@ export function App() {
               />
             )}
 
-            {activeTab === 'attendance' && user.role !== 'teacher' && (
-              isStaff ? (
-                <AttendanceManager
-                  sessions={attendanceSessions}
-                  studentAccounts={studentAccounts}
-                  makeupReports={makeupReports}
-                  currentUser={user}
-                  onCreateSession={createAttendanceSession}
-                  onRotateQR={rotateAttendanceQR}
-                  onUpdateSessionSecurity={updateAttendanceSessionSecurity}
-                  onToggleSessionOpen={toggleAttendanceSessionOpen}
-                  onUpdateStatus={updateAttendanceStatus}
-                  onMarkAllPresent={markAllAttendancePresent}
-                  onSaveSession={saveAttendanceSession}
-                  onDeleteSession={deleteAttendanceSession}
-                  onClearMakeupReport={clearAttendanceMakeupReport}
-                />
-              ) : (
-                <StudentAttendanceDashboard
-                  currentUser={user}
-                  sessions={attendanceSessions}
-                  onOpenQRScanner={() => setShowCameraScanner(true)}
-                  onOpenPinModal={() => setShowCheckInModal(true)}
-                />
-              )
-            )}
-
-            {/* Certificates & Achievements View */}
-            {activeTab === 'certificates' && (
+            {user.role === 'student' && activeTab === 'certificates' && (
               <Dashboard
                 stats={stats}
                 onResetProgress={resetAllProgress}
               />
             )}
 
-            {activeTab === 'quizzes' && (
+            {user.role === 'student' && activeTab === 'quizzes' && (
               <QuizCatalog
                 quizzes={allQuizzes}
                 currentUser={user}
@@ -1057,28 +1180,21 @@ export function App() {
               />
             )}
 
-            {activeTab === 'creator' && (
-              <QuizCreator
-                onAddQuiz={addCustomQuiz}
-                onSuccessNavigate={() => handleNavigateTab('admin')}
-              />
-            )}
-
-            {activeTab === 'flashcards' && (
+            {user.role === 'student' && activeTab === 'flashcards' && (
               <FlashcardDeck
                 quizzes={allQuizzes}
                 currentUser={user}
               />
             )}
 
-            {activeTab === 'analytics' && (
+            {user.role === 'student' && activeTab === 'analytics' && (
               <Dashboard
                 stats={stats}
                 onResetProgress={resetAllProgress}
               />
             )}
 
-            {activeTab === 'bookmarks' && (
+            {user.role === 'student' && activeTab === 'bookmarks' && (
               <BookmarkedQuestions
                 allQuizzes={allQuizzes}
                 bookmarkedQuestionIds={stats.bookmarkedQuestionIds}
