@@ -17,6 +17,7 @@ import type { Quiz, QuizAttempt } from './types/quiz';
 import type { QuizMode } from './hooks/useQuizEngine';
 import type { CurriculumTrack } from './types/auth';
 import { LmsPortalSwitcher } from './components/layout/LmsPortalSwitcher';
+import { updateTitleByRoute } from './utils/documentTitle';
 
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -276,6 +277,30 @@ export function App() {
       metaRobots.setAttribute('content', 'index, follow');
     }
   }, [isSessionActive, activeTab]);
+
+  // Dynamic Browser Tab Title Synchronization
+  useEffect(() => {
+    const { route, param } = getAppRoute();
+    if (!isSessionActive) {
+      if (route === 'courses') {
+        updateTitleByRoute('courses');
+      } else if (route === 'verify') {
+        updateTitleByRoute('verify');
+      } else {
+        updateTitleByRoute('home');
+      }
+    } else {
+      if (user.role === 'admin') {
+        updateTitleByRoute('admin', param || activeTab);
+      } else if (user.role === 'teacher') {
+        updateTitleByRoute('teacher', activeTab);
+      } else if (user.role === 'academic_staff') {
+        updateTitleByRoute('giaovu', activeTab);
+      } else {
+        updateTitleByRoute('student', activeTab);
+      }
+    }
+  }, [isSessionActive, user.role, activeTab]);
 
   // Navigate tab with URL synchronization across separated roles
   const handleNavigateTab = (newTab: ActiveTab) => {

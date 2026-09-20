@@ -26,7 +26,7 @@
   --leading-normal:  1.5;
   --leading-relaxed: 1.6;
 
-  /* ── 2. 8-POINT SPACING SYSTEM (4, 8, 12, 16, 24, 32, 40, 48) ── */
+  /* ── 2. 8-POINT SPACING SYSTEM (4, 8, 12, 16, 24, 32, 40, 48, 64) ── */
   --space-4:  4px;
   --space-8:  8px;
   --space-12: 12px;
@@ -35,6 +35,7 @@
   --space-32: 32px;
   --space-40: 40px;
   --space-48: 48px;
+  --space-64: 64px;
 
   /* Aliases for compatibility */
   --space-2xs: 4px;
@@ -66,7 +67,14 @@
   --safe-left:   env(safe-area-inset-left, 0px);
   --safe-right:  env(safe-area-inset-right, 0px);
 
-  /* ── 5. LIGHT THEME PALETTE ── */
+  /* ── 5. LIGHT THEME PALETTE & DESIGN TOKENS ── */
+  --brand-primary:       #0057b8;
+  --brand-primary-hover: #003f88;
+  --brand-navy:          #0b2545;
+  --surface:             #ffffff;
+  --surface-muted:       #f4f8fd;
+  --border:              #e2e8f0;
+
   --bg-base:       #f4f8fd;
   --bg-primary:    #f4f8fd;
   --bg-secondary:  #ffffff;

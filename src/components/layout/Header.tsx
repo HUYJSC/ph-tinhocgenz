@@ -7,6 +7,7 @@ import { soundFx } from '../../utils/audio';
 import { triggerHapticFeedback } from '../../utils/mobilePlatform';
 
 import { ActiveTab } from './Sidebar';
+import { BrandLogo } from '../brand/BrandLogo';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -142,7 +143,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
           <div style={{ height: '38px', maxWidth: '220px', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-horizontal.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
+            <BrandLogo variant="horizontal" height={36} alt="PH DIGITAL EDUCATION" />
           </div>
 
           {/* ── HUB NAVIGATION (Desktop) ── */}

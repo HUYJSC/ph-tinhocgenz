@@ -19,15 +19,36 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({
   onClose
 }) => {
   const [mode, setMode] = useState<AITutorMode>('explain');
-  const [messages, setMessages] = useState<AITutorMessage[]>([
-    {
-      id: 'init_1',
-      sender: 'ai',
-      text: `Xin chào ${currentUser.name || 'bạn'}! Tôi là **TinHocGenZ AI Tutor 2026**.\n\nHãy chọn 1 trong 3 chế độ bên dưới hoặc nhập câu hỏi về Microsoft Word, Excel, PowerPoint, AI Văn Phòng hay CNTT để tôi hỗ trợ bạn ngay!`,
-      mode: 'explain',
-      timestamp: new Date().toISOString()
+  const [messages, setMessages] = useState<AITutorMessage[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('tgz_ai_session_chat');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
     }
-  ]);
+    return [
+      {
+        id: 'init_1',
+        sender: 'ai',
+        text: `Xin chào ${currentUser.name || 'bạn'}! Tôi là **TinHocGenZ AI Copilot**.\n\nHãy chọn chế độ hoặc bấm nhanh các chủ đề tư vấn bên dưới (Lộ trình, Khóa học, Học phí, Lịch học, MOS/IC3...) để tôi hỗ trợ bạn ngay!`,
+        mode: 'explain',
+        timestamp: new Date().toISOString()
+      }
+    ];
+  });
+
+  // Save session conversation
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      try {
+        sessionStorage.setItem('tgz_ai_session_chat', JSON.stringify(messages));
+      } catch {}
+    }
+  }, [messages]);
+
   const [inputQuery, setInputQuery] = useState(initialPrompt);
   const [isTyping, setIsTyping] = useState(false);
 
@@ -80,15 +101,15 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({
         className="card animate-slide-up"
         style={{
           width: '100%',
-          maxWidth: '520px',
+          maxWidth: '410px',
           height: '100%',
-          borderRadius: '24px 0 0 24px',
+          borderRadius: '12px 0 0 12px',
           padding: '20px',
           background: 'var(--bg-card)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '-10px 0 40px rgba(0, 0, 0, 0.3)',
-          borderLeft: '1.5px solid var(--border-color)'
+          boxShadow: '-10px 0 30px rgba(15, 23, 42, 0.15)',
+          borderLeft: '1px solid var(--border-color)'
         }}
       >
         {/* Header */}
@@ -161,22 +182,27 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="horizontal-scroll" style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+        <div className="horizontal-scroll" style={{ display: 'flex', gap: '6px', marginBottom: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
           {[
-            'Hàm XLOOKUP dùng thế nào?',
-            'Khi nào dùng phím F4 trong Excel?',
-            'Cách tạo mục lục tự động Word?',
-            'Mẹo dùng hiệu ứng Morph PPT'
+            'Tư vấn lộ trình',
+            'Khóa học phù hợp',
+            'Thi MOS/IC3',
+            'Học phí & Ưu đãi',
+            'Lịch học tuần',
+            'Hàm XLOOKUP',
+            'Tham chiếu F4',
+            'Styles mục lục Word'
           ].map((chip, idx) => (
             <button
               key={idx}
               onClick={() => handleSendMessage(chip)}
               style={{
                 padding: '4px 10px',
-                borderRadius: '999px',
+                borderRadius: '8px',
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-color)',
                 fontSize: '0.72rem',
+                fontWeight: 500,
                 color: 'var(--text-secondary)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap'

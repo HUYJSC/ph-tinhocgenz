@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   Search, Bell, ChevronDown, User, BookOpen, Award,
-  LogOut, GraduationCap
+  LogOut
 } from 'lucide-react';
+import { BrandLogo } from '../brand/BrandLogo';
 
 export interface LmsMainHeaderProps {
   activeNav?: string;
@@ -73,47 +74,7 @@ export const LmsMainHeader: React.FC<LmsMainHeaderProps> = ({
             flexShrink: 0
           }}
         >
-          {/* Logo Mark PH */}
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #0057B8 0%, #0077FE 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF',
-            boxShadow: '0 4px 12px rgba(0, 87, 184, 0.25)',
-            position: 'relative'
-          }}>
-            <GraduationCap size={24} color="#FFFFFF" />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{
-              fontSize: '20px',
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.1,
-              color: '#0B2545',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              <span>TINHOC</span>
-              <span style={{ color: '#0057B8' }}>GENZ</span>
-            </div>
-            <div style={{
-              fontSize: '9.5px',
-              fontWeight: 700,
-              letterSpacing: '0.04em',
-              color: '#64748B',
-              textTransform: 'uppercase',
-              marginTop: '2px'
-            }}>
-              Học Thật — Thi Thật — Giá Trị Thật
-            </div>
-          </div>
+          <BrandLogo variant="horizontal" height={36} alt="Tin Học Gen Z — Học Thật, Thi Thật, Giá Trị Thật" />
         </div>
 
         {/* ── 2. MAIN NAVIGATION MENU (6 ITEMS) ── */}

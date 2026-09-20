@@ -1,7 +1,7 @@
 {
   "name": "Tin Học Gen Z • Nền Tảng Đào Tạo & Khảo Thí LMS",
   "short_name": "Tin Học Gen Z",
-  "description": "Nền tảng học trực tuyến, khảo thí thông minh và điểm danh số cho học viên và giảng viên",
+  "description": "Nền tảng đào tạo kỹ năng số, luyện thi chứng chỉ quốc tế MOS, IC3 và CNTT ứng dụng",
   "id": "/?pwa=1",
   "start_url": "/?source=pwa",
   "scope": "/",
@@ -52,3 +52,4 @@
     }
   ]
 }
+

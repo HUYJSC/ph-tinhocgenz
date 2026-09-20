@@ -4,6 +4,7 @@ import { UserProfile } from '../../types/auth';
 import { UserDropdown } from './UserDropdown';
 import { ActiveTab } from './Sidebar';
 import { soundFx } from '../../utils/audio';
+import { BrandLogo } from '../brand/BrandLogo';
 
 interface TeacherAcademicHeaderProps {
   currentUser: UserProfile;
@@ -122,7 +123,7 @@ export const TeacherAcademicHeader: React.FC<TeacherAcademicHeaderProps> = ({
         {/* Left: Brand Identity & Portal Scope (SEC & UI/UX Master Clean) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ height: '38px', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-horizontal.png" alt="PH DIGITAL EDUCATION" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+            <BrandLogo variant="horizontal" height={36} alt="PH DIGITAL EDUCATION" />
           </div>
           <div style={{ height: '22px', width: '1px', background: '#E2E8F0' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

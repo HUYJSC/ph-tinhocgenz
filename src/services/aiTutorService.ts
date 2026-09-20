@@ -34,7 +34,17 @@ export class AITutorService {
     // Mode 1: EXPLAIN (Giải thích kiến thức)
     if (mode === 'explain') {
       let explanation = '';
-      if (qLower.includes('xlookup')) {
+      if (qLower.includes('lộ trình') || qLower.includes('tư vấn')) {
+        explanation = `🧭 **Lộ Trình Học Tập Đề Xuất Tại Tin Học Gen Z:**\n\n1. **Khởi đầu vững vàng:** Khóa Tin Học Văn Phòng Thực Chiến 3 trong 1 (Word, Excel, PowerPoint) — 10 đến 12 buổi.\n2. **Khảo thí Quốc tế:** Luyện thi MOS 2019/365 hoặc IC3 Digital Literacy GS6 — 6 đến 8 buổi, cam kết 100% đầu ra.\n3. **Kỹ năng chuyên sâu:** Excel Kế toán - Phân tích dữ liệu hoặc Công cụ AI Ứng Dụng Văn Phòng.\n4. **Đột phá công nghệ:** Fullstack Web Developer (Frontend React + Backend Python/Node.js).\n\n💡 Bạn muốn tôi tư vấn sâu hơn về mục tiêu nào?`;
+      } else if (qLower.includes('khóa học') || qLower.includes('chương trình')) {
+        explanation = `📚 **Danh Mục Khóa Học Chuẩn Hóa Tin Học Gen Z:**\n\n• **Lập trình Web:** Frontend React + TypeScript, Backend Python DRF / Node.js, Fullstack Web Dev.\n• **Khảo thí Quốc tế:** MOS Excel, MOS Word, MOS PowerPoint, IC3 GS6.\n• **Chuẩn CNTT:** CNTT Cơ bản, CNTT Nâng cao.\n• **Ứng dụng nghề:** Excel Kế toán Tài chính, Ứng dụng AI văn phòng.\n\n👉 Bạn có thể xem đề cương chi tiết tại mục **Khóa Học** trên thanh menu!`;
+      } else if (qLower.includes('học phí') || qLower.includes('chi phí') || qLower.includes('ưu đãi') || qLower.includes('giá')) {
+        explanation = `💳 **Chính Sách Học Phí & Học Bổng Tin Học Gen Z:**\n\n• Học phí các khóa học dao động linh hoạt theo từng môn và cấp độ thực chiến.\n• Ưu đãi giảm **20% — 25%** khi đăng ký combo Lộ trình hoặc đăng ký theo nhóm từ 2 người.\n• **Cam kết vàng:** Hoàn 100% học phí hoặc học lại hoàn toàn miễn phí nếu thi chưa đạt điểm chuẩn!`;
+      } else if (qLower.includes('lịch học') || qLower.includes('thời gian') || qLower.includes('khai giảng')) {
+        explanation = `📅 **Lịch Học & Hình Thức Khai Giảng:**\n\n• **Ca học linh hoạt:** Tối 2-4-6 hoặc Tối 3-5-7 (18:30 – 20:30) và Lớp Thứ 7 – Chủ Nhật.\n• **Hình thức học:** Trực tiếp tại phòng máy hiện đại hoặc Trực tuyến (Live Class) có trợ giảng hỗ trợ 1:1.\n• Lớp mới khai giảng liên tục vào tuần đầu và tuần giữa mỗi tháng.`;
+      } else if (qLower.includes('chứng chỉ') || qLower.includes('blockchain') || qLower.includes('bằng')) {
+        explanation = `🛡️ **Chứng Chỉ Số & Công Nghệ Blockchain Tin Học Gen Z:**\n\n• Mọi học viên hoàn thành khóa học và đạt bài thi khảo thí sẽ được cấp Bằng điện tử gắn mã băm SHA-256 duy nhất.\n• Xác thực minh bạch on-chain tại cổng **hoctructuyen.tinhocgenz.io.vn/verify**.\n• Tích hợp tải ảnh độ nét cao và chia sẻ trực tiếp lên hồ sơ LinkedIn cho nhà tuyển dụng.`;
+      } else if (qLower.includes('xlookup')) {
         explanation = `💡 **Giải Thích Chi Tiết Về XLOOKUP:**\n${TINHOCGENZ_KNOWLEDGE_BASE.xlookup}\n\n📌 **Mẹo thực hành:** Bạn chỉ cần chọn vùng giá trị tìm kiếm và vùng kết quả trả về, không cần đếm số thứ tự cột!`;
       } else if (qLower.includes('vlookup')) {
         explanation = `💡 **Giải Thích VLOOKUP Chuẩn:**\n${TINHOCGENZ_KNOWLEDGE_BASE.vlookup}\n\n⚠️ **Lỗi thường gặp:** Quên nhấn F4 để cố định bảng \`$A$1:$D$100\` hoặc quên đặt tham số cuối là \`0\`.`;
