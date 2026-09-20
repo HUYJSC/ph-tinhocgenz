@@ -16,6 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const supabase = getSupabaseAdminClient();
+        if (!supabase) {
+            return res.status(503).json({ success: false, error: 'Database service unavailable' });
+        }
         const { data, error } = await supabase
             .from('certificates')
             .select('*, users(full_name), courses(title)')

@@ -22,6 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const supabase = getSupabaseAdminClient();
+        if (!supabase) {
+            return res.status(503).json({ success: false, error: 'Database service unavailable' });
+        }
         
         // Mock get course price
         const { data: course, error: cError } = await supabase

@@ -6,15 +6,20 @@ export const SERVER_QUIZ_REGISTRY: Record<string, Quiz> = {
         id: 'q_demo_1',
         title: 'Demo Quiz',
         description: 'Demo Quiz',
+        category: 'all',
+        difficulty: 'easy',
         timeLimitMinutes: 15,
-        passingScore: 80,
+        icon: 'HelpCircle',
+        badgeColor: '#0057B8',
         questions: [
             {
                 id: 'q1',
                 type: 'single',
-                text: 'What is 1 + 1?',
-                options: [{ id: 'o1', text: '1' }, { id: 'o2', text: '2' }],
-                correctAnswer: 'o2'
+                prompt: 'What is 1 + 1?',
+                options: ['1', '2'],
+                correctAnswer: 1,
+                explanation: '1 + 1 = 2',
+                points: 10
             }
         ]
     }
