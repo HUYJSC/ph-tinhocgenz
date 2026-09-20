@@ -7,9 +7,10 @@ import { AdminPortal, AdminPortalSubTab } from './AdminPortal';
 import {
   Shield, Users, UserCheck, Calendar, CheckSquare, BookOpen,
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
-  ExternalLink, Key, Menu, X, ChevronRight,
+  ExternalLink, Key, Menu, X,
   Server, BarChart3, Eye, EyeOff, GraduationCap,
-  Clock, Award, RefreshCw, XCircle, Sliders, Database
+  Clock, Award, RefreshCw, XCircle, Sliders, Database,
+  Search, Sparkles, Bell, Mail
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
@@ -686,29 +687,90 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
 
       {/* ── MAIN ADMIN VIEWPORT ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
-        {/* Topbar */}
+        {/* Topbar matching Design Source of Truth (media_1789879455952.jpg) */}
         <header style={{
-          height: '60px',
+          height: '64px',
           padding: '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(255, 255, 255, 0.9)',
+          gap: '16px',
+          background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--border-color, #e2e8f0)',
           position: 'sticky',
           top: 0,
           zIndex: 40
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem' }}>
-            <span style={{ color: 'var(--text-muted, #64748b)', fontWeight: 500 }}>Cổng Quản Trị</span>
-            <ChevronRight size={14} color="#94a3b8" />
-            <span style={{ fontWeight: 800, color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.01em' }}>
-              {(menuSections.flatMap((s: MenuSection) => s.items).find((i: MenuItem) => i.id === activeSubTab)?.label) || 'Bảng Điều Khiển'}
+          {/* Left: Search Box (Design Truth: Tìm kiếm học viên, khóa học, bài thi... Ctrl + K) */}
+          <div style={{ flex: 1, maxWidth: '460px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm học viên, khóa học, bài thi... (Ctrl + K)"
+              style={{
+                width: '100%',
+                height: '38px',
+                paddingLeft: '38px',
+                paddingRight: '64px',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                fontSize: '13px',
+                color: '#0f172a',
+                outline: 'none'
+              }}
+            />
+            <span style={{
+              position: 'absolute',
+              right: '8px',
+              padding: '2px 6px',
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#94a3b8',
+              pointerEvents: 'none'
+            }}>
+              Ctrl + K
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Right: Actions matching Design Truth */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* AI Assistant Button */}
+            <button
+              type="button"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                background: 'rgba(37, 99, 235, 0.08)',
+                border: '1.5px solid rgba(37, 99, 235, 0.25)',
+                color: '#2563eb',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <Sparkles size={15} color="#2563eb" />
+              <span>AI Assistant</span>
+            </button>
+
+            {/* Notification Bell */}
+            <div style={{ position: 'relative', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#64748b' }}>
+              <Bell size={17} />
+              <span style={{ position: 'absolute', top: '4px', right: '4px', width: '15px', height: '15px', borderRadius: '50%', background: '#ef4444', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</span>
+            </div>
+
+            {/* Messages Mail */}
+            <div style={{ position: 'relative', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#64748b' }}>
+              <Mail size={17} />
+            </div>
+
             {/* Live Data Engine & Backup Button */}
             <button
               type="button"
@@ -720,44 +782,20 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '6px 13px',
+                padding: '6px 12px',
                 borderRadius: '8px',
                 background: 'rgba(37, 99, 235, 0.08)',
-                border: '1.5px solid rgba(37, 99, 235, 0.25)',
+                border: '1px solid rgba(37, 99, 235, 0.2)',
                 color: '#2563eb',
                 fontSize: '0.76rem',
-                fontWeight: 800,
+                fontWeight: 700,
                 cursor: 'pointer'
               }}
               title="Mở Trung Tâm CSDL, Sao Lưu & Đồng Bộ"
             >
-              <Database size={14} />
-              <span>CSDL & Sao Lưu (Data SSOT)</span>
+              <Database size={13} />
+              <span>Data SSOT</span>
             </button>
-
-            {/* Live System Indicator */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
-              borderRadius: '9999px',
-              background: 'rgba(16, 185, 129, 0.08)',
-              border: '1px solid rgba(16, 185, 129, 0.22)',
-              color: '#059669',
-              fontSize: '0.74rem',
-              fontWeight: 700
-            }}>
-              <span style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#10b981',
-                display: 'inline-block',
-                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2)'
-              }} />
-              <span>Production Live</span>
-            </div>
 
             {/* Quick Link to Student Website */}
             <button
@@ -766,21 +804,68 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
                 background: 'var(--bg-card, #ffffff)',
                 border: '1px solid var(--border-color, #e2e8f0)',
                 color: 'var(--text-secondary, #475569)',
-                padding: '6px 14px',
+                padding: '6px 12px',
                 borderRadius: '8px',
-                fontSize: '0.78rem',
+                fontSize: '0.76rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
-                transition: 'all 0.15s ease'
+                gap: '5px'
               }}
             >
-              <span>Xem Website Học Viên</span>
-              <ExternalLink size={13} />
+              <span>Xem Web Học Viên</span>
+              <ExternalLink size={12} />
             </button>
+
+            {/* Super Admin Profile Pill */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '4px 10px 4px 6px',
+              borderRadius: '30px',
+              border: '1px solid #e2e8f0',
+              background: '#ffffff'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: '12px'
+              }}>
+                SA
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>
+                  {currentUser.name || 'Nguyễn Đình Huy'}
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.1 }}>
+                  Super Admin
+                </span>
+              </div>
+              <button
+                onClick={onLogout}
+                title="Đăng xuất quản trị"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '2px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
           </div>
         </header>
 

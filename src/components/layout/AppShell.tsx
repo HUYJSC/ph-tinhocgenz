@@ -16,10 +16,11 @@ export interface AppShellProps {
   onOpenAITutor?: () => void;
   onOpenNotifications?: () => void;
   onOpenProfile?: () => void;
+  onOpenChangePassword?: () => void;
   onLogout?: () => void;
   onSearch?: (query: string) => void;
   currentPortal?: string;
-  onSwitchPortal?: (portal: string) => void;
+  onSwitchPortal?: (portal: any) => void;
 }
 
 /**
@@ -34,6 +35,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   onOpenAITutor,
   onOpenNotifications,
   onOpenProfile,
+  onOpenChangePassword,
   onLogout,
   onSearch,
   currentPortal = 'student',
@@ -63,6 +65,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         onOpenAITutor={onOpenAITutor}
         onOpenNotifications={onOpenNotifications}
         onOpenProfile={onOpenProfile}
+        onOpenChangePassword={onOpenChangePassword}
         onLogout={onLogout}
         onSearch={onSearch}
         currentPortal={currentPortal}

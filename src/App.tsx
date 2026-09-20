@@ -4,7 +4,6 @@ import { useAuth } from './hooks/useAuth';
 import { useAssignmentStorage } from './hooks/useAssignmentStorage';
 import { useAttendanceStorage } from './hooks/useAttendanceStorage';
 import { useScheduleStorage } from './hooks/useScheduleStorage';
-import { Header } from './components/layout/Header';
 import { type ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { TeacherAcademicHeader } from './components/layout/TeacherAcademicHeader';
@@ -17,6 +16,7 @@ import type { Quiz, QuizAttempt } from './types/quiz';
 import type { QuizMode } from './hooks/useQuizEngine';
 import type { CurriculumTrack } from './types/auth';
 import { LmsPortalSwitcher } from './components/layout/LmsPortalSwitcher';
+import { AppShell } from './components/layout/AppShell';
 import { updateTitleByRoute } from './utils/documentTitle';
 
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
@@ -811,6 +811,270 @@ export function App() {
     );
   }
 
+  // ── CONTENT ROUTER ──
+  const renderContentRouter = () => (
+    <div style={{ flex: 1, padding: 0 }}>
+      <Suspense fallback={<PageLoadingFallback />}>
+        {/* 1. Quiz is running */}
+        {activeQuiz && !latestAttempt && (
+          <QuizRunner
+            quiz={activeQuiz}
+            mode={activeMode}
+            onFinish={handleFinishQuiz}
+            onExit={handleExitQuiz}
+            bookmarkedQuestionIds={stats.bookmarkedQuestionIds}
+            onToggleBookmark={toggleBookmark}
+            userId={user.id}
+          />
+        )}
+
+        {/* 2. Quiz Result Review */}
+        {activeQuiz && latestAttempt && (
+          <QuizResult
+            quiz={activeQuiz}
+            attempt={latestAttempt}
+            studentName={user.name}
+            onRetry={handleRetryQuiz}
+            onGoHome={handleExitQuiz}
+            onPracticeSkill={handleOpenPracticeSkill}
+          />
+        )}
+
+        {/* 3. Normal Tab Views */}
+        {!activeQuiz && (
+          <>
+            {/* Academic Operations Portal (Giáo Vụ - Image 05) */}
+            {(user.role === 'academic_staff' || appRouteInfo.route === 'giaovu') && activeTab === 'dashboard' && (
+              <GiaoVuDashboard
+                currentUser={user}
+                onOpenScheduleCalendar={() => setActiveTab('schedule')}
+                onOpenAttendance={() => setActiveTab('attendance')}
+                onOpenAI={() => handleOpenAITutor()}
+              />
+            )}
+
+            {/* Teacher Academic Portal (Modern University Academic Style) */}
+            {isStaff && user.role !== 'academic_staff' && appRouteInfo.route !== 'giaovu' && activeTab === 'dashboard' && (
+              <TeacherAcademicPortal
+                currentUser={user}
+                studentAccounts={studentAccounts}
+                schedules={schedules}
+                assignments={assignments}
+                submissions={submissions}
+                onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
+                onOpenEarlyWarning={() => setActiveTab('early_warning')}
+                onOpenAssignmentManager={() => setActiveTab('assignments')}
+                onOpenAdminPortal={() => setActiveTab('admin')}
+                onOpenScheduleCalendar={() => setActiveTab('schedule')}
+                onOpenQuizBank={() => setActiveTab('quizzes')}
+              />
+            )}
+
+            {/* Student OnePage Master Dashboard */}
+            {!isStaff && activeTab === 'dashboard' && (
+              <StudentOnePageDashboard
+                currentUser={user}
+                streak={stats.currentStreak}
+                schedules={schedules}
+                onContinueLearning={() => handleLaunchTrackQuiz('practice')}
+                onStartSmartReview={() => setShowSmartReviewModal(true)}
+                onStartMiniTest={() => handleLaunchTrackQuiz('practice')}
+                onOpenLearningPath={() => setActiveTab('learning_path')}
+                onOpenFlashcards={() => setActiveTab('flashcards')}
+                onOpenBookmarks={() => setActiveTab('bookmarks')}
+                onOpenAssignments={() => setActiveTab('assignments')}
+                onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
+                onOpenQRScanner={() => setShowCameraScanner(true)}
+                onOpenPracticeSkill={handleOpenPracticeSkill}
+              />
+            )}
+
+            {/* Courses Catalog Tab */}
+            {!isStaff && activeTab === 'courses' && (
+              <CourseCatalogPage
+                showHeader={false}
+                onCourseSelect={() => handleLaunchTrackQuiz('practice')}
+              />
+            )}
+
+            {/* Learning Path Roadmap Tab */}
+            {activeTab === 'learning_path' && (
+              <LearningPathRoadmap
+                currentUser={user}
+                onStartNodePractice={(_node) => handleLaunchTrackQuiz('practice')}
+              />
+            )}
+
+            {/* Practice By Skill Tab */}
+            {activeTab === 'practice_skill' && (
+              <PracticeBySkill
+                quizzes={allQuizzes}
+                initialSkillId={practiceSkillId}
+                onBack={() => {
+                  setPracticeSkillId(undefined);
+                  setActiveTab('dashboard');
+                }}
+              />
+            )}
+
+            {/* Smart Review Direct Tab */}
+            {activeTab === 'smart_review' && (
+              <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '20px' }}>
+                <button
+                  onClick={() => setShowSmartReviewModal(true)}
+                  className="btn btn-primary"
+                  style={{ padding: '12px 24px', fontWeight: 800, borderRadius: '12px' }}
+                >
+                  BẮT ĐẦU ÔN TẬP CÂU LÀM SAI (SPACED REPETITION)
+                </button>
+              </div>
+            )}
+
+            {/* Unified Staff Academic & Exam Portal (Schedule + Grading + Admin + Early Warning) */}
+            {isStaff && (activeTab === 'admin' || activeTab === 'schedule' || activeTab === 'assignments' || activeTab === 'early_warning') && (
+              <AdminPortal
+                quizzes={allQuizzes}
+                attempts={stats.history}
+                studentAccounts={studentAccounts}
+                teacherAccounts={teacherAccounts}
+                assignments={assignments}
+                submissions={submissions}
+                notifications={notifications}
+                googleDriveConfig={googleDriveConfig}
+                onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
+                onCreateAssignment={createAssignment}
+                onUpdateAssignment={updateAssignment}
+                onDeleteAssignment={deleteAssignment}
+                onToggleOpen={toggleAssignmentOpen}
+                onGradeSubmission={gradeSubmission}
+                onMarkNotificationAsRead={markNotificationAsRead}
+                onAddQuiz={addCustomQuiz}
+                onUpdateQuiz={updateQuiz}
+                onDeleteQuiz={deleteQuiz}
+                onDeleteCustomQuiz={deleteCustomQuiz}
+                onUpdateQuestion={updateQuestion}
+                onDeleteQuestion={deleteQuestion}
+                onNavigateToCreator={() => handleNavigateTab('creator')}
+                onCreateStudentAccount={createStudentAccount}
+                onUpdateStudentAccount={updateStudentAccount}
+                onDeleteStudentAccount={deleteStudentAccount}
+                onCreateTeacherAccount={createTeacherAccount}
+                onUpdateTeacherAccount={updateTeacherAccount}
+                onDeleteTeacherAccount={deleteTeacherAccount}
+                schedules={schedules}
+                onCreateSchedule={createSchedule}
+                onUpdateSchedule={updateSchedule}
+                onDeleteSchedule={deleteSchedule}
+                initialSubTab={
+                  activeTab === 'schedule' ? 'schedules' :
+                  activeTab === 'assignments' ? 'grading_assignments' :
+                  activeTab === 'early_warning' ? 'early_warning' : 'overview'
+                }
+                onNavigateToAttendance={() => handleNavigateTab('attendance')}
+                currentUser={user}
+              />
+            )}
+
+            {/* Student Classroom Assignments View */}
+            {!isStaff && activeTab === 'assignments' && (
+              <StudentAssignmentView
+                assignments={assignments}
+                submissions={submissions}
+                currentUser={user}
+                onSubmitAssignment={submitAssignment}
+              />
+            )}
+
+            {/* Class Schedule & Teaching Calendar */}
+            {activeTab === 'schedule' && (
+              <ScheduleCalendar
+                currentUser={user}
+                schedules={schedules}
+                onCreateSchedule={createSchedule}
+                onUpdateSchedule={updateSchedule}
+                onDeleteSchedule={deleteSchedule}
+                onNavigateToAttendance={() => handleNavigateTab('attendance')}
+              />
+            )}
+
+            {activeTab === 'attendance' && (
+              isStaff ? (
+                <AttendanceManager
+                  sessions={attendanceSessions}
+                  studentAccounts={studentAccounts}
+                  makeupReports={makeupReports}
+                  currentUser={user}
+                  onCreateSession={createAttendanceSession}
+                  onRotateQR={rotateAttendanceQR}
+                  onUpdateSessionSecurity={updateAttendanceSessionSecurity}
+                  onToggleSessionOpen={toggleAttendanceSessionOpen}
+                  onUpdateStatus={updateAttendanceStatus}
+                  onMarkAllPresent={markAllAttendancePresent}
+                  onSaveSession={saveAttendanceSession}
+                  onDeleteSession={deleteAttendanceSession}
+                  onClearMakeupReport={clearAttendanceMakeupReport}
+                />
+              ) : (
+                <StudentAttendanceDashboard
+                  currentUser={user}
+                  sessions={attendanceSessions}
+                  onOpenQRScanner={() => setShowCameraScanner(true)}
+                  onOpenPinModal={() => setShowCheckInModal(true)}
+                />
+              )
+            )}
+
+            {/* Certificates & Achievements View */}
+            {activeTab === 'certificates' && (
+              <Dashboard
+                stats={stats}
+                onResetProgress={resetAllProgress}
+              />
+            )}
+
+            {activeTab === 'quizzes' && (
+              <QuizCatalog
+                quizzes={allQuizzes}
+                currentUser={user}
+                onStartQuiz={handleStartQuiz}
+                onDeleteCustomQuiz={deleteCustomQuiz}
+              />
+            )}
+
+            {activeTab === 'creator' && (
+              <QuizCreator
+                onAddQuiz={addCustomQuiz}
+                onSuccessNavigate={() => handleNavigateTab('admin')}
+              />
+            )}
+
+            {activeTab === 'flashcards' && (
+              <FlashcardDeck
+                quizzes={allQuizzes}
+                currentUser={user}
+              />
+            )}
+
+            {activeTab === 'analytics' && (
+              <Dashboard
+                stats={stats}
+                onResetProgress={resetAllProgress}
+              />
+            )}
+
+            {activeTab === 'bookmarks' && (
+              <BookmarkedQuestions
+                allQuizzes={allQuizzes}
+                bookmarkedQuestionIds={stats.bookmarkedQuestionIds}
+                onToggleBookmark={toggleBookmark}
+              />
+            )}
+          </>
+        )}
+      </Suspense>
+    </div>
+  );
+
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
     <div className={`app-container ${theme}`} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
@@ -823,10 +1087,64 @@ export function App() {
         }
         onSelectPortal={handleSwitchPortal}
       />
-      {/* Main Content Area (Zero Heavy Sidebar for both Student & Teacher) */}
-      <main className="main-content" style={{ padding: 0, flex: 1, width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        {/* Header: Two-Tier Academic Header for Staff / Minimal Flow Header for Students */}
-        {isStaff ? (
+
+      {/* Main Content Area: Student View Wrapped in AppShell (Design Source of Truth) */}
+      {!isStaff ? (
+        <AppShell
+          user={{
+            name: user.name,
+            role: 'student',
+            studentCode: user.studentCode,
+            avatar: undefined
+          }}
+          activeTab={activeTab}
+          onSelectTab={(tabId) => {
+            if (tabId === 'courses') {
+              handleNavigateTab('courses');
+            } else if (tabId === 'profile') {
+              setShowProfileModal(true);
+            } else if (tabId === 'notifications') {
+              setShowNoticeModal(true);
+            } else {
+              handleNavigateTab(tabId as ActiveTab);
+            }
+          }}
+          onOpenAITutor={() => handleOpenAITutor()}
+          onOpenNotifications={() => setShowNoticeModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
+          onOpenChangePassword={() => setShowChangePasswordModal(true)}
+          onLogout={handleLogout}
+          currentPortal="student"
+          onSwitchPortal={handleSwitchPortal}
+        >
+          {/* Optional Back to Overview Bar for deep tabs in Student view */}
+          {activeTab !== 'dashboard' && !activeQuiz && (
+            <div style={{ maxWidth: '860px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
+              <button
+                onClick={() => handleNavigateTab('dashboard')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--brand)',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 0'
+                }}
+              >
+                <span>← Quay lại Trang Học Tập</span>
+              </button>
+            </div>
+          )}
+
+          {renderContentRouter()}
+        </AppShell>
+      ) : (
+        <main className="main-content" style={{ padding: 0, flex: 1, width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* Header: Two-Tier Academic Header for Staff */}
           <TeacherAcademicHeader
             currentUser={user}
             activeTab={activeTab}
@@ -842,298 +1160,33 @@ export function App() {
             onOpenAITutor={() => handleOpenAITutor()}
             onOpenNotices={() => setShowNoticeModal(true)}
           />
-        ) : (
-          <Header
-            theme={theme}
-            toggleTheme={toggleTheme}
-            streak={stats.currentStreak}
-            totalPoints={stats.totalPoints}
-            currentUser={user}
-            activeTab={activeTab}
-            setActiveTab={handleNavigateTab}
-            isAdmin={false}
-            unreadNotificationCount={unreadNotificationCount}
-            onLogout={handleLogout}
-            onOpenNotifications={() => handleNavigateTab('assignments')}
-            onOpenProfileModal={() => setShowProfileModal(true)}
-            onOpenChangePassword={() => setShowChangePasswordModal(true)}
-            onOpenInstallModal={() => setShowInstallModal(true)}
-            onOpenNotices={() => setShowNoticeModal(true)}
-            onOpenFeedback={() => setShowFeedbackModal(true)}
-            onOpenAITutor={() => handleOpenAITutor()}
-          />
-        )}
 
-        {/* Optional Back to Overview Bar for deep tabs in Teacher/Student views */}
-        {activeTab !== 'dashboard' && !activeQuiz && (
-          <div style={{ maxWidth: isStaff ? '1100px' : '860px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
-            <button
-              onClick={() => handleNavigateTab('dashboard')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--brand)',
-                fontSize: '13px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 0'
-              }}
-            >
-              <span>← Quay lại {isStaff ? 'Tổng quan giảng dạy' : 'Trang Học Tập'}</span>
-            </button>
-          </div>
-        )}
-
-        {/* Content Router */}
-        <div style={{ flex: 1, padding: 0 }}>
-          <Suspense fallback={<PageLoadingFallback />}>
-            {/* 1. Quiz is running */}
-            {activeQuiz && !latestAttempt && (
-            <QuizRunner
-              quiz={activeQuiz}
-              mode={activeMode}
-              onFinish={handleFinishQuiz}
-              onExit={handleExitQuiz}
-              bookmarkedQuestionIds={stats.bookmarkedQuestionIds}
-              onToggleBookmark={toggleBookmark}
-              userId={user.id}
-            />
+          {/* Optional Back to Overview Bar for deep tabs in Teacher view */}
+          {activeTab !== 'dashboard' && !activeQuiz && (
+            <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
+              <button
+                onClick={() => handleNavigateTab('dashboard')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--brand)',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 0'
+                }}
+              >
+                <span>← Quay lại Tổng quan giảng dạy</span>
+              </button>
+            </div>
           )}
 
-          {/* 2. Quiz Result Review */}
-          {activeQuiz && latestAttempt && (
-            <QuizResult
-              quiz={activeQuiz}
-              attempt={latestAttempt}
-              studentName={user.name}
-              onRetry={handleRetryQuiz}
-              onGoHome={handleExitQuiz}
-              onPracticeSkill={handleOpenPracticeSkill}
-            />
-          )}
-
-          {/* 3. Normal Tab Views */}
-          {!activeQuiz && (
-            <>
-              {/* Academic Operations Portal (Giáo Vụ - Image 05) */}
-              {(user.role === 'academic_staff' || appRouteInfo.route === 'giaovu') && activeTab === 'dashboard' && (
-                <GiaoVuDashboard
-                  currentUser={user}
-                  onOpenScheduleCalendar={() => setActiveTab('schedule')}
-                  onOpenAttendance={() => setActiveTab('attendance')}
-                  onOpenAI={() => handleOpenAITutor()}
-                />
-              )}
-
-              {/* Teacher Academic Portal (Modern University Academic Style) */}
-              {isStaff && user.role !== 'academic_staff' && appRouteInfo.route !== 'giaovu' && activeTab === 'dashboard' && (
-                <TeacherAcademicPortal
-                  currentUser={user}
-                  studentAccounts={studentAccounts}
-                  schedules={schedules}
-                  assignments={assignments}
-                  submissions={submissions}
-                  onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
-                  onOpenEarlyWarning={() => setActiveTab('early_warning')}
-                  onOpenAssignmentManager={() => setActiveTab('assignments')}
-                  onOpenAdminPortal={() => setActiveTab('admin')}
-                  onOpenScheduleCalendar={() => setActiveTab('schedule')}
-                  onOpenQuizBank={() => setActiveTab('quizzes')}
-                />
-              )}
-
-              {/* Student OnePage Master Dashboard */}
-              {!isStaff && activeTab === 'dashboard' && (
-                <StudentOnePageDashboard
-                  currentUser={user}
-                  streak={stats.currentStreak}
-                  schedules={schedules}
-                  onContinueLearning={() => handleLaunchTrackQuiz('practice')}
-                  onStartSmartReview={() => setShowSmartReviewModal(true)}
-                  onStartMiniTest={() => handleLaunchTrackQuiz('practice')}
-                  onOpenLearningPath={() => setActiveTab('learning_path')}
-                  onOpenFlashcards={() => setActiveTab('flashcards')}
-                  onOpenBookmarks={() => setActiveTab('bookmarks')}
-                  onOpenAssignments={() => setActiveTab('assignments')}
-                  onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
-                  onOpenQRScanner={() => setShowCameraScanner(true)}
-                  onOpenPracticeSkill={handleOpenPracticeSkill}
-                />
-              )}
-
-              {/* Learning Path Roadmap Tab */}
-              {activeTab === 'learning_path' && (
-                <LearningPathRoadmap
-                  currentUser={user}
-                  onStartNodePractice={(_node) => handleLaunchTrackQuiz('practice')}
-                />
-              )}
-
-              {/* Practice By Skill Tab */}
-              {activeTab === 'practice_skill' && (
-                <PracticeBySkill
-                  quizzes={allQuizzes}
-                  initialSkillId={practiceSkillId}
-                  onBack={() => {
-                    setPracticeSkillId(undefined);
-                    setActiveTab('dashboard');
-                  }}
-                />
-              )}
-
-
-              {/* Smart Review Direct Tab */}
-              {activeTab === 'smart_review' && (
-                <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '20px' }}>
-                  <button
-                    onClick={() => setShowSmartReviewModal(true)}
-                    className="btn btn-primary"
-                    style={{ padding: '12px 24px', fontWeight: 800, borderRadius: '12px' }}
-                  >
-                    BẮT ĐẦU ÔN TẬP CÂU LÀM SAI (SPACED REPETITION)
-                  </button>
-                </div>
-              )}
-
-              {/* Unified Staff Academic & Exam Portal (Schedule + Grading + Admin + Early Warning) */}
-              {isStaff && (activeTab === 'admin' || activeTab === 'schedule' || activeTab === 'assignments' || activeTab === 'early_warning') && (
-                <AdminPortal
-                  quizzes={allQuizzes}
-                  attempts={stats.history}
-                  studentAccounts={studentAccounts}
-                  teacherAccounts={teacherAccounts}
-                  assignments={assignments}
-                  submissions={submissions}
-                  notifications={notifications}
-                  googleDriveConfig={googleDriveConfig}
-                  onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
-                  onCreateAssignment={createAssignment}
-                  onUpdateAssignment={updateAssignment}
-                  onDeleteAssignment={deleteAssignment}
-                  onToggleOpen={toggleAssignmentOpen}
-                  onGradeSubmission={gradeSubmission}
-                  onMarkNotificationAsRead={markNotificationAsRead}
-                  onAddQuiz={addCustomQuiz}
-                  onUpdateQuiz={updateQuiz}
-                  onDeleteQuiz={deleteQuiz}
-                  onDeleteCustomQuiz={deleteCustomQuiz}
-                  onUpdateQuestion={updateQuestion}
-                  onDeleteQuestion={deleteQuestion}
-                  onNavigateToCreator={() => handleNavigateTab('creator')}
-                  onCreateStudentAccount={createStudentAccount}
-                  onUpdateStudentAccount={updateStudentAccount}
-                  onDeleteStudentAccount={deleteStudentAccount}
-                  onCreateTeacherAccount={createTeacherAccount}
-                  onUpdateTeacherAccount={updateTeacherAccount}
-                  onDeleteTeacherAccount={deleteTeacherAccount}
-                  schedules={schedules}
-                  onCreateSchedule={createSchedule}
-                  onUpdateSchedule={updateSchedule}
-                  onDeleteSchedule={deleteSchedule}
-                  initialSubTab={
-                    activeTab === 'schedule' ? 'schedules' :
-                    activeTab === 'assignments' ? 'grading_assignments' :
-                    activeTab === 'early_warning' ? 'early_warning' : 'overview'
-                  }
-                  onNavigateToAttendance={() => handleNavigateTab('attendance')}
-                  currentUser={user}
-                />
-              )}
-
-              {/* Student Classroom Assignments View */}
-              {!isStaff && activeTab === 'assignments' && (
-                <StudentAssignmentView
-                  assignments={assignments}
-                  submissions={submissions}
-                  currentUser={user}
-                  onSubmitAssignment={submitAssignment}
-                />
-              )}
-
-              {/* Class Schedule & Teaching Calendar */}
-              {activeTab === 'schedule' && (
-                <ScheduleCalendar
-                  currentUser={user}
-                  schedules={schedules}
-                  onCreateSchedule={createSchedule}
-                  onUpdateSchedule={updateSchedule}
-                  onDeleteSchedule={deleteSchedule}
-                  onNavigateToAttendance={() => handleNavigateTab('attendance')}
-                />
-              )}
-
-              {activeTab === 'attendance' && (
-                isStaff ? (
-                  <AttendanceManager
-                    sessions={attendanceSessions}
-                    studentAccounts={studentAccounts}
-                    makeupReports={makeupReports}
-                    currentUser={user}
-                    onCreateSession={createAttendanceSession}
-                    onRotateQR={rotateAttendanceQR}
-                    onUpdateSessionSecurity={updateAttendanceSessionSecurity}
-                    onToggleSessionOpen={toggleAttendanceSessionOpen}
-                    onUpdateStatus={updateAttendanceStatus}
-                    onMarkAllPresent={markAllAttendancePresent}
-                    onSaveSession={saveAttendanceSession}
-                    onDeleteSession={deleteAttendanceSession}
-                    onClearMakeupReport={clearAttendanceMakeupReport}
-                  />
-                ) : (
-                  <StudentAttendanceDashboard
-                    currentUser={user}
-                    sessions={attendanceSessions}
-                    onOpenQRScanner={() => setShowCameraScanner(true)}
-                    onOpenPinModal={() => setShowCheckInModal(true)}
-                  />
-                )
-              )}
-
-              {activeTab === 'quizzes' && (
-                <QuizCatalog
-                  quizzes={allQuizzes}
-                  currentUser={user}
-                  onStartQuiz={handleStartQuiz}
-                  onDeleteCustomQuiz={deleteCustomQuiz}
-                />
-              )}
-
-              {activeTab === 'flashcards' && (
-                <FlashcardDeck
-                  quizzes={allQuizzes}
-                  currentUser={user}
-                />
-              )}
-
-              {activeTab === 'analytics' && (
-                <Dashboard
-                  stats={stats}
-                  onResetProgress={resetAllProgress}
-                />
-              )}
-
-              {activeTab === 'creator' && isStaff && (
-                <QuizCreator
-                  onAddQuiz={addCustomQuiz}
-                  onSuccessNavigate={() => handleNavigateTab('admin')}
-                />
-              )}
-
-              {activeTab === 'bookmarks' && (
-                <BookmarkedQuestions
-                  allQuizzes={allQuizzes}
-                  bookmarkedQuestionIds={stats.bookmarkedQuestionIds}
-                  onToggleBookmark={toggleBookmark}
-                />
-              )}
-            </>
-          )}
-          </Suspense>
-        </div>
-      </main>
+          {renderContentRouter()}
+        </main>
+      )}
 
       {/* Mobile Bottom Navigation — 5-Tab model for both Student & Teacher */}
       {!activeQuiz && (

@@ -9,6 +9,7 @@ import { soundFx } from '../../utils/audio';
 
 export type ActiveTab =
   | 'dashboard'
+  | 'courses'
   | 'learning_path'
   | 'quizzes'
   | 'practice_skill'
@@ -16,6 +17,11 @@ export type ActiveTab =
   | 'assignments'
   | 'attendance'
   | 'schedule'
+  | 'certificates'
+  | 'community'
+  | 'library'
+  | 'notifications'
+  | 'profile'
   | 'flashcards'
   | 'early_warning'
   | 'analytics'

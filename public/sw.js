@@ -1,19 +1,21 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v5-live)
-// Nâng cấp: Network-First cho Navigation (luôn tải code mới nhất) + Offline Fallback + Purge V4 Cache
-const CACHE_NAME = 'ph-eduquest-v5-live';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v6-2026-production)
+// Nâng cấp: Network-First cho toàn bộ HTML, JS, CSS (luôn tải code mới nhất từ Vercel) + Purge V5 Cache
+const CACHE_NAME = 'ph-eduquest-v6-2026-production';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
   '/logo.png',
+  '/logo-icon.png',
   '/icon-192.png',
   '/icon.png',
   '/apple-touch-icon.png'
 ];
 
-// ── INSTALL ──
+// ── INSTALL: Kích hoạt ngay lập tức không chờ phiên cũ kết thúc ──
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS).catch((err) => {
@@ -21,19 +23,19 @@ self.addEventListener('install', (event) => {
       });
     })
   );
-  self.skipWaiting();
 });
 
-// ── ACTIVATE: Xóa sạch toàn bộ cache cũ ──
+// ── ACTIVATE: Xóa sạch toàn bộ cache cũ (bao gồm v5-live) ──
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
+    }).then(() => {
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
 // ── FETCH STRATEGY ──
@@ -55,43 +57,28 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation / HTML: Network-First (Luôn lấy mã nguồn mới nhất từ Vercel, offline mới fallback về cache)
-  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match('/index.html');
-        })
-    );
-    return;
-  }
-
-  // 2. Static Assets (JS, CSS có hash, hình ảnh): Stale-While-Revalidate
+  // 1. Navigation / HTML / JS / CSS: Network-First (Luôn lấy mã nguồn mới nhất từ Vercel)
+  // Chỉ khi offline không có mạng mới fallback về cache
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+            return caches.match('/index.html');
           }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+          return new Response('Network error and no cache available', { status: 503 });
+        });
+      })
   );
 });
 
@@ -113,68 +100,32 @@ self.addEventListener('push', (event) => {
 
   const title = payload.title || 'PH Digital Education';
   const options = {
-    body: payload.body || 'Bạn có thông báo mới từ Trung tâm.',
+    body: payload.body || 'Bạn có thông báo mới từ hệ thống học tập.',
     icon: payload.icon || '/icon-192.png',
     badge: payload.badge || '/logo.png',
-    image: payload.image || undefined,
-    tag: payload.tag || `ph-notif-${Date.now()}`,
-    renotify: true,
-    requireInteraction: payload.requireInteraction || false,
-    vibrate: [200, 100, 200],
     data: {
-      url: payload.url || '/',
-      notificationId: payload.notificationId || null,
-      type: payload.type || 'system'
-    },
-    actions: payload.actions || [
-      { action: 'open', title: '📖 Xem chi tiết' },
-      { action: 'dismiss', title: '✕ Bỏ qua' }
-    ]
+      url: payload.url || '/'
+    }
   };
 
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// ── WEB PUSH: Xử lý khi người dùng click vào thông báo ──
+// ── NOTIFICATION CLICK: Mở trang tương ứng ──
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
-  const action = event.action;
-  const data = event.notification.data || {};
-
-  if (action === 'dismiss') return;
-
-  // Mở app hoặc focus nếu đã mở
-  const targetUrl = data.url || '/';
+  const targetUrl = event.notification.data?.url || '/';
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Nếu đã có tab mở → focus và navigate
-      for (const client of windowClients) {
-        if (client.url.includes(self.registration.scope)) {
-          client.focus();
-          client.postMessage({
-            type: 'NOTIFICATION_CLICKED',
-            notificationId: data.notificationId,
-            url: targetUrl
-          });
-          return;
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(targetUrl) && 'focus' in client) {
+          return client.focus();
         }
       }
-      // Nếu chưa có tab → mở mới
-      return self.clients.openWindow(targetUrl);
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
-});
-
-// ── WEB PUSH: Xử lý khi người dùng đóng thông báo (không click) ──
-self.addEventListener('notificationclose', (event) => {
-  const data = event.notification.data || {};
-  // Gửi analytics nếu cần
-  if (data.notificationId) {
-    // Có thể gọi API đánh dấu dismissed nếu cần tracking
-    console.log('[SW] Notification dismissed:', data.notificationId);
-  }
 });
