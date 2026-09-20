@@ -4,11 +4,12 @@ import {
   Menu, ChevronDown, User, LogOut, Key
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
+import { UserRole } from '../../types/auth';
 
 export interface TopbarProps {
   user?: {
     name?: string;
-    role?: 'student' | 'teacher' | 'giaovu' | 'admin';
+    role?: UserRole;
     studentCode?: string;
     teacherCode?: string;
     avatar?: string;
@@ -37,8 +38,18 @@ export const Topbar: React.FC<TopbarProps> = ({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const isAdmin = user?.role === 'admin';
-  const isStudent = user?.role === 'student';
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isSuperAdmin = user?.role === 'super_admin';
+  const isTeacher = user?.role === 'teacher';
+  const isGiaoVu = user?.role === 'giaovu' || user?.role === 'academic_staff';
+  const isStudent = user?.role === 'student' || (!isAdmin && !isTeacher && !isGiaoVu);
+
+  const getSearchPlaceholder = (): string => {
+    if (isAdmin) return 'Tìm người dùng, khóa học, lớp học... (Ctrl + K)';
+    if (isTeacher) return 'Tìm lớp học, học viên, bài giảng... (Ctrl + K)';
+    if (isGiaoVu) return 'Tìm lớp, học viên, lịch học... (Ctrl + K)';
+    return 'Tìm kiếm khóa học, bài tập, chứng chỉ... (⌘K)';
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,11 +61,13 @@ export const Topbar: React.FC<TopbarProps> = ({
   const displayName = user?.name || (isAdmin ? 'Nguyễn Đình Huy' : 'Nguyễn Văn A');
   const displaySubtitle = isStudent
     ? `Học viên • ${user?.studentCode || 'THGZ01'}`
-    : isAdmin
+    : isSuperAdmin
     ? 'Super Admin'
-    : user?.role === 'teacher'
+    : isAdmin
+    ? 'Quản trị viên'
+    : isTeacher
     ? `Giảng viên • ${user?.teacherCode || 'GV01'}`
-    : 'Giáo vụ học vụ';
+    : 'Giáo vụ đào tạo';
 
   return (
     <header style={{
@@ -120,7 +133,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={isAdmin ? "Tìm kiếm học viên, khóa học, lớp học, tài liệu... Ctrl + K" : "Tìm khóa học, bài học, tài liệu, giảng viên... ⌘K"}
+          placeholder={getSearchPlaceholder()}
           aria-label="Tìm kiếm nội dung"
           style={{
             width: '100%',

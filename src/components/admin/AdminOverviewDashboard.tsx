@@ -7,21 +7,32 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
+import { UserProfile } from '../../types/auth';
+import { hasPermission } from '../../types/rbac';
+
 export interface AdminOverviewDashboardProps {
   onNavigateSubTab?: (subTab: any) => void;
   onOpenDataCenter?: () => void;
   onExportExcel?: () => void;
   onOpenFileSplitter?: () => void;
+  onOpenPermissions?: () => void;
+  currentUser?: UserProfile | null;
 }
 
 export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
   onNavigateSubTab,
   onOpenDataCenter,
   onExportExcel,
-  onOpenFileSplitter
+  onOpenFileSplitter,
+  onOpenPermissions,
+  currentUser
 }) => {
   const [approvalTab, setApprovalTab] = useState<'courses' | 'teachers' | 'content' | 'certs'>('courses');
   const [approvedIds, setApprovedIds] = useState<Record<string, 'approved' | 'rejected'>>({});
+
+  const canReadFinance = hasPermission(currentUser, 'finance.read');
+  const canReadSystemHealth = hasPermission(currentUser, 'system.health.read');
+  const canExportReports = hasPermission(currentUser, 'reports.export');
 
   const handleApprove = (id: string) => {
     soundFx.playClick();
@@ -41,17 +52,19 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
       width: '100%',
       fontFamily: 'Inter, system-ui, sans-serif'
     }}>
-      {/* ── 1. WELCOME HEADER (Design Source of Truth) ── */}
+      {/* ── 1. ROW 1 — PAGE HEADER (Strict Spec) ── */}
       <div style={{
         background: '#FFFFFF',
         borderRadius: '16px',
         border: '1px solid #E2E8F0',
-        padding: '22px 28px',
+        padding: '20px 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '16px',
+        minHeight: '72px',
+        boxSizing: 'border-box',
         boxShadow: '0 2px 6px rgba(15, 23, 42, 0.03)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -69,19 +82,18 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
           </div>
           <div>
             <h1 style={{
-              fontSize: '22px',
+              fontSize: '20px',
               fontWeight: 800,
               color: '#0B2545',
-              margin: '0 0 4px',
+              margin: '0 0 3px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span>Xin chào, Nguyễn Đình Huy!</span>
-              <span role="img" aria-label="wave">👋</span>
+              <span>Tổng quan hệ thống</span>
             </h1>
             <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>
-              Chào mừng bạn trở lại hệ thống quản trị Tin Học Gen Z. Hôm nay là Thứ Hai, 24 tháng 6, 2025.
+              Chào mừng trở lại, {currentUser?.name || 'Nguyễn Đình Huy'}. Đây là tình hình vận hành hôm nay.
             </p>
           </div>
         </div>
@@ -109,7 +121,29 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
             </button>
           )}
 
-          {onExportExcel && (
+          {onOpenPermissions && (
+            <button
+              onClick={() => { soundFx.playClick(); onOpenPermissions(); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 12px',
+                borderRadius: '8px',
+                border: '1px solid #E2E8F0',
+                background: '#FFFFFF',
+                color: '#0057B8',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <Shield size={14} />
+              <span>Phân Quyền RBAC</span>
+            </button>
+          )}
+
+          {canExportReports && onExportExcel && (
             <button
               onClick={() => { soundFx.playClick(); onExportExcel(); }}
               style={{
@@ -127,7 +161,7 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
               }}
             >
               <FileSpreadsheet size={14} />
-              <span>Xuất Bảng Điểm</span>
+              <span>Xuất Báo Cáo</span>
             </button>
           )}
 
@@ -279,26 +313,28 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
           <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 600 }}>↑ 18%</div>
         </div>
 
-        {/* KPI 6: Doanh thu */}
-        <div style={{
-          background: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E2E8F0',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          boxShadow: '0 2px 4px rgba(15, 23, 42, 0.02)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ECFDF5', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px' }}>
-              $
+        {/* KPI 6: Doanh thu (Chỉ hiển thị khi có quyền finance.read) */}
+        {canReadFinance && (
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '14px',
+            border: '1px solid #E2E8F0',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            boxShadow: '0 2px 4px rgba(15, 23, 42, 0.02)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ECFDF5', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px' }}>
+                $
+              </div>
             </div>
+            <div style={{ fontSize: '11.5px', color: '#64748B', marginBottom: '2px' }}>Doanh thu</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#0B2545', marginBottom: '4px' }}>1.24 Tỷ</div>
+            <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 600 }}>↑ 22%</div>
           </div>
-          <div style={{ fontSize: '11.5px', color: '#64748B', marginBottom: '2px' }}>Doanh thu</div>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0B2545', marginBottom: '4px' }}>1.24 Tỷ</div>
-          <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 600 }}>↑ 22%</div>
-        </div>
+        )}
 
         {/* KPI 7: Chứng chỉ */}
         <div style={{
@@ -446,80 +482,82 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
           </div>
         </div>
 
-        {/* Chart 2: Doanh thu theo tháng */}
-        <div style={{
-          background: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #E2E8F0',
-          padding: '20px',
-          boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)',
-          position: 'relative'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#0B2545' }}>
-              Doanh thu theo tháng
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', padding: '3px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-              <span>Năm nay</span>
-              <ChevronDown size={13} />
-            </div>
-          </div>
-
-          {/* Highlight Tooltip for Month 6 */}
+        {/* Chart 2: Doanh thu theo tháng (Chỉ hiển thị khi có quyền finance.read) */}
+        {canReadFinance && (
           <div style={{
-            position: 'absolute',
-            top: '56px',
-            right: '28px',
             background: '#FFFFFF',
+            borderRadius: '16px',
             border: '1px solid #E2E8F0',
-            borderRadius: '8px',
-            padding: '6px 12px',
-            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
-            fontSize: '11px',
-            lineHeight: 1.3,
-            zIndex: 10
+            padding: '20px',
+            boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)',
+            position: 'relative'
           }}>
-            <div style={{ color: '#64748B' }}>Tháng 6</div>
-            <div style={{ fontWeight: 800, color: '#0057B8' }}>320,000,000 VND</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#0B2545' }}>
+                Doanh thu theo tháng
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', padding: '3px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <span>Năm nay</span>
+                <ChevronDown size={13} />
+              </div>
+            </div>
+
+            {/* Highlight Tooltip for Month 6 */}
+            <div style={{
+              position: 'absolute',
+              top: '56px',
+              right: '28px',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
+              fontSize: '11px',
+              lineHeight: 1.3,
+              zIndex: 10
+            }}>
+              <div style={{ color: '#64748B' }}>Tháng 6</div>
+              <div style={{ fontWeight: 800, color: '#0057B8' }}>320,000,000 VND</div>
+            </div>
+
+            {/* SVG Bar Chart */}
+            <div style={{ width: '100%', height: '180px' }}>
+              <svg width="100%" height="100%" viewBox="0 0 360 180" preserveAspectRatio="none">
+                {/* Grid Lines */}
+                <line x1="45" y1="30" x2="350" y2="30" stroke="#F1F5F9" strokeWidth="1" />
+                <line x1="45" y1="70" x2="350" y2="70" stroke="#F1F5F9" strokeWidth="1" />
+                <line x1="45" y1="110" x2="350" y2="110" stroke="#F1F5F9" strokeWidth="1" />
+                <line x1="45" y1="150" x2="350" y2="150" stroke="#F1F5F9" strokeWidth="1" />
+
+                {/* Y Axis */}
+                <text x="5" y="34" fontSize="9" fill="#94A3B8">400M</text>
+                <text x="5" y="74" fontSize="9" fill="#94A3B8">300M</text>
+                <text x="5" y="114" fontSize="9" fill="#94A3B8">200M</text>
+                <text x="5" y="154" fontSize="9" fill="#94A3B8">100M</text>
+
+                {/* Bars */}
+                <rect x="65" y="115" width="28" height="35" rx="4" fill="#3B82F6" />
+                <text x="73" y="166" fontSize="10" fill="#94A3B8">T1</text>
+
+                <rect x="115" y="100" width="28" height="50" rx="4" fill="#3B82F6" />
+                <text x="123" y="166" fontSize="10" fill="#94A3B8">T2</text>
+
+                <rect x="165" y="85" width="28" height="65" rx="4" fill="#3B82F6" />
+                <text x="173" y="166" fontSize="10" fill="#94A3B8">T3</text>
+
+                <rect x="215" y="70" width="28" height="80" rx="4" fill="#3B82F6" />
+                <text x="223" y="166" fontSize="10" fill="#94A3B8">T4</text>
+
+                <rect x="265" y="55" width="28" height="95" rx="4" fill="#3B82F6" />
+                <text x="273" y="166" fontSize="10" fill="#94A3B8">T5</text>
+
+                {/* Month 6 Highlighted Bar */}
+                <rect x="315" y="40" width="28" height="110" rx="4" fill="#0057B8" />
+                <text x="323" y="166" fontSize="10" fill="#0057B8" fontWeight="700">T6</text>
+              </svg>
+            </div>
           </div>
-
-          {/* SVG Bar Chart */}
-          <div style={{ width: '100%', height: '180px' }}>
-            <svg width="100%" height="100%" viewBox="0 0 360 180" preserveAspectRatio="none">
-              {/* Grid Lines */}
-              <line x1="45" y1="30" x2="350" y2="30" stroke="#F1F5F9" strokeWidth="1" />
-              <line x1="45" y1="70" x2="350" y2="70" stroke="#F1F5F9" strokeWidth="1" />
-              <line x1="45" y1="110" x2="350" y2="110" stroke="#F1F5F9" strokeWidth="1" />
-              <line x1="45" y1="150" x2="350" y2="150" stroke="#F1F5F9" strokeWidth="1" />
-
-              {/* Y Axis */}
-              <text x="5" y="34" fontSize="9" fill="#94A3B8">400M</text>
-              <text x="5" y="74" fontSize="9" fill="#94A3B8">300M</text>
-              <text x="5" y="114" fontSize="9" fill="#94A3B8">200M</text>
-              <text x="5" y="154" fontSize="9" fill="#94A3B8">100M</text>
-
-              {/* Bars */}
-              <rect x="65" y="115" width="28" height="35" rx="4" fill="#3B82F6" />
-              <text x="73" y="166" fontSize="10" fill="#94A3B8">T1</text>
-
-              <rect x="115" y="100" width="28" height="50" rx="4" fill="#3B82F6" />
-              <text x="123" y="166" fontSize="10" fill="#94A3B8">T2</text>
-
-              <rect x="165" y="85" width="28" height="65" rx="4" fill="#3B82F6" />
-              <text x="173" y="166" fontSize="10" fill="#94A3B8">T3</text>
-
-              <rect x="215" y="70" width="28" height="80" rx="4" fill="#3B82F6" />
-              <text x="223" y="166" fontSize="10" fill="#94A3B8">T4</text>
-
-              <rect x="265" y="55" width="28" height="95" rx="4" fill="#3B82F6" />
-              <text x="273" y="166" fontSize="10" fill="#94A3B8">T5</text>
-
-              {/* Month 6 Highlighted Bar */}
-              <rect x="315" y="40" width="28" height="110" rx="4" fill="#0057B8" />
-              <text x="323" y="166" fontSize="10" fill="#0057B8" fontWeight="700">T6</text>
-            </svg>
-          </div>
-        </div>
+        )}
 
         {/* Chart 3: Phân bổ khóa học */}
         <div style={{
@@ -794,78 +832,80 @@ export const AdminOverviewDashboard: React.FC<AdminOverviewDashboardProps> = ({
           </div>
         </div>
 
-        {/* Widget 4: Sức khỏe hệ thống */}
-        <div style={{
-          background: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #E2E8F0',
-          padding: '20px',
-          boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: '#0B2545' }}>Sức khỏe hệ thống</div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '3px 8px',
-              borderRadius: '6px',
-              background: '#ECFDF5',
-              color: '#10B981',
-              fontSize: '11px',
-              fontWeight: 700
-            }}>
-              <CheckCircle2 size={12} />
-              <span>Hoạt động ổn định</span>
+        {/* Widget 4: Sức khỏe hệ thống (Chỉ hiển thị khi có quyền system.health.read) */}
+        {canReadSystemHealth && (
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            border: '1px solid #E2E8F0',
+            padding: '20px',
+            boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#0B2545' }}>Sức khỏe hệ thống</div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                background: '#ECFDF5',
+                color: '#10B981',
+                fontSize: '11px',
+                fontWeight: 700
+              }}>
+                <CheckCircle2 size={12} />
+                <span>Hoạt động ổn định</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+                  <span>Website LMS</span>
+                </span>
+                <strong style={{ color: '#0B2545' }}>99.9%</strong>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+                  <span>Cơ sở dữ liệu Supabase</span>
+                </span>
+                <strong style={{ color: '#0B2545' }}>99.9%</strong>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+                  <span>AI Service Copilot</span>
+                </span>
+                <strong style={{ color: '#0B2545' }}>99.8%</strong>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+                  <span>Cloud Storage</span>
+                </span>
+                <strong style={{ color: '#0B2545' }}>99.9%</strong>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+                  <span>Email Service</span>
+                </span>
+                <strong style={{ color: '#0B2545' }}>99.7%</strong>
+              </div>
+            </div>
+
+            <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '12px', textAlign: 'right' }}>
+              Cập nhật: 24/06/2025 10:30
             </div>
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                <span>Website LMS</span>
-              </span>
-              <strong style={{ color: '#0B2545' }}>99.9%</strong>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                <span>Cơ sở dữ liệu Supabase</span>
-              </span>
-              <strong style={{ color: '#0B2545' }}>99.9%</strong>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                <span>AI Service Copilot</span>
-              </span>
-              <strong style={{ color: '#0B2545' }}>99.8%</strong>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                <span>Cloud Storage</span>
-              </span>
-              <strong style={{ color: '#0B2545' }}>99.9%</strong>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                <span>Email Service</span>
-              </span>
-              <strong style={{ color: '#0B2545' }}>99.7%</strong>
-            </div>
-          </div>
-
-          <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '12px', textAlign: 'right' }}>
-            Cập nhật: 24/06/2025 10:30
-          </div>
-        </div>
+        )}
       </div>
 
       {/* ── 5. BOTTOM SECTION (2 Tables) ── */}

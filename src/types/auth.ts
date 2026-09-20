@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher' | 'academic_staff' | 'admin' | 'super_admin';
+export type UserRole = 'student' | 'teacher' | 'academic_staff' | 'giaovu' | 'admin' | 'super_admin';
 
 export type CurriculumTrack =
   | 'office-fast-3in1'
@@ -89,6 +89,7 @@ export interface UserProfile {
   enrolledTracks?: CurriculumTrack[];
   assignedTracks?: CurriculumTrack[];
   mustChangePassword?: boolean;
+  permissions?: (import('./rbac').UserPermission | string)[];
   createdAt: string;
 }
 

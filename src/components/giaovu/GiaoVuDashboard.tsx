@@ -19,9 +19,15 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { soundFx } from '../../utils/audio';
+import { GiaoVuClassManager } from './GiaoVuClassManager';
+import { GiaoVuScheduler } from './GiaoVuScheduler';
+import { GiaoVuEnrollmentManager } from './GiaoVuEnrollmentManager';
+import { GiaoVuStudentCare } from './GiaoVuStudentCare';
 
-interface GiaoVuDashboardProps {
+export interface GiaoVuDashboardProps {
   currentUser: UserProfile;
+  activeSubTab?: string;
+  onNavigateTab?: (tab: string) => void;
   onOpenScheduleCalendar?: () => void;
   onOpenAttendance?: () => void;
   onOpenAI?: () => void;
@@ -47,10 +53,33 @@ interface SupportTicket {
 
 export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
   currentUser,
-  onOpenScheduleCalendar,
+  activeSubTab,
+  onNavigateTab,
+  onOpenScheduleCalendar: _onOpenScheduleCalendar,
   onOpenAttendance: _onOpenAttendance,
   onOpenAI: _onOpenAI
 }) => {
+  const [internalView, setInternalView] = useState<'dashboard' | 'classes' | 'schedules' | 'enrollments' | 'student_care'>(() => {
+    if (activeSubTab === 'classes') return 'classes';
+    if (activeSubTab === 'schedules') return 'schedules';
+    if (activeSubTab === 'enrollments') return 'enrollments';
+    if (activeSubTab === 'student_care') return 'student_care';
+    return 'dashboard';
+  });
+
+  React.useEffect(() => {
+    if (activeSubTab === 'classes') setInternalView('classes');
+    else if (activeSubTab === 'schedules') setInternalView('schedules');
+    else if (activeSubTab === 'enrollments') setInternalView('enrollments');
+    else if (activeSubTab === 'student_care') setInternalView('student_care');
+    else if (activeSubTab === 'dashboard') setInternalView('dashboard');
+  }, [activeSubTab]);
+
+  const handleBackToDashboard = () => {
+    setInternalView('dashboard');
+    if (onNavigateTab) onNavigateTab('dashboard');
+  };
+
   const [registrations, setRegistrations] = useState<RegistrationOrder[]>([
     { id: 'reg-1', studentName: 'Nguyễn Hoàng Nam', courseTitle: 'Lập trình Python cơ bản', registrationDate: '14/05/2026', status: 'pending', amountVnd: 1500000 },
     { id: 'reg-2', studentName: 'Trần Thị Bảo Ngọc', courseTitle: 'Thiết kế Web với React', registrationDate: '14/05/2026', status: 'pending', amountVnd: 2500000 },
@@ -94,6 +123,22 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
     }, 600);
   };
 
+  if (internalView === 'classes') {
+    return <GiaoVuClassManager currentUser={currentUser} onBackToDashboard={handleBackToDashboard} />;
+  }
+
+  if (internalView === 'schedules') {
+    return <GiaoVuScheduler currentUser={currentUser} onBackToDashboard={handleBackToDashboard} />;
+  }
+
+  if (internalView === 'enrollments') {
+    return <GiaoVuEnrollmentManager currentUser={currentUser} onBackToDashboard={handleBackToDashboard} />;
+  }
+
+  if (internalView === 'student_care') {
+    return <GiaoVuStudentCare currentUser={currentUser} onBackToDashboard={handleBackToDashboard} />;
+  }
+
   return (
     <div style={{ background: '#F8FAFC', minHeight: '100vh', padding: '24px' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -118,7 +163,10 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
         {/* ROW 1: 5 THẺ THỐNG KÊ GIÁO VỤ (Theo Đặc tả Ảnh 05) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
           {/* Card 1: Lớp học đang mở */}
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div
+            onClick={() => { setInternalView('classes'); soundFx.playClick(); }}
+            style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Lớp học đang mở</span>
               <span style={{ background: '#EFF6FF', color: '#0057B8', padding: '6px', borderRadius: '8px' }}><BookOpen size={18} /></span>
@@ -142,7 +190,10 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
           </div>
 
           {/* Card 3: Lịch hôm nay */}
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div
+            onClick={() => { setInternalView('schedules'); soundFx.playClick(); }}
+            style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Lịch hôm nay</span>
               <span style={{ background: '#EFF6FF', color: '#0057B8', padding: '6px', borderRadius: '8px' }}><Calendar size={18} /></span>
@@ -154,7 +205,10 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
           </div>
 
           {/* Card 4: Đơn đăng ký chờ duyệt */}
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div
+            onClick={() => { setInternalView('enrollments'); soundFx.playClick(); }}
+            style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Đơn đăng ký chờ duyệt</span>
               <span style={{ background: '#FFFBEB', color: '#D97706', padding: '6px', borderRadius: '8px' }}><FileText size={18} /></span>
@@ -186,11 +240,12 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
               <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0B2545', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Clock size={18} color="#0057B8" /> Lịch học hôm nay
               </h2>
-              {onOpenScheduleCalendar && (
-                <button onClick={onOpenScheduleCalendar} style={{ background: 'none', border: 'none', color: '#0057B8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                  Xem tất cả →
-                </button>
-              )}
+              <button
+                onClick={() => { setInternalView('schedules'); soundFx.playClick(); }}
+                style={{ background: 'none', border: 'none', color: '#0057B8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Xem tất cả →
+              </button>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -249,6 +304,12 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
               <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0B2545', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CheckCircle2 size={18} color="#D97706" /> Đơn đăng ký chờ duyệt ({registrations.filter(r => r.status === 'pending').length})
               </h2>
+              <button
+                onClick={() => { setInternalView('enrollments'); soundFx.playClick(); }}
+                style={{ background: 'none', border: 'none', color: '#0057B8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Xem tất cả →
+              </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -320,9 +381,17 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
 
           {/* Khối 2: Yêu cầu hỗ trợ mới */}
           <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0B2545', margin: 0 }}>
-              Yêu cầu hỗ trợ mới ({tickets.length})
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0B2545', margin: 0 }}>
+                Yêu cầu hỗ trợ mới ({tickets.length})
+              </h3>
+              <button
+                onClick={() => { setInternalView('student_care'); soundFx.playClick(); }}
+                style={{ background: 'none', border: 'none', color: '#0057B8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Xem tất cả →
+              </button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {tickets.map(t => (
                 <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>

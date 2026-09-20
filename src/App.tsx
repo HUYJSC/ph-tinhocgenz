@@ -6,7 +6,6 @@ import { useAttendanceStorage } from './hooks/useAttendanceStorage';
 import { useScheduleStorage } from './hooks/useScheduleStorage';
 import { type ActiveTab } from './components/layout/Sidebar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
-import { TeacherAcademicHeader } from './components/layout/TeacherAcademicHeader';
 import { StudentCheckInModal } from './components/attendance/StudentCheckInModal';
 import { CertificateService } from './services/certificateService';
 import { AnalyticsService } from './services/analyticsService';
@@ -15,7 +14,6 @@ import type { DigitalCertificate, DiagnosticResult } from './types/edtech';
 import type { Quiz, QuizAttempt } from './types/quiz';
 import type { QuizMode } from './hooks/useQuizEngine';
 import type { CurriculumTrack } from './types/auth';
-import { LmsPortalSwitcher } from './components/layout/LmsPortalSwitcher';
 import { AppShell } from './components/layout/AppShell';
 import { updateTitleByRoute } from './utils/documentTitle';
 
@@ -76,12 +74,21 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
     }
     return { route: 'admin', param: sub };
   }
-  if (p.startsWith('/giaovu') || h.includes('giaovu')) return { route: 'giaovu' };
+  if (p.startsWith('/giaovien') || h.includes('giaovien') || p.includes('/teacher') || h.includes('teacher')) {
+    let sub = '';
+    if (p.startsWith('/giaovien/')) sub = p.replace(/^\/giaovien\/?/, '').split('/')[0];
+    else if (p.startsWith('/teacher/')) sub = p.replace(/^\/teacher\/?/, '').split('/')[0];
+    return { route: 'teacher', param: sub };
+  }
+  if (p.startsWith('/giaovu') || h.includes('giaovu') || p.includes('/academic') || h.includes('academic')) {
+    let sub = '';
+    if (p.startsWith('/giaovu/')) sub = p.replace(/^\/giaovu\/?/, '').split('/')[0];
+    else if (p.startsWith('/academic/')) sub = p.replace(/^\/academic\/?/, '').split('/')[0];
+    return { route: 'giaovu', param: sub };
+  }
   if (p.startsWith('/courses') || h.includes('courses')) return { route: 'courses' };
   if (p.startsWith('/attendance') || h.includes('attendance')) return { route: 'attendance' };
   if (p.startsWith('/schedule') || h.includes('schedule')) return { route: 'schedule' };
-  if (p.includes('/teacher') || h.includes('teacher')) return { route: 'teacher' };
-  if (p.includes('/academic') || h.includes('academic')) return { route: 'academic' };
   if (p.includes('/app') || p.includes('/student') || h.includes('app') || h.includes('student')) return { route: 'student' };
   if (p.includes('/verify') || h.includes('verify')) {
     const parts = p.split('/verify/');
@@ -92,7 +99,7 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
 
 const isAdminPath = () => {
   const { route } = getAppRoute();
-  return route === 'admin' || route === 'teacher' || route === 'academic';
+  return route === 'admin' || route === 'teacher' || route === 'academic' || route === 'giaovu';
 };
 
 export function App() {
@@ -100,7 +107,7 @@ export function App() {
     stats,
     allQuizzes,
     theme,
-    toggleTheme,
+    toggleTheme: _toggleTheme,
     updateStudentName,
     addCustomQuiz,
     updateQuiz,
@@ -137,7 +144,7 @@ export function App() {
     assignments,
     submissions,
     notifications,
-    unreadNotificationCount,
+    unreadNotificationCount: _unreadNotificationCount,
     googleDriveConfig,
     updateGoogleDriveConfig,
     createAssignment,
@@ -331,7 +338,7 @@ export function App() {
 
   const [verifyCert, setVerifyCert] = useState<DigitalCertificate | null>(null);
 
-  const handleSwitchPortal = (portal: 'landing' | 'student' | 'teacher' | 'giaovu' | 'admin' | 'attendance' | 'courses' | 'verify') => {
+  const handleSwitchPortal = (portal: 'landing' | 'student' | 'teacher' | 'giaovu' | 'admin' | 'attendance' | 'courses' | 'verify', subTab?: string) => {
     if (portal === 'landing') {
       setIsSessionActive(false);
       setShowAuthGateway(false);
@@ -349,7 +356,7 @@ export function App() {
       });
       setIsSessionActive(true);
       setShowAuthGateway(false);
-      setActiveTab('dashboard');
+      setActiveTab((subTab as any) || 'dashboard');
       try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
       if (typeof window !== 'undefined') window.history.pushState(null, '', '/student');
     } else if (portal === 'teacher') {
@@ -363,9 +370,9 @@ export function App() {
       });
       setIsSessionActive(true);
       setShowAuthGateway(false);
-      setActiveTab('dashboard');
+      setActiveTab((subTab as any) || 'dashboard');
       try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
-      if (typeof window !== 'undefined') window.history.pushState(null, '', '/teacher');
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/giaovien' + (subTab ? `/${subTab}` : ''));
     } else if (portal === 'giaovu') {
       setUser({
         id: 'tch-giaovu',
@@ -377,9 +384,9 @@ export function App() {
       });
       setIsSessionActive(true);
       setShowAuthGateway(false);
-      setActiveTab('dashboard');
+      setActiveTab((subTab as any) || 'dashboard');
       try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
-      if (typeof window !== 'undefined') window.history.pushState(null, '', '/giaovu');
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/giaovu' + (subTab ? `/${subTab}` : ''));
     } else if (portal === 'admin') {
       setUser({
         id: 'tch-admin',
@@ -428,9 +435,9 @@ export function App() {
       const matched = param ? allCerts.find((c: DigitalCertificate) => c.certificateId.toLowerCase() === param.toLowerCase()) : allCerts[0];
       if (matched) setVerifyCert(matched);
     } else if (route === 'giaovu') {
-      handleSwitchPortal('giaovu');
+      handleSwitchPortal('giaovu', param);
     } else if (route === 'teacher') {
-      handleSwitchPortal('teacher');
+      handleSwitchPortal('teacher', param);
     } else if (route === 'student') {
       handleSwitchPortal('student');
     } else if (route === 'attendance') {
@@ -670,7 +677,6 @@ export function App() {
   if (isCurrentlyOnAdmin) {
     return (
       <div style={{ minHeight: '100vh', background: '#0F172A', display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <LmsPortalSwitcher currentRoute="admin" onSelectPortal={handleSwitchPortal} />
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', width: '100%' }}>
           <Suspense fallback={<PageLoadingFallback />}>
             <StandaloneAdminApp
@@ -740,7 +746,6 @@ export function App() {
   if (appRouteInfo.route === 'courses') {
     return (
       <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <LmsPortalSwitcher currentRoute="courses" onSelectPortal={handleSwitchPortal} />
         <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
           <Suspense fallback={<PageLoadingFallback />}>
             <CourseCatalogPage
@@ -843,24 +848,34 @@ export function App() {
         {/* 3. Normal Tab Views */}
         {!activeQuiz && (
           <>
-            {/* Academic Operations Portal (Giáo Vụ - Image 05) */}
-            {(user.role === 'academic_staff' || appRouteInfo.route === 'giaovu') && activeTab === 'dashboard' && (
+            {/* Academic Operations Portal (Giáo Vụ) */}
+            {(user.role === 'academic_staff' || user.role === 'giaovu' || appRouteInfo.route === 'giaovu') &&
+             (activeTab === 'dashboard' || activeTab === 'classes' || activeTab === 'schedules' || activeTab === 'enrollments' || activeTab === 'student_care') && (
               <GiaoVuDashboard
                 currentUser={user}
+                activeSubTab={activeTab}
+                onNavigateTab={(tab) => handleNavigateTab(tab as any)}
                 onOpenScheduleCalendar={() => setActiveTab('schedule')}
                 onOpenAttendance={() => setActiveTab('attendance')}
                 onOpenAI={() => handleOpenAITutor()}
               />
             )}
 
-            {/* Teacher Academic Portal (Modern University Academic Style) */}
-            {isStaff && user.role !== 'academic_staff' && appRouteInfo.route !== 'giaovu' && activeTab === 'dashboard' && (
+            {/* Teacher Academic Portal */}
+            {(user.role === 'teacher' || (isStaff && user.role !== 'academic_staff' && user.role !== 'giaovu' && appRouteInfo.route !== 'giaovu')) &&
+             (activeTab === 'dashboard' || activeTab === 'grading' || activeTab === 'classes' || activeTab === 'attendance') && (
               <TeacherAcademicPortal
                 currentUser={user}
                 studentAccounts={studentAccounts}
                 schedules={schedules}
                 assignments={assignments}
                 submissions={submissions}
+                activeSubTab={activeTab}
+                sessions={attendanceSessions}
+                onRotateQR={rotateAttendanceQR}
+                onUpdateStatus={updateAttendanceStatus}
+                onToggleSessionOpen={toggleAttendanceSessionOpen}
+                onNavigateTab={(tab) => handleNavigateTab(tab as any)}
                 onOpenAttendanceSession={(_sched) => setActiveTab('attendance')}
                 onOpenEarlyWarning={() => setActiveTab('early_warning')}
                 onOpenAssignmentManager={() => setActiveTab('assignments')}
@@ -997,7 +1012,7 @@ export function App() {
               />
             )}
 
-            {activeTab === 'attendance' && (
+            {activeTab === 'attendance' && user.role !== 'teacher' && (
               isStaff ? (
                 <AttendanceManager
                   sessions={attendanceSessions}
@@ -1078,115 +1093,59 @@ export function App() {
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
     <div className={`app-container ${theme}`} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
-      <LmsPortalSwitcher
-        currentRoute={
-          user.role === 'admin' ? 'admin' :
-          user.role === 'academic_staff' ? 'giaovu' :
-          user.role === 'teacher' ? 'teacher' :
-          activeTab === 'attendance' ? 'attendance' : 'student'
-        }
-        onSelectPortal={handleSwitchPortal}
-      />
+      <AppShell
+        user={{
+          name: user.name,
+          role: user.role,
+          studentCode: user.studentCode,
+          teacherCode: user.teacherCode,
+          avatar: undefined
+        }}
+        activeTab={activeTab}
+        onSelectTab={(tabId) => {
+          if (tabId === 'courses') {
+            handleNavigateTab('courses');
+          } else if (tabId === 'profile') {
+            setShowProfileModal(true);
+          } else if (tabId === 'notifications') {
+            setShowNoticeModal(true);
+          } else {
+            handleNavigateTab(tabId as any);
+          }
+        }}
+        onOpenAITutor={() => handleOpenAITutor()}
+        onOpenNotifications={() => setShowNoticeModal(true)}
+        onOpenProfile={() => setShowProfileModal(true)}
+        onOpenChangePassword={() => setShowChangePasswordModal(true)}
+        onLogout={handleLogout}
+        currentPortal={user.role}
+        onSwitchPortal={handleSwitchPortal}
+      >
+        {/* Optional Back to Overview Bar for deep tabs */}
+        {activeTab !== 'dashboard' && !activeQuiz && (
+          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
+            <button
+              onClick={() => handleNavigateTab('dashboard')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#0057B8',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 0'
+              }}
+            >
+              <span>← Quay lại Bảng Điều Khiển</span>
+            </button>
+          </div>
+        )}
 
-      {/* Main Content Area: Student View Wrapped in AppShell (Design Source of Truth) */}
-      {!isStaff ? (
-        <AppShell
-          user={{
-            name: user.name,
-            role: 'student',
-            studentCode: user.studentCode,
-            avatar: undefined
-          }}
-          activeTab={activeTab}
-          onSelectTab={(tabId) => {
-            if (tabId === 'courses') {
-              handleNavigateTab('courses');
-            } else if (tabId === 'profile') {
-              setShowProfileModal(true);
-            } else if (tabId === 'notifications') {
-              setShowNoticeModal(true);
-            } else {
-              handleNavigateTab(tabId as ActiveTab);
-            }
-          }}
-          onOpenAITutor={() => handleOpenAITutor()}
-          onOpenNotifications={() => setShowNoticeModal(true)}
-          onOpenProfile={() => setShowProfileModal(true)}
-          onOpenChangePassword={() => setShowChangePasswordModal(true)}
-          onLogout={handleLogout}
-          currentPortal="student"
-          onSwitchPortal={handleSwitchPortal}
-        >
-          {/* Optional Back to Overview Bar for deep tabs in Student view */}
-          {activeTab !== 'dashboard' && !activeQuiz && (
-            <div style={{ maxWidth: '860px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
-              <button
-                onClick={() => handleNavigateTab('dashboard')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--brand)',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 0'
-                }}
-              >
-                <span>← Quay lại Trang Học Tập</span>
-              </button>
-            </div>
-          )}
-
-          {renderContentRouter()}
-        </AppShell>
-      ) : (
-        <main className="main-content" style={{ padding: 0, flex: 1, width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* Header: Two-Tier Academic Header for Staff */}
-          <TeacherAcademicHeader
-            currentUser={user}
-            activeTab={activeTab}
-            setActiveTab={handleNavigateTab}
-            theme={theme}
-            toggleTheme={toggleTheme}
-            unreadNotificationCount={unreadNotificationCount}
-            onLogout={handleLogout}
-            onOpenNotifications={() => handleNavigateTab('assignments')}
-            onOpenProfileModal={() => setShowProfileModal(true)}
-            onOpenChangePassword={() => setShowChangePasswordModal(true)}
-            onOpenInstallModal={() => setShowInstallModal(true)}
-            onOpenAITutor={() => handleOpenAITutor()}
-            onOpenNotices={() => setShowNoticeModal(true)}
-          />
-
-          {/* Optional Back to Overview Bar for deep tabs in Teacher view */}
-          {activeTab !== 'dashboard' && !activeQuiz && (
-            <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '12px 24px 0' }}>
-              <button
-                onClick={() => handleNavigateTab('dashboard')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--brand)',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 0'
-                }}
-              >
-                <span>← Quay lại Tổng quan giảng dạy</span>
-              </button>
-            </div>
-          )}
-
-          {renderContentRouter()}
-        </main>
-      )}
+        {renderContentRouter()}
+      </AppShell>
 
       {/* Mobile Bottom Navigation — 5-Tab model for both Student & Teacher */}
       {!activeQuiz && (

@@ -27,7 +27,22 @@ export type ActiveTab =
   | 'analytics'
   | 'creator'
   | 'bookmarks'
-  | 'admin';
+  | 'admin'
+  | 'classes'
+  | 'schedules'
+  | 'grading'
+  | 'enrollments'
+  | 'student_care'
+  | 'live'
+  | 'lessons'
+  | 'students'
+  | 'question_bank'
+  | 'exams'
+  | 'teachers'
+  | 'payments'
+  | 'support'
+  | 'rooms'
+  | 'reports';
 
 interface SidebarProps {
   activeTab: ActiveTab;

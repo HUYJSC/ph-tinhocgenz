@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Topbar } from './Topbar';
 import { RoleSidebar } from './RoleSidebar';
+import { UserRole } from '../../types/auth';
 
 export interface AppShellProps {
   children: React.ReactNode;
   user?: {
     name?: string;
-    role?: 'student' | 'teacher' | 'giaovu' | 'admin';
+    role?: UserRole;
     studentCode?: string;
     teacherCode?: string;
     avatar?: string;
@@ -89,6 +90,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isMobileOpen={isMobileSidebarOpen}
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
+          currentUser={user as any}
         />
 
         {/* Scrollable Main Content */}

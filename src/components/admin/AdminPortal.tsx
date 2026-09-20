@@ -13,13 +13,15 @@ import {
   BookOpen, Users, BarChart3, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
-  Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Award
+  Eye, EyeOff, BookOpenCheck, Printer, Calendar, AlertTriangle, Award, Shield
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { LearningResourceHub, LearningHubSubTab } from './LearningResourceHub';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
 import { CertificateManager } from './CertificateManager';
 import { AdminOverviewDashboard } from './AdminOverviewDashboard';
+import { PermissionManagerModal } from './PermissionManagerModal';
+import { UserPermission } from '../../types/rbac';
 
 export type AdminPortalSubTab =
   | 'overview'
@@ -203,6 +205,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   };
 
   const [searchFilter, setSearchFilter] = useState('');
+  const [permissionTargetUser, setPermissionTargetUser] = useState<UserProfile | null>(null);
+
+  const handleSavePermissions = (_userId: string, updatedPermissions: UserPermission[]) => {
+    soundFx.playCorrect();
+    alert(`Đã cập nhật ${updatedPermissions.length} quyền RBAC cho người dùng thành công.`);
+  };
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [examFamilyFilter, setExamFamilyFilter] = useState<'all' | 'word' | 'excel' | 'powerpoint' | 'ai_cntt'>('all');
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
@@ -754,6 +762,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onOpenDataCenter={() => setShowDataCenterModal(true)}
           onExportExcel={exportGradebookExcel}
           onOpenFileSplitter={() => setShowFileSplitterModal(true)} // Tách Đề 3 Môn: Word • Excel • PPT
+          currentUser={currentUser}
+          onOpenPermissions={() => {
+            if (teacherAccounts && teacherAccounts.length > 0) {
+              const firstTeacher = teacherAccounts[0];
+              setPermissionTargetUser({
+                id: firstTeacher.id,
+                name: firstTeacher.name,
+                role: 'teacher',
+                teacherCode: firstTeacher.teacherCode,
+                createdAt: new Date().toISOString(),
+                permissions: []
+              });
+            }
+          }}
         />
       )}
 
@@ -1451,6 +1473,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          onClick={() => {
+                            setPermissionTargetUser({
+                              id: t.id,
+                              name: t.name,
+                              role: 'teacher',
+                              teacherCode: t.teacherCode,
+                              createdAt: new Date().toISOString(),
+                              permissions: []
+                            });
+                          }}
+                          style={{
+                            background: 'rgba(37, 99, 235, 0.08)',
+                            border: '1px solid rgba(37, 99, 235, 0.25)',
+                            color: '#2563eb',
+                            padding: '5px 9px',
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Phân quyền chi tiết RBAC 2.0"
+                        >
+                          <Shield size={13} />
+                          <span>RBAC</span>
+                        </button>
+
                         <button
                           onClick={() => handleOpenEditTeacher(t)}
                           style={{
@@ -3184,6 +3236,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         onClose={() => setShowDataCenterModal(false)}
         currentUser={currentUser}
       />
+
+      {/* Permission Manager Modal (RBAC 2.0) */}
+      {permissionTargetUser && (
+        <PermissionManagerModal
+          isOpen={Boolean(permissionTargetUser)}
+          onClose={() => setPermissionTargetUser(null)}
+          targetUser={permissionTargetUser}
+          currentUser={currentUser}
+          onSavePermissions={handleSavePermissions}
+        />
+      )}
     </div>
   );
 };
