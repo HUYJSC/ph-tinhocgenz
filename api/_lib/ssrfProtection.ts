@@ -94,3 +94,4 @@ export function validateSafeUrlForFetch(urlStr: string, allowedDomains?: string[
     normalizedUrl: parsed.toString()
   };
 }
+

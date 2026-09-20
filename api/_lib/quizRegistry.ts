@@ -9,6 +9,7 @@ export const SERVER_QUIZ_REGISTRY: Record<string, Quiz> = {
         category: 'all',
         difficulty: 'easy',
         timeLimitMinutes: 15,
+        passingScore: 80,
         icon: 'HelpCircle',
         badgeColor: '#0057B8',
         questions: [

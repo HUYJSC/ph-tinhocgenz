@@ -16,6 +16,7 @@ import type { DigitalCertificate, DiagnosticResult } from './types/edtech';
 import type { Quiz, QuizAttempt } from './types/quiz';
 import type { QuizMode } from './hooks/useQuizEngine';
 import type { CurriculumTrack } from './types/auth';
+import { LmsPortalSwitcher } from './components/layout/LmsPortalSwitcher';
 
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -305,15 +306,110 @@ export function App() {
 
   const [verifyCert, setVerifyCert] = useState<DigitalCertificate | null>(null);
 
-  // Initial route handler for /verify, /attendance, /schedule
+  const handleSwitchPortal = (portal: 'landing' | 'student' | 'teacher' | 'giaovu' | 'admin' | 'attendance' | 'courses' | 'verify') => {
+    if (portal === 'landing') {
+      setIsSessionActive(false);
+      setShowAuthGateway(false);
+      try { localStorage.removeItem(SESSION_ACTIVE_KEY); } catch {}
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/');
+      setActiveTab('dashboard');
+    } else if (portal === 'student') {
+      setUser({
+        id: 'std-thgz01',
+        name: 'Học Viên THGZ01',
+        studentCode: 'THGZ01',
+        role: 'student',
+        programTrack: 'office-fast-3in1',
+        createdAt: '2026-09-01T00:00:00.000Z'
+      });
+      setIsSessionActive(true);
+      setShowAuthGateway(false);
+      setActiveTab('dashboard');
+      try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/student');
+    } else if (portal === 'teacher') {
+      setUser({
+        id: 'tch-01',
+        name: 'Cô Hoàng Mai (Giảng Viên)',
+        teacherCode: 'GV01',
+        role: 'teacher',
+        programTrack: 'office-fast-3in1',
+        createdAt: '2026-09-01T00:00:00.000Z'
+      });
+      setIsSessionActive(true);
+      setShowAuthGateway(false);
+      setActiveTab('dashboard');
+      try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/teacher');
+    } else if (portal === 'giaovu') {
+      setUser({
+        id: 'tch-giaovu',
+        name: 'Thầy Đức Nam (Ban Giáo Vụ)',
+        teacherCode: 'GV02',
+        role: 'academic_staff',
+        programTrack: 'office-fast-3in1',
+        createdAt: '2026-09-01T00:00:00.000Z'
+      });
+      setIsSessionActive(true);
+      setShowAuthGateway(false);
+      setActiveTab('dashboard');
+      try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/giaovu');
+    } else if (portal === 'admin') {
+      setUser({
+        id: 'tch-admin',
+        name: 'Thầy Quang Huy (Quản Trị Viên)',
+        teacherCode: 'ADMIN01',
+        role: 'admin',
+        programTrack: 'office-fast-3in1',
+        createdAt: '2026-09-01T00:00:00.000Z'
+      });
+      setIsSessionActive(true);
+      setShowAuthGateway(false);
+      setActiveTab('admin');
+      try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/admin');
+    } else if (portal === 'attendance') {
+      setUser({
+        id: 'std-thgz01',
+        name: 'Học Viên THGZ01',
+        studentCode: 'THGZ01',
+        role: 'student',
+        programTrack: 'office-fast-3in1',
+        createdAt: '2026-09-01T00:00:00.000Z'
+      });
+      setIsSessionActive(true);
+      setShowAuthGateway(false);
+      setActiveTab('attendance');
+      try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/attendance');
+    } else if (portal === 'courses') {
+      if (typeof window !== 'undefined') {
+        window.history.pushState(null, '', '/courses');
+        window.location.href = '/courses';
+      }
+    } else if (portal === 'verify') {
+      if (typeof window !== 'undefined') window.history.pushState(null, '', '/verify');
+      const allCerts = CertificateService.getAllCertificates();
+      setVerifyCert(allCerts[0]);
+    }
+  };
+
+  // Initial route handler for /verify, /attendance, /schedule, /giaovu, /teacher, /student
   useEffect(() => {
     const { route, param } = getAppRoute();
     if (route === 'verify') {
       const allCerts = CertificateService.getAllCertificates();
       const matched = param ? allCerts.find((c: DigitalCertificate) => c.certificateId.toLowerCase() === param.toLowerCase()) : allCerts[0];
       if (matched) setVerifyCert(matched);
+    } else if (route === 'giaovu') {
+      handleSwitchPortal('giaovu');
+    } else if (route === 'teacher') {
+      handleSwitchPortal('teacher');
+    } else if (route === 'student') {
+      handleSwitchPortal('student');
     } else if (route === 'attendance') {
-      setActiveTab('attendance');
+      handleSwitchPortal('attendance');
     } else if (route === 'schedule') {
       setActiveTab('schedule');
     }
@@ -548,65 +644,68 @@ export function App() {
 
   if (isCurrentlyOnAdmin) {
     return (
-      <Suspense fallback={<PageLoadingFallback />}>
-        <StandaloneAdminApp
-          initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : undefined}
-          currentUser={user}
-          isSessionActive={isSessionActive}
-          quizzes={allQuizzes}
-          attempts={stats.history}
-          studentAccounts={studentAccounts}
-          teacherAccounts={teacherAccounts}
-          schedules={schedules}
-          assignments={assignments}
-          submissions={submissions}
-          notifications={notifications}
-          googleDriveConfig={googleDriveConfig}
-          onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
-          onCreateAssignment={createAssignment}
-          onUpdateAssignment={updateAssignment}
-          onDeleteAssignment={deleteAssignment}
-          onToggleOpen={toggleAssignmentOpen}
-          onGradeSubmission={gradeSubmission}
-          onMarkNotificationAsRead={markNotificationAsRead}
-          onAddQuiz={addCustomQuiz}
-          onUpdateQuiz={updateQuiz}
-          onDeleteQuiz={deleteQuiz}
-          onDeleteCustomQuiz={deleteCustomQuiz}
-          onUpdateQuestion={updateQuestion}
-          onDeleteQuestion={deleteQuestion}
-          onNavigateToCreator={() => {
-            setActiveTab('creator');
-          }}
-          onCreateStudentAccount={createStudentAccount}
-          onUpdateStudentAccount={updateStudentAccount}
-          onDeleteStudentAccount={deleteStudentAccount}
-          onCreateTeacherAccount={createTeacherAccount}
-          onUpdateTeacherAccount={updateTeacherAccount}
-          onDeleteTeacherAccount={deleteTeacherAccount}
-          onCreateSchedule={createSchedule}
-          onUpdateSchedule={updateSchedule}
-          onDeleteSchedule={deleteSchedule}
-          onLoginAsAdmin={async (pass, name) => {
-            const res = await loginAsStaffAsync(pass, name, 'all');
-            if (res.success && res.user) {
-              setUser(res.user);
-              setIsSessionActive(true);
-              setActiveTab('admin');
-              try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
-            }
-            return res;
-          }}
-          onResetPassword={resetUserPassword}
-          onLogout={handleLogout}
-          onBackToStudentPortal={() => {
-            if (typeof window !== 'undefined') {
-              window.history.pushState(null, '', '/');
-            }
-            setActiveTab('dashboard');
-          }}
-        />
-      </Suspense>
+      <div style={{ minHeight: '100vh', background: '#0F172A' }}>
+        <LmsPortalSwitcher currentRoute="admin" onSelectPortal={handleSwitchPortal} />
+        <Suspense fallback={<PageLoadingFallback />}>
+          <StandaloneAdminApp
+            initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : undefined}
+            currentUser={user}
+            isSessionActive={isSessionActive}
+            quizzes={allQuizzes}
+            attempts={stats.history}
+            studentAccounts={studentAccounts}
+            teacherAccounts={teacherAccounts}
+            schedules={schedules}
+            assignments={assignments}
+            submissions={submissions}
+            notifications={notifications}
+            googleDriveConfig={googleDriveConfig}
+            onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
+            onCreateAssignment={createAssignment}
+            onUpdateAssignment={updateAssignment}
+            onDeleteAssignment={deleteAssignment}
+            onToggleOpen={toggleAssignmentOpen}
+            onGradeSubmission={gradeSubmission}
+            onMarkNotificationAsRead={markNotificationAsRead}
+            onAddQuiz={addCustomQuiz}
+            onUpdateQuiz={updateQuiz}
+            onDeleteQuiz={deleteQuiz}
+            onDeleteCustomQuiz={deleteCustomQuiz}
+            onUpdateQuestion={updateQuestion}
+            onDeleteQuestion={deleteQuestion}
+            onNavigateToCreator={() => {
+              setActiveTab('creator');
+            }}
+            onCreateStudentAccount={createStudentAccount}
+            onUpdateStudentAccount={updateStudentAccount}
+            onDeleteStudentAccount={deleteStudentAccount}
+            onCreateTeacherAccount={createTeacherAccount}
+            onUpdateTeacherAccount={updateTeacherAccount}
+            onDeleteTeacherAccount={deleteTeacherAccount}
+            onCreateSchedule={createSchedule}
+            onUpdateSchedule={updateSchedule}
+            onDeleteSchedule={deleteSchedule}
+            onLoginAsAdmin={async (pass, name) => {
+              const res = await loginAsStaffAsync(pass, name, 'all');
+              if (res.success && res.user) {
+                setUser(res.user);
+                setIsSessionActive(true);
+                setActiveTab('admin');
+                try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+              }
+              return res;
+            }}
+            onResetPassword={resetUserPassword}
+            onLogout={handleLogout}
+            onBackToStudentPortal={() => {
+              if (typeof window !== 'undefined') {
+                window.history.pushState(null, '', '/');
+              }
+              setActiveTab('dashboard');
+            }}
+          />
+        </Suspense>
+      </div>
     );
   }
 
@@ -614,6 +713,7 @@ export function App() {
   if (appRouteInfo.route === 'courses') {
     return (
       <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+        <LmsPortalSwitcher currentRoute="courses" onSelectPortal={handleSwitchPortal} />
         <Suspense fallback={<PageLoadingFallback />}>
           <CourseCatalogPage
             showHeader={true}
@@ -643,6 +743,7 @@ export function App() {
                   window.location.href = '/courses';
                 }
               }}
+              onNavigateToPortal={handleSwitchPortal}
             />
           </Suspense>
         </div>
@@ -675,6 +776,15 @@ export function App() {
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
     <div className={`app-container ${theme}`}>
+      <LmsPortalSwitcher
+        currentRoute={
+          user.role === 'admin' ? 'admin' :
+          user.role === 'academic_staff' ? 'giaovu' :
+          user.role === 'teacher' ? 'teacher' :
+          activeTab === 'attendance' ? 'attendance' : 'student'
+        }
+        onSelectPortal={handleSwitchPortal}
+      />
       {/* Main Content Area (Zero Heavy Sidebar for both Student & Teacher) */}
       <main className="main-content" style={{ padding: 0 }}>
         {/* Header: Two-Tier Academic Header for Staff / Minimal Flow Header for Students */}
