@@ -142,10 +142,10 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
         {/* Top Navbar */}
         <div style={{
           position: 'fixed',
-          top: 0,
+          top: '38px',
           left: 0,
           right: 0,
-          padding: '16px 24px',
+          padding: '12px 24px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',

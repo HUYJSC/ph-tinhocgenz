@@ -644,67 +644,69 @@ export function App() {
 
   if (isCurrentlyOnAdmin) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0F172A' }}>
+      <div style={{ minHeight: '100vh', background: '#0F172A', display: 'flex', flexDirection: 'column', width: '100%' }}>
         <LmsPortalSwitcher currentRoute="admin" onSelectPortal={handleSwitchPortal} />
-        <Suspense fallback={<PageLoadingFallback />}>
-          <StandaloneAdminApp
-            initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : undefined}
-            currentUser={user}
-            isSessionActive={isSessionActive}
-            quizzes={allQuizzes}
-            attempts={stats.history}
-            studentAccounts={studentAccounts}
-            teacherAccounts={teacherAccounts}
-            schedules={schedules}
-            assignments={assignments}
-            submissions={submissions}
-            notifications={notifications}
-            googleDriveConfig={googleDriveConfig}
-            onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
-            onCreateAssignment={createAssignment}
-            onUpdateAssignment={updateAssignment}
-            onDeleteAssignment={deleteAssignment}
-            onToggleOpen={toggleAssignmentOpen}
-            onGradeSubmission={gradeSubmission}
-            onMarkNotificationAsRead={markNotificationAsRead}
-            onAddQuiz={addCustomQuiz}
-            onUpdateQuiz={updateQuiz}
-            onDeleteQuiz={deleteQuiz}
-            onDeleteCustomQuiz={deleteCustomQuiz}
-            onUpdateQuestion={updateQuestion}
-            onDeleteQuestion={deleteQuestion}
-            onNavigateToCreator={() => {
-              setActiveTab('creator');
-            }}
-            onCreateStudentAccount={createStudentAccount}
-            onUpdateStudentAccount={updateStudentAccount}
-            onDeleteStudentAccount={deleteStudentAccount}
-            onCreateTeacherAccount={createTeacherAccount}
-            onUpdateTeacherAccount={updateTeacherAccount}
-            onDeleteTeacherAccount={deleteTeacherAccount}
-            onCreateSchedule={createSchedule}
-            onUpdateSchedule={updateSchedule}
-            onDeleteSchedule={deleteSchedule}
-            onLoginAsAdmin={async (pass, name) => {
-              const res = await loginAsStaffAsync(pass, name, 'all');
-              if (res.success && res.user) {
-                setUser(res.user);
-                setIsSessionActive(true);
-                setActiveTab('admin');
-                try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
-              }
-              return res;
-            }}
-            onResetPassword={resetUserPassword}
-            onLogout={handleLogout}
-            onBackToStudentPortal={() => {
-              if (typeof window !== 'undefined') {
-                window.history.pushState(null, '', '/');
-              }
-              setActiveTab('dashboard');
-            }}
-          />
-        </Suspense>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', width: '100%' }}>
+          <Suspense fallback={<PageLoadingFallback />}>
+            <StandaloneAdminApp
+              initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : undefined}
+              currentUser={user}
+              isSessionActive={isSessionActive}
+              quizzes={allQuizzes}
+              attempts={stats.history}
+              studentAccounts={studentAccounts}
+              teacherAccounts={teacherAccounts}
+              schedules={schedules}
+              assignments={assignments}
+              submissions={submissions}
+              notifications={notifications}
+              googleDriveConfig={googleDriveConfig}
+              onUpdateGoogleDriveConfig={updateGoogleDriveConfig}
+              onCreateAssignment={createAssignment}
+              onUpdateAssignment={updateAssignment}
+              onDeleteAssignment={deleteAssignment}
+              onToggleOpen={toggleAssignmentOpen}
+              onGradeSubmission={gradeSubmission}
+              onMarkNotificationAsRead={markNotificationAsRead}
+              onAddQuiz={addCustomQuiz}
+              onUpdateQuiz={updateQuiz}
+              onDeleteQuiz={deleteQuiz}
+              onDeleteCustomQuiz={deleteCustomQuiz}
+              onUpdateQuestion={updateQuestion}
+              onDeleteQuestion={deleteQuestion}
+              onNavigateToCreator={() => {
+                setActiveTab('creator');
+              }}
+              onCreateStudentAccount={createStudentAccount}
+              onUpdateStudentAccount={updateStudentAccount}
+              onDeleteStudentAccount={deleteStudentAccount}
+              onCreateTeacherAccount={createTeacherAccount}
+              onUpdateTeacherAccount={updateTeacherAccount}
+              onDeleteTeacherAccount={deleteTeacherAccount}
+              onCreateSchedule={createSchedule}
+              onUpdateSchedule={updateSchedule}
+              onDeleteSchedule={deleteSchedule}
+              onLoginAsAdmin={async (pass, name) => {
+                const res = await loginAsStaffAsync(pass, name, 'all');
+                if (res.success && res.user) {
+                  setUser(res.user);
+                  setIsSessionActive(true);
+                  setActiveTab('admin');
+                  try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
+                }
+                return res;
+              }}
+              onResetPassword={resetUserPassword}
+              onLogout={handleLogout}
+              onBackToStudentPortal={() => {
+                if (typeof window !== 'undefined') {
+                  window.history.pushState(null, '', '/');
+                }
+                setActiveTab('dashboard');
+              }}
+            />
+          </Suspense>
+        </div>
       </div>
     );
   }
@@ -712,16 +714,18 @@ export function App() {
   // 0.1 Public Courses Catalog Route (/courses)
   if (appRouteInfo.route === 'courses') {
     return (
-      <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+      <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', flexDirection: 'column', width: '100%' }}>
         <LmsPortalSwitcher currentRoute="courses" onSelectPortal={handleSwitchPortal} />
-        <Suspense fallback={<PageLoadingFallback />}>
-          <CourseCatalogPage
-            showHeader={true}
-            onCourseSelect={() => {
-              setShowAuthGateway(true);
-            }}
-          />
-        </Suspense>
+        <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+          <Suspense fallback={<PageLoadingFallback />}>
+            <CourseCatalogPage
+              showHeader={true}
+              onCourseSelect={() => {
+                setShowAuthGateway(true);
+              }}
+            />
+          </Suspense>
+        </div>
       </div>
     );
   }
@@ -775,7 +779,7 @@ export function App() {
 
   // 2. LOCKED IN-SESSION APPLICATION (User is locked strictly to their chosen track/role)
   return (
-    <div className={`app-container ${theme}`}>
+    <div className={`app-container ${theme}`} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
       <LmsPortalSwitcher
         currentRoute={
           user.role === 'admin' ? 'admin' :
@@ -786,7 +790,7 @@ export function App() {
         onSelectPortal={handleSwitchPortal}
       />
       {/* Main Content Area (Zero Heavy Sidebar for both Student & Teacher) */}
-      <main className="main-content" style={{ padding: 0 }}>
+      <main className="main-content" style={{ padding: 0, flex: 1, width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Header: Two-Tier Academic Header for Staff / Minimal Flow Header for Students */}
         {isStaff ? (
           <TeacherAcademicHeader

@@ -169,23 +169,25 @@ export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPor
   };
 
   return (
-    <div className="landing-page">
+    <div className="landing-page" style={{ paddingTop: '116px' }}>
       {/* ── GLOBAL MULTI-PORTAL SWITCHER BANNER ── */}
-      <LmsPortalSwitcher
-        currentRoute="landing"
-        onSelectPortal={(p) => {
-          if (p === 'landing') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else if (p === 'courses') {
-            if (onNavigateToCourses) onNavigateToCourses();
-            else window.location.href = '/courses';
-          } else {
-            handlePortalClick(p);
-          }
-        }}
-      />
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1001, width: '100%' }}>
+        <LmsPortalSwitcher
+          currentRoute="landing"
+          onSelectPortal={(p) => {
+            if (p === 'landing') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (p === 'courses') {
+              if (onNavigateToCourses) onNavigateToCourses();
+              else window.location.href = '/courses';
+            } else {
+              handlePortalClick(p);
+            }
+          }}
+        />
+      </div>
 
-      <header className={`landing-header${scrolled ? ' is-scrolled' : ''}`}>
+      <header className={`landing-header${scrolled ? ' is-scrolled' : ''}`} style={{ top: '42px' }}>
         <div className="landing-shell landing-header__inner">
           <button className="brand" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img className="brand__mark" src="/logo-icon.png" alt="" width="40" height="40" />
@@ -229,7 +231,7 @@ export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPor
 
       <main>
         {/* ── HERO SECTION WITH LMS SPECIFICATION SHOWCASE ── */}
-        <section className="landing-hero" style={{ paddingBottom: '32px' }}>
+        <section className="landing-hero" style={{ paddingTop: '36px', paddingBottom: '32px' }}>
           <div className="landing-shell landing-hero__grid">
             <div className="landing-hero__content">
               <span className="eyebrow" style={{ background: 'rgba(0,87,184,0.08)', color: '#0057B8', borderColor: 'rgba(0,87,184,0.2)' }}>
