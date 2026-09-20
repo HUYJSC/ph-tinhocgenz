@@ -5,7 +5,6 @@ import {
   MonitorCheck, ShieldCheck, Sparkles, Target,
   Users, Bot
 } from 'lucide-react';
-import { LmsPortalSwitcher } from '../layout/LmsPortalSwitcher';
 import { LmsMainHeader } from '../layout/LmsMainHeader';
 import { Lms9ModulesGrid } from './Lms9ModulesGrid';
 import './landing.css';
@@ -102,21 +101,6 @@ export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPor
 
   return (
     <div className="landing-page" style={{ margin: 0, padding: 0, background: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-
-      {/* ── 0. GLOBAL MULTI-PORTAL SWITCHER (ROLE-BASED DIRECT ACCESS) ── */}
-      <LmsPortalSwitcher
-        currentRoute="landing"
-        onSelectPortal={(p) => {
-          if (p === 'landing') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else if (p === 'courses') {
-            if (onNavigateToCourses) onNavigateToCourses();
-            else window.location.href = '/courses';
-          } else {
-            handlePortalClick(p);
-          }
-        }}
-      />
 
       {/* ── 1. MAIN HEADER MATCHING IMAGE SPECIFICATION ── */}
       <LmsMainHeader

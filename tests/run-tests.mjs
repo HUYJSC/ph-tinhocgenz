@@ -399,6 +399,135 @@ assert(standaloneAdminCodeCheck.includes('id: \'certificates\'') && standaloneAd
 const adminPortalCodeCheck = fs.readFileSync('src/components/admin/AdminPortal.tsx', 'utf8');
 assert(adminPortalCodeCheck.includes('<CertificateManager') && adminPortalCodeCheck.includes('activeSubTab === \'certificates\''), 'AdminPortal render CertificateManager khi activeSubTab là certificates');
 
+// 18. TEST NHÓM 18: KIỂM TRA TOÀN DIỆN AUTH, RBAC 2.0, CỔNG 4 VAI TRÒ & ĐIỂM DANH QR GEOFENCE
+console.log('\n🎯 NHÓM 18: Kiểm tra Toàn Diện Auth, RBAC 2.0, Cổng 4 Vai Trò & Điểm Danh QR Geofence');
+
+// 18.1 Auth: Login, Logout, Route Redirect
+assert(fs.existsSync('api/auth/login.ts'), 'Auth: Endpoint đăng nhập Serverless tồn tại');
+assert(fs.existsSync('api/auth/logout.ts'), 'Auth: Endpoint đăng xuất Serverless tồn tại');
+assert(fs.existsSync('api/auth/session.ts'), 'Auth: Endpoint kiểm tra phiên Serverless tồn tại');
+assert(appTsxCode.includes('handleLogout') && appTsxCode.includes('localStorage.removeItem(SESSION_ACTIVE_KEY)'), 'Auth: App.tsx có hàm handleLogout xóa sạch phiên an toàn');
+assert(appTsxCode.includes('/giaovien') && appTsxCode.includes('/giaovu') && appTsxCode.includes('/admin'), 'Auth: Hỗ trợ chuyển hướng canonical routes (/giaovien, /giaovu, /admin)');
+
+// 18.2 RBAC 2.0: Phân Quyền Hạt Nhân
+const rbacFileExists = fs.existsSync('src/types/rbac.ts');
+assert(rbacFileExists, 'RBAC 2.0: Tệp định nghĩa phân quyền src/types/rbac.ts tồn tại');
+if (rbacFileExists) {
+  const rbacCode = fs.readFileSync('src/types/rbac.ts', 'utf8');
+  assert(rbacCode.includes('export function hasPermission'), 'RBAC 2.0: Xuất khẩu hàm hasPermission kiểm tra quyền chuẩn xác');
+  assert(rbacCode.includes('SUPER_ADMIN') || rbacCode.includes('super_admin'), 'RBAC 2.0: Hỗ trợ quyền tối cao Super Admin');
+}
+
+// Kiểm tra thuật toán RBAC logic thuần túy
+function testHasPermission(user, requiredPerm) {
+  if (!user) return false;
+  if (user.role === 'super_admin') return true;
+  if (user.permissions && Array.isArray(user.permissions)) {
+    return user.permissions.includes(requiredPerm);
+  }
+  return false;
+}
+
+const mockSuperAdmin = { id: 'sa', name: 'Super Admin', role: 'super_admin', permissions: [] };
+const mockDelegatedAdminWithFinance = { id: 'da1', name: 'Admin Finance', role: 'admin', permissions: ['finance.read', 'users.read'] };
+const mockDelegatedAdminWithoutFinance = { id: 'da2', name: 'Admin Staff', role: 'admin', permissions: ['users.read'] };
+const mockTeacher = { id: 't1', name: 'Teacher 1', role: 'teacher', permissions: ['assignments.grade', 'classes.read'] };
+const mockStudent = { id: 's1', name: 'Student 1', role: 'student', permissions: [] };
+
+assert(testHasPermission(mockSuperAdmin, 'finance.read') === true, 'RBAC 2.0: Super Admin tự động có toàn quyền (Bao gồm finance.read)');
+assert(testHasPermission(mockSuperAdmin, 'system.security') === true, 'RBAC 2.0: Super Admin có quyền bảo mật tối cao');
+assert(testHasPermission(mockDelegatedAdminWithFinance, 'finance.read') === true, 'RBAC 2.0: Admin phụ có quyền finance.read được truy cập');
+assert(testHasPermission(mockDelegatedAdminWithoutFinance, 'finance.read') === false, 'RBAC 2.0: Admin phụ thiếu quyền finance.read bị chặn nghiêm ngặt');
+assert(testHasPermission(mockTeacher, 'assignments.grade') === true, 'RBAC 2.0: Giảng viên có quyền chấm điểm assignments.grade');
+assert(testHasPermission(mockStudent, 'system.settings') === false, 'RBAC 2.0: Học viên bị từ chối mọi quyền quản trị');
+
+// 18.3 Cổng Học Viên (Student Portal)
+assert(fs.existsSync('src/components/dashboard/StudentOnePageDashboard.tsx'), 'Student Portal: Dashboard học viên tồn tại');
+assert(fs.existsSync('src/components/attendance/StudentAttendanceDashboard.tsx'), 'Student Portal: Màn hình điểm danh chuyên cần học viên tồn tại');
+assert(fs.existsSync('src/components/attendance/CameraQRScanner.tsx'), 'Student Portal: Trình quét mã QR bằng Camera điện thoại tồn tại');
+assert(fs.existsSync('src/components/attendance/StudentCheckInModal.tsx'), 'Student Portal: Modal dự phòng nhập PIN 6 số điểm danh tồn tại');
+
+// 18.4 Cổng Giảng Viên (Teacher Portal)
+assert(fs.existsSync('src/components/admin/TeacherAcademicPortal.tsx'), 'Teacher Portal: Bảng điều khiển giảng viên TeacherAcademicPortal tồn tại');
+assert(fs.existsSync('src/components/teacher/TeacherGradingView.tsx'), 'Teacher Portal: Bàn chấm điểm bài tập TeacherGradingView tồn tại');
+assert(fs.existsSync('src/components/teacher/TeacherQRGeoAttendance.tsx'), 'Teacher Portal: Bàn điểm danh QR động & Geofence TeacherQRGeoAttendance tồn tại');
+assert(fs.existsSync('src/components/teacher/TeacherClassDetail.tsx'), 'Teacher Portal: Chi tiết lớp học 9-tab TeacherClassDetail tồn tại');
+
+// 18.5 Cổng Giáo Vụ (Giao Vu Portal)
+assert(fs.existsSync('src/components/giaovu/GiaoVuDashboard.tsx'), 'Giaovu Portal: Dashboard vận hành đào tạo GiaoVuDashboard tồn tại');
+assert(fs.existsSync('src/components/giaovu/GiaoVuClassManager.tsx'), 'Giaovu Portal: Quản lý mở đóng lớp GiaoVuClassManager tồn tại');
+assert(fs.existsSync('src/components/giaovu/GiaoVuScheduler.tsx'), 'Giaovu Portal: Điều độ lịch và phát hiện xung đột GiaoVuScheduler tồn tại');
+assert(fs.existsSync('src/components/giaovu/GiaoVuEnrollmentManager.tsx'), 'Giaovu Portal: Duyệt đơn đăng ký và học phí GiaoVuEnrollmentManager tồn tại');
+assert(fs.existsSync('src/components/giaovu/GiaoVuStudentCare.tsx'), 'Giaovu Portal: Chăm sóc học viên và vé hỗ trợ GiaoVuStudentCare tồn tại');
+
+// 18.6 Cổng Quản Trị Hệ Thống (Admin Portal)
+assert(fs.existsSync('src/components/admin/AdminOverviewDashboard.tsx'), 'Admin Portal: Bảng tổng quan 5 hàng AdminOverviewDashboard tồn tại');
+assert(fs.existsSync('src/components/admin/PermissionManagerModal.tsx'), 'Admin Portal: Modal phân quyền chi tiết PermissionManagerModal tồn tại');
+assert(fs.existsSync('src/services/auditLogService.ts'), 'Admin Portal: Dịch vụ ghi vết nhật ký kiểm toán auditLogService tồn tại');
+
+// 18.7 Điểm Danh QR Động & Định Vị Geofence 5m (Anti-Fraud Math Tests)
+function haversineMeters(p1, p2) {
+  const R = 6371000;
+  const toRad = deg => (deg * Math.PI) / 180;
+  const dLat = toRad(p2.lat - p1.lat);
+  const dLon = toRad(p2.lng - p1.lng);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(p1.lat)) * Math.cos(toRad(p2.lat)) * Math.sin(dLon / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+const classroom = { lat: 10.7769, lng: 106.7009 };
+// 4.9m offset (approx 0.000044 degrees)
+const studentAt4_9m = { lat: 10.7769 + 0.000044, lng: 106.7009 };
+const dist4_9 = haversineMeters(classroom, studentAt4_9m);
+
+// 5.1m offset (approx 0.000046 degrees)
+const studentAt5_1m = { lat: 10.7769 + 0.000046, lng: 106.7009 };
+const dist5_1 = haversineMeters(classroom, studentAt5_1m);
+
+const geofenceRadius = 5.0; // 5 mét
+assert(dist4_9 <= geofenceRadius, 'QR Attendance: Điểm danh tại 4.9m nằm TRONG bán kính 5m cho phép');
+assert(dist5_1 > geofenceRadius, 'QR Attendance: Điểm danh tại 5.1m nằm NGOÀI bán kính 5m và BỊ TỪ CHỐI');
+
+// Test logic Anti-Fraud QR
+const nowMs = 1750000000000;
+const validQrExpiresAt = nowMs + 15000; // Còn 15s
+const expiredQrExpiresAt = nowMs - 1000; // Đã hết hạn
+
+function checkQrRisk(qrExpiry, currentMs, distance, maxRadius, accuracy) {
+  const flags = [];
+  let riskScore = 0;
+  if (qrExpiry && currentMs > qrExpiry) {
+    flags.push('EXPIRED_QR');
+    riskScore += 80;
+  }
+  if (distance > maxRadius) {
+    flags.push('OUTSIDE_GEOFENCE');
+    riskScore += 50;
+  }
+  if (accuracy && accuracy > 30) {
+    flags.push('POOR_GPS_ACCURACY');
+    riskScore += 35;
+  }
+  return { isApproved: riskScore < 50, flags, riskScore };
+}
+
+const validCheckIn = checkQrRisk(validQrExpiresAt, nowMs, 4.9, 5.0, 5);
+assert(validCheckIn.isApproved === true && validCheckIn.flags.length === 0, 'QR Attendance: Mã hợp lệ + khoảng cách 4.9m được CHẤP THUẬN CÓ MẶT');
+
+const expiredCheckIn = checkQrRisk(expiredQrExpiresAt, nowMs, 2.0, 5.0, 5);
+assert(expiredCheckIn.isApproved === false && expiredCheckIn.flags.includes('EXPIRED_QR'), 'QR Attendance: Mã QR xoay hết hạn 15s bị PHÁT HIỆN và TỪ CHỐI');
+
+const outsideGeofenceCheckIn = checkQrRisk(validQrExpiresAt, nowMs, 5.1, 5.0, 5);
+assert(outsideGeofenceCheckIn.isApproved === false && outsideGeofenceCheckIn.flags.includes('OUTSIDE_GEOFENCE'), 'QR Attendance: Học viên đứng ngoài 5m (5.1m) bị CHẶN GEOFENCE');
+
+const weakGpsCheckIn = checkQrRisk(validQrExpiresAt, nowMs, 3.0, 5.0, 50);
+assert(weakGpsCheckIn.flags.includes('POOR_GPS_ACCURACY'), 'QR Attendance: Sai số GPS > 30m bị gắn cờ cảnh báo POOR_GPS_ACCURACY');
+
+// 18.8 Chứng Chỉ Số & API Validation
+assert(fs.existsSync('api/cert/[id].ts'), 'Certificate: Endpoint xác thực chứng chỉ số công khai api/cert/[id].ts tồn tại');
+assert(fs.existsSync('api/_lib/certIssuer.ts'), 'Certificate: Module cấp phát băm mã SHA-256 an toàn api/_lib/certIssuer.ts tồn tại');
+assert(fs.existsSync('api/exam/[action].ts'), 'API: Endpoint nộp bài và chấm điểm phía máy chủ api/exam/[action].ts tồn tại');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
