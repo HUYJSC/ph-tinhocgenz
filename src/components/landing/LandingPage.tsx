@@ -6,7 +6,6 @@ import {
   Users, Bot
 } from 'lucide-react';
 import { LmsMainHeader } from '../layout/LmsMainHeader';
-import { Lms9ModulesGrid } from './Lms9ModulesGrid';
 import './landing.css';
 
 interface LandingPageProps {
@@ -603,10 +602,8 @@ export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPor
         </div>
       </section>
 
-      {/* ── 3. INTERACTIVE 9-MODULE LMS GRID COMPONENT ── */}
-      <Lms9ModulesGrid onNavigateToModule={handleModuleNavigation} />
 
-      {/* ── 4. FEATURED COURSES SECTION (MAINTAINING CURRICULUM RICHNESS) ── */}
+      {/* ── 3. FEATURED COURSES SECTION (MAINTAINING CURRICULUM RICHNESS) ── */}
       <section className="landing-section" id="courses" style={{ padding: '48px 0', background: '#FFFFFF' }}>
         <div className="landing-shell">
           <div className="section-heading section-heading--split">
