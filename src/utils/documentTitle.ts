@@ -51,3 +51,4 @@ export function updateTitleByRoute(route: string, subTab?: string): void {
     setDocumentTitle(mainTitle);
   }
 }
+
