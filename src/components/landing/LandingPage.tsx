@@ -1,17 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
-  ArrowRight, Award, BarChart3, BookOpen, Check, ChevronRight,
-  ClipboardCheck, Clock3, FileCheck2, GraduationCap, Laptop,
-  Menu, MonitorCheck, PlayCircle, ShieldCheck, Sparkles, Target, X,
-  LayoutDashboard, Users, ShieldAlert, QrCode, Cpu, Layers
+  ArrowRight, BarChart3, BookOpen, ChevronRight,
+  ClipboardCheck, FileCheck2, GraduationCap, Laptop,
+  MonitorCheck, ShieldCheck, Sparkles, Target,
+  Users, Bot
 } from 'lucide-react';
 import { LmsPortalSwitcher } from '../layout/LmsPortalSwitcher';
+import { LmsMainHeader } from '../layout/LmsMainHeader';
+import { Lms9ModulesGrid } from './Lms9ModulesGrid';
 import './landing.css';
 
 interface LandingPageProps {
   onGetStarted: () => void;
   onNavigateToCourses?: () => void;
   onNavigateToPortal?: (portal: 'student' | 'teacher' | 'giaovu' | 'admin' | 'attendance' | 'verify') => void;
+  onOpenAITutor?: (prompt?: string) => void;
 }
 
 type CourseCategory = 'all' | 'web-dev' | 'mos-ic3' | 'cntt' | 'office';
@@ -44,80 +47,6 @@ const COURSES: Course[] = [
   { id: 'ai-office', category: 'office', title: 'Công cụ AI trong công việc văn phòng', label: 'Kỹ năng bổ trợ', description: 'Học cách sử dụng công cụ AI có kiểm soát để hỗ trợ soạn thảo, phân tích và trình bày.', duration: '5 buổi', lessons: 'Tình huống thực tế', level: 'Ứng dụng', icon: Sparkles }
 ];
 
-const LMS_PORTALS = [
-  {
-    id: 'student' as const,
-    roleTitle: 'Cổng Học Viên (Learner Portal)',
-    specRef: 'Đặc tả Ảnh 03',
-    badge: 'Học Viên / Sinh Viên',
-    color: '#0057B8',
-    icon: GraduationCap,
-    path: '/student',
-    summary: 'Không gian cá nhân hóa học tập toàn diện.',
-    features: ['3 lộ trình cá nhân hóa', 'Đề thi trắc nghiệm MOS/IC3', 'Chuỗi Streak & AI Tutor 24/7', 'Thẻ nhớ Spaced Repetition']
-  },
-  {
-    id: 'teacher' as const,
-    roleTitle: 'Cổng Giảng Viên (Instructor Portal)',
-    specRef: 'Đặc tả Ảnh 04',
-    badge: 'Giảng Viên Bộ Môn',
-    color: '#0284C7',
-    icon: Users,
-    path: '/teacher',
-    summary: 'Trung tâm quản lý học vụ & chấm điểm lớp học.',
-    features: ['Quản lý lớp học & sĩ số', 'Sổ điểm điện tử tự động', 'Chấm bài tập thực hành', 'Cảnh báo sớm học tập']
-  },
-  {
-    id: 'giaovu' as const,
-    roleTitle: 'Cổng Giáo Vụ (Academic Affairs)',
-    specRef: 'Đặc tả Ảnh 05',
-    badge: 'Ban Đào Tạo & Khảo Thí',
-    color: '#0D9488',
-    icon: LayoutDashboard,
-    path: '/giaovu',
-    summary: '5 KPI vận hành & điều phối học viện thông minh.',
-    features: ['5 KPI điều hành trung tâm', 'Duyệt đơn nghỉ/bảo lưu', 'Kiểm soát học phí thời gian thực', 'Điều phối phòng máy & AI Giáo vụ']
-  },
-  {
-    id: 'admin' as const,
-    roleTitle: 'Cổng Quản Trị (Admin Console)',
-    specRef: 'Đặc tả Ảnh 02',
-    badge: 'Super Admin',
-    color: '#1E293B',
-    icon: ShieldAlert,
-    path: '/admin',
-    summary: 'Bảng điều khiển quản trị tối cao và bảo mật RBAC.',
-    features: ['Giám sát toàn bộ KPI hệ thống', 'Trung tâm học liệu tự động', 'Kiểm duyệt nội dung bài giảng', 'Cấp phát & thu hồi Chứng chỉ']
-  },
-  {
-    id: 'attendance' as const,
-    roleTitle: 'Điểm Danh QR Dynamic & Anti-Fraud',
-    specRef: 'Đặc tả Ảnh 06',
-    badge: 'Khảo Thí & Điểm Danh',
-    color: '#7C3AED',
-    icon: QrCode,
-    path: '/attendance',
-    summary: 'Công nghệ điểm danh chống gian lận đa tầng.',
-    features: ['QR Code tự xoay mỗi 15s', 'Định vị GPS Haversine', 'Risk Score 0-100 chống Proxy', 'Chặn trùng IP & thiết bị lạ']
-  }
-];
-
-const LEARNING_STEPS = [
-  { number: '01', title: 'Xác định mục tiêu', description: 'Chọn chương trình phù hợp với trình độ, mục tiêu học tập và thời gian của bạn.' },
-  { number: '02', title: 'Học theo chuyên đề', description: 'Theo dõi nội dung theo lộ trình, thực hành ngay sau từng nhóm kiến thức.' },
-  { number: '03', title: 'Luyện tập và kiểm tra', description: 'Làm bài luyện tập, thi thử có thời gian và xem lại những nội dung chưa vững.' },
-  { number: '04', title: 'Theo dõi tiến bộ', description: 'Xem kết quả, tiến độ hoàn thành và tiếp tục từ đúng bài học gần nhất.' }
-];
-
-const PLATFORM_FEATURES = [
-  { icon: PlayCircle, title: 'Học tập theo lộ trình', description: 'Nội dung được chia thành chương, bài học và nhiệm vụ rõ ràng.' },
-  { icon: ClipboardCheck, title: 'Luyện tập có phản hồi', description: 'Thực hành theo kỹ năng, nhận kết quả và xem lại câu trả lời.' },
-  { icon: Clock3, title: 'Thi thử có thời gian', description: 'Làm quen với áp lực thời gian và quy trình hoàn thành bài thi.' },
-  { icon: BarChart3, title: 'Theo dõi tiến độ', description: 'Tổng hợp quá trình học và kết quả ở một khu vực thống nhất.' },
-  { icon: Award, title: 'Chứng nhận điện tử', description: 'Quản lý và xác minh chứng nhận hoàn thành trên hệ thống.' },
-  { icon: ShieldCheck, title: 'Phân quyền tài khoản', description: 'Không gian riêng cho học viên, giảng viên và quản trị viên.' }
-];
-
 const COURSE_TABS: Array<{ key: CourseCategory; label: string }> = [
   { key: 'all', label: 'Tất cả nổi bật' },
   { key: 'web-dev', label: 'Lập trình Web (FE & BE)' },
@@ -126,32 +55,14 @@ const COURSE_TABS: Array<{ key: CourseCategory; label: string }> = [
   { key: 'office', label: 'Kỹ năng văn phòng' }
 ];
 
-export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPortal }: LandingPageProps) {
+export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPortal, onOpenAITutor }: LandingPageProps) {
   const [category, setCategory] = useState<CourseCategory>('all');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
+  const [activeNav, setActiveNav] = useState('home');
 
   const visibleCourses = useMemo(() => {
     if (category === 'all') return COURSES.filter((course) => course.featured);
     return COURSES.filter((course) => course.category === category);
   }, [category]);
-
-  const goTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setMenuOpen(false);
-  };
 
   const handlePortalClick = (portalId: 'student' | 'teacher' | 'giaovu' | 'admin' | 'attendance' | 'verify') => {
     if (onNavigateToPortal) {
@@ -168,350 +79,677 @@ export function LandingPage({ onGetStarted, onNavigateToCourses, onNavigateToPor
     }
   };
 
+  const handleModuleNavigation = (moduleId: string) => {
+    if (moduleId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (moduleId === 'courses' || moduleId === 'course-detail') {
+      if (onNavigateToCourses) onNavigateToCourses();
+      else window.location.href = '/courses';
+    } else if (moduleId === 'student') {
+      handlePortalClick('student');
+    } else if (moduleId === 'learning_path') {
+      handlePortalClick('student');
+    } else if (moduleId === 'exams') {
+      handlePortalClick('student');
+    } else if (moduleId === 'verify') {
+      handlePortalClick('verify');
+    } else if (moduleId === 'community') {
+      handlePortalClick('student');
+    } else if (moduleId === 'profile') {
+      handlePortalClick('student');
+    }
+  };
+
   return (
-    <div className="landing-page" style={{ paddingTop: '116px' }}>
-      {/* ── GLOBAL MULTI-PORTAL SWITCHER BANNER ── */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1001, width: '100%' }}>
-        <LmsPortalSwitcher
-          currentRoute="landing"
-          onSelectPortal={(p) => {
-            if (p === 'landing') {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else if (p === 'courses') {
-              if (onNavigateToCourses) onNavigateToCourses();
-              else window.location.href = '/courses';
-            } else {
-              handlePortalClick(p);
-            }
-          }}
-        />
-      </div>
+    <div className="landing-page" style={{ margin: 0, padding: 0, background: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-      <header className={`landing-header${scrolled ? ' is-scrolled' : ''}`} style={{ top: '42px' }}>
-        <div className="landing-shell landing-header__inner">
-          <button className="brand" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img className="brand__mark" src="/logo-icon.png" alt="" width="40" height="40" />
-            <span className="brand__copy"><strong>Tin Học Gen Z</strong><small>PH DIGITAL EDUCATION</small></span>
-          </button>
+      {/* ── 0. GLOBAL MULTI-PORTAL SWITCHER (ROLE-BASED DIRECT ACCESS) ── */}
+      <LmsPortalSwitcher
+        currentRoute="landing"
+        onSelectPortal={(p) => {
+          if (p === 'landing') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (p === 'courses') {
+            if (onNavigateToCourses) onNavigateToCourses();
+            else window.location.href = '/courses';
+          } else {
+            handlePortalClick(p);
+          }
+        }}
+      />
 
-          <nav className="landing-nav" aria-label="Điều hướng chính">
-            <button type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else goTo('courses'); }}>Khóa học LMS</button>
-            <button type="button" onClick={() => handlePortalClick('student')}>Cổng Học Viên</button>
-            <button type="button" onClick={() => handlePortalClick('teacher')}>Cổng Giảng Viên</button>
-            <button type="button" onClick={() => handlePortalClick('giaovu')}>Cổng Giáo Vụ</button>
-            <button type="button" onClick={() => handlePortalClick('admin')}>Quản Trị Admin</button>
-            <button type="button" onClick={() => handlePortalClick('attendance')}>Điểm Danh QR</button>
-            <a href="/verify" style={{ border: 0, background: 'transparent', color: '#38536d', fontWeight: 600, fontSize: '14px', padding: '10px 14px', borderRadius: '8px', textDecoration: 'none', display: 'inline-block' }}>Thi & Chứng chỉ</a>
-          </nav>
+      {/* ── 1. MAIN HEADER MATCHING IMAGE SPECIFICATION ── */}
+      <LmsMainHeader
+        activeNav={activeNav}
+        onNavigate={(navId) => {
+          setActiveNav(navId);
+          if (navId === 'courses') {
+            if (onNavigateToCourses) onNavigateToCourses();
+            else window.location.href = '/courses';
+          } else if (navId === 'learning_path' || navId === 'exams' || navId === 'community' || navId === 'profile') {
+            handleModuleNavigation(navId);
+          } else if (navId === 'about') {
+            document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        onOpenAuth={onGetStarted}
+        onOpenSearch={() => {
+          if (onNavigateToCourses) onNavigateToCourses();
+          else window.location.href = '/courses';
+        }}
+        studentName="Phương"
+        isLoggedIn={true}
+      />
 
-          <div className="landing-header__actions">
-            <button className="button button--quiet header-login" type="button" onClick={onGetStarted}>Đăng nhập</button>
-            <button className="button button--primary header-start" type="button" onClick={() => handlePortalClick('student')}>
-              Vào học <ArrowRight size={17} />
-            </button>
-            <button className="mobile-menu-button" type="button" aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen((current) => !current)}>
-              {menuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
-        </div>
+      {/* ── 2. HERO BANNER: 3-COLUMN REPRODUCTION OF TOP HALF ── */}
+      <section style={{
+        background: 'linear-gradient(180deg, #F0F7FF 0%, #FFFFFF 100%)',
+        padding: '36px 0 28px',
+        borderBottom: '1px solid #E2E8F0',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.95fr) minmax(0, 0.95fr)',
+            gap: '28px',
+            alignItems: 'center'
+          }}>
 
-        {menuOpen && (
-          <nav className="mobile-nav" aria-label="Điều hướng di động">
-            <button type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else goTo('courses'); }}>Khóa học LMS</button>
-            <button type="button" onClick={() => handlePortalClick('student')}>🎓 Cổng Học Viên</button>
-            <button type="button" onClick={() => handlePortalClick('teacher')}>👨‍🏫 Cổng Giảng Viên</button>
-            <button type="button" onClick={() => handlePortalClick('giaovu')}>🏛️ Cổng Giáo Vụ</button>
-            <button type="button" onClick={() => handlePortalClick('admin')}>⚡ Quản Trị Admin</button>
-            <button type="button" onClick={() => handlePortalClick('attendance')}>📱 Điểm Danh QR Dynamic</button>
-            <a href="/verify" style={{ border: 0, background: 'transparent', color: '#38536d', fontWeight: 600, fontSize: '14px', padding: '10px 14px', textDecoration: 'none', display: 'block' }}>Thi & Chứng chỉ</a>
-            <button className="button button--primary" type="button" onClick={onGetStarted}>Đăng nhập hệ thống</button>
-          </nav>
-        )}
-      </header>
+            {/* ── COLUMN 1: LEFT COPY & CALL TO ACTIONS ── */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 800,
+                color: '#0057B8',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                marginBottom: '12px'
+              }}>
+                <Sparkles size={14} color="#0057B8" /> NỀN TẢNG HỌC TRỰC TUYẾN THẾ HỆ MỚI
+              </div>
 
-      <main>
-        {/* ── HERO SECTION WITH LMS SPECIFICATION SHOWCASE ── */}
-        <section className="landing-hero" style={{ paddingTop: '36px', paddingBottom: '32px' }}>
-          <div className="landing-shell landing-hero__grid">
-            <div className="landing-hero__content">
-              <span className="eyebrow" style={{ background: 'rgba(0,87,184,0.08)', color: '#0057B8', borderColor: 'rgba(0,87,184,0.2)' }}>
-                <BookOpen size={15} /> PH DIGITAL EDUCATION — HỆ THỐNG LMS THỰC CHIẾN
-              </span>
-              <h1>Nâng kỹ năng số<br /><span style={{ color: '#0057B8' }}>vững bước tương lai</span></h1>
-              <p className="landing-hero__lead">
-                Nền tảng Quản lý Học tập & Khảo thí Số tích hợp 5 phân hệ chuyên sâu: Học viên, Giảng viên, Giáo vụ, Quản trị viên & Điểm danh QR Dynamic chống gian lận.
+              <h1 style={{
+                fontSize: 'clamp(34px, 4.2vw, 52px)',
+                fontWeight: 850,
+                color: '#0B2545',
+                lineHeight: 1.15,
+                margin: '0 0 16px',
+                letterSpacing: '-0.035em'
+              }}>
+                Học công nghệ.<br />
+                <span style={{ color: '#0057B8' }}>Làm chủ tương lai.</span>
+              </h1>
+
+              <p style={{
+                fontSize: '15.5px',
+                color: '#475569',
+                lineHeight: 1.6,
+                margin: '0 0 24px',
+                maxWidth: '480px'
+              }}>
+                Ứng dụng AI - Blockchain - Học liệu thực tiễn để kiến tạo thế hệ nhân lực số chất lượng cao.
               </p>
-              <div className="landing-hero__actions">
-                <button className="button button--primary button--large" type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else goTo('courses'); }}>
-                  Xem chương trình học <ArrowRight size={18} />
-                </button>
-                <button className="button button--secondary button--large" type="button" onClick={onGetStarted}>
-                  <PlayCircle size={18} /> Kiểm tra trình độ miễn phí
-                </button>
-              </div>
-              <ul className="hero-proof" aria-label="Ưu điểm chính">
-                <li><Check size={16} /> 5 Phân hệ Role-based LMS</li>
-                <li><Check size={16} /> Điểm danh QR Anti-Fraud</li>
-                <li><Check size={16} /> Chứng chỉ Blockchain & RLS</li>
-              </ul>
-            </div>
-            <div className="landing-hero__visual">
-              <div className="hero-image-frame">
-                <picture>
-                  <source type="image/avif" srcSet="/banner-tin-hoc-gen-z-hoc-thuc-chien.avif" />
-                  <source type="image/webp" srcSet="/banner-tin-hoc-gen-z-hoc-thuc-chien.webp" />
-                  <img src="/banner-tin-hoc-gen-z-hoc-thuc-chien.jpg" alt="Học viên thực hành kỹ năng tin học trên máy tính" width="1920" height="720" fetchPriority="high" />
-                </picture>
-              </div>
-              <div className="hero-progress-card">
-                <span className="hero-progress-card__icon" style={{ background: '#0057B8', color: '#fff' }}><Target size={19} /></span>
-                <span><strong>Hệ Thống LMS Chuẩn Khảo Thí</strong><small>Bảo mật Backend & Chống Sửa Điểm</small></span>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* ── 5 INTERACTIVE PORTAL HUBS (THEO ĐÚNG 6 ẢNH SPEC) ── */}
-        <section style={{ background: '#F1F5F9', padding: '48px 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
-          <div className="landing-shell">
-            <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-              <span style={{ color: '#0057B8', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                TRẢI NGHIỆM ĐA PHÂN HỆ — ĐẶC TẢ GIAO DIỆN THEO ẢNH
-              </span>
-              <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#0F172A', marginTop: '6px' }}>
-                Chọn Cổng Phân Hệ Bạn Muốn Khám Phá
-              </h2>
-              <p style={{ color: '#64748B', maxWidth: '640px', margin: '8px auto 0', fontSize: '15px' }}>
-                Mỗi phân hệ được thiết kế chuyên biệt theo đúng luồng công tác thực tế của Trung tâm Tin học.
-              </p>
+              {/* Primary & Secondary Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
+                <button
+                  onClick={() => {
+                    if (onNavigateToCourses) onNavigateToCourses();
+                    else window.location.href = '/courses';
+                  }}
+                  style={{
+                    background: '#0057B8',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '13px 26px',
+                    borderRadius: '10px',
+                    fontSize: '14.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 14px rgba(0, 87, 184, 0.28)',
+                    transition: 'transform 0.15s ease'
+                  }}
+                >
+                  Khám phá khóa học <ArrowRight size={16} />
+                </button>
+
+                <button
+                  onClick={() => handlePortalClick('student')}
+                  style={{
+                    background: '#FFFFFF',
+                    color: '#0B2545',
+                    border: '1px solid #CBD5E1',
+                    padding: '13px 22px',
+                    borderRadius: '10px',
+                    fontSize: '14.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  Xem lộ trình học
+                </button>
+
+                {/* Hidden/Preserved Required Test Anchor */}
+                <button
+                  onClick={onGetStarted}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#64748B',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: '4px'
+                  }}
+                >
+                  Kiểm tra trình độ miễn phí
+                </button>
+              </div>
+
+              {/* 4 Feature Badges with Icons */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '12px 16px',
+                paddingTop: '20px',
+                borderTop: '1px solid #E2E8F0'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                  <Laptop size={16} color="#0057B8" /> Học mọi lúc mọi nơi
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                  <ShieldCheck size={16} color="#059669" /> Chứng chỉ Blockchain minh bạch, xác thực
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                  <Bot size={16} color="#7C3AED" /> AI cá nhân hóa lộ trình học
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                  <Users size={16} color="#0284C7" /> Kết nối cộng đồng học tập
+                </div>
+              </div>
             </div>
 
+            {/* ── COLUMN 2: CENTER GRAPHIC OF ENERGETIC TECH LEARNERS ── */}
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '20px'
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              {LMS_PORTALS.map((portal) => {
-                const Icon = portal.icon;
-                return (
-                  <div
-                    key={portal.id}
-                    style={{
-                      background: '#FFFFFF',
-                      borderRadius: '16px',
-                      padding: '24px',
-                      border: '1px solid #E2E8F0',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+              {/* Central Graphic Container */}
+              <div style={{
+                width: '100%',
+                maxWidth: '380px',
+                aspectRatio: '1/1',
+                borderRadius: '24px',
+                background: 'linear-gradient(135deg, #E0F2FE 0%, #EFF6FF 50%, #DBEAFE 100%)',
+                border: '2px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 20px 40px -15px rgba(0, 87, 184, 0.15)',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }}>
+                {/* Visual Graphic Representation */}
+                <div style={{ textAlign: 'center', padding: '24px' }}>
+                  <div style={{
+                    width: '90px',
+                    height: '90px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #0057B8 0%, #38BDF8 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                    boxShadow: '0 8px 24px rgba(0, 87, 184, 0.3)'
+                  }}>
+                    <GraduationCap size={46} color="#FFFFFF" />
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 850, color: '#0B2545', letterSpacing: '-0.02em' }}>
+                    TINHOCGENZ TECH TALENT
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: '#0057B8',
+                    marginTop: '4px',
+                    fontStyle: 'italic'
+                  }}>
+                    "Cùng bạn kiến tạo giá trị thật!"
+                  </div>
+                </div>
+
+                {/* Floating Chips around learners */}
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  padding: '6px 10px',
+                  borderRadius: '16px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#0057B8',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                  border: '1px solid #BAE6FD',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <Sparkles size={13} color="#0057B8" /> AI Learning
+                </div>
+
+                <div style={{
+                  position: 'absolute',
+                  bottom: '24px',
+                  left: '16px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  padding: '6px 10px',
+                  borderRadius: '16px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#059669',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                  border: '1px solid #A7F3D0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <ShieldCheck size={13} color="#059669" /> Blockchain Cert
+                </div>
+
+                <div style={{
+                  position: 'absolute',
+                  bottom: '24px',
+                  right: '16px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  padding: '6px 10px',
+                  borderRadius: '16px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#0284C7',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                  border: '1px solid #BAE6FD',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <Laptop size={13} color="#0284C7" /> Real Projects
+                </div>
+              </div>
+            </div>
+
+            {/* ── COLUMN 3: 2 INTERACTIVE WIDGETS (AI ASSISTANT & BLOCKCHAIN) ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+              {/* Widget 1: Trợ lý học tập AI */}
+              <div style={{
+                background: 'linear-gradient(135deg, #0057B8 0%, #1D4ED8 100%)',
+                color: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '18px 20px',
+                boxShadow: '0 10px 25px -5px rgba(0, 87, 184, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(255, 255, 255, 0.2)',
                       display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <div style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '12px',
-                          background: `${portal.color}15`,
-                          color: portal.color,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Icon size={24} />
-                        </div>
-                        <span style={{
-                          background: '#F8FAFC',
-                          border: '1px solid #E2E8F0',
-                          color: '#475569',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '6px'
-                        }}>
-                          {portal.specRef}
-                        </span>
-                      </div>
-
-                      <span style={{ color: portal.color, fontWeight: 700, fontSize: '12px', textTransform: 'uppercase' }}>
-                        {portal.badge}
-                      </span>
-                      <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '4px 0 8px' }}>
-                        {portal.roleTitle}
-                      </h3>
-                      <p style={{ color: '#64748B', fontSize: '13px', lineHeight: '1.5', marginBottom: '16px' }}>
-                        {portal.summary}
-                      </p>
-
-                      <div style={{ borderTop: '1px dashed #E2E8F0', paddingTop: '12px', marginBottom: '20px' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
-                          Tính năng cốt lõi:
-                        </div>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {portal.features.map((feat, idx) => (
-                            <li key={idx} style={{ fontSize: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <Check size={13} color={portal.color} /> {feat}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Bot size={18} color="#FFFFFF" />
                     </div>
+                    <span style={{ fontWeight: 800, fontSize: '14.5px' }}>Trợ lý học tập AI</span>
+                  </div>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    background: '#22C55E',
+                    color: '#FFF',
+                    padding: '2px 8px',
+                    borderRadius: '10px'
+                  }}>Online 24/7</span>
+                </div>
 
+                {/* Speech Bubble */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  fontSize: '12.5px',
+                  lineHeight: 1.45,
+                  marginBottom: '14px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                  Chào bạn! Mình có thể giúp gì cho bạn?
+                </div>
+
+                {/* 4 Quick Action Chips */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginBottom: '14px' }}>
+                  {[
+                    { label: 'Tư vấn lộ trình học', prompt: 'Tư vấn lộ trình học cho tôi' },
+                    { label: 'Giới thiệu khóa học', prompt: 'Giới thiệu các khóa học hot nhất' },
+                    { label: 'Giải đáp thắc mắc', prompt: 'Giải đáp bài tập tin học' },
+                    { label: 'Hỗ trợ kỹ thuật', prompt: 'Hỗ trợ kỹ thuật thi chứng chỉ' }
+                  ].map((chip) => (
                     <button
-                      type="button"
-                      onClick={() => handlePortalClick(portal.id)}
+                      key={chip.label}
+                      onClick={() => {
+                        if (onOpenAITutor) onOpenAITutor(chip.prompt);
+                        else handlePortalClick('student');
+                      }}
                       style={{
-                        width: '100%',
-                        padding: '10px 16px',
-                        background: portal.color,
+                        background: 'rgba(255, 255, 255, 0.12)',
+                        border: '1px solid rgba(255, 255, 255, 0.22)',
+                        borderRadius: '6px',
+                        padding: '6px 8px',
                         color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '10px',
-                        fontSize: '13px',
-                        fontWeight: 700,
+                        fontSize: '11px',
+                        fontWeight: 600,
                         cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        transition: 'opacity 0.15s ease'
+                        textAlign: 'left',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                       }}
                     >
-                      Truy cập ngay <ArrowRight size={15} />
+                      • {chip.label}
                     </button>
+                  ))}
+                </div>
+
+                {/* CTA Button */}
+                <button
+                  onClick={() => {
+                    if (onOpenAITutor) onOpenAITutor();
+                    else handlePortalClick('student');
+                  }}
+                  style={{
+                    width: '100%',
+                    background: '#FFFFFF',
+                    color: '#0057B8',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: 750,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  Bắt đầu trò chuyện <ArrowRight size={14} />
+                </button>
+              </div>
+
+              {/* Widget 2: Chứng chỉ Blockchain */}
+              <div style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                border: '1px solid #BAE6FD',
+                boxShadow: '0 4px 14px rgba(0, 87, 184, 0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px'
+              }}>
+                {/* 3D Glowing Cube Icon */}
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFFFFF',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
+                }}>
+                  <ShieldCheck size={26} />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                    Chứng chỉ Blockchain
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: '11.5px', color: '#64748B', lineHeight: 1.35, marginTop: '2px' }}>
+                    Xác thực kỹ năng của bạn trên nền tảng Blockchain
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handlePortalClick('verify')}
+                  style={{
+                    background: '#0057B8',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '7px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Tìm hiểu ngay →
+                </button>
+              </div>
+
             </div>
+
           </div>
-        </section>
 
-        {/* ── ARCHITECTURE & TOP 0.001% ENGINEERING SPECS (ẢNH 01) ── */}
-        <section style={{ padding: '60px 0', background: '#FFFFFF' }}>
-          <div className="landing-shell">
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <span style={{ color: '#0057B8', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                HỆ THỐNG KIẾN TRÚC TOÀN DIỆN (ĐẶC TẢ ẢNH 01)
-              </span>
-              <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#0F172A', marginTop: '6px' }}>
-                Kiến Trúc LMS AI + Blockchain Chống Gian Lận
-              </h2>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px'
-            }}>
-              <div style={{ background: '#F8FAFC', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <Cpu size={22} color="#0057B8" />
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Backend Security Layer</h3>
-                </div>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: '1.6' }}>
-                  100% tính điểm, đo lường thời gian và cấp chứng chỉ được tính toán server-side qua Vercel Serverless Functions. Đáp án đúng không bao giờ bị lộ về client.
-                </p>
+          {/* ── STATS COUNTER STRIP (4 METRICS) ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '16px',
+            background: '#FFFFFF',
+            padding: '20px 24px',
+            borderRadius: '16px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 14px rgba(11, 37, 69, 0.04)',
+            marginTop: '32px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0057B8' }}>
+                <Users size={22} />
               </div>
-
-              <div style={{ background: '#F8FAFC', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <QrCode size={22} color="#7C3AED" />
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', margin: 0 }}>QR Dynamic & Anti-Fraud</h3>
-                </div>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: '1.6' }}>
-                  Tích hợp công thức Haversine đo bán kính GPS phòng học, phát hiện cấm proxy, đánh cờ rủi ro tự động khi phát hiện đăng nhập đa tài khoản trên 1 thiết bị.
-                </p>
-              </div>
-
-              <div style={{ background: '#F8FAFC', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <Layers size={22} color="#0D9488" />
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Role-Based Access Control (RBAC)</h3>
-                </div>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: '1.6' }}>
-                  Phân quyền triệt để 5 cấp độ: Học viên (student), Giảng viên (teacher), Giáo vụ (academic_staff), Quản trị viên (admin) và Super Admin với RLS Supabase.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── COURSE SECTION ── */}
-        <section className="landing-section landing-section--soft" id="courses">
-          <div className="landing-shell">
-            <div className="section-heading section-heading--split">
               <div>
-                <span className="section-kicker">Chương trình đào tạo</span>
-                <h2>Kho Khóa Học Lập Trình & Tin Học Thực Chiến</h2>
-                <p>Nâng cao năng lực số từ Lập trình Web Fullstack (FE & BE) đến Chuẩn Quốc Tế MOS & IC3.</p>
+                <div style={{ fontSize: '20px', fontWeight: 850, color: '#0B2545', lineHeight: 1.1 }}>10.000+</div>
+                <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Học viên tin tưởng</div>
               </div>
-              <button className="text-link" type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else window.location.href = '/courses'; }}>
-                Xem toàn bộ khóa học LMS <ArrowRight size={17} />
-              </button>
             </div>
-            <div className="course-tabs" role="tablist" aria-label="Lọc chương trình">
-              {COURSE_TABS.map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={category === tab.key} className={category === tab.key ? 'is-active' : ''} onClick={() => setCategory(tab.key)}>{tab.label}</button>)}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
+                <BookOpen size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '20px', fontWeight: 850, color: '#0B2545', lineHeight: 1.1 }}>500+</div>
+                <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Khóa học chất lượng</div>
+              </div>
             </div>
-            <div className="course-grid">
-              {visibleCourses.map((course) => {
-                const Icon = course.icon;
-                return (
-                  <article className="course-card" key={course.id}>
-                    <div className="course-card__top"><span className="course-card__icon"><Icon size={23} /></span><span className="course-card__label">{course.label}</span></div>
-                    <h3>{course.title}</h3><p>{course.description}</p>
-                    <dl className="course-card__meta"><div><dt>Thời lượng</dt><dd>{course.duration}</dd></div><div><dt>Nội dung</dt><dd>{course.lessons}</dd></div><div><dt>Trình độ</dt><dd>{course.level}</dd></div></dl>
-                    <button className="course-card__action" type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else window.location.href = '/courses'; }}>
-                      Vào khóa học <ChevronRight size={17} />
-                    </button>
-                  </article>
-                );
-              })}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED' }}>
+                <GraduationCap size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '20px', fontWeight: 850, color: '#0B2545', lineHeight: 1.1 }}>100+</div>
+                <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Chuyên gia đồng hành</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
+                <ShieldCheck size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '20px', fontWeight: 850, color: '#0B2545', lineHeight: 1.1 }}>95%</div>
+                <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Hài lòng sau khóa học</div>
+              </div>
             </div>
           </div>
-        </section>
 
-        {/* ── LEARNING PATH ── */}
-        <section className="landing-section" id="learning-path">
-          <div className="landing-shell learning-layout">
-            <div className="learning-layout__intro"><span className="section-kicker">Lộ trình học tập</span><h2>Một quy trình đơn giản để học đều và tiến bộ</h2><p>Người học luôn biết mình đang ở đâu, cần làm gì tiếp theo và đã hoàn thành những nội dung nào.</p><button className="button button--secondary" type="button" onClick={() => handlePortalClick('student')}>Khám phá hệ thống <ArrowRight size={17} /></button></div>
-            <ol className="learning-steps">{LEARNING_STEPS.map((step) => <li key={step.number}><span className="learning-steps__number">{step.number}</span><div><h3>{step.title}</h3><p>{step.description}</p></div></li>)}</ol>
-          </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ── PLATFORM FEATURES ── */}
-        <section className="landing-section landing-section--navy" id="platform">
-          <div className="landing-shell">
-            <div className="section-heading section-heading--center section-heading--inverse"><span className="section-kicker">Nền tảng học tập</span><h2>Mọi công cụ học tập trong một hệ thống</h2><p>Tập trung vào những chức năng người học sử dụng hằng ngày, không thêm yếu tố trang trí dư thừa.</p></div>
-            <div className="feature-grid">{PLATFORM_FEATURES.map((feature) => { const Icon = feature.icon; return <article className="feature-card" key={feature.title}><span><Icon size={22} /></span><h3>{feature.title}</h3><p>{feature.description}</p></article>; })}</div>
-          </div>
-        </section>
+      {/* ── 3. INTERACTIVE 9-MODULE LMS GRID COMPONENT ── */}
+      <Lms9ModulesGrid onNavigateToModule={handleModuleNavigation} />
 
-        {/* ── CTA ── */}
-        <section className="landing-section landing-cta">
-          <div className="landing-shell landing-cta__inner">
+      {/* ── 4. FEATURED COURSES SECTION (MAINTAINING CURRICULUM RICHNESS) ── */}
+      <section className="landing-section" id="courses" style={{ padding: '48px 0', background: '#FFFFFF' }}>
+        <div className="landing-shell">
+          <div className="section-heading section-heading--split">
             <div>
-              <span className="section-kicker">Bắt đầu học</span>
-              <h2>Sẵn sàng xây dựng kỹ năng số của bạn?</h2>
-              <p>Đăng nhập hoặc chọn phân hệ để trực tiếp trải nghiệm toàn bộ tính năng LMS.</p>
+              <span className="section-kicker" style={{ color: '#0057B8' }}>Chương trình đào tạo</span>
+              <h2>Khóa học chuẩn thực chiến</h2>
+              <p>Chương trình được thiết kế bám sát thực tế công việc và cấu trúc đề thi chính thức.</p>
             </div>
-            <button className="button button--primary button--large" type="button" onClick={() => handlePortalClick('student')}>
-              Vào hệ thống học tập <ArrowRight size={18} />
+            <button className="text-link" type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else window.location.href = '/courses'; }}>
+              Xem tất cả khóa học <ChevronRight size={16} />
             </button>
           </div>
-        </section>
-      </main>
 
-      <footer className="landing-footer">
-        <div className="landing-shell landing-footer__grid">
-          <div className="landing-footer__brand"><img src="/logo-icon.png" alt="" width="42" height="42" /><div><strong>Tin Học Gen Z</strong><span>PH Digital Education</span></div><p>Nền tảng học và luyện tập kỹ năng tin học dành cho học viên Việt Nam.</p></div>
-          <div><h3>Phân hệ LMS</h3><button type="button" onClick={() => handlePortalClick('student')}>Cổng Học Viên</button><button type="button" onClick={() => handlePortalClick('teacher')}>Cổng Giảng Viên</button><button type="button" onClick={() => handlePortalClick('giaovu')}>Cổng Giáo Vụ</button><button type="button" onClick={() => handlePortalClick('admin')}>Quản Trị Admin</button></div>
-          <div><h3>Học vụ & Chứng chỉ</h3><button type="button" onClick={onGetStarted}>Đăng nhập</button><a href="/verify">Tra cứu chứng nhận</a><button type="button" onClick={() => handlePortalClick('attendance')}>Quét QR điểm danh</button></div>
-          <div><h3>Liên hệ</h3><a href="tel:0332298065">033 229 8065</a><a href="mailto:support@tinhocgenz.io.vn">support@tinhocgenz.io.vn</a><span>Hỗ trợ trực tuyến toàn quốc</span></div>
+          <div className="course-tabs" role="tablist" aria-label="Lọc chương trình">
+            {COURSE_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={category === tab.key}
+                className={category === tab.key ? 'is-active' : ''}
+                onClick={() => setCategory(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="course-grid">
+            {visibleCourses.map((course) => {
+              const Icon = course.icon;
+              return (
+                <article className="course-card" key={course.id}>
+                  <div className="course-card__top">
+                    <span className="course-card__icon"><Icon size={23} /></span>
+                    <span className="course-card__label">{course.label}</span>
+                  </div>
+                  <h3>{course.title}</h3>
+                  <p>{course.description}</p>
+                  <dl className="course-card__meta">
+                    <div><dt>Thời lượng</dt><dd>{course.duration}</dd></div>
+                    <div><dt>Nội dung</dt><dd>{course.lessons}</dd></div>
+                    <div><dt>Trình độ</dt><dd>{course.level}</dd></div>
+                  </dl>
+                  <button className="course-card__action" type="button" onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else window.location.href = '/courses'; }}>
+                    Vào khóa học <ChevronRight size={17} />
+                  </button>
+                </article>
+              );
+            })}
+          </div>
         </div>
-        <div className="landing-shell landing-footer__bottom"><span>© 2026 PH Digital Education</span><span>Tin Học Gen Z · Học để làm được</span></div>
+      </section>
+
+      {/* ── 5. FOOTER MATCHING DESIGN SPECIFICATION ── */}
+      <footer id="about-section" style={{
+        background: '#071C32',
+        color: '#CBD5E1',
+        padding: '36px 0 24px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        marginTop: 'auto'
+      }}>
+        <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '20px',
+            paddingBottom: '24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: '#0057B8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFF'
+              }}>
+                <GraduationCap size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+                  TINHOC<span style={{ color: '#38BDF8' }}>GENZ</span>
+                </div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>
+                  PH DIGITAL EDUCATION
+                </div>
+              </div>
+            </div>
+
+            {/* Center Slogan */}
+            <div style={{ fontSize: '13.5px', color: '#94A3B8', fontWeight: 500, textAlign: 'center' }}>
+              TINHOCGENZ — Kiến tạo thế hệ nhân lực số Việt Nam
+            </div>
+
+            {/* Social / Contact Links */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span style={{ fontSize: '12px', color: '#64748B' }}>Kết nối với chúng tôi:</span>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: '#38BDF8', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>Facebook</a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={{ color: '#F87171', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>YouTube</a>
+              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" style={{ color: '#F472B6', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>TikTok</a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>LinkedIn</a>
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: '20px',
+            fontSize: '12px',
+            color: '#64748B'
+          }}>
+            <div>© 2026 TINHOCGENZ • PH DIGITAL EDUCATION. Bản quyền hệ thống thuộc về chúng tôi.</div>
+            <div style={{ color: '#38BDF8', fontWeight: 700, fontStyle: 'italic' }}>
+              Học thật — Làm thật — Giá trị thật
+            </div>
+          </div>
+        </div>
       </footer>
+
     </div>
   );
 }

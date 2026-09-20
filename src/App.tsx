@@ -748,6 +748,15 @@ export function App() {
                 }
               }}
               onNavigateToPortal={handleSwitchPortal}
+              onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
+            />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AITutorDrawer
+              isOpen={showAITutorDrawer}
+              initialPrompt={aiTutorPrompt}
+              onClose={() => setShowAITutorDrawer(false)}
+              currentUser={user}
             />
           </Suspense>
         </div>
