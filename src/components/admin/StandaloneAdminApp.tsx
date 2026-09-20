@@ -374,31 +374,51 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
 
   const menuSections: MenuSection[] = [
     {
-      group: 'QUẢN TRỊ ĐÀO TẠO',
+      group: 'QUẢN LÝ HỆ THỐNG',
       items: [
-        { id: 'overview', label: 'Tổng Quan Hệ Thống', icon: BarChart3, badge: null },
-        { id: 'certificates', label: 'Quản Lý & Cấp Chứng Chỉ', icon: Award, badge: certificatesCount || null },
-        { id: 'student_directory', label: 'Quản Lý Học Viên', icon: Users, badge: studentAccounts.length },
-        { id: 'teachers', label: 'Quản Lý Giảng Viên', icon: UserCheck, badge: teacherAccounts.length },
-        { id: 'schedules', label: 'Lịch Dạy & Phòng Học', icon: Calendar, badge: (props.schedules || []).length },
-        { id: 'grading_assignments', label: 'Khảo Thí & Chấm Điểm', icon: CheckSquare, badge: (props.assignments || []).length },
+        { id: 'overview', label: 'Tổng quan hệ thống', icon: BarChart3, badge: null },
+        { id: 'student_directory', label: 'Người dùng & Học viên', icon: Users, badge: studentAccounts.length },
+        { id: 'teachers', label: 'Giảng viên & Trợ giảng', icon: UserCheck, badge: teacherAccounts.length },
       ]
     },
     {
-      group: 'KHẢO THÍ & NỘI DUNG',
+      group: 'ĐÀO TẠO & NỘI DUNG',
       items: [
-        { id: 'exams', label: 'Kho Đề Thi Chuẩn', icon: BookOpen, badge: props.quizzes.length },
-        { id: 'question_bank', label: 'Ngân Hàng Câu Hỏi', icon: FileSpreadsheet, badge: null },
+        { id: 'exams', label: 'Khóa học & Đề thi chuẩn', icon: BookOpen, badge: props.quizzes.length },
+        { id: 'schedules', label: 'Lớp học & Lịch giảng dạy', icon: Calendar, badge: (props.schedules || []).length },
+        { id: 'grading_assignments', label: 'Bài tập & Kiểm tra', icon: CheckSquare, badge: (props.assignments || []).length },
+        { id: 'question_bank', label: 'Ngân hàng câu hỏi', icon: FileSpreadsheet, badge: null },
         { id: 'learning_sources', label: 'Trung Tâm Nguồn Học Liệu', icon: Globe, badge: sourcesCount || null },
         { id: 'review_queue', label: 'Nội Dung Chờ Kiểm Duyệt', icon: Clock, badge: pendingQueueCount > 0 ? pendingQueueCount : null },
         { id: 'tinhocgenz_studio', label: 'Kho Tài Liệu TIN HỌC GEN Z', icon: Award, badge: internalMaterialsCount || null },
-        { id: 'sync_history', label: 'Lịch Sử Đồng Bộ', icon: RefreshCw, badge: null },
-        { id: 'quality_reports', label: 'Báo Cáo Chất Lượng', icon: CheckSquare, badge: null },
-        { id: 'failing_sources', label: 'Nguồn Bị Lỗi', icon: XCircle, badge: failingSourcesCount > 0 ? failingSourcesCount : null },
-        { id: 'automation_settings', label: 'Thiết Lập Tự Động Hóa', icon: Sliders, badge: null },
-        { id: 'early_warning', label: 'Cảnh Báo Học Vụ Sớm', icon: AlertTriangle, badge: '🚨' },
-        { id: 'meet_hub', label: 'Phòng Google Meet', icon: Video, badge: '10' },
-        { id: 'seo_center', label: 'Cấu Hình SEO & Web', icon: Globe, badge: null },
+      ]
+    },
+    {
+      group: 'HỌC VIÊN & GIẢNG VIÊN',
+      items: [
+        { id: 'certificates', label: 'Quản Lý & Cấp Chứng Chỉ', icon: Award, badge: certificatesCount || null },
+        { id: 'early_warning', label: 'Điểm danh (QR) & Cảnh báo', icon: AlertTriangle, badge: 'Mới' },
+        { id: 'meet_hub', label: 'Phòng học trực tuyến Google Meet', icon: Video, badge: '10' },
+      ]
+    },
+    {
+      group: 'TÀI CHÍNH & VẬN HÀNH',
+      items: [
+        { id: 'quality_reports', label: 'Báo Cáo Chất Lượng & Doanh thu', icon: CheckSquare, badge: null },
+        { id: 'sync_history', label: 'Lịch Sử Đồng Bộ Vận Hành', icon: RefreshCw, badge: null },
+      ]
+    },
+    {
+      group: 'AI & PHÂN TÍCH',
+      items: [
+        { id: 'automation_settings', label: 'Thiết Lập Tự Động Hóa & AI', icon: Sliders, badge: null },
+        { id: 'failing_sources', label: 'Nguồn Bị Lỗi & Cảnh báo AI', icon: XCircle, badge: failingSourcesCount > 0 ? failingSourcesCount : null },
+      ]
+    },
+    {
+      group: 'CÀI ĐẶT HỆ THỐNG',
+      items: [
+        { id: 'seo_center', label: 'Cấu Hình SEO, Web & Bảo mật', icon: Globe, badge: null },
       ]
     }
   ];
