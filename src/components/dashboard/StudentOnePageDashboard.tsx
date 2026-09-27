@@ -8,7 +8,7 @@ import {
   Play, BookOpen, Calendar, CheckSquare, Award,
   Sparkles, QrCode, Users, Bell,
   ChevronRight, ArrowRight, Clock, ShieldCheck,
-  Send, Bot, ListTodo, Flame, Zap, Star,
+  Send, ListTodo, Flame, Zap, Star,
   ChevronDown, CheckCircle2
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
@@ -53,6 +53,18 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
   const [activeCourseTab, setActiveCourseTab] = useState<'learning' | 'not_started' | 'completed'>('learning');
   const [aiInputText, setAiInputText] = useState('');
   const [weakSkillsData, setWeakSkillsData] = useState<ReturnType<typeof RecommendationService.generateDashboardRecommendations>>([]);
+
+  // Real date — no hardcoded dates
+  const today = new Date();
+  const formattedToday = new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+  }).format(today);
+  const userInitials = (currentUser.name || 'HV')
+    .split(' ')
+    .map(w => w[0])
+    .slice(-2)
+    .join('')
+    .toUpperCase();
 
   useEffect(() => {
     const score = MasteryService.getOverallMastery(currentUser.id, track);
@@ -122,6 +134,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
             <span style={{ fontSize: '12px', background: '#DBEAFE', color: '#1E40AF', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
               {trackName}
             </span>
+            <span style={{ fontSize: '11px', color: '#64748B', marginLeft: 'auto' }}>{formattedToday}</span>
           </div>
 
           <h1 style={{
@@ -342,11 +355,15 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
               width: '100%',
               height: '100%',
               borderRadius: '50%',
-              background: '#FFFFFF',
+              background: 'linear-gradient(135deg, #0057B8 0%, #0B2545 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              color: '#FFFFFF',
+              fontSize: '36px',
+              fontWeight: 800,
+              letterSpacing: '-0.02em'
             }}>
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=240&auto=format&fit=crop&q=80"
@@ -357,6 +374,7 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                 }}
               />
               <span style={{ fontSize: '48px', fontWeight: 800, color: '#0057B8' }}>A</span>
+              {userInitials}
             </div>
           </div>
         </div>
@@ -1226,9 +1244,10 @@ export const StudentOnePageDashboard: React.FC<StudentOnePageDashboardProps> = (
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 20px rgba(0, 87, 184, 0.25)'
+                boxShadow: '0 8px 20px rgba(0, 87, 184, 0.25)',
+                padding: '4px'
               }}>
-                <Bot size={38} color="#FFFFFF" />
+                <img src="/chatbot.ai.png" alt="TinHocGenZ Mascot" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
               </div>
             </div>
           </div>

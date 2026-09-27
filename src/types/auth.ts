@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher' | 'academic_staff' | 'giaovu' | 'admin' | 'super_admin';
+export type UserRole = 'student' | 'teacher' | 'academic_manager' | 'academic_staff' | 'giaovu' | 'admin' | 'super_admin';
 
 export type CurriculumTrack =
   | 'office-fast-3in1'
@@ -130,4 +130,3 @@ export interface ServerAuthResponse {
   user?: UserProfile;
   token?: string;
 }
-

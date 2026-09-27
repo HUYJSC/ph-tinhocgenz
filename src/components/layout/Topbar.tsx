@@ -41,7 +41,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const isSuperAdmin = user?.role === 'super_admin';
   const isTeacher = user?.role === 'teacher';
-  const isGiaoVu = user?.role === 'giaovu' || user?.role === 'academic_staff';
+  const isGiaoVu = user?.role === 'giaovu' || user?.role === 'academic_staff' || user?.role === 'academic_manager';
   const isStudent = user?.role === 'student' || (!isAdmin && !isTeacher && !isGiaoVu);
 
   const getSearchPlaceholder = (): string => {

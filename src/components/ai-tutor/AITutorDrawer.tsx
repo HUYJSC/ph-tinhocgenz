@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { UserProfile } from '../../types/auth';
 import { AITutorMode, AITutorMessage } from '../../types/edtech';
 import { AITutorService } from '../../services/aiTutorService';
-import { Bot, Sparkles, Send, X, HelpCircle, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Send, X, HelpCircle, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
 interface AITutorDrawerProps {
@@ -115,8 +115,8 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: '#8b5cf6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bot size={22} />
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #0057B8 0%, #38BDF8 100%)', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0, 87, 184, 0.2)' }}>
+              <img src="/chatbot.ai.png" alt="TinHocGenZ AI Mascot" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

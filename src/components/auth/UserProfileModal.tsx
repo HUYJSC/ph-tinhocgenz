@@ -22,7 +22,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const isStaff = currentUser.role === 'admin' || currentUser.role === 'teacher';
+  const isStaff = currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'teacher' || currentUser.role === 'academic_manager' || currentUser.role === 'academic_staff' || currentUser.role === 'giaovu';
   const initial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U';
 
   const userTracks: CurriculumTrack[] = isStaff

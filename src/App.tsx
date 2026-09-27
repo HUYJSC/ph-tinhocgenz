@@ -17,6 +17,7 @@ import type { CurriculumTrack } from './types/auth';
 import { AppShell } from './components/layout/AppShell';
 import { updateTitleByRoute } from './utils/documentTitle';
 import type { AdminPortalSubTab } from './components/admin/AdminPortal';
+import { getAdminPathForTab, resolveAdminPortalTab } from './config/adminNavigation';
 
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -69,9 +70,9 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
   if (p === '/admin' || p.startsWith('/admin/') || h === '#admin' || h.startsWith('#admin/') || h.startsWith('#/admin')) {
     let sub = '';
     if (p.startsWith('/admin/')) {
-      sub = p.replace(/^\/admin\/?/, '').split('/')[0];
+      sub = p.replace(/^\/admin\/?/, '').split('/').filter(Boolean).slice(0, 2).join('/');
     } else if (h.includes('admin/')) {
-      sub = h.split('admin/')[1]?.split('/')[0] || '';
+      sub = h.split('admin/')[1]?.split('/').filter(Boolean).slice(0, 2).join('/') || '';
     }
     return { route: 'admin', param: sub };
   }
@@ -298,11 +299,11 @@ export function App() {
         updateTitleByRoute('home');
       }
     } else {
-      if (user.role === 'admin') {
+      if (user.role === 'admin' || user.role === 'super_admin') {
         updateTitleByRoute('admin', param || activeTab);
       } else if (user.role === 'teacher') {
         updateTitleByRoute('teacher', activeTab);
-      } else if (user.role === 'academic_staff') {
+      } else if (user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu') {
         updateTitleByRoute('giaovu', activeTab);
       } else {
         updateTitleByRoute('student', activeTab);
@@ -323,12 +324,12 @@ export function App() {
       } else if (newTab === 'schedule') {
         targetPath = '/schedule';
       } else if (newTab === 'assignments') {
-        targetPath = isStaff ? (user.role === 'admin' ? '/admin' : '/teacher') : '/student';
+        targetPath = isStaff ? ((user.role === 'admin' || user.role === 'super_admin') ? '/admin' : '/teacher') : '/student';
       } else if (newTab === 'early_warning') {
-        targetPath = isStaff ? (user.role === 'admin' ? '/admin' : '/teacher') : '/student';
-      } else if (user.role === 'admin') {
-        targetPath = '/admin';
-      } else if (user.role === 'academic_staff' || user.role === 'giaovu') {
+        targetPath = isStaff ? ((user.role === 'admin' || user.role === 'super_admin') ? '/admin' : '/teacher') : '/student';
+      } else if (user.role === 'admin' || user.role === 'super_admin') {
+        targetPath = `/admin/${getAdminPathForTab(newTab)}`;
+      } else if (user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu') {
         targetPath = '/giaovu';
       } else if (isStaff) {
         targetPath = '/teacher';
@@ -343,6 +344,8 @@ export function App() {
 
   // ── Helper mapping for Admin Portal subtabs ──
   const mapAdminSubTab = (tab: string): AdminPortalSubTab => {
+    return resolveAdminPortalTab(tab);
+    /* Legacy mapping retained below for reference while old integrations migrate. */
     switch (tab) {
       case 'overview':
       case 'dashboard':
@@ -741,8 +744,8 @@ export function App() {
   );
   const isCurrentlyOnAdmin = isExplicitAdminUrl && activeTab !== 'attendance' && activeTab !== 'schedule' && activeTab !== 'assignments';
 
-  // RBAC Access Control Guard: Reject student role from accessing admin route
-  if (isCurrentlyOnAdmin && isSessionActive && user.role === 'student') {
+  // RBAC Access Control Guard: only Super Admin/legacy Admin may enter /admin.
+  if (isCurrentlyOnAdmin && isSessionActive && user.role !== 'admin' && user.role !== 'super_admin') {
     return (
       <div style={{
         minHeight: '100vh',
@@ -802,7 +805,7 @@ export function App() {
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', width: '100%' }}>
           <Suspense fallback={<PageLoadingFallback />}>
             <StandaloneAdminApp
-              initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : undefined}
+              initialSubTab={appRouteInfo.param === 'certificates' ? 'certificates' : (appRouteInfo.param ? resolveAdminPortalTab(appRouteInfo.param) : undefined)}
               currentUser={user}
               isSessionActive={isSessionActive}
               quizzes={allQuizzes}
@@ -1008,7 +1011,7 @@ export function App() {
             )}
 
             {/* 3.3 ADMIN PORTAL — Render AdminPortal for all admin users across all sidebar items */}
-            {user.role === 'admin' && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
+            {(user.role === 'admin' || user.role === 'super_admin') && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
               <AdminPortal
                 key={mapAdminSubTab(activeTab)}
                 quizzes={allQuizzes}
@@ -1044,14 +1047,15 @@ export function App() {
                 onUpdateSchedule={updateSchedule}
                 onDeleteSchedule={deleteSchedule}
                 initialSubTab={mapAdminSubTab(activeTab)}
-                onSubTabChange={(sub) => setActiveTab(sub as any)}
+                hideInternalNav={true}
+                onSubTabChange={(sub) => handleNavigateTab(sub)}
                 onNavigateToAttendance={() => handleNavigateTab('attendance')}
                 currentUser={user}
               />
             )}
 
             {/* 3.4 ACADEMIC OPERATIONS PORTAL (Giáo Vụ) */}
-            {(user.role === 'academic_staff' || user.role === 'giaovu' || (appRouteInfo.route === 'giaovu' && user.role !== 'admin')) &&
+            {(user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu' || (appRouteInfo.route === 'giaovu' && user.role !== 'admin' && user.role !== 'super_admin')) &&
              activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
               <GiaoVuDashboard
                 key={mapGiaoVuSubTab(activeTab)}

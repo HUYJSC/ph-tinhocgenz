@@ -952,7 +952,7 @@ export function useAuth() {
   return {
     user,
     setUser,
-    isStaff: user.role === 'admin' || user.role === 'teacher',
+    isStaff: user.role === 'admin' || user.role === 'super_admin' || user.role === 'teacher' || user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu',
     studentAccounts,
     teacherAccounts,
     loginWithStudentCode,

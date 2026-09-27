@@ -14,7 +14,7 @@
 import React, { useState } from 'react';
 import {
   BookOpen, Users, Calendar, CheckCircle2, Clock, AlertTriangle,
-  DollarSign, Check, X, FileText, ArrowUpRight,
+  Check, X, FileText, ArrowUpRight,
   Sparkles, Send, HelpCircle
 } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
@@ -139,6 +139,10 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
     return <GiaoVuStudentCare currentUser={currentUser} onBackToDashboard={handleBackToDashboard} />;
   }
 
+  const formattedToday = new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+  }).format(new Date());
+
   return (
     <div style={{ background: '#F8FAFC', minHeight: '100vh', padding: '24px' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -150,7 +154,7 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
               Tổng quan giáo vụ & Điều độ đào tạo
             </h1>
             <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>
-              Hôm nay là Thứ Ba, 14 tháng 5, 2026. Chúc bạn làm việc hiệu quả!
+              Hôm nay là {formattedToday}. Chúc bạn làm việc hiệu quả!
             </p>
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -219,15 +223,18 @@ export const GiaoVuDashboard: React.FC<GiaoVuDashboardProps> = ({
             </div>
           </div>
 
-          {/* Card 5: Doanh thu tháng này */}
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          {/* Card 5: Yêu cầu hỗ trợ (Chuẩn §14 Giáo vụ vận hành) */}
+          <div
+            onClick={() => { setInternalView('student_care'); soundFx.playClick(); }}
+            style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Doanh thu tháng này</span>
-              <span style={{ background: '#ECFDF5', color: '#16A34A', padding: '6px', borderRadius: '8px' }}><DollarSign size={18} /></span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Yêu cầu hỗ trợ</span>
+              <span style={{ background: '#EFF6FF', color: '#0057B8', padding: '6px', borderRadius: '8px' }}><HelpCircle size={18} /></span>
             </div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0057B8' }}>320 Triệu</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#16A34A', fontWeight: 600 }}>
-              <ArrowUpRight size={14} /> +18% so với tháng trước
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0B2545' }}>{tickets.length || 3}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#D97706', fontWeight: 600 }}>
+              {tickets.filter(t => t.status === 'new').length} yêu cầu mới cần xử lý
             </div>
           </div>
         </div>

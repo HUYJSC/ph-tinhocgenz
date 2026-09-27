@@ -25,6 +25,7 @@ import { UserPermission } from '../../types/rbac';
 
 export type AdminPortalSubTab =
   | 'overview'
+  | 'courses'
   | 'certificates'
   | 'schedules'
   | 'grading_assignments'
@@ -134,7 +135,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   hideInternalNav = false,
   onSubTabChange
 }) => {
-  const isSuperAdmin = currentUser.role === 'admin';
+  const isSuperAdmin = currentUser.role === 'admin' || currentUser.role === 'super_admin';
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
 
   // Admin Edit Quiz & Question State (Toàn Quyền Sửa)
@@ -727,6 +728,60 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onDeleteSchedule={onDeleteSchedule || (() => {})}
           onNavigateToAttendance={onNavigateToAttendance}
         />
+      )}
+
+      {/* 0A. COURSE & CURRICULUM HUB
+          Lessons remain inside a course workflow; this intentionally replaces
+          a separate lecture menu while preserving the existing track data. */}
+      {activeSubTab === 'courses' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div className="card" style={{ padding: '22px', background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(59,130,246,0.03))', border: '1px solid rgba(37,99,235,0.16)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2563eb', fontWeight: 800, marginBottom: '7px' }}>Learning Management</div>
+                <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 850, color: 'var(--text-primary)' }}>Courses & Curriculum</h2>
+                <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)', maxWidth: '680px', lineHeight: 1.55, fontSize: '0.88rem' }}>
+                  Quản lý chương trình, lớp học, lịch học và nội dung bài học trong cùng một workflow. Bài giảng được gắn vào curriculum; không tạo một kho Lecture riêng.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => handleSelectSubTab('schedules')}>
+                  Mở Classes & Schedule
+                </button>
+                <button type="button" className="btn btn-primary" onClick={() => handleSelectSubTab('learning_sources')}>
+                  Mở Content Library
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px' }}>
+            {ALL_TRACK_OPTIONS.map(track => {
+              const trackQuizCount = quizzes.filter(q => q.category === track.id).length;
+              const trackStudentCount = studentAccounts.filter(s => s.programTrack === track.id || s.enrolledTracks?.includes(track.id)).length;
+              return (
+                <div key={track.id} className="card" style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: 800, marginBottom: '5px' }}>{track.short}</div>
+                      <h3 style={{ margin: 0, fontSize: '0.96rem', lineHeight: 1.35, color: 'var(--text-primary)' }}>{track.label.replace(/^\d+\.\s*/, '')}</h3>
+                    </div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: trackQuizCount ? '#047857' : '#64748b', background: trackQuizCount ? '#ECFDF5' : '#F1F5F9', borderRadius: '999px', padding: '4px 8px', whiteSpace: 'nowrap' }}>
+                      {trackQuizCount} assessments
+                    </span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+                    <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Học viên</div><strong style={{ fontSize: '1.05rem' }}>{trackStudentCount}</strong></div>
+                    <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Lịch đang có</div><strong style={{ fontSize: '1.05rem' }}>{schedules.length}</strong></div>
+                  </div>
+                  <button type="button" className="btn btn-ghost" style={{ justifyContent: 'flex-start', paddingLeft: 0 }} onClick={() => handleSelectSubTab('exams')}>
+                    Xem curriculum assessment →
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* ── 0B. KHẢO THÍ & CHẤM BÀI THỰC HÀNH SUB-TAB (ĐÃ GỘP HỢP NHẤT) ── */}

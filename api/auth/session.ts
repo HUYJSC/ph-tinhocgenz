@@ -22,11 +22,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  const canonicalRole = session.role === 'academic' || session.role === 'academic_staff'
+    ? 'academic_manager'
+    : session.role;
+
   return res.status(200).json({
     authenticated: true,
     user: {
       id: session.userId,
-      role: session.role,
+      role: canonicalRole,
       name: session.name,
       studentCode: session.studentCode,
       teacherCode: session.teacherCode,

@@ -12,7 +12,7 @@ export interface BackendUser {
   email: string | null;
   full_name: string;
   phone: string;
-  role: 'student' | 'teacher' | 'academic' | 'admin';
+  role: 'student' | 'teacher' | 'academic' | 'academic_manager' | 'admin' | 'super_admin';
   student_code?: string;
   teacher_code?: string;
   class_code?: string;
@@ -143,7 +143,13 @@ export const authService = {
       programTrack: (u.program_track as any) || 'office-fast-3in1',
       enrolledTracks: u.program_track ? [u.program_track as any] : ['office-fast-3in1'],
       mustChangePassword: !!u.must_change_password,
-      role: u.role === 'admin' ? 'admin' : (u.role === 'teacher' ? 'teacher' : 'student'),
+      role: u.role === 'super_admin'
+        ? 'super_admin'
+        : (u.role === 'admin'
+          ? 'admin'
+          : (u.role === 'teacher'
+            ? 'teacher'
+            : (u.role === 'academic' || u.role === 'academic_manager' ? 'academic_manager' : 'student'))),
       createdAt: ''
     };
   }

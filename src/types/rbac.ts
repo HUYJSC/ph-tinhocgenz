@@ -286,7 +286,7 @@ export function hasPermission(
   if (role === 'teacher') {
     return DEFAULT_TEACHER_PERMISSIONS.includes(permission);
   }
-  if (role === 'academic_staff' || role === 'giaovu') {
+  if (role === 'academic_manager' || role === 'academic_staff' || role === 'academic' || role === 'giaovu') {
     return DEFAULT_ACADEMIC_STAFF_PERMISSIONS.includes(permission);
   }
 

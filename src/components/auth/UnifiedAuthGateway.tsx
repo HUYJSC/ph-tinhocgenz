@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { soundFx } from '../../utils/audio';
+import { BrandMark } from '../brand';
 
 interface UnifiedAuthGatewayProps {
   initialRole?: 'student' | 'admin';
@@ -186,19 +187,15 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
               <ArrowLeft size={14} /> Quay lại Trang chủ
             </button>
 
-            {/* Brand Logo & Title - Pure Transparent, High-Contrast White & Gold (Bật Tông) */}
+            {/* Brand Logo & Title */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
-              <img
-                src="/LogoPH-mark-light.png"
-                alt="PH DIGITAL EDUCATION"
+              <BrandMark
+                size={62}
+                alt="Tin Học Gen Z"
                 style={{
-                  height: '62px',
-                  width: '62px',
-                  objectFit: 'contain',
                   filter: 'drop-shadow(0 4px 14px rgba(0, 0, 0, 0.35))',
                   flexShrink: 0
                 }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/LogoPH.png'; }}
               />
               <div>
                 <h1 style={{
@@ -210,7 +207,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   lineHeight: 1.2,
                   textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
                 }}>
-                  PH DIGITAL EDUCATION
+                  Tin Học Gen Z
                 </h1>
                 <span style={{
                   display: 'inline-block',
@@ -221,7 +218,7 @@ export const UnifiedAuthGateway: React.FC<UnifiedAuthGatewayProps> = ({
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase'
                 }}>
-                  CỔNG KHẢO THÍ & HỌC TẬP LMS
+                  Học Thiệt - Thi Thật - Giá Trị Thật
                 </span>
               </div>
             </div>

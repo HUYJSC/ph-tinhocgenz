@@ -4,11 +4,13 @@ import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack } from '..
 import { Assignment, AssignmentSubmission, TeacherNotification, GoogleDriveConfig } from '../../types/assignment';
 import { ClassScheduleItem } from '../../types/schedule';
 import { AdminPortal, AdminPortalSubTab } from './AdminPortal';
+import { AdminCapabilityNavigation } from './AdminCapabilityNavigation';
+import { getAdminNavigationItem, getAdminPathForTab } from '../../config/adminNavigation';
 import {
   Shield, Users, UserCheck, Calendar, CheckSquare, BookOpen,
   FileSpreadsheet, AlertTriangle, Video, Globe, LogOut, ArrowLeft,
   ExternalLink, Key, Menu, X,
-  Server, BarChart3, Eye, EyeOff, GraduationCap,
+  Server, BarChart3, Eye, EyeOff,
   Clock, Award, RefreshCw, XCircle, Sliders, Database,
   Search, Sparkles, Bell, Mail
 } from 'lucide-react';
@@ -17,6 +19,8 @@ import { ForgotPasswordModal } from '../auth/ForgotPasswordModal';
 import { LearningResourceService } from '../../services/learningResourceService';
 import { CertificateService } from '../../services/certificateService';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
+import { AdminBrandLockup } from '../brand/AdminBrandLockup';
+import { BrandLogo } from '../brand';
 
 interface MenuItem {
   id: AdminPortalSubTab;
@@ -85,7 +89,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
     initialSubTab = 'overview'
   } = props;
 
-  const isAdmin = isSessionActive && currentUser.role === 'admin';
+  const isAdmin = isSessionActive && (currentUser.role === 'admin' || currentUser.role === 'super_admin');
 
   // Admin Login State
   const [adminUsername, setAdminUsername] = useState('');
@@ -96,6 +100,18 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
   const [showDataCenter, setShowDataCenter] = useState(false);
+
+  const handleAdminTabSelect = (tab: AdminPortalSubTab) => {
+    setActiveSubTab(tab);
+    soundFx.playClick();
+    if (typeof window !== 'undefined') {
+      const item = getAdminNavigationItem(tab);
+      const target = `/admin/${getAdminPathForTab(tab)}`;
+      if (item && window.location.pathname !== target) {
+        window.history.pushState(null, '', target);
+      }
+    }
+  };
 
   useEffect(() => {
     if (initialSubTab) {
@@ -156,7 +172,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           zIndex: 50
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/logo-dark.png" alt="PH Digital Education" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+            <BrandLogo variant="horizontal" height={36} />
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
               CỔNG QUẢN TRỊ /ADMIN
             </span>
@@ -454,34 +470,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
             justifyContent: 'space-between',
             borderBottom: '1px solid #1e293b'
           }}>
-            {sidebarOpen ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
-                  flexShrink: 0
-                }}>
-                  <GraduationCap size={20} color="#ffffff" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>PH EDUCATION</span>
-                    <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)' }}>LMS</span>
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Cổng Quản Trị Học Vụ</div>
-                </div>
-              </div>
-            ) : (
-              <div style={{ width: '100%', textAlign: 'center' }}>
-                <GraduationCap size={22} color="#3b82f6" />
-              </div>
-            )}
+            <AdminBrandLockup collapsed={!sidebarOpen} size={sidebarOpen ? 40 : 32} />
 
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -500,8 +489,33 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav style={{ padding: '12px 8px' }}>
+          {/* Canonical 8-domain navigation. */}
+          <div style={{ padding: '12px 8px' }}>
+            <AdminCapabilityNavigation
+              activeTab={activeSubTab}
+              onSelectTab={handleAdminTabSelect}
+              currentUser={currentUser}
+              isCollapsed={!sidebarOpen}
+              variant="standalone"
+              badges={{
+                student_directory: studentAccounts.length,
+                teachers: teacherAccounts.length,
+                courses: props.quizzes.length,
+                schedules: (props.schedules || []).length,
+                exams: props.quizzes.length,
+                grading_assignments: (props.assignments || []).length,
+                learning_sources: sourcesCount || null,
+                review_queue: pendingQueueCount || null,
+                tinhocgenz_studio: internalMaterialsCount || null,
+                certificates: certificatesCount || null,
+                early_warning: '!',
+                failing_sources: failingSourcesCount || null
+              }}
+            />
+
+          {/* Legacy menu is intentionally not mounted; keep its data mapping
+              below until all external links migrate to canonical paths. */}
+          {false && <nav style={{ padding: '12px 8px' }}>
             {menuSections.map((sec, idx) => (
               <div key={idx} style={{ marginBottom: '16px' }}>
                 {sidebarOpen && (
@@ -593,7 +607,8 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
               </div>
               {sidebarOpen && <ExternalLink size={13} />}
             </a>
-          </nav>
+          </nav>}
+        </div>
         </div>
 
         {/* Sidebar Footer: Current User & Quick Switcher */}

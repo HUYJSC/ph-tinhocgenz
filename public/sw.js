@@ -1,6 +1,8 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v6-2026-production)
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v7-2026-ia)
 // Nâng cấp: Network-First cho toàn bộ HTML, JS, CSS (luôn tải code mới nhất từ Vercel) + Purge V5 Cache
-const CACHE_NAME = 'ph-eduquest-v6-2026-production';
+// Bump this when a navigation/IA release ships so clients do not keep an
+// older shell after deployment. API and private admin routes remain uncached.
+const CACHE_NAME = 'ph-eduquest-v7-2026-ia';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

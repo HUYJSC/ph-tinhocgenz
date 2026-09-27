@@ -4,11 +4,13 @@ import {
   QrCode, Award, Users, FolderArchive, Bell, User,
   Headphones, LayoutDashboard, Briefcase, ClipboardCheck,
   Shield, Layers, BarChart3, Database, Key, CreditCard,
-  TrendingUp, Settings, Share2, Lock, ChevronRight, Video, HelpCircle
+  TrendingUp, Settings, Share2, Lock, ChevronRight, Video, HelpCircle, AlertTriangle
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
+import { AdminBrandLockup } from '../brand/AdminBrandLockup';
 import { UserProfile } from '../../types/auth';
 import { hasPermission, UserPermission } from '../../types/rbac';
+import { AdminCapabilityNavigation } from '../admin/AdminCapabilityNavigation';
 
 export interface NavItem {
   id: string;
@@ -62,74 +64,78 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
     { id: 'profile', label: 'Hồ sơ cá nhân', icon: User }
   ];
 
-  // ── 2. ADMIN NAVIGATION (7 Grouped Sections with Fine-Grained RBAC Filtering) ──
+  // ── 2. ADMIN NAVIGATION (8 Enterprise SaaS Modules with Fine-Grained RBAC Filtering) ──
   const getAdminGroups = (): NavGroup[] => {
     const rawGroups: NavGroup[] = [
       {
-        groupTitle: '01. TỔNG QUAN',
+        groupTitle: '01. DASHBOARD',
         items: [
-          { id: 'overview', label: 'Tổng quan', icon: LayoutDashboard }
+          { id: 'overview', label: 'Bảng điều khiển', icon: LayoutDashboard }
         ]
       },
       {
-        groupTitle: '02. QUẢN LÝ HỆ THỐNG',
-        items: [
-          { id: 'users', label: 'Người dùng', icon: Users, requiredPermission: 'users.read' },
-          { id: 'roles', label: 'Nhóm & Vai trò', icon: Shield, requiredPermission: 'roles.manage' },
-          { id: 'permissions', label: 'Phân quyền', icon: Key, requiredPermission: 'permissions.manage' },
-          { id: 'audit_logs', label: 'Nhật ký hệ thống', icon: ClipboardCheck, requiredPermission: 'audit.read' }
-        ]
-      },
-      {
-        groupTitle: '03. ĐÀO TẠO & NỘI DUNG',
-        items: [
-          { id: 'courses_mgmt', label: 'Khóa học', icon: BookOpen, requiredPermission: 'courses.read' },
-          { id: 'classes_mgmt', label: 'Lớp học', icon: Layers, requiredPermission: 'classes.read' },
-          { id: 'teaching_schedule', label: 'Lịch giảng dạy', icon: Calendar, requiredPermission: 'schedules.read' },
-          { id: 'lessons_mgmt', label: 'Bài giảng', icon: BookOpen, requiredPermission: 'lessons.read' },
-          { id: 'assignments_mgmt', label: 'Bài tập & Kiểm tra', icon: CheckSquare, requiredPermission: 'assignments.read' },
-          { id: 'question_bank', label: 'Ngân hàng câu hỏi', icon: Database, requiredPermission: 'questions.read' },
-          { id: 'exams', label: 'Đề thi', icon: ClipboardCheck, requiredPermission: 'exams.read' },
-          { id: 'media_library', label: 'Tài liệu & Media', icon: FolderArchive, requiredPermission: 'resources.read' },
-          { id: 'learning_sources', label: 'Trung Tâm Nguồn Học Liệu', icon: FolderArchive, requiredPermission: 'resources.read' },
-          { id: 'review_queue', label: 'Nội Dung Chờ Kiểm Duyệt', icon: ClipboardCheck, requiredPermission: 'resources.manage' },
-          { id: 'tinhocgenz_studio', label: 'Kho Tài Liệu TIN HỌC GEN Z', icon: Database, requiredPermission: 'resources.read' },
-          { id: 'sync_history', label: 'Lịch Sử Đồng Bộ', icon: ClipboardCheck, requiredPermission: 'audit.read' },
-          { id: 'quality_reports', label: 'Báo Cáo Chất Lượng', icon: BarChart3, requiredPermission: 'reports.read' },
-          { id: 'failing_sources', label: 'Nguồn Bị Lỗi', icon: FolderArchive, requiredPermission: 'resources.read' },
-          { id: 'automation_settings', label: 'Thiết Lập Tự Động Hóa', icon: Settings, requiredPermission: 'system.settings' }
-        ]
-      },
-      {
-        groupTitle: '04. HỌC VIÊN & GIẢNG VIÊN',
+        groupTitle: '02. USER MANAGEMENT',
         items: [
           { id: 'students_mgmt', label: 'Học viên', icon: Users, requiredPermission: 'students.read' },
           { id: 'teachers_mgmt', label: 'Giảng viên', icon: Briefcase, requiredPermission: 'teachers.read' },
-          { id: 'attendance_mgmt', label: 'Điểm danh', icon: QrCode, requiredPermission: 'attendance.read' },
-          { id: 'certificates', label: 'Quản Lý & Cấp Chứng Chỉ', icon: Award, requiredPermission: 'certificates.read' }
+          { id: 'users', label: 'Nhân sự & Người dùng', icon: Users, requiredPermission: 'users.read' },
+          { id: 'roles', label: 'Vai trò & Nhóm quyền', icon: Shield, requiredPermission: 'roles.manage' },
+          { id: 'permissions', label: 'Phân quyền RBAC', icon: Key, requiredPermission: 'permissions.manage' },
+          { id: 'audit_logs', label: 'Nhật ký kiểm toán', icon: ClipboardCheck, requiredPermission: 'audit.read' }
         ]
       },
       {
-        groupTitle: '05. TÀI CHÍNH & VẬN HÀNH',
+        groupTitle: '03. LEARNING MANAGEMENT',
         items: [
-          { id: 'tuition_enrollment', label: 'Đăng ký & Học phí', icon: CreditCard, requiredPermission: 'enrollments.read' },
-          { id: 'revenue_stats', label: 'Doanh thu & Thống kê', icon: TrendingUp, requiredPermission: 'finance.read' },
+          { id: 'courses_mgmt', label: 'Khóa học', icon: BookOpen, requiredPermission: 'courses.read' },
+          { id: 'classes_mgmt', label: 'Lớp học & Điều độ', icon: Layers, requiredPermission: 'classes.read' },
+          { id: 'teaching_schedule', label: 'Lịch đào tạo', icon: Calendar, requiredPermission: 'schedules.read' },
+          { id: 'attendance_mgmt', label: 'Điểm danh QR & GPS', icon: QrCode, requiredPermission: 'attendance.read' }
+        ]
+      },
+      {
+        groupTitle: '04. ASSESSMENT',
+        items: [
+          { id: 'assignments_mgmt', label: 'Bài tập về nhà', icon: CheckSquare, requiredPermission: 'assignments.read' },
+          { id: 'exams', label: 'Đề thi & Sát hạch', icon: ClipboardCheck, requiredPermission: 'exams.read' },
+          { id: 'question_bank', label: 'Ngân hàng câu hỏi', icon: Database, requiredPermission: 'questions.read' },
+          { id: 'grading_assignments', label: 'Bàn chấm thi tập trung', icon: Award, requiredPermission: 'assignments.grade' },
+          { id: 'certificates', label: 'Quản lý & Cấp chứng chỉ', icon: Award, requiredPermission: 'certificates.read' }
+        ]
+      },
+      {
+        groupTitle: '05. CONTENT LIBRARY',
+        items: [
+          { id: 'learning_sources', label: 'Kho học liệu & Media', icon: FolderArchive, requiredPermission: 'resources.read' },
+          { id: 'review_queue', label: 'Hàng đợi kiểm duyệt', icon: ClipboardCheck, requiredPermission: 'resources.manage' },
+          { id: 'tinhocgenz_studio', label: 'TINHOCGENZ Studio', icon: Database, requiredPermission: 'resources.read' }
+        ]
+      },
+      {
+        groupTitle: '06. AI CENTER',
+        items: [
+          { id: 'ai_generator', label: 'AI Content Engine', icon: Sparkles, requiredPermission: 'ai.content' },
+          { id: 'meet_hub', label: 'AI Copilot & Trợ giảng', icon: Sparkles, requiredPermission: 'ai.assistant' },
+          { id: 'early_warning', label: 'AI Dự báo & Cảnh báo sớm', icon: AlertTriangle, requiredPermission: 'analytics.read' }
+        ]
+      },
+      {
+        groupTitle: '07. ANALYTICS',
+        items: [
+          { id: 'data_analytics', label: 'Hiệu quả đào tạo', icon: BarChart3, requiredPermission: 'analytics.read' },
+          { id: 'quality_reports', label: 'Báo cáo chất lượng', icon: BarChart3, requiredPermission: 'reports.read' },
+          { id: 'revenue_stats', label: 'Doanh thu & Học phí', icon: TrendingUp, requiredPermission: 'finance.read' },
+          { id: 'tuition_enrollment', label: 'Tuyển sinh & Học phí', icon: CreditCard, requiredPermission: 'enrollments.read' },
           { id: 'crm_support', label: 'CRM & Chăm sóc HV', icon: Headphones, requiredPermission: 'crm.read' }
         ]
       },
       {
-        groupTitle: '06. AI & DỮ LIỆU',
+        groupTitle: '08. SYSTEM',
         items: [
-          { id: 'ai_generator', label: 'AI Content Engine', icon: Sparkles, requiredPermission: 'ai.content' },
-          { id: 'data_analytics', label: 'Phân tích dữ liệu', icon: BarChart3, requiredPermission: 'analytics.read' },
-          { id: 'reports', label: 'Báo cáo', icon: BarChart3, requiredPermission: 'reports.read' }
-        ]
-      },
-      {
-        groupTitle: '07. HỆ THỐNG',
-        items: [
-          { id: 'integrations', label: 'Tích hợp', icon: Share2, requiredPermission: 'system.integrations' },
-          { id: 'system_settings', label: 'Cài đặt', icon: Settings, requiredPermission: 'system.settings' },
+          { id: 'system_settings', label: 'Cài đặt nền tảng', icon: Settings, requiredPermission: 'system.settings' },
+          { id: 'automation_settings', label: 'Tự động hóa', icon: Settings, requiredPermission: 'system.settings' },
+          { id: 'integrations', label: 'Tích hợp API', icon: Share2, requiredPermission: 'system.integrations' },
+          { id: 'sync_history', label: 'Lịch sử đồng bộ', icon: ClipboardCheck, requiredPermission: 'audit.read' },
           { id: 'backup_security', label: 'Bảo mật & Sao lưu', icon: Lock, requiredPermission: 'system.security' }
         ]
       }
@@ -186,7 +192,7 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
   const isStudent = role === 'student';
   const isAdmin = role === 'admin' || role === 'super_admin';
   const isTeacher = role === 'teacher';
-  const isGiaoVu = role === 'giaovu' || role === 'academic_staff';
+  const isGiaoVu = role === 'giaovu' || role === 'academic_staff' || role === 'academic_manager';
 
   return (
     <>
@@ -233,10 +239,11 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
           background: isAdmin ? '#081D38' : '#FFFFFF',
           flexShrink: 0
         }}>
-          <BrandLogo
-            variant={isAdmin ? 'dark' : 'horizontal'}
-            height={isCollapsed ? 32 : 40}
-          />
+          {isAdmin ? (
+            <AdminBrandLockup collapsed={isCollapsed} size={isCollapsed ? 32 : 40} />
+          ) : (
+            <BrandLogo variant="horizontal" height={isCollapsed ? 32 : 40} />
+          )}
         </div>
 
         {/* ── Navigation Content ── */}
@@ -425,6 +432,21 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
           )}
 
           {isAdmin && (
+            <AdminCapabilityNavigation
+              activeTab={activeTab}
+              onSelectTab={tab => {
+                onSelectTab(tab);
+                onCloseMobile?.();
+              }}
+              currentUser={currentUser}
+              isCollapsed={isCollapsed}
+              variant="shell"
+            />
+          )}
+
+          {/* Legacy renderer retained temporarily for type/route compatibility;
+              it is no longer mounted after the canonical navigation rollout. */}
+          {false && isAdmin && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {getAdminGroups().map((group, gIdx) => (
                 <div key={gIdx}>

@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
   /* ── 1. TYPOGRAPHY SCALE ── */
   --font-sans: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --font-sans: 'Be Vietnam Pro', 'Inter', 'Segoe UI', Arial, sans-serif;
   --font-serif: 'Times New Roman', Times, 'Georgia', serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
