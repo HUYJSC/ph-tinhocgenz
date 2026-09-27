@@ -15,7 +15,8 @@
  * - Duplicate check-in in the same session
  */
 
-import { setCorsHeaders } from '../_lib/cors';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { setCorsHeaders } from '../_lib/cors.js';
 
 export interface AttendanceCheckRequest {
   user_id: string;
@@ -100,7 +101,7 @@ export function validateDynamicQRToken(token: string, maxAgeMs: number = 60000):
   return { valid: true };
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (setCorsHeaders(req, res)) return;
 
   if (req.method !== 'POST') {
