@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders } from '../_lib/cors.js';
-import { getSessionFromCookie } from '../_lib/authSession.js';
+import { getSessionFromRequest } from '../_lib/authSession.js';
 
 interface ChatRequestBody {
   prompt: string;
@@ -20,12 +20,7 @@ Trách nhiệm của bạn:
 `;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method === 'OPTIONS') {
-    setCorsHeaders(res);
-    return res.status(204).end();
-  }
-
-  setCorsHeaders(res);
+  if (setCorsHeaders(req, res)) return;
 
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -37,8 +32,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // 1. Session verification (Optional fallback to open assistant for prospective students)
-    const session = getSessionFromCookie(req);
-    const userId = session?.user?.id || 'guest';
+    const session = getSessionFromRequest(req);
+    const userId = session?.userId || 'guest';
 
     const { prompt, mode = 'EXPLAIN', track, studentCode } = (req.body || {}) as ChatRequestBody;
 
