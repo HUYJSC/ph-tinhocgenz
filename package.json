@@ -5,16 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "prisma generate && tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "node tests/run-tests.mjs"
+    "test": "node tests/run-tests.mjs",
+    "postinstall": "prisma generate"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.115.0",
     "@tanstack/react-query": "^5.104.0",
     "canvas-confetti": "^1.9.4",
@@ -36,6 +38,7 @@
     "@types/web-push": "^3.6.4",
     "@vercel/node": "^12.0.1",
     "@vitejs/plugin-react": "^4.3.1",
+    "prisma": "^5.22.0",
     "sharp": "^0.35.4",
     "typescript": "^5.5.3",
     "vite": "^5.4.2"
