@@ -20,7 +20,6 @@ import { LearningResourceService } from '../../services/learningResourceService'
 import { CertificateService } from '../../services/certificateService';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
 import { AdminBrandLockup } from '../brand/AdminBrandLockup';
-import { BrandLogo } from '../brand';
 
 interface MenuItem {
   id: AdminPortalSubTab;
@@ -172,7 +171,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
           zIndex: 50
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <BrandLogo variant="horizontal" height={36} />
+            <img src="/logo-dark.png" alt="PH Digital Education" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
               CỔNG QUẢN TRỊ /ADMIN
             </span>

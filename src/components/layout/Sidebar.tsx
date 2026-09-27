@@ -6,7 +6,6 @@ import {
   ChevronDown, GraduationCap, Target
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-import { BrandLogo } from '../brand';
 
 export type ActiveTab =
   | 'dashboard'
@@ -207,7 +206,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             justifyContent: 'flex-start'
           }}
         >
-          <BrandLogo variant="horizontal" height={38} />
+          <img src="/logo.png" alt="PH DIGITAL EDUCATION" style={{ height: '100%', width: 'auto', objectFit: 'contain' }} />
         </div>
       </div>
 

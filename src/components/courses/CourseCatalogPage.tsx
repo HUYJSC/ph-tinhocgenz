@@ -8,7 +8,6 @@ import {
   Code2, Monitor, Cpu, Award, Play, Globe
 } from 'lucide-react';
 import type { Course } from '../../types/course';
-import { BrandMark } from '../brand';
 
 // Demo courses cho fallback khi chưa có backend
 const DEMO_COURSES: Course[] = [
@@ -338,7 +337,7 @@ export function CourseCatalogPage({ onCourseSelect, showHeader = true }: CourseC
             position: 'sticky', top: 0, zIndex: 50
           }}>
             <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#0B2545' }}>
-              <BrandMark size={36} />
+              <img src="/logo-icon.png" alt="Tin Học Gen Z" width="36" height="36" style={{ objectFit: 'contain' }} />
               <div>
                 <strong style={{ fontSize: '15px', fontWeight: 800, display: 'block', lineHeight: 1.1 }}>Tin Học Gen Z</strong>
                 <small style={{ color: '#0057B8', fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em' }}>PH DIGITAL EDUCATION</small>

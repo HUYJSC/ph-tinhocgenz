@@ -1,25 +1,14 @@
 import React from 'react';
-import {
-  Home,
-  Map,
-  Brain,
-  FileText,
-  User,
-  LayoutDashboard,
-  Calendar,
-  CheckSquare,
-  QrCode
-} from 'lucide-react';
+import { BookOpen, Calendar, QrCode, CheckSquare, User } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { triggerHapticFeedback } from '../../utils/mobilePlatform';
-import { ActiveTab } from './Sidebar';
 
-interface MobileBottomNavProps {
-  activeTab: ActiveTab;
+export interface MobileBottomNavProps {
+  activeTab: string;
+  onSelectTab?: (tabId: string) => void;
+  onNavigateTab?: (newTab: string) => void;
   isStaff?: boolean;
-  onNavigateTab: (tab: ActiveTab) => void;
   onOpenProfile?: () => void;
-  // Giữ lại props cũ để tương thích hoàn toàn
   onNavigateLearn?: () => void;
   onNavigateClass?: () => void;
   onNavigateCreds?: () => void;
@@ -28,210 +17,142 @@ interface MobileBottomNavProps {
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
-  isStaff = false,
+  onSelectTab,
   onNavigateTab,
-  onOpenProfile,
-  onNavigateLearn,
-  onNavigateClass,
-  onNavigateCreds,
-  onContinueLearning
+  onOpenProfile
 }) => {
-  const handleVibrate = () => {
-    soundFx.playClick();
-    triggerHapticFeedback('light');
-  };
+  const navItems = [
+    { id: 'courses', label: 'Khóa học', icon: BookOpen },
+    { id: 'schedule', label: 'Lịch học', icon: Calendar },
+    { id: 'attendance', label: 'Điểm danh', icon: QrCode, isCenter: true },
+    { id: 'assignments', label: 'Bài tập', icon: CheckSquare },
+    { id: 'profile', label: 'Cá nhân', icon: User }
+  ];
 
-  const handleClick = (tab: ActiveTab, action?: () => void) => {
-    handleVibrate();
-    if (action) {
-      action();
-    } else {
-      onNavigateTab(tab);
+  const handleItemClick = (id: string, isCenter?: boolean) => {
+    soundFx.playClick();
+    triggerHapticFeedback(isCenter ? 'medium' : 'light');
+    if (id === 'profile' && onOpenProfile) {
+      onOpenProfile();
+      return;
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (onSelectTab) {
+      onSelectTab(id);
+    } else if (onNavigateTab) {
+      onNavigateTab(id);
+    }
   };
 
   return (
-    <nav
-      className="mobile-nav"
-      aria-label="Điều hướng chính di động"
-      style={{
-        display: 'none',
-        position: 'fixed',
-        bottom: 0, left: 0, right: 0,
-        height: 'calc(62px + max(8px, var(--safe-bottom, 0px)))',
-        paddingBottom: 'max(8px, var(--safe-bottom, 0px))',
-        paddingLeft: 'max(6px, var(--safe-left, 0px))',
-        paddingRight: 'max(6px, var(--safe-right, 0px))',
-        background: 'var(--bg-glass, rgba(255, 255, 255, 0.94))',
-        backdropFilter: 'blur(24px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
-        borderTop: '1px solid var(--border-color, #E2E8F0)',
-        zIndex: 90,
-        boxShadow: '0 -4px 20px rgba(15, 23, 42, 0.08)',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        userSelect: 'none'
-      }}
-    >
-      {isStaff ? (
-        // ── 5 TABS GIẢNG VIÊN ──
-        <>
-          {/* 1. Tổng quan */}
-          <button
-            onClick={() => handleClick('dashboard')}
-            style={getBtnStyle(activeTab === 'dashboard')}
-            aria-label="Tổng quan giảng dạy"
-          >
-            <LayoutDashboard size={21} color={activeTab === 'dashboard' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'dashboard')}>Tổng quan</span>
-            {activeTab === 'dashboard' && <ActiveDot />}
-          </button>
+    <>
+      <nav
+        className="mobile-bottom-nav safe-bottom"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '62px',
+          background: '#FFFFFF',
+          borderTop: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          zIndex: 900,
+          boxShadow: '0 -2px 10px rgba(15, 23, 42, 0.06)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
+      >
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id || (item.id === 'courses' && activeTab === 'dashboard');
 
-          {/* 2. Ca dạy */}
-          <button
-            onClick={() => handleClick('schedule')}
-            style={getBtnStyle(activeTab === 'schedule')}
-            aria-label="Lịch dạy và ca học"
-          >
-            <Calendar size={21} color={activeTab === 'schedule' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'schedule')}>Ca dạy</span>
-            {activeTab === 'schedule' && <ActiveDot />}
-          </button>
+          if (item.isCenter) {
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleItemClick(item.id, true)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  padding: 0,
+                  marginTop: '-18px'
+                }}
+              >
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background: '#0057B8',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 14px rgba(0, 87, 184, 0.4)',
+                  border: '3px solid #FFFFFF'
+                }}>
+                  <Icon size={22} />
+                </div>
+                <span style={{
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  color: isActive ? '#0057B8' : '#64748B'
+                }}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          }
 
-          {/* 3. Bài nộp */}
-          <button
-            onClick={() => handleClick('assignments')}
-            style={getBtnStyle(activeTab === 'assignments')}
-            aria-label="Chấm điểm bài nộp"
-          >
-            <CheckSquare size={21} color={activeTab === 'assignments' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'assignments')}>Bài nộp</span>
-            {activeTab === 'assignments' && <ActiveDot />}
-          </button>
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleItemClick(item.id, false)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                flex: 1,
+                height: '100%',
+                color: isActive ? '#0057B8' : '#64748B',
+                transition: 'color 0.15s ease'
+              }}
+            >
+              <Icon size={19} color={isActive ? '#0057B8' : '#64748B'} />
+              <span style={{
+                fontSize: '11px',
+                fontWeight: isActive ? 700 : 500
+              }}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
 
-          {/* 4. Điểm danh */}
-          <button
-            onClick={() => handleClick('attendance')}
-            style={getBtnStyle(activeTab === 'attendance')}
-            aria-label="Điểm danh và QR checkin"
-          >
-            <QrCode size={21} color={activeTab === 'attendance' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'attendance')}>Điểm danh</span>
-            {activeTab === 'attendance' && <ActiveDot />}
-          </button>
-
-          {/* 5. Cá nhân */}
-          <button
-            onClick={() => { handleVibrate(); onOpenProfile ? onOpenProfile() : handleClick('analytics'); }}
-            style={getBtnStyle(false)}
-            aria-label="Tài khoản cá nhân"
-          >
-            <User size={21} color="#64748B" />
-            <span style={getLabelStyle(false)}>Cá nhân</span>
-          </button>
-        </>
-      ) : (
-        // ── 5 TABS HỌC VIÊN ──
-        <>
-          {/* 1. Trang chủ */}
-          <button
-            onClick={() => handleClick('dashboard', onNavigateLearn)}
-            style={getBtnStyle(activeTab === 'dashboard')}
-            aria-label="Trang chủ học tập"
-          >
-            <Home size={21} color={activeTab === 'dashboard' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'dashboard')}>Trang chủ</span>
-            {activeTab === 'dashboard' && <ActiveDot />}
-          </button>
-
-          {/* 2. Lộ trình */}
-          <button
-            onClick={() => handleClick('learning_path')}
-            style={getBtnStyle(activeTab === 'learning_path')}
-            aria-label="Lộ trình học"
-          >
-            <Map size={21} color={activeTab === 'learning_path' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'learning_path')}>Lộ trình</span>
-            {activeTab === 'learning_path' && <ActiveDot />}
-          </button>
-
-          {/* 3. Luyện tập */}
-          <button
-            onClick={() => handleClick('practice_skill', onContinueLearning)}
-            style={getBtnStyle(activeTab === 'practice_skill' || activeTab === 'quizzes')}
-            aria-label="Luyện tập trắc nghiệm và kỹ năng"
-          >
-            <Brain size={21} color={activeTab === 'practice_skill' || activeTab === 'quizzes' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'practice_skill' || activeTab === 'quizzes')}>Luyện tập</span>
-            {(activeTab === 'practice_skill' || activeTab === 'quizzes') && <ActiveDot />}
-          </button>
-
-          {/* 4. Bài tập */}
-          <button
-            onClick={() => handleClick('assignments', onNavigateClass)}
-            style={getBtnStyle(activeTab === 'assignments' || activeTab === 'attendance')}
-            aria-label="Bài tập thực hành và lớp học"
-          >
-            <FileText size={21} color={activeTab === 'assignments' || activeTab === 'attendance' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'assignments' || activeTab === 'attendance')}>Bài tập</span>
-            {(activeTab === 'assignments' || activeTab === 'attendance') && <ActiveDot />}
-          </button>
-
-          {/* 5. Cá nhân */}
-          <button
-            onClick={() => { handleVibrate(); onOpenProfile ? onOpenProfile() : handleClick('analytics', onNavigateCreds); }}
-            style={getBtnStyle(activeTab === 'analytics')}
-            aria-label="Hồ sơ cá nhân và chứng nhận"
-          >
-            <User size={21} color={activeTab === 'analytics' ? '#2563EB' : '#64748B'} />
-            <span style={getLabelStyle(activeTab === 'analytics')}>Cá nhân</span>
-            {activeTab === 'analytics' && <ActiveDot />}
-          </button>
-        </>
-      )}
-    </nav>
+      <style>{`
+        @media (min-width: 768px) {
+          .mobile-bottom-nav {
+            display: none !important;
+          }
+        }
+        @media (max-width: 767px) {
+          main {
+            padding-bottom: 72px !important;
+          }
+        }
+      `}</style>
+    </>
   );
 };
-
-const ActiveDot: React.FC = () => (
-  <span
-    style={{
-      position: 'absolute',
-      bottom: '3px',
-      width: '16px',
-      height: '3px',
-      borderRadius: '999px',
-      background: 'linear-gradient(90deg, #2563EB, #60A5FA)',
-      boxShadow: '0 1px 4px rgba(37, 99, 235, 0.4)'
-    }}
-  />
-);
-
-const getBtnStyle = (isActive: boolean): React.CSSProperties => ({
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '3px',
-  height: '100%',
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  padding: '6px 2px',
-  outline: 'none',
-  minHeight: '48px',
-  minWidth: '48px',
-  position: 'relative',
-  transform: isActive ? 'scale(1.04)' : 'scale(1)',
-  transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
-});
-
-const getLabelStyle = (isActive: boolean): React.CSSProperties => ({
-  fontSize: '11px',
-  fontWeight: isActive ? 800 : 500,
-  color: isActive ? '#2563EB' : 'var(--text-secondary, #64748B)',
-  letterSpacing: '-0.01em',
-  lineHeight: 1.2
-});

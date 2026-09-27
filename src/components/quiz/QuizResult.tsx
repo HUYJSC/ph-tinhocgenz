@@ -5,7 +5,6 @@ import { Trophy, CheckCircle2, XCircle, RotateCcw, Home, Award, ChevronDown, Che
 import { formatTime } from './QuizRunner';
 import { soundFx } from '../../utils/audio';
 import { WeakSkillService } from '../../services/weakSkillService';
-import { BrandMark } from '../brand';
 
 interface QuizResultProps {
   quiz: Quiz;
@@ -466,16 +465,20 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                   border: '2px solid #fbbf24'
                 }}
               >
-                <BrandMark size={56} />
+                <img
+                  src="/logo-icon.png"
+                  alt="PH Digital Education"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px' }}
+                />
               </div>
             </div>
             <div style={{ textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '0.85rem', color: '#f59e0b', fontWeight: 800 }}>
               GIẤY CHỨNG NHẬN HOÀN THÀNH
             </div>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '10px 0 4px', background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              TIN HỌC GEN Z
+              PH DIGITAL EDUCATION
             </h2>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', letterSpacing: '0.04em' }}>TINHOCGENZ • Certificate of Achievement</p>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', letterSpacing: '0.04em' }}>PH- TINHOCGENZ • Certificate of Achievement</p>
 
             <div style={{ margin: '28px 0', borderTop: '1px dashed rgba(255, 255, 255, 0.2)', borderBottom: '1px dashed rgba(255, 255, 255, 0.2)', padding: '20px 0' }}>
               <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Trao tặng cho học viên:</div>
