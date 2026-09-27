@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  BookOpen, Sparkles, Calendar, CheckSquare,
+  Home, BookOpen, Sparkles, Calendar, CheckSquare,
   QrCode, Award, Users, FolderArchive, Bell, User,
   Headphones, LayoutDashboard, Briefcase, ClipboardCheck,
   Shield, Layers, BarChart3, Database, Key, CreditCard,
@@ -49,7 +49,7 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
   onOpenConsultation,
   currentUser
 }) => {
-  // ── 1. STUDENT NAVIGATION (4 Grouped Sections: HỌC TẬP, TIẾN ĐỘ, AI, CÁ NHÂN) ──
+  // ── 1. STUDENT NAVIGATION (Clean Grouped Architecture) ──
   const getStudentGroups = (): NavGroup[] => [
     {
       groupTitle: 'HỌC TẬP',
@@ -63,7 +63,7 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
     {
       groupTitle: 'TIẾN ĐỘ',
       items: [
-        { id: 'dashboard', label: 'Thành tích', icon: Award },
+        { id: 'dashboard', label: 'Thành tích', icon: Home },
         { id: 'certificates', label: 'Chứng chỉ', icon: Award }
       ]
     },

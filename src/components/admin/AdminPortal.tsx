@@ -818,6 +818,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onExportExcel={exportGradebookExcel}
           onOpenFileSplitter={() => setShowFileSplitterModal(true)} // Tách Đề 3 Môn: Word • Excel • PPT
           currentUser={currentUser}
+          studentAccounts={studentAccounts}
+          teacherAccounts={teacherAccounts}
+          quizzes={quizzes}
+          schedules={schedules}
+          attempts={attempts}
           onOpenPermissions={() => {
             if (teacherAccounts && teacherAccounts.length > 0) {
               const firstTeacher = teacherAccounts[0];
