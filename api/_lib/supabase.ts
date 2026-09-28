@@ -57,7 +57,8 @@ export async function verifyUserRole(authHeader?: string): Promise<AuthRoleCheck
       role,
       userId: user.id
     };
-  } catch (err: any) {
-    return { authenticated: false, error: err?.message || 'Token verification failed' };
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : 'Token verification failed';
+    return { authenticated: false, error: errMsg };
   }
 }

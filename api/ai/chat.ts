@@ -105,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         timestamp: new Date().toISOString()
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[AI Gateway Exception]:', error);
     return res.status(500).json({
       success: false,

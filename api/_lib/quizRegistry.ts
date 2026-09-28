@@ -1,4 +1,4 @@
-import type { Quiz } from '../../src/types/quiz';
+import type { Quiz, Question } from '../../src/types/quiz';
 
 // Fallback or server registry for quizzes. In a real app, this should come from the database.
 export const SERVER_QUIZ_REGISTRY: Record<string, Quiz> = {
@@ -29,18 +29,21 @@ export function getQuizForServer(quizId: string): Quiz | null {
     return SERVER_QUIZ_REGISTRY[quizId] || null;
 }
 
-export function stripQuizAnswers(quiz: Quiz): any {
-    const questionsWithoutAnswers = quiz.questions.map((q: any) => {
-        const qCopy = { ...q };
-        delete qCopy.correctAnswer;
-        if (qCopy.type === 'matching') {
-            qCopy.pairs = qCopy.pairs?.map((p: any) => {
-                const pCopy = { ...p };
-                delete pCopy.right;
-                return pCopy;
-            });
+type QuestionWithoutAnswer = Omit<Question, 'correctAnswer' | 'matchingPairs'> & {
+    correctAnswer?: never;
+    pairs?: Array<{ id: string; left: string }>;
+};
+
+type QuizStripped = Omit<Quiz, 'questions'> & { questions: QuestionWithoutAnswer[] };
+
+export function stripQuizAnswers(quiz: Quiz): QuizStripped {
+    const questionsWithoutAnswers: QuestionWithoutAnswer[] = quiz.questions.map((q) => {
+        const { correctAnswer: _ca, matchingPairs, ...qRest } = q;
+        const stripped: QuestionWithoutAnswer = { ...qRest };
+        if (q.type === 'matching' && matchingPairs) {
+            stripped.pairs = matchingPairs.map(({ id, left }) => ({ id, left }));
         }
-        return qCopy;
+        return stripped;
     });
     
     return {

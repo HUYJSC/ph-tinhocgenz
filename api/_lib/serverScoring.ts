@@ -1,12 +1,16 @@
+import type { Quiz } from '../../src/types/quiz';
+
 export interface QuestionResult {
     question_id: string;
-    user_answer: any;
+    user_answer: string | number | boolean | string[] | Record<string, string> | undefined;
     is_correct: boolean;
     score_earned: number;
     max_points: number;
 }
 
-export function scoreQuiz(quiz: any, answers: Record<string, any>): {
+type UserAnswers = Record<string, string | number | boolean | string[] | Record<string, string>>;
+
+export function scoreQuiz(quiz: Quiz, answers: UserAnswers): {
     question_results: QuestionResult[];
     total_score: number;
     max_score: number;
@@ -28,7 +32,7 @@ export function scoreQuiz(quiz: any, answers: Record<string, any>): {
             if (question.type === 'single' || question.type === 'true-false') {
                 isCorrect = userAnswer === question.correctAnswer;
             } else if (question.type === 'multiple') {
-                const correctSet = new Set(question.correctAnswer as string[]);
+                const correctSet = new Set(question.correctAnswer as unknown as string[]);
                 const userSet = new Set(userAnswer as string[]);
                 if (correctSet.size === userSet.size && [...correctSet].every(val => userSet.has(val))) {
                     isCorrect = true;
@@ -38,18 +42,17 @@ export function scoreQuiz(quiz: any, answers: Record<string, any>): {
                 const userAnsStr = String(userAnswer).toLowerCase().trim();
                 isCorrect = correctAnsStr === userAnsStr;
             } else if (question.type === 'matching') {
-                // Simple implementation
-                const correctMatches = question.correctAnswer as Record<string, string>; // left -> right
+                const correctMatches = question.correctAnswer as unknown as Record<string, string>;
                 const userMatches = userAnswer as Record<string, string>;
                 const correctKeys = Object.keys(correctMatches);
-                
+
                 let matchesCorrect = 0;
                 for (const key of correctKeys) {
                     if (correctMatches[key] === userMatches[key]) {
                         matchesCorrect++;
                     }
                 }
-                
+
                 if (matchesCorrect === correctKeys.length) {
                     isCorrect = true;
                 }
@@ -60,10 +63,10 @@ export function scoreQuiz(quiz: any, answers: Record<string, any>): {
             scoreEarned = maxPoints;
             correctCount++;
         }
-        
+
         totalScore += scoreEarned;
         maxScore += maxPoints;
-        
+
         results.push({
             question_id: question.id,
             user_answer: userAnswer,
@@ -72,9 +75,9 @@ export function scoreQuiz(quiz: any, answers: Record<string, any>): {
             max_points: maxPoints
         });
     }
-    
+
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
-    
+
     return {
         question_results: results,
         total_score: totalScore,

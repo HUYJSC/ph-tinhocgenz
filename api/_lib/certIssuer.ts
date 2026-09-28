@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface IssueCertPayload {
     studentId: string;
@@ -23,7 +24,7 @@ export function generateCertHash(certId: string, studentId: string, score: numbe
 }
 
 export async function issueCertificateToDatabase(
-    supabase: any,
+    supabase: SupabaseClient,
     payload: IssueCertPayload
 ): Promise<{ certificate_id: string, cert_hash: string }> {
     const certId = generateCertificateId(payload.studentCode || 'STD', payload.track || 'GEN');

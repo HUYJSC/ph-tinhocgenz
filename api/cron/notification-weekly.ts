@@ -195,9 +195,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           pushPayload
         );
         results.pushSent++;
-      } catch (pushErr: any) {
+      } catch (pushErr: unknown) {
         // Subscription hết hạn → vô hiệu hóa
-        if (pushErr.statusCode === 410 || pushErr.statusCode === 404) {
+        const statusCode = (pushErr as { statusCode?: number })?.statusCode;
+        if (statusCode === 410 || statusCode === 404) {
           await supabase
             .from('push_subscriptions')
             .update({ is_active: false })

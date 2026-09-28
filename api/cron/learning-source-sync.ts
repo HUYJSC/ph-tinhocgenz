@@ -94,10 +94,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: true,
       data: syncSummary
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : 'Lỗi xử lý đồng bộ định kỳ nguồn học liệu.';
     return res.status(500).json({
       ok: false,
-      error: err?.message || 'Lỗi xử lý đồng bộ định kỳ nguồn học liệu.'
+      error: errMsg
     });
   }
 }
