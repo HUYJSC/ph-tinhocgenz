@@ -2,30 +2,21 @@
  * POST /api/attendance/check
  * Enterprise Student Attendance Verification Engine
  * Strictly typed (No any, No @ts-ignore)
- * 
- * Validates:
- * - user_id / studentId (Student Identity)
- * - class_id / classId (Class / Cohort instance)
- * - qr_token / pin_code (Dynamic rolling token 30-60s)
- * - coords / latitude + longitude (GPS Geofence <= 5m)
- * - timestamp (Freshness & replay prevention)
- * 
- * Rejects:
- * - Distance > 5m radius (OUTSIDE_GEOFENCE)
- * - Expired or replay QR token (INVALID_QR_TOKEN / TOKEN_EXPIRED)
- * - Duplicate check-in in the same session (DUPLICATE_CHECKIN)
+ * Integrated with Prisma ORM and Vercel Serverless
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders } from '../_lib/cors.js';
 import {
-  AttendanceRequest,
+  type AttendanceRequest,
   CLASSROOM_LOCATION,
   calculateHaversineDistanceMeters,
   validateDynamicQRToken,
   isAlreadyCheckedIn,
   recordAttendance
 } from '../_lib/attendanceUtils.js';
+
+export type { AttendanceRequest };
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void | VercelResponse> {
   if (setCorsHeaders(req, res)) return;
@@ -84,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       });
     }
 
-    // 4. Validate dynamic QR token freshness
+    // 4. Validate dynamic rolling QR token freshness
     if (qrToken) {
       const qrValidation = validateDynamicQRToken(qrToken, 60000);
       if (!qrValidation.valid) {
@@ -117,7 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       }
     }
 
-    // 6. Duplicate check-in prevention
+    // 6. Duplicate check-in prevention (Checks Prisma attendance session)
     const todayIso = new Date().toISOString().split('T')[0];
     const alreadyChecked = await isAlreadyCheckedIn(userId, classId, todayIso);
     if (alreadyChecked) {
@@ -128,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       });
     }
 
-    // 7. Record Attendance in Database / Serverless cache
+    // 7. Record Attendance in Prisma Database / Serverless safe cache
     const ipHeader = req.headers['x-forwarded-for'];
     const clientIp = Array.isArray(ipHeader) ? ipHeader[0] : (ipHeader ? ipHeader.split(',')[0].trim() : undefined);
     const userAgent = req.headers['user-agent'] as string | undefined;
