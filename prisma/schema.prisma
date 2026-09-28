@@ -23,22 +23,22 @@ enum UserRoleType {
 }
 
 model User {
-  id               String       @id @default(uuid())
-  email            String?      @unique
-  phone            String?      @unique
-  username         String       @unique
-  fullName         String
-  passwordHash     String
-  role             UserRoleType @default(STUDENT)
-  studentCode      String?      @unique
-  teacherCode      String?      @unique
-  avatarUrl        String?
-  birthYear        Int?
-  mustChangePass   Boolean      @default(false)
-  isActive         Boolean      @default(true)
-  lastLoginAt      DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id             String       @id @default(uuid())
+  email          String?      @unique
+  phone          String?      @unique
+  username       String       @unique
+  fullName       String
+  passwordHash   String
+  role           UserRoleType @default(STUDENT)
+  studentCode    String?      @unique
+  teacherCode    String?      @unique
+  avatarUrl      String?
+  birthYear      Int?
+  mustChangePass Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   // Relationships
   roleAssignments  UserRoleAssignment[]
@@ -76,24 +76,24 @@ model Role {
 model Permission {
   id          String   @id @default(uuid())
   action      String   @unique // e.g. 'courses.create', 'finance.read'
-  module      String   // e.g. 'courses', 'users', 'finance'
+  module      String // e.g. 'courses', 'users', 'finance'
   description String?
   createdAt   DateTime @default(now())
 
-  roles       RolePermission[]
+  roles RolePermission[]
 
   @@index([module])
   @@map("permissions")
 }
 
 model RolePermission {
-  id           String     @id @default(uuid())
+  id           String   @id @default(uuid())
   roleId       String
   permissionId String
-  createdAt    DateTime   @default(now())
+  createdAt    DateTime @default(now())
 
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, permissionId])
   @@map("role_permissions")
@@ -105,8 +105,8 @@ model UserRoleAssignment {
   roleId    String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roleId])
   @@map("user_role_assignments")
@@ -124,32 +124,32 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  courses     Course[]
+  courses Course[]
 
   @@map("categories")
 }
 
 model Course {
-  id            String         @id @default(uuid())
-  code          String         @unique // e.g. 'MOS-WORD-365'
+  id            String   @id @default(uuid())
+  code          String   @unique // e.g. 'MOS-WORD-365'
   title         String
-  slug          String         @unique
+  slug          String   @unique
   description   String?
   thumbnailUrl  String?
   categoryId    String
-  price         Decimal        @default(0.0) @db.Decimal(12, 2)
-  isPublished   Boolean        @default(false)
-  level         String         @default("ALL_LEVELS") // BASIC, ADVANCED, ALL_LEVELS
-  durationHours Int            @default(12)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  price         Decimal  @default(0.0) @db.Decimal(12, 2)
+  isPublished   Boolean  @default(false)
+  level         String   @default("ALL_LEVELS") // BASIC, ADVANCED, ALL_LEVELS
+  durationHours Int      @default(12)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  category      Category       @relation(fields: [categoryId], references: [id])
-  modules       CourseModule[]
-  enrollments   Enrollment[]
-  classes       Class[]
-  exams         Exam[]
-  certificates  Certificate[]
+  category     Category       @relation(fields: [categoryId], references: [id])
+  modules      CourseModule[]
+  enrollments  Enrollment[]
+  classes      Class[]
+  exams        Exam[]
+  certificates Certificate[]
 
   @@index([categoryId])
   @@index([isPublished])
@@ -165,8 +165,8 @@ model CourseModule {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
 
   @@index([courseId, orderIndex])
   @@map("course_modules")
@@ -180,20 +180,20 @@ enum LessonType {
 }
 
 model Lesson {
-  id          String             @id @default(uuid())
+  id          String     @id @default(uuid())
   moduleId    String
   title       String
-  type        LessonType         @default(VIDEO)
-  orderIndex  Int                @default(0)
-  durationSec Int                @default(0)
-  contentBody String?            @db.Text
+  type        LessonType @default(VIDEO)
+  orderIndex  Int        @default(0)
+  durationSec Int        @default(0)
+  contentBody String?    @db.Text
   documentUrl String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  module      CourseModule       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  video       Video?
-  progress    LearningProgress[]
+  module   CourseModule       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  video    Video?
+  progress LearningProgress[]
 
   @@index([moduleId, orderIndex])
   @@map("lessons")
@@ -208,7 +208,7 @@ model Video {
   thumbnailUrl String?
   createdAt    DateTime @default(now())
 
-  lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@map("videos")
 }
@@ -232,8 +232,8 @@ model Enrollment {
   enrolledAt  DateTime         @default(now())
   completedAt DateTime?
 
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([status])
@@ -249,8 +249,8 @@ model LearningProgress {
   completedAt    DateTime?
   lastAccessedAt DateTime  @default(now())
 
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson         Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
   @@index([userId, isCompleted])
@@ -262,24 +262,24 @@ model LearningProgress {
 // ==========================================
 
 model Class {
-  id          String       @id @default(uuid())
-  code        String       @unique // e.g. 'K26-WE01'
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. 'K26-WE01'
   name        String
   courseId    String
   teacherId   String
-  room        String       @default("LAB01")
-  lat         Float?       // Geofence Center Latitude
-  lng         Float?       // Geofence Center Longitude
-  radiusM     Float        @default(5.0) // 5 meters strict geofence
-  scheduleDay String?      // e.g. "2-4-6" or "3-5-7"
-  timeSlot    String?      // e.g. "18:00 - 20:00"
-  isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  room        String   @default("LAB01")
+  lat         Float? // Geofence Center Latitude
+  lng         Float? // Geofence Center Longitude
+  radiusM     Float    @default(5.0) // 5 meters strict geofence
+  scheduleDay String? // e.g. "2-4-6" or "3-5-7"
+  timeSlot    String? // e.g. "18:00 - 20:00"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  course      Course       @relation(fields: [courseId], references: [id])
-  teacher     User         @relation("ClassTeacher", fields: [teacherId], references: [id])
-  attendance  Attendance[]
+  course     Course       @relation(fields: [courseId], references: [id])
+  teacher    User         @relation("ClassTeacher", fields: [teacherId], references: [id])
+  attendance Attendance[]
 
   @@index([teacherId])
   @@index([courseId])
@@ -294,22 +294,22 @@ enum AttendanceStatus {
 }
 
 model Attendance {
-  id           String           @id @default(uuid())
-  classId      String
-  userId       String
-  sessionDate  DateTime         @default(now())
-  status       AttendanceStatus @default(PRESENT)
-  checkInTime  DateTime         @default(now())
-  method       String           @default("QR_CODE") // QR_CODE, PIN_CODE, MANUAL
-  lat          Float?
-  lng          Float?
-  distanceM    Float?
-  ipAddress    String?
-  userAgent    String?
-  verified     Boolean          @default(true)
+  id          String           @id @default(uuid())
+  classId     String
+  userId      String
+  sessionDate DateTime         @default(now())
+  status      AttendanceStatus @default(PRESENT)
+  checkInTime DateTime         @default(now())
+  method      String           @default("QR_CODE") // QR_CODE, PIN_CODE, MANUAL
+  lat         Float?
+  lng         Float?
+  distanceM   Float?
+  ipAddress   String?
+  userAgent   String?
+  verified    Boolean          @default(true)
 
-  class        Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
-  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([classId, sessionDate])
   @@index([userId, status])
@@ -327,37 +327,37 @@ enum ExamType {
 }
 
 model Exam {
-  id           String        @id @default(uuid())
-  courseId     String?
-  title        String
-  description  String?
-  type         ExamType      @default(PRACTICE)
-  durationMin  Int           @default(45)
-  passScore    Float         @default(80.0) // 80% passing
-  isPublished  Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id          String   @id @default(uuid())
+  courseId    String?
+  title       String
+  description String?
+  type        ExamType @default(PRACTICE)
+  durationMin Int      @default(45)
+  passScore   Float    @default(80.0) // 80% passing
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  course       Course?       @relation(fields: [courseId], references: [id])
-  questions    Question[]
-  attempts     ExamAttempt[]
+  course    Course?       @relation(fields: [courseId], references: [id])
+  questions Question[]
+  attempts  ExamAttempt[]
 
   @@index([courseId])
   @@map("exams")
 }
 
 model Question {
-  id           String          @id @default(uuid())
+  id           String   @id @default(uuid())
   examId       String
-  questionText String          @db.Text
-  explanation  String?         @db.Text
-  skillTag     String?         // e.g. 'VLOOKUP', 'TABLE_FORMATTING'
-  orderIndex   Int             @default(0)
-  points       Float           @default(1.0)
-  createdAt    DateTime        @default(now())
+  questionText String   @db.Text
+  explanation  String?  @db.Text
+  skillTag     String? // e.g. 'VLOOKUP', 'TABLE_FORMATTING'
+  orderIndex   Int      @default(0)
+  points       Float    @default(1.0)
+  createdAt    DateTime @default(now())
 
-  exam         Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
-  answers      Answer[]
+  exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers        Answer[]
   studentAnswers StudentAnswer[]
 
   @@index([examId, orderIndex])
@@ -365,31 +365,31 @@ model Question {
 }
 
 model Answer {
-  id           String   @id @default(uuid())
-  questionId   String
-  answerText   String   @db.Text
-  isCorrect    Boolean  @default(false)
-  orderIndex   Int      @default(0)
+  id         String  @id @default(uuid())
+  questionId String
+  answerText String  @db.Text
+  isCorrect  Boolean @default(false)
+  orderIndex Int     @default(0)
 
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([questionId])
   @@map("answers")
 }
 
 model ExamAttempt {
-  id          String          @id @default(uuid())
+  id          String    @id @default(uuid())
   examId      String
   userId      String
-  score       Float           @default(0.0)
-  maxScore    Float           @default(100.0)
-  isPassed    Boolean         @default(false)
-  startedAt   DateTime        @default(now())
+  score       Float     @default(0.0)
+  maxScore    Float     @default(100.0)
+  isPassed    Boolean   @default(false)
+  startedAt   DateTime  @default(now())
   submittedAt DateTime?
 
-  exam        Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  answers     StudentAnswer[]
+  exam    Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers StudentAnswer[]
 
   @@index([userId, isPassed])
   @@index([examId])
@@ -397,14 +397,14 @@ model ExamAttempt {
 }
 
 model StudentAnswer {
-  id          String      @id @default(uuid())
-  attemptId   String
-  questionId  String
-  selectedId  String?
-  isCorrect   Boolean     @default(false)
+  id         String  @id @default(uuid())
+  attemptId  String
+  questionId String
+  selectedId String?
+  isCorrect  Boolean @default(false)
 
-  attempt     ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt  ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([attemptId])
   @@map("student_answers")
@@ -435,7 +435,7 @@ model Payment {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([orderCode])
@@ -465,8 +465,8 @@ model Certificate {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([certificateCode])
@@ -494,7 +494,7 @@ model Notification {
   linkUrl   String?
   createdAt DateTime         @default(now())
 
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
   @@map("notifications")
@@ -513,7 +513,7 @@ model ChatHistory {
   tokens    Int      @default(0)
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@map("chat_history")
@@ -526,14 +526,14 @@ model ChatHistory {
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String?
-  action    String   // e.g. 'USER_LOGIN', 'GRADE_CHANGED', 'QR_SESSION_OPEN'
-  resource  String   // e.g. 'ATTENDANCE', 'EXAM', 'PERMISSION'
+  action    String // e.g. 'USER_LOGIN', 'GRADE_CHANGED', 'QR_SESSION_OPEN'
+  resource  String // e.g. 'ATTENDANCE', 'EXAM', 'PERMISSION'
   details   String?  @db.Text
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
 
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([action, createdAt])
   @@index([userId])

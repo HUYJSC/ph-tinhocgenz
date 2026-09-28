@@ -118,6 +118,21 @@ vercel logs
 vercel rollback
 ```
 
+### Required server environment variables
+
+The Vercel project must also define these server-side variables for the API functions:
+
+| Variable | Scope |
+|---|---|
+| `DATABASE_URL` | Production |
+| `AUTH_SECRET` | Production |
+| `GEMINI_API_KEY` | Production |
+| `VAPID_PUBLIC_KEY` | Production |
+| `VAPID_PRIVATE_KEY` | Production |
+| `VAPID_SUBJECT` | Production |
+
+This codebase uses a custom session cookie and does not read `NEXTAUTH_SECRET` or `NEXTAUTH_URL`.
+
 ---
 
 ## 7. Custom Domain
