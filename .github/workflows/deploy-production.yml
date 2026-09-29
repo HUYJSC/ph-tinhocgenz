@@ -84,14 +84,10 @@ jobs:
       - name: 🚀 Deploy to Vercel Production
         id: deploy
         run: |
-          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -E '^https://' | tail -n 1)
-          if [ -z "$DEPLOY_URL" ]; then
-            DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | tail -n 1)
-          fi
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --yes --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-          echo "### 🚀 Vercel Production URL" >> $GITHUB_STEP_SUMMARY
-          echo "Successfully deployed: $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Vercel Production URL: $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
+
 
 
       # ── Post-deploy summary ──
