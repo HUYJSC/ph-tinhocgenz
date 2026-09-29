@@ -61,31 +61,32 @@ jobs:
       - name: 🔗 Link Vercel project
         run: |
           mkdir -p .vercel
-          cat << 'EOF' > .vercel/project.json
+          cat << EOF > .vercel/project.json
           {
             "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
-            "orgId": "${{ secrets.VERCEL_ORG_ID }}"
+            "orgId": "${{ secrets.VERCEL_ORG_ID }}",
+            "projectName": "eduquest-study-app"
           }
           EOF
 
       - name: 📥 Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
+        run: |
+          echo "### 🔍 Vercel CLI Auth Check" >> $GITHUB_STEP_SUMMARY
+          vercel whoami --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee -a $GITHUB_STEP_SUMMARY || true
+          echo "### 📥 Vercel Pull Log" >> $GITHUB_STEP_SUMMARY
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --debug 2>&1 | tee -a $GITHUB_STEP_SUMMARY
 
       - name: 🏗️ Build Vercel artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          echo "### 🏗️ Vercel Build Log" >> $GITHUB_STEP_SUMMARY
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --debug 2>&1 | tee -a $GITHUB_STEP_SUMMARY
 
       - name: 🚀 Deploy to Vercel Production
         id: deploy
         run: |
-          DEPLOY_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --debug)
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
 
       # ── Post-deploy summary ──
       - name: 📋 Deployment summary
