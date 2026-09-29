@@ -57,8 +57,20 @@ jobs:
           test -n "$VERCEL_TOKEN" || { echo "VERCEL_TOKEN is not configured" >&2; exit 1; }
           test -n "$VERCEL_ORG_ID" || { echo "VERCEL_ORG_ID is not configured" >&2; exit 1; }
           test -n "$VERCEL_PROJECT_ID" || { echo "VERCEL_PROJECT_ID is not configured" >&2; exit 1; }
+      - name: 📋 Inspect Vercel Cloud Build Logs
+        run: |
+          echo "## 📋 Vercel Cloud Build Logs for Failed Deployments" >> $GITHUB_STEP_SUMMARY
+          echo "### 1. ph-tinhocgenz (dpl_HVy1CXGyMXhgXSZmkadCUAzdb4SW)" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          vercel inspect dpl_HVy1CXGyMXhgXSZmkadCUAzdb4SW --logs --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee -a $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### 2. eduquest-study-app (dpl_Ct1TjXm8wCAmW6CTst7jk9ZukjA4)" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          vercel inspect dpl_Ct1TjXm8wCAmW6CTst7jk9ZukjA4 --logs --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee -a $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: 🔗 Link Vercel project
+
         run: |
           mkdir -p .vercel
           cat << EOF > .vercel/project.json
