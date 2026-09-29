@@ -1,4 +1,4 @@
-import type { Quiz, Question } from '../../src/types/quiz';
+import type { Quiz, Question } from './quizTypes.js';
 
 // Fallback or server registry for quizzes. In a real app, this should come from the database.
 export const SERVER_QUIZ_REGISTRY: Record<string, Quiz> = {
