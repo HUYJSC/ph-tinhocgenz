@@ -1,8 +1,8 @@
 // Prisma Schema for TINHOCGENZ Commercial LMS SaaS
-// Database: PostgreSQL with Foreign Keys, Proper Indexes & Constraints
+// Database: MySQL 8.x on DirectAdmin Hosting (IP: 103.82.20.110)
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
