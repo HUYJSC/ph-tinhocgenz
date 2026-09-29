@@ -9,6 +9,7 @@ jobs:
   ftp-deploy:
     name: 🚀 Deploy to Production (DirectAdmin)
     runs-on: ubuntu-latest
+    environment: production   # Đọc secrets từ Environment "production"
 
     steps:
       # 1. Checkout source code
