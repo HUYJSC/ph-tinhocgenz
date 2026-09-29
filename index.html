@@ -130,7 +130,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js?v=7-ia').then(function(reg) {
+          navigator.serviceWorker.register('/sw.js?v=8-clean').then(function(reg) {
             reg.update();
           }).catch(function(err) {
             console.warn('SW registration failed:', err);
