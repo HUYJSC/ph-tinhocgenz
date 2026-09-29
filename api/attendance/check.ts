@@ -16,7 +16,6 @@ import {
   recordAttendance
 } from '../_lib/attendanceUtils.js';
 
-export type { AttendanceRequest };
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void | VercelResponse> {
   if (setCorsHeaders(req, res)) return;
