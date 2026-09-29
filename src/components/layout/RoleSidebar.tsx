@@ -6,8 +6,6 @@ import {
   Shield, Layers, BarChart3, Database, Key, CreditCard,
   TrendingUp, Settings, Share2, Lock, ChevronRight, Video, HelpCircle
 } from 'lucide-react';
-import { BrandLogo } from '../brand/BrandLogo';
-import { AdminBrandLockup } from '../brand/AdminBrandLockup';
 import { UserProfile } from '../../types/auth';
 import { hasPermission, UserPermission } from '../../types/rbac';
 import { AdminCapabilityNavigation } from '../admin/AdminCapabilityNavigation';
@@ -242,23 +240,6 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
           overflowY: 'auto'
         }}
       >
-        {/* ── Top Master Logo Area (Height ~72px, Object-fit Contain) ── */}
-        <div style={{
-          height: '72px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: isCollapsed ? 'center' : 'flex-start',
-          padding: isCollapsed ? '0 8px' : '0 18px',
-          borderBottom: isAdmin ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #E2E8F0',
-          background: isAdmin ? '#081D38' : '#FFFFFF',
-          flexShrink: 0
-        }}>
-          {isAdmin ? (
-            <AdminBrandLockup collapsed={isCollapsed} size={isCollapsed ? 32 : 40} />
-          ) : (
-            <BrandLogo variant="horizontal" height={isCollapsed ? 32 : 40} />
-          )}
-        </div>
 
         {/* ── Navigation Content ── */}
         <div style={{ padding: isCollapsed ? '16px 8px' : '16px 12px', flex: 1 }}>
