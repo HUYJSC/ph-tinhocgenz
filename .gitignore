@@ -23,6 +23,8 @@ dist-ssr
 # Editor directories
 .vscode/*
 !.vscode/extensions.json
+# ⚠️ SECURITY: SFTP config chứa mật khẩu hosting – KHÔNG BAO GIỜ commit lên GitHub
+.vscode/sftp.json
 .idea
 .DS_Store
 *.suo
