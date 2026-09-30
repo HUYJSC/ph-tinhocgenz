@@ -1,1 +1,0 @@
-"""Attendance application package."""

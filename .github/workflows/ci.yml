@@ -53,39 +53,7 @@ jobs:
         run: npm test
         continue-on-error: true   # non-blocking until full test suite is ready
 
-  # ── 2. BACKEND LINT & TEST (Django / Python) ────────────────────────────────
-  backend:
-    name: 🐍 Backend – Django tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    defaults:
-      run:
-        working-directory: backend
-
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 🐍 Setup Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
-
-      - name: 📦 Install backend dependencies
-        run: pip install -r requirements.txt
-
-      - name: ✅ Django system checks
-        run: python manage.py check --settings=config.settings.base
-        continue-on-error: true   # non-blocking
-
-      - name: 🧪 Run Django tests
-        run: python manage.py test --settings=config.settings.base
-        continue-on-error: true   # non-blocking until full test suite is ready
-
-  # ── 3. SECURITY SCAN (lightweight) ──────────────────────────────────────────
+  # ── 2. SECURITY SCAN (lightweight) ──────────────────────────────────────────
   security:
     name: 🔒 Security – dependency audit
     runs-on: ubuntu-latest

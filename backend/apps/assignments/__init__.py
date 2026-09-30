@@ -1,1 +1,0 @@
-"""Assignments application package."""
