@@ -1,11 +1,24 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+
   "framework": "vite",
-  "rewrites": [
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+
+  "crons": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "path": "/api/cron/notification-weekly",
+      "schedule": "0 12 * * 0"
     },
+    {
+      "path": "/api/cron/learning-source-sync",
+      "schedule": "0 2 1 * *"
+    }
+  ],
+
+  "rewrites": [
     {
       "source": "/((?!api/|assets/|.*\\..*).*)",
       "destination": "/index.html"
