@@ -827,35 +827,135 @@ button, .btn, .mobile-nav, nav, a {
   gap: 24px;
 }
 
+/* ─── MODERN LMS AUTH GATEWAY STYLES (TIN HỌC GEN Z) ─── */
+.auth-page-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #F4F8FD;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 87, 184, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 63, 136, 0.06) 0px, transparent 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font-family: var(--font-sans);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
 .auth-master-card {
   width: 100%;
-  max-width: 1020px;
+  max-width: 980px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 24px;
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -15px rgba(11, 37, 69, 0.08), 0 0 1px 1px rgba(11, 37, 69, 0.04);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 410px 1fr;
   overflow: hidden;
   position: relative;
   z-index: 10;
 }
 
 .auth-left-column {
-  background: linear-gradient(160deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
-  padding: 44px 36px;
+  background: linear-gradient(160deg, #0B2545 0%, #003F88 55%, #0057B8 100%);
+  padding: 40px 32px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   color: #FFFFFF;
+  position: relative;
+  overflow: hidden;
 }
 
 .auth-right-column {
   background: #FFFFFF;
-  padding: 44px 38px;
+  padding: 40px 36px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.auth-mobile-header {
+  display: none;
+}
+
+/* Auth Submit Button States (Requirement 8) */
+.auth-btn-submit {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.auth-btn-submit:not(:disabled) {
+  background: #0057B8;
+  color: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 87, 184, 0.28);
+}
+
+.auth-btn-submit:not(:disabled):hover {
+  background: #003F88;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 63, 136, 0.35);
+}
+
+.auth-btn-submit:not(:disabled):focus-visible {
+  outline: 2px solid #0057B8;
+  outline-offset: 2px;
+}
+
+.auth-btn-submit:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 87, 184, 0.25);
+}
+
+.auth-btn-submit.is-loading {
+  background: #003F88;
+  color: #FFFFFF;
+  cursor: wait;
+  opacity: 0.92;
+}
+
+.auth-btn-submit.is-success {
+  background: #10B981;
+  color: #FFFFFF;
+  cursor: default;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.auth-btn-submit.is-failed {
+  background: #DC2626;
+  color: #FFFFFF;
+  animation: authShake 0.45s ease-in-out;
+}
+
+@keyframes authShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@media (max-width: 900px) {
+  .auth-master-card {
+    grid-template-columns: 350px 1fr;
+  }
+  .auth-left-column {
+    padding: 32px 24px;
+  }
+  .auth-right-column {
+    padding: 32px 26px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -868,15 +968,26 @@ button, .btn, .mobile-nav, nav, a {
     border-radius: 16px;
     gap: 16px;
   }
+  .auth-page-container {
+    padding: 16px 12px;
+  }
   .auth-master-card {
-    border-radius: 18px;
+    border-radius: 16px;
     grid-template-columns: 1fr;
+    box-shadow: 0 10px 25px -5px rgba(11, 37, 69, 0.06);
   }
   .auth-left-column {
-    padding: 24px 20px 20px;
+    display: none; /* Hide long introduction on mobile (Requirement 10) */
+  }
+  .auth-mobile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 20px;
   }
   .auth-right-column {
-    padding: 24px 18px;
+    padding: 24px 18px 28px;
   }
 }
 
