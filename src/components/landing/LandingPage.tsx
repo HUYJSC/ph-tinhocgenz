@@ -31,9 +31,9 @@ interface Course {
 }
 
 const COURSES: Course[] = [
-  { id: 'web-frontend-react', category: 'web-dev', title: 'Lập trình Frontend (FE) Hiện Đại', label: 'Frontend Web Dev', description: 'Nắm vững HTML5, CSS3, JavaScript ES6+, React 18, TypeScript và xây dựng giao diện người dùng Responsive tốc độ cao.', duration: '12 buổi', lessons: 'React & TypeScript', level: 'Thực chiến', icon: MonitorCheck, featured: true },
-  { id: 'web-backend-python', category: 'web-dev', title: 'Lập trình Backend (BE) Chuyên Nghiệp', label: 'Backend Web Dev', description: 'Làm chủ Python, Django REST Framework, Node.js, CSDL SQL/PostgreSQL và thiết kế hệ thống RESTful API an toàn, bảo mật.', duration: '12 buổi', lessons: 'Python, API & SQL', level: 'Chuyên sâu', icon: Target, featured: true },
-  { id: 'web-fullstack-dev', category: 'web-dev', title: 'Fullstack Web Developer (FE + BE)', label: 'Fullstack Mastery', description: 'Tích hợp toàn diện Frontend React với Backend API, cơ chế xác thực Session/JWT, ORM và triển khai Cloud Vercel/Docker.', duration: '16 buổi', lessons: 'Fullstack Project', level: 'Toàn diện', icon: Laptop, featured: true },
+  { id: 'web-frontend-react', category: 'web-dev', title: 'Lập trình Frontend Hiện Đại', label: 'Frontend Web Dev', description: 'Nắm vững HTML5, CSS3, JavaScript ES6+, React 18, TypeScript và xây dựng giao diện người dùng Responsive tốc độ cao.', duration: '12 buổi', lessons: 'React & TypeScript', level: 'Thực chiến', icon: MonitorCheck, featured: true },
+  { id: 'web-backend-python', category: 'web-dev', title: 'Lập trình Backend Chuyên Nghiệp', label: 'Backend Web Dev', description: 'Làm chủ Python, Django REST Framework, Node.js, CSDL SQL/PostgreSQL và thiết kế hệ thống RESTful API an toàn, bảo mật.', duration: '12 buổi', lessons: 'Python, API & SQL', level: 'Chuyên sâu', icon: Target, featured: true },
+  { id: 'web-fullstack-dev', category: 'web-dev', title: 'Fullstack Web Developer', label: 'Fullstack Mastery', description: 'Tích hợp toàn diện Frontend React với Backend API, cơ chế xác thực Session/JWT, ORM và triển khai Cloud Vercel/Docker.', duration: '16 buổi', lessons: 'Fullstack Project', level: 'Toàn diện', icon: Laptop, featured: true },
   { id: 'office-3-in-1', category: 'office', title: 'Tin học văn phòng 3 trong 1', label: 'Word · Excel · PowerPoint', description: 'Xây dựng nền tảng làm việc với bộ công cụ văn phòng thông qua bài tập thực hành.', duration: '10–12 buổi', lessons: '3 chuyên đề', level: 'Cơ bản', icon: Laptop, featured: true },
   { id: 'mos-excel', category: 'mos-ic3', title: 'MOS Excel 2019/365', label: 'Chứng chỉ MOS', description: 'Học theo nhóm kỹ năng, luyện thao tác và làm bài kiểm tra theo thời gian.', duration: '6 buổi', lessons: 'Excel', level: 'Cơ bản–nâng cao', icon: BarChart3, featured: true },
   { id: 'mos-word', category: 'mos-ic3', title: 'MOS Word 2019/365', label: 'Chứng chỉ MOS', description: 'Rèn kỹ năng định dạng tài liệu, quản lý nội dung và xử lý văn bản chuyên nghiệp.', duration: '6 buổi', lessons: 'Word', level: 'Cơ bản–nâng cao', icon: FileCheck2, featured: true },
@@ -47,7 +47,7 @@ const COURSES: Course[] = [
 
 const COURSE_TABS: Array<{ key: CourseCategory; label: string }> = [
   { key: 'all', label: 'Tất cả nổi bật' },
-  { key: 'web-dev', label: 'Lập trình Web (FE & BE)' },
+  { key: 'web-dev', label: 'Lập trình Web' },
   { key: 'mos-ic3', label: 'MOS & IC3' },
   { key: 'cntt', label: 'Chứng chỉ CNTT' },
   { key: 'office', label: 'Kỹ năng văn phòng' }

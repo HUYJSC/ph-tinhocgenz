@@ -56,7 +56,7 @@ Qua rà soát chuyên sâu từng dòng mã nguồn, đội ngũ phát hiện 5 
 | **UI-P0-03** | 🔴 P0 | Sidebar 380px bị nén ép 4 card nghiệp vụ quan trọng | Tái cấu trúc Bento Grid 8:4 (Desktop), tự động co giãn 68% : 32%, gap 24–32px, chuyển 1 cột trên Mobile/Tablet. |
 | **UI-P1-01** | 🟡 P1 | Hero Banner chưa cân đối tỷ lệ và thông tin tiến độ | Thiết kế lại Hero Banner với padding 32px, H1 28px, progress bar chuẩn có nhãn và tooltip giải thích cách tính. |
 | **UI-P1-02** | 🟡 P1 | Card "Việc cần làm" thiếu deadline và mức độ ưu tiên | Bổ sung deadline cụ thể, trạng thái quá hạn (Overdue state), mức ưu tiên (Cao/Trung bình/Thấp) và Empty state. |
-| **UI-P1-03** | 🟡 P1 | Khối "Kỹ năng chuyên môn" dùng số phần trăm thiếu căn cứ | Bổ sung căn cứ tính điểm (số bài test đã làm, độ khó, trọng số, confidence score) theo chuẩn DA. |
+| **UI-P1-03** | 🟡 P1 | Khối "Kỹ năng chuyên môn" dùng số phần trăm thiếu căn cứ | Bổ sung căn cứ tính điểm (số bài test đã làm, độ khó, trọng số, confidence score) theo chuẩn phân tích dữ liệu. |
 | **UI-P2-01** | 🟢 P2 | Khung Trợ lý AI quá hẹp trong sidebar | Hỗ trợ nút mở rộng Drawer toàn màn hình (AI Tutor Drawer) hoặc chuyển sang tab chuyên biệt. |
 | **UI-P2-02** | 🟢 P2 | Thiếu responsive breakpoints cho Tablet (768–1024px) | Bổ sung media queries chuyển đổi mượt mà giữa desktop grid và mobile single-column. |
 

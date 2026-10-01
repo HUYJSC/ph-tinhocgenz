@@ -1,6 +1,6 @@
-# 🏛️ KIẾN TRÚC PHÂN TẦNG HỆ THỐNG: FRONTEND (FE) & BACKEND (BE)
+# 🏛️ KIẾN TRÚC PHÂN TẦNG HỆ THỐNG: FRONTEND & BACKEND
 
-Tài liệu này xác lập cấu trúc phân tách rõ ràng giữa phân hệ **Frontend (FE)** và **Backend (BE)** của nền tảng **Tin Học Gen Z • PH DIGITAL EDUCATION**.
+Tài liệu này xác lập cấu trúc phân tách rõ ràng giữa phân hệ **Frontend** và **Backend** của nền tảng **Tin Học Gen Z • PH DIGITAL EDUCATION**.
 
 ---
 
@@ -15,7 +15,7 @@ Tài liệu này xác lập cấu trúc phân tách rõ ràng giữa phân hệ 
             |                                               |
             v                                               v
 +-----------------------+                       +-----------------------+
-|     FRONTEND (FE)     | <=== REST / JSON ===> |     BACKEND (BE)      |
+|       FRONTEND        | <=== REST / JSON ===> |        BACKEND        |
 |    Client UI & PWA    |       HttpOnly        |   Services & Storage  |
 +-----------------------+                       +-----------------------+
 | - React 18 & Vite     |                       | 1. Serverless API     |
@@ -33,7 +33,7 @@ Tài liệu này xác lập cấu trúc phân tách rõ ràng giữa phân hệ 
 
 ---
 
-## 2. Phân Hệ Frontend (FE)
+## 2. Phân Hệ Frontend
 
 * **Thư mục mã nguồn cốt lõi**: `src/` và `public/`
 * **Công nghệ chủ lực**:
@@ -47,7 +47,7 @@ Tài liệu này xác lập cấu trúc phân tách rõ ràng giữa phân hệ 
 
 ---
 
-## 3. Phân Hệ Backend (BE)
+## 3. Phân Hệ Backend
 
 Hệ thống Backend được thiết kế theo mô hình **Hybrid Backend** linh hoạt:
 
@@ -68,7 +68,7 @@ Hệ thống Backend được thiết kế theo mô hình **Hybrid Backend** lin
 
 ---
 
-## 4. Giao Tiếp FE - BE (Client SDK)
+## 4. Giao Tiếp Frontend - Backend (Client SDK)
 
 Frontend kết nối Backend thông qua SDK trung tâm `src/services/api/`:
 * `backendApiClient.ts`: Cung cấp các hàm gọi `get()`, `post()`, `request()` tự động gán header, credentials và chuẩn hóa format phản hồi:

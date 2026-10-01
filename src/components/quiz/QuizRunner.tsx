@@ -13,7 +13,7 @@ interface QuizRunnerProps {
   onExit: () => void;
   bookmarkedQuestionIds: string[];
   onToggleBookmark: (questionId: string) => void;
-  userId?: string; // [BA FIX] for autosave scoping
+  userId?: string; // For autosave scoping
 }
 
 export function formatTime(seconds: number): string {
@@ -127,7 +127,7 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
         </div>
       )}
 
-      {/* [BA FIX] Autosave recovery banner */}
+      {/* Autosave recovery banner */}
       {showRestoredBanner && (
         <div style={{
           background: 'rgba(16, 185, 129, 0.15)',
@@ -150,7 +150,7 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({
         </div>
       )}
 
-      {/* [BA FIX] Unanswered warning banner for exam mode */}
+      {/* Unanswered warning banner for exam mode */}
       {mode === 'exam' && unansweredCount > 0 && unansweredCount <= 5 && (
         <div style={{
           background: 'rgba(245, 158, 11, 0.12)',

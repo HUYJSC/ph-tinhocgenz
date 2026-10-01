@@ -110,7 +110,7 @@ quadrantChart
 
 ### Chi tiết các cấp độ rủi ro:
 1. **CRITICAL (P0 — Nguy cấp)**:
-   - **Xung đột kiến trúc Dual Backend**: Khiến team dev không xác định được nguồn chân lý của cơ sở dữ liệu (PostgreSQL qua Supabase hay SQLite qua Django).
+   - **Xung đột kiến trúc Dual Backend**: Khiến đội ngũ phát triển không xác định được nguồn chân lý của cơ sở dữ liệu (PostgreSQL qua Supabase hay SQLite qua Django).
    - **Mất mát dữ liệu học viên**: Do lưu trữ tạm thời trên LocalStorage mà không đảm bảo giao dịch ACID trên máy chủ cơ sở dữ liệu.
    - **File Monolith AdminPortal (3,308 dòng)**: Nguy cơ đổ vỡ dây chuyền khi một thành phần bị lỗi cú pháp hoặc re-render vô tận.
 2. **HIGH (P1 — Nghiêm trọng)**:

@@ -28,7 +28,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [showSkillBreakdown, setShowSkillBreakdown] = useState(true);
 
-  // [BA Section 13 & 15] Compute skill breakdown and detect weak skills
+  // Compute skill breakdown and detect weak skills
   const skillBreakdown = useMemo(() => WeakSkillService.computeSkillBreakdown(quiz, attempt), [quiz, attempt]);
   const weakSkills = useMemo(() => WeakSkillService.detectFromAttempt(quiz, attempt), [quiz, attempt]);
   const hasSkillData = skillBreakdown.some(s => !s.skillId.startsWith('no-skill-'));
@@ -197,7 +197,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
         </div>
       </div>
 
-      {/* [BA Section 13] SKILL BREAKDOWN SECTION */}
+      {/* SKILL BREAKDOWN SECTION */}
       {hasSkillData && (
         <div className="card" style={{ marginBottom: '24px', padding: '20px 24px', borderRadius: 'var(--radius-xl)' }}>
           <div
@@ -243,7 +243,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                 })}
               </div>
 
-              {/* [BA Section 15] Weak Skill Recommendations */}
+              {/* Weak Skill Recommendations */}
               {weakSkills.length > 0 && (
                 <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-lg)', padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>

@@ -1,4 +1,4 @@
-// ── WEAK SKILL DETECTION SERVICE (BA Review — Section 15) ──
+// ── WEAK SKILL DETECTION SERVICE ──
 // Rule Engine V1: Explainable, không cần Machine Learning
 // Rule: questions >= 5 AND accuracy < 60% → Weak Skill
 // Rule: questions >= 3 AND accuracy < 40% → Critical (Early Detection)
@@ -17,7 +17,7 @@ const THRESHOLD_BORDERLINE = 70; // accuracy < 70% → Borderline
 
 export class WeakSkillService {
   /**
-   * [BA Section 15] Detect weak skills từ kết quả QuizAttempt
+   * Detect weak skills từ kết quả QuizAttempt
    * Rule-based, explainable output
    */
   static detectFromAttempt(quiz: Quiz, attempt: QuizAttempt): WeakSkill[] {
@@ -85,7 +85,7 @@ export class WeakSkillService {
   }
 
   /**
-   * [BA Section 13] Compute skill breakdown for QuizResult display
+   * Compute skill breakdown for QuizResult display
    */
   static computeSkillBreakdown(quiz: Quiz, attempt: QuizAttempt): SkillBreakdownItem[] {
     const skillMap: Record<string, {

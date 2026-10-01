@@ -59,7 +59,7 @@ const DEMO_COURSES: Course[] = [
   {
     id: 'course-fe-modern',
     slug: 'lap-trinh-frontend-hien-dai',
-    title: 'Lập Trình Frontend (FE) Hiện Đại',
+    title: 'Lập Trình Frontend Hiện Đại',
     description: 'HTML5, CSS3, JavaScript ES6+, React 18, TypeScript, Tailwind CSS. Xây dựng giao diện web chuyên nghiệp từ đầu.',
     track: 'web-frontend',
     thumbnail_url: '',
@@ -74,7 +74,7 @@ const DEMO_COURSES: Course[] = [
   {
     id: 'course-be-professional',
     slug: 'lap-trinh-backend-chuyen-nghiep',
-    title: 'Lập Trình Backend (BE) Chuyên Nghiệp',
+    title: 'Lập Trình Backend Chuyên Nghiệp',
     description: 'Python, Django REST Framework, Node.js, PostgreSQL, RESTful API, JWT Auth, Microservices. Kiến trúc server-side toàn diện.',
     track: 'web-backend',
     thumbnail_url: '',

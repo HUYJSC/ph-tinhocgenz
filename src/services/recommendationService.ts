@@ -1,4 +1,4 @@
-// ── RECOMMENDATION ENGINE V1 (BA Review — Section 16) ──
+// ── RECOMMENDATION ENGINE V1 ──
 // Rule-based, không cần AI/ML ở Version 1
 // Flow: Weak Skill → Related Lesson → Practice → Re-test
 
@@ -41,7 +41,7 @@ const SKILL_TO_LESSON_MAP: Record<string, string> = {
 
 export class RecommendationService {
   /**
-   * [BA Section 16] Generate recommendations cho weak skills
+   * Generate recommendations cho weak skills
    * Priority: Practice → Lesson → Re-test
    */
   static generateForWeakSkill(weakSkill: WeakSkill): SkillRecommendation[] {

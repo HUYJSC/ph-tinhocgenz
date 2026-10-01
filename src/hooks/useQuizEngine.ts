@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Quiz, Question, QuestionResult, QuizAttempt } from '../types/quiz';
 import { soundFx } from '../utils/audio';
 
-// [BA FIX] Autosave key generator for exam recovery
+// Autosave key generator for exam recovery
 const getAutosaveKey = (quizId: string, userId?: string) =>
   `phtgz_exam_autosave_${quizId}_${userId || 'anon'}`;
 
@@ -26,7 +26,7 @@ interface UseQuizEngineProps {
 }
 
 export function useQuizEngine({ quiz, mode, onFinish, userId, serverMode = false }: UseQuizEngineProps) {
-  // [BA FIX] Try to restore autosave state for exam mode
+  // Try to restore autosave state for exam mode
   const autosaveKey = getAutosaveKey(quiz.id, userId);
   const savedState: AutosaveState | null = (() => {
     if (mode !== 'exam') return null;
@@ -120,8 +120,7 @@ export function useQuizEngine({ quiz, mode, onFinish, userId, serverMode = false
     lastQuestionSwitchTime.current = now;
   }, [currentQuestion]);
 
-  // Submit quiz function
-  // [BA FIX] Clear autosave data on submit
+  // Clear autosave data on submit
   const clearAutosave = useCallback(() => {
     try { localStorage.removeItem(autosaveKey); } catch { }
   }, [autosaveKey]);
@@ -173,11 +172,11 @@ export function useQuizEngine({ quiz, mode, onFinish, userId, serverMode = false
     };
 
     onFinish(attempt);
-    clearAutosave(); // [BA FIX] Clear saved state after successful submit
+    clearAutosave(); // Clear saved state after successful submit
   }, [isSubmitted, recordQuestionTime, quiz, answers, isQuestionCorrect, questionTimeSpents, startTime, mode, onFinish, clearAutosave]);
 
 
-  // [BA FIX] Autosave every 30 seconds in exam mode
+  // Autosave every 30 seconds in exam mode
   useEffect(() => {
     if (mode !== 'exam' || isSubmitted) return;
     const save = () => {
@@ -282,7 +281,7 @@ export function useQuizEngine({ quiz, mode, onFinish, userId, serverMode = false
     remainingSeconds,
     isSubmitted,
     answeredCount,
-    wasRestored,   // [BA FIX] true if state was recovered from autosave
+    wasRestored,   // True if state was recovered from autosave
     setAnswer,
     goToQuestion,
     nextQuestion,

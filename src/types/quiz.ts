@@ -34,7 +34,7 @@ export interface Question {
   explanation: string;
   hint?: string;
   points: number;
-  // [BA Skill Taxonomy] — Section 10 & 5
+  // Skill Taxonomy
   skillId?: string;     // e.g. 'skill-vlookup', 'skill-if-func'
   topicId?: string;     // e.g. 'topic-excel-formula'
   subjectId?: string;   // e.g. 'subject-mos-excel'

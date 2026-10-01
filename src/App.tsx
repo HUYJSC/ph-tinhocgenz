@@ -190,7 +190,7 @@ export function App() {
     }
   });
 
-  // [BA FIX] Track whether guest has clicked through to auth or accessed /admin
+  // Track whether guest has clicked through to auth or accessed /admin
   const [showAuthGateway, setShowAuthGateway] = useState<boolean>(() => {
     try {
       if (isAdminPath()) return true;

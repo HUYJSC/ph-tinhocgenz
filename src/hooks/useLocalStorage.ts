@@ -151,7 +151,7 @@ export function useAppStorage() {
     return unsub;
   }, []);
 
-  // Combine default quizzes, web dev (FE/BE) quizzes and custom quizzes with overrides & deleted filters (Admin full edit power)
+  // Combine default quizzes, web dev quizzes and custom quizzes with overrides & deleted filters (Admin full edit power)
   const allQuizzes: Quiz[] = useMemo(() => {
     const combined = [...DEFAULT_QUIZZES, ...webDevQuizzes, ...customQuizzes];
     return combined

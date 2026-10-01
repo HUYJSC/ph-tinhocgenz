@@ -1,6 +1,6 @@
 /**
  * PH DIGITAL EDUCATION — Backend API Client SDK
- * Chuẩn hóa giao tiếp giữa phân hệ Frontend (FE) và Backend (BE).
+ * Chuẩn hóa giao tiếp giữa phân hệ Frontend và Backend.
  */
 
 export interface BackendApiResponse<T = any> {

@@ -1,4 +1,4 @@
-// ── SKILL TAXONOMY TYPES (BA Review — Data Model) ──
+// ── SKILL TAXONOMY TYPES ──
 // Hierarchy: Subject → Topic → Skill
 // Skill là trung tâm liên kết: Nội dung học + Câu hỏi + Luyện tập + Kỳ thi + Kết quả
 
@@ -32,7 +32,7 @@ export interface SkillTaxonomySkill {
   lessonRef?: string;         // Reference đến bài học liên quan
 }
 
-// ── SKILL SCORE MODEL (BA Review — Section 14) ──
+// ── SKILL SCORE MODEL ──
 // Tách biệt Accuracy khỏi Mastery
 // Cần đủ sample size để kết luận mastery
 
@@ -59,7 +59,7 @@ export interface SkillScore {
   improvementTrend?: 'improving' | 'stable' | 'declining';
 }
 
-// ── WEAK SKILL DETECTION (BA Review — Section 15) ──
+// ── WEAK SKILL DETECTION ──
 // Rule Engine V1 — phải explainable
 
 export interface WeakSkill {
