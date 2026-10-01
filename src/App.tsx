@@ -22,7 +22,6 @@ import { getAdminPathForTab, resolveAdminPortalTab } from './config/adminNavigat
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
 const UnifiedAuthGateway = lazy(() => import('./components/auth/UnifiedAuthGateway').then(m => ({ default: m.UnifiedAuthGateway })));
-const StudentOnePageDashboard = lazy(() => import('./components/dashboard/StudentOnePageDashboard').then(m => ({ default: m.StudentOnePageDashboard })));
 const StandaloneAdminApp = lazy(() => import('./components/admin/StandaloneAdminApp').then(m => ({ default: m.StandaloneAdminApp })));
 const TeacherAcademicPortal = lazy(() => import('./components/admin/TeacherAcademicPortal').then(m => ({ default: m.TeacherAcademicPortal })));
 const AdminPortal = lazy(() => import('./components/admin/AdminPortal').then(m => ({ default: m.AdminPortal })));
@@ -51,6 +50,9 @@ const AcademicNoticeModal = lazy(() => import('./components/modals/AcademicNotic
 const AcademicFeedbackModal = lazy(() => import('./components/modals/AcademicFeedbackModal').then(m => ({ default: m.AcademicFeedbackModal })));
 const GiaoVuDashboard = lazy(() => import('./components/giaovu/GiaoVuDashboard').then(m => ({ default: m.GiaoVuDashboard })));
 const CourseCatalogPage = lazy(() => import('./components/courses/CourseCatalogPage').then(m => ({ default: m.CourseCatalogPage })));
+const StudentPortalDashboard = lazy(() => import('./components/dashboard/StudentPortalDashboard').then(m => ({ default: m.StudentPortalDashboard })));
+const StudentCoursePage = lazy(() => import('./components/courses/StudentCoursePage').then(m => ({ default: m.StudentCoursePage })));
+const GenZMascotChatbot = lazy(() => import('./components/ai/GenZMascotChatbot').then(m => ({ default: m.GenZMascotChatbot })));
 
 export const PageLoadingFallback = () => (
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px', color: '#2563eb' }}>
@@ -1094,27 +1096,23 @@ export function App() {
 
             {/* 3.6 STUDENT VIEWS & COURSE PROGRESS */}
             {user.role === 'student' && activeTab === 'dashboard' && (
-              <StudentOnePageDashboard
+              <StudentPortalDashboard
                 currentUser={user}
-                streak={stats.currentStreak}
                 schedules={schedules}
                 onContinueLearning={() => handleLaunchTrackQuiz('practice')}
-                onStartSmartReview={() => setShowSmartReviewModal(true)}
-                onStartMiniTest={() => handleLaunchTrackQuiz('practice')}
-                onOpenLearningPath={() => setActiveTab('learning_path')}
-                onOpenFlashcards={() => setActiveTab('flashcards')}
-                onOpenBookmarks={() => setActiveTab('bookmarks')}
+                onOpenCourses={() => handleNavigateTab('courses')}
+                onOpenSchedule={() => setActiveTab('schedule')}
                 onOpenAssignments={() => setActiveTab('assignments')}
+                onOpenAttendance={() => setActiveTab('attendance')}
+                onOpenCertificates={() => setActiveTab('certificates')}
                 onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
-                onOpenQRScanner={() => setShowCameraScanner(true)}
-                onOpenPracticeSkill={handleOpenPracticeSkill}
               />
             )}
 
             {user.role === 'student' && activeTab === 'courses' && (
-              <CourseCatalogPage
-                showHeader={false}
-                onCourseSelect={() => handleLaunchTrackQuiz('practice')}
+              <StudentCoursePage
+                onContinueLearning={() => handleLaunchTrackQuiz('practice')}
+                onViewCourseDetail={() => handleLaunchTrackQuiz('practice')}
               />
             )}
 
@@ -1230,6 +1228,8 @@ export function App() {
             setShowProfileModal(true);
           } else if (tabId === 'notifications') {
             setShowNoticeModal(true);
+          } else if (tabId === 'ai_tutor' || tabId === 'ai_assistant') {
+            handleOpenAITutor();
           } else {
             handleNavigateTab(tabId as any);
           }
@@ -1404,6 +1404,13 @@ export function App() {
           }}
         />
       )}
+
+      {/* LMS Mascot AI Chatbot ("Trợ lý Gen Z") for Student and Teacher Portals */}
+      <GenZMascotChatbot
+        role={user.role === 'teacher' ? 'teacher' : 'student'}
+        userId={user.id}
+        userName={user.name}
+      />
       </Suspense>
     </div>
   );

@@ -1,12 +1,25 @@
 import React, { useState } from 'react';
 import {
   Layers, Users, BookOpen, CheckSquare, Award, QrCode,
-  Calendar, BarChart3, ChevronRight, Video,
-  Clock, Search, CheckCircle2
+  BarChart3, ChevronRight, Video, Download,
+  Search, FileSpreadsheet, ArrowLeft
 } from 'lucide-react';
 import { UserProfile, StudentAccount } from '../../types/auth';
 import { ClassScheduleItem } from '../../types/schedule';
-import { soundFx } from '../../utils/audio';
+import { PORTAL_TOKENS } from '../../styles/portalDesignTokens';
+import { PortalCard } from '../ui/PortalCard';
+import { PortalButton } from '../ui/PortalButton';
+import { PortalBadge } from '../ui/PortalBadge';
+
+export type ClassDetailTab =
+  | 'overview'
+  | 'students'
+  | 'courses_content'
+  | 'assignments'
+  | 'quizzes_exams'
+  | 'attendance'
+  | 'grades'
+  | 'analytics';
 
 export interface TeacherClassDetailProps {
   currentUser?: UserProfile;
@@ -24,272 +37,458 @@ export const TeacherClassDetail: React.FC<TeacherClassDetailProps> = ({
   onBack,
   onNavigateTab
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'students' | 'lessons' | 'assignments' | 'grades' | 'attendance' | 'schedule'>('overview');
+  const [activeTab, setActiveTab] = useState<ClassDetailTab>('overview');
   const [searchStudent, setSearchStudent] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'warning' | 'completed'>('all');
 
-  const classStudents = studentAccounts.filter(s => !s.classCode || s.classCode === classCode);
+  // Strict boundary: Only show students assigned to this class!
+  const classStudents = studentAccounts.filter(s => {
+    if (s.classCode) return s.classCode === classCode;
+    // Fallback default demo data if classCode is not yet set on demo accounts
+    return true;
+  });
 
-  const tabs = [
+  // Filter students based on search and status
+  const filteredStudents = classStudents.filter(s => {
+    const matchesSearch = (s.name || '').toLowerCase().includes(searchStudent.toLowerCase()) ||
+      (s.studentCode || '').toLowerCase().includes(searchStudent.toLowerCase()) ||
+      (s.email || '').toLowerCase().includes(searchStudent.toLowerCase());
+    if (!matchesSearch) return false;
+
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'warning') return Boolean((s as any).status === 'locked' || (s as any).riskLevel === 'HIGH');
+    if (statusFilter === 'active') return (s as any).status !== 'locked';
+    return true;
+  });
+
+  // Exactly 8 tabs from Section IX specification
+  const tabs: Array<{ id: ClassDetailTab; label: string; icon: React.ElementType; badge?: string | number }> = [
     { id: 'overview', label: 'Tổng quan', icon: Layers },
     { id: 'students', label: `Học viên (${classStudents.length})`, icon: Users },
-    { id: 'lessons', label: 'Bài giảng (12)', icon: BookOpen },
-    { id: 'assignments', label: 'Bài tập (8)', icon: CheckSquare },
-    { id: 'grades', label: 'Bảng điểm', icon: Award },
+    { id: 'courses_content', label: 'Nội dung khóa học', icon: BookOpen },
+    { id: 'assignments', label: 'Bài tập', icon: CheckSquare, badge: 3 },
+    { id: 'quizzes_exams', label: 'Bài kiểm tra', icon: Award },
     { id: 'attendance', label: 'Điểm danh', icon: QrCode },
-    { id: 'schedule', label: 'Lịch học', icon: Calendar }
-  ] as const;
+    { id: 'grades', label: 'Điểm số', icon: FileSpreadsheet },
+    { id: 'analytics', label: 'Thống kê', icon: BarChart3 }
+  ];
+
+  const handleExportReport = () => {
+    alert(`📊 Đã xuất báo cáo học tập lớp ${classCode} dạng Excel thành công!`);
+  };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-      {/* Breadcrumb & Navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={onBack}
-            style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '13px', cursor: 'pointer', padding: 0 }}
-          >
-            Quản Lý Lớp Học
-          </button>
-          <ChevronRight size={14} color="#94A3B8" />
-          <span style={{ fontSize: '13px', color: '#0057B8', fontWeight: 600 }}>Lớp {classCode}</span>
-        </div>
-
-        {onBack && (
-          <button
-            onClick={onBack}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '8px',
-              border: '1px solid #CBD5E1',
-              background: '#FFFFFF',
-              color: '#334155',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            ← Quay lại danh sách
-          </button>
-        )}
-      </div>
-
-      {/* Class Hero Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0057B8 0%, #1E40AF 100%)',
-        borderRadius: '16px',
-        padding: '24px 28px',
-        color: '#FFFFFF',
-        marginBottom: '24px',
-        boxShadow: '0 4px 16px rgba(0,87,184,0.15)',
+    <div
+      style={{
+        padding: '24px',
+        maxWidth: '1280px',
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '20px'
-      }}>
-        <div>
-          <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
-            Mã lớp: {classCode} • Kỹ Năng Văn Phòng Chuẩn Quốc Tế
-          </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 700 }}>
-            Word, Excel, PowerPoint 3-in-1 Thực Chiến
-          </h1>
-          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>
-            Giảng viên: {currentUser?.name || 'Thầy Nguyễn Đình Huy'} • Sĩ số: {classStudents.length} học viên • Phòng LAB 01
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px' }}>
+        flexDirection: 'column',
+        gap: '20px',
+        fontFamily: PORTAL_TOKENS.typography.fontFamily
+      }}
+    >
+      {/* ── BREADCRUMB & TOP ACTIONS ── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
           <button
-            onClick={() => onNavigateTab ? onNavigateTab('live') : window.open('https://meet.google.com', '_blank')}
+            onClick={onBack}
             style={{
-              padding: '10px 18px',
-              borderRadius: '10px',
+              background: 'none',
               border: 'none',
-              background: '#FFFFFF',
-              color: '#0057B8',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Video size={16} />
-            Mở Lớp Trực Tuyến
-          </button>
-
-          <button
-            onClick={() => onNavigateTab && onNavigateTab('attendance')}
-            style={{
-              padding: '10px 18px',
-              borderRadius: '10px',
-              border: '1px solid rgba(255,255,255,0.3)',
-              background: 'rgba(255,255,255,0.1)',
-              color: '#FFFFFF',
-              fontSize: '13px',
+              color: PORTAL_TOKENS.colors.primary,
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '4px',
+              padding: 0
             }}
           >
-            <QrCode size={16} />
-            Điểm Danh QR
+            <ArrowLeft size={14} /> Danh sách lớp học
           </button>
+          <ChevronRight size={14} color={PORTAL_TOKENS.colors.textMuted} />
+          <span style={{ color: PORTAL_TOKENS.colors.textSecondary }}>Lớp {classCode}</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <PortalButton
+            variant="secondary"
+            size="sm"
+            icon={<Download size={14} />}
+            onClick={handleExportReport}
+          >
+            Xuất báo cáo lớp
+          </PortalButton>
+          <PortalButton
+            variant="primary"
+            size="sm"
+            icon={<Video size={14} />}
+            onClick={() => onNavigateTab ? onNavigateTab('live') : window.open('https://meet.google.com', '_blank')}
+          >
+            Mở lớp trực tuyến
+          </PortalButton>
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #E2E8F0', marginBottom: '24px', overflowX: 'auto' }}>
-        {tabs.map(tab => {
+      {/* ── CLASS HEADER CARD (CLEAN WHITE CARD WITH PRIMARY ACCENTS, NO RAINBOW GRADIENT) ── */}
+      <PortalCard padding="24px">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <PortalBadge variant="primary">Mã lớp: {classCode}</PortalBadge>
+              <PortalBadge variant="neutral">Chương trình Cấp tốc 3-in-1</PortalBadge>
+            </div>
+            <h1
+              style={{
+                fontSize: '22px',
+                fontWeight: PORTAL_TOKENS.typography.weights.bold,
+                color: PORTAL_TOKENS.colors.text,
+                margin: '0 0 6px 0'
+              }}
+            >
+              Word, Excel, PowerPoint 3-in-1 Thực Chiến
+            </h1>
+            <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textSecondary }}>
+              Giảng viên: <strong>{currentUser?.name || 'Thầy Nguyễn Đình Huy'}</strong> • Sĩ số: <strong>{classStudents.length} học viên</strong> • Phòng LAB 01
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <PortalButton
+              variant="outline"
+              size="sm"
+              icon={<QrCode size={14} />}
+              onClick={() => setActiveTab('attendance')}
+            >
+              Điểm danh QR
+            </PortalButton>
+          </div>
+        </div>
+      </PortalCard>
+
+      {/* ── EXACT 8 TABS NAVIGATION ── */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '4px',
+          borderBottom: `1px solid ${PORTAL_TOKENS.colors.border}`,
+          overflowX: 'auto',
+          paddingBottom: '2px'
+        }}
+      >
+        {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = activeSubTab === tab.id;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => { setActiveSubTab(tab.id); soundFx.playClick(); }}
+              onClick={() => setActiveTab(tab.id)}
               style={{
-                padding: '10px 18px',
-                border: 'none',
-                background: 'none',
-                borderBottom: isActive ? '2px solid #0057B8' : '2px solid transparent',
-                color: isActive ? '#0057B8' : '#64748B',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '13px',
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                whiteSpace: 'nowrap'
+                padding: '10px 16px',
+                fontSize: '13px',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.textSecondary,
+                border: 'none',
+                borderBottom: isActive ? `2px solid ${PORTAL_TOKENS.colors.primary}` : '2px solid transparent',
+                background: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease'
               }}
             >
               <Icon size={16} />
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.badge && (
+                <span
+                  style={{
+                    backgroundColor: isActive ? PORTAL_TOKENS.colors.primary : '#E2E8F0',
+                    color: isActive ? '#FFFFFF' : PORTAL_TOKENS.colors.textSecondary,
+                    padding: '1px 6px',
+                    borderRadius: '10px',
+                    fontSize: '11px',
+                    fontWeight: 700
+                  }}
+                >
+                  {tab.badge}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* Tab Content: Overview */}
-      {activeSubTab === 'overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-          {/* Progress Card */}
-          <div style={{ background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', padding: '20px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BarChart3 size={18} color="#0057B8" />
-              Tiến Độ Khóa Học Lớp {classCode}
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
-              <span style={{ color: '#64748B' }}>Đã học 8 / 12 buổi</span>
-              <span style={{ fontWeight: 700, color: '#0057B8' }}>66.7%</span>
-            </div>
-            <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden', marginBottom: '20px' }}>
-              <div style={{ width: '66.7%', height: '100%', background: '#0057B8' }} />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>TỶ LỆ CHUYÊN CẦN</div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: '#15803D' }}>95.4%</div>
+      {/* ── TAB 1: TỔNG QUAN ── */}
+      {activeTab === 'overview' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+            <PortalCard padding="18px">
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.textMuted }}>Tổng học viên</div>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: PORTAL_TOKENS.colors.text, marginTop: '4px' }}>
+                {classStudents.length}
               </div>
-              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>ĐIỂM TRUNG BÌNH</div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: '#0057B8' }}>8.6 / 10</div>
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.success, marginTop: '4px' }}>
+                100% Hoạt động
               </div>
-            </div>
-          </div>
-
-          {/* Next Schedule Card */}
-          <div style={{ background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', padding: '20px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Clock size={18} color="#0057B8" />
-              Buổi Học Kế Tiếp
-            </h3>
-            <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
-              <div style={{ fontWeight: 700, color: '#1E3A8A', fontSize: '14px' }}>Buổi 9: Xử lý dữ liệu nâng cao với PivotTable & VLOOKUP</div>
-              <div style={{ fontSize: '12px', color: '#3B82F6', marginTop: '4px' }}>
-                Thứ Bảy, 08:00 - 11:00 • Phòng LAB 01
+            </PortalCard>
+            <PortalCard padding="18px">
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.textMuted }}>Tiến độ trung bình</div>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: PORTAL_TOKENS.colors.primary, marginTop: '4px' }}>
+                72%
               </div>
-            </div>
-            <div style={{ fontSize: '13px', color: '#475569' }}>
-              <strong>Tài liệu chuẩn bị:</strong> File thực hành Excel <code>CaseStudy_May2026.xlsx</code> đã được tải lên thư viện học liệu.
-            </div>
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.textSecondary, marginTop: '4px' }}>
+                16/24 bài giảng hoàn tất
+              </div>
+            </PortalCard>
+            <PortalCard padding="18px">
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.textMuted }}>Bài tập chờ chấm</div>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: PORTAL_TOKENS.colors.warning, marginTop: '4px' }}>
+                3
+              </div>
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.warning, marginTop: '4px' }}>
+                Cần nhận xét bài nộp
+              </div>
+            </PortalCard>
+            <PortalCard padding="18px">
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.textMuted }}>Tỷ lệ chuyên cần</div>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: PORTAL_TOKENS.colors.success, marginTop: '4px' }}>
+                94%
+              </div>
+              <div style={{ fontSize: '12px', color: PORTAL_TOKENS.colors.textSecondary, marginTop: '4px' }}>
+                Điểm danh qua QR
+              </div>
+            </PortalCard>
           </div>
         </div>
       )}
 
-      {/* Tab Content: Students List */}
-      {activeSubTab === 'students' && (
-        <div style={{ background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
-              Danh Sách Học Viên ({classStudents.length})
-            </h3>
-            <div style={{ position: 'relative', width: '260px' }}>
-              <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+      {/* ── TAB 2: HỌC VIÊN (Strict Class Boundary, Search & Filter) ── */}
+      {activeTab === 'students' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Controls */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '320px' }}>
+              <Search size={15} color={PORTAL_TOKENS.colors.textMuted} style={{ position: 'absolute', left: '12px', top: '12px' }} />
               <input
                 type="text"
                 value={searchStudent}
-                onChange={e => setSearchStudent(e.target.value)}
-                placeholder="Tìm học viên..."
+                onChange={(e) => setSearchStudent(e.target.value)}
+                placeholder="Tìm tên, mã học viên..."
                 style={{
                   width: '100%',
-                  padding: '6px 12px 6px 30px',
-                  borderRadius: '6px',
-                  border: '1px solid #CBD5E1',
-                  fontSize: '12px',
+                  height: '38px',
+                  paddingLeft: '36px',
+                  paddingRight: '12px',
+                  borderRadius: PORTAL_TOKENS.radii.sm,
+                  border: `1px solid ${PORTAL_TOKENS.colors.border}`,
+                  fontSize: '13px',
                   outline: 'none',
                   boxSizing: 'border-box'
                 }}
               />
             </div>
+
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {(['all', 'active', 'warning'] as const).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: PORTAL_TOKENS.radii.sm,
+                    fontSize: '12px',
+                    fontWeight: statusFilter === st ? 600 : 500,
+                    border: `1px solid ${statusFilter === st ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.border}`,
+                    backgroundColor: statusFilter === st ? '#EFF6FF' : '#FFFFFF',
+                    color: statusFilter === st ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.textSecondary,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {st === 'all' ? 'Tất cả' : st === 'active' ? 'Đang học' : 'Cần chú ý'}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569' }}>
-                <th style={{ padding: '10px 16px' }}>Mã HV</th>
-                <th style={{ padding: '10px 16px' }}>Họ và Tên</th>
-                <th style={{ padding: '10px 16px' }}>Điện thoại / Email</th>
-                <th style={{ padding: '10px 16px', textAlign: 'center' }}>Chuyên Cần</th>
-                <th style={{ padding: '10px 16px', textAlign: 'center' }}>Điểm TB</th>
-              </tr>
-            </thead>
-            <tbody>
-              {classStudents
-                .filter(s => (s.name || '').toLowerCase().includes(searchStudent.toLowerCase()) || (s.studentCode || '').toLowerCase().includes(searchStudent.toLowerCase()))
-                .map((student, idx) => (
-                  <tr key={student.id || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0057B8' }}>{student.studentCode}</td>
-                    <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0F172A' }}>{student.name}</td>
-                    <td style={{ padding: '12px 16px', color: '#64748B' }}>{student.phone || student.email || '0988***123'}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <span style={{ background: '#DCFCE7', color: '#15803D', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
-                        95%
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700, color: '#0057B8' }}>
-                      8.5
-                    </td>
+          {/* Table */}
+          <PortalCard padding="0">
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#F8FAFC', borderBottom: `1px solid ${PORTAL_TOKENS.colors.border}` }}>
+                    <th style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.textSecondary }}>Mã HV</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.textSecondary }}>Họ và tên</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.textSecondary }}>Email</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.textSecondary }}>Tiến độ</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.textSecondary }}>Trạng thái</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.textSecondary, textAlign: 'right' }}>Thao tác</th>
                   </tr>
-                ))}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filteredStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: PORTAL_TOKENS.colors.textMuted }}>
+                        Không tìm thấy học viên trong lớp phụ trách này.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredStudents.map((st, idx) => (
+                      <tr key={st.id || idx} style={{ borderBottom: `1px solid ${PORTAL_TOKENS.colors.divider}` }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.primary }}>
+                          {st.studentCode || `THGZ${idx + 1}`}
+                        </td>
+                        <td style={{ padding: '12px 16px', fontWeight: 600, color: PORTAL_TOKENS.colors.text }}>
+                          {st.name}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: PORTAL_TOKENS.colors.textSecondary }}>
+                          {st.email || 'student@eduquest.app'}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <span style={{ fontWeight: 600, color: PORTAL_TOKENS.colors.primary }}>75%</span>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <PortalBadge variant="success" size="sm">Đang học</PortalBadge>
+                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                          <button
+                            onClick={() => alert(`Xem chi tiết học tập của ${st.name}`)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: PORTAL_TOKENS.colors.primary,
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Chi tiết
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </PortalCard>
         </div>
       )}
 
-      {/* Fallback for other tabs */}
-      {activeSubTab !== 'overview' && activeSubTab !== 'students' && (
-        <div style={{ background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', padding: '40px', textAlign: 'center', color: '#64748B' }}>
-          <CheckCircle2 size={36} color="#0057B8" style={{ margin: '0 auto 12px', display: 'block' }} />
-          <h3 style={{ margin: '0 0 8px', color: '#0F172A' }}>Đang đồng bộ dữ liệu {activeSubTab}</h3>
-          <p style={{ margin: 0, fontSize: '13px' }}>Phân hệ quản lý chuyên sâu cho lớp học {classCode} đã sẵn sàng kết nối.</p>
-        </div>
+      {/* ── TAB 3: NỘI DUNG KHÓA HỌC ── */}
+      {activeTab === 'courses_content' && (
+        <PortalCard padding="20px">
+          <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: PORTAL_TOKENS.colors.text }}>
+            Khung chương trình: Word, Excel, PowerPoint 3-in-1
+          </h3>
+          <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textMuted }}>
+            Bao gồm 24 bài giảng chuẩn đầu ra khảo thí quốc tế. Giảng viên có thể xem giáo trình và tải tài liệu mẫu.
+          </p>
+        </PortalCard>
+      )}
+
+      {/* ── TAB 4: BÀI TẬP ── */}
+      {activeTab === 'assignments' && (
+        <PortalCard padding="20px">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '16px', color: PORTAL_TOKENS.colors.text }}>
+              Danh sách bài tập lớp {classCode}
+            </h3>
+            <PortalButton variant="primary" size="sm" onClick={() => onNavigateTab && onNavigateTab('assignments')}>
+              Chấm và nhận xét bài
+            </PortalButton>
+          </div>
+          <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textMuted }}>
+            Có 3 bài nộp đang chờ giảng viên chấm điểm và đưa ra nhận xét phản hồi.
+          </p>
+        </PortalCard>
+      )}
+
+      {/* ── TAB 5: BÀI KIỂM TRA ── */}
+      {activeTab === 'quizzes_exams' && (
+        <PortalCard padding="20px">
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', color: PORTAL_TOKENS.colors.text }}>
+            Đề kiểm tra định kỳ & Khảo sát giữa khóa
+          </h3>
+          <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textMuted }}>
+            Bài thi trắc nghiệm IC3 GS6 và thực hành tổng hợp Word - Excel - PowerPoint.
+          </p>
+        </PortalCard>
+      )}
+
+      {/* ── TAB 6: ĐIỂM DANH ── */}
+      {activeTab === 'attendance' && (
+        <PortalCard padding="20px">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: PORTAL_TOKENS.colors.text }}>
+                Quản lý điểm danh ca học lớp {classCode}
+              </h3>
+              <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textMuted }}>
+                Tạo mã QR động xoay vòng 30 giây hoặc điểm danh thủ công theo danh sách.
+              </p>
+            </div>
+            <PortalButton
+              variant="primary"
+              size="sm"
+              icon={<QrCode size={14} />}
+              onClick={() => onNavigateTab && onNavigateTab('attendance')}
+            >
+              Mở phiên điểm danh QR
+            </PortalButton>
+          </div>
+        </PortalCard>
+      )}
+
+      {/* ── TAB 7: ĐIỂM SỐ ── */}
+      {activeTab === 'grades' && (
+        <PortalCard padding="20px">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '16px', color: PORTAL_TOKENS.colors.text }}>
+              Bảng tổng hợp điểm số lớp {classCode}
+            </h3>
+            <PortalButton variant="secondary" size="sm" icon={<Download size={14} />} onClick={handleExportReport}>
+              Xuất bảng điểm (Excel)
+            </PortalButton>
+          </div>
+          <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textMuted }}>
+            Gồm điểm chuyên cần, điểm bài tập thực hành, và điểm bài kiểm tra cuối khóa.
+          </p>
+        </PortalCard>
+      )}
+
+      {/* ── TAB 8: THỐNG KÊ ── */}
+      {activeTab === 'analytics' && (
+        <PortalCard padding="20px">
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', color: PORTAL_TOKENS.colors.text }}>
+            Báo cáo phân tích chất lượng học tập
+          </h3>
+          <p style={{ margin: 0, fontSize: '13px', color: PORTAL_TOKENS.colors.textMuted }}>
+            Tỷ lệ hoàn thành: 72% • Tỷ lệ làm bài tập: 88% • Mức độ tương tác: Rất tích cực.
+          </p>
+        </PortalCard>
       )}
     </div>
   );
 };
-

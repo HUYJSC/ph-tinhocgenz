@@ -46,10 +46,8 @@ export const Topbar: React.FC<TopbarProps> = ({
   const isStudent = user?.role === 'student' || (!isAdmin && !isTeacher && !isGiaoVu);
 
   const getSearchPlaceholder = (): string => {
-    if (isAdmin) return 'Tìm người dùng, khóa học, lớp học... (Ctrl + K)';
-    if (isTeacher) return 'Tìm lớp học, học viên, bài giảng... (Ctrl + K)';
-    if (isGiaoVu) return 'Tìm lớp, học viên, lịch học... (Ctrl + K)';
-    return 'Tìm kiếm khóa học, bài tập, chứng chỉ... (⌘K)';
+    if (isAdmin) return 'Tìm kiếm người dùng, khóa học, tài liệu...';
+    return 'Tìm kiếm khóa học, bài học, bài tập…';
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {

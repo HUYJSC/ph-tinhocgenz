@@ -719,6 +719,123 @@ assert(clientAiCode.includes('sendMessage') && clientAiCode.includes('saveHistor
 assert(loginMascotCode.includes('handleStopGeneration') && loginMascotCode.includes('handleCopyMessage'), 'Chatbot UI: Hỗ trợ Nút dừng tạo câu trả lời và Nút sao chép tin nhắn');
 assert(loginMascotCode.includes('handleRateMessage') && loginMascotCode.includes('activeSourcesModal'), 'Chatbot UI: Hỗ trợ Nút đánh giá hữu ích/không hữu ích và Nút xem nguồn dữ liệu');
 
+console.log('\n🎓 NHÓM 24: Tái Cấu Trúc Toàn Bộ LMS Tin Học Gen Z 2026 (Cổng Học Viên & Cổng Giảng Viên)');
+
+// 1. Design System & Tokens
+assert(fs.existsSync('src/styles/portalDesignTokens.ts'), 'Design System: Tệp cấu hình design tokens portalDesignTokens.ts tồn tại');
+const tokensCode = fs.readFileSync('src/styles/portalDesignTokens.ts', 'utf8');
+assert(
+  tokensCode.includes('#0057B8') &&
+  tokensCode.includes('#003F88') &&
+  tokensCode.includes('#0B2545') &&
+  tokensCode.includes('#F4F8FD') &&
+  tokensCode.includes('#FFFFFF') &&
+  tokensCode.includes('#D9E2F0'),
+  'Design System: Bảng màu chuẩn mực (Primary, Dark, Text, Background, Card, Border)'
+);
+
+// 2. Navigation & Sidebar Separation
+assert(fs.existsSync('src/components/layout/RoleSidebar.tsx'), 'Sidebar: RoleSidebar.tsx tồn tại');
+const roleSidebarCode = fs.readFileSync('src/components/layout/RoleSidebar.tsx', 'utf8');
+assert(
+  roleSidebarCode.includes("'dashboard'") &&
+  roleSidebarCode.includes("'courses'") &&
+  roleSidebarCode.includes("'schedule'") &&
+  roleSidebarCode.includes("'assignments'") &&
+  roleSidebarCode.includes("'attendance'") &&
+  roleSidebarCode.includes("'certificates'") &&
+  roleSidebarCode.includes("'ai_tutor'") &&
+  roleSidebarCode.includes("'profile'"),
+  'Student Sidebar: Đầy đủ chính xác 8 mục điều hướng Cổng Học viên'
+);
+assert(
+  roleSidebarCode.includes("'classes'") &&
+  roleSidebarCode.includes("'courses_content'") &&
+  roleSidebarCode.includes("'assignments_exams'") &&
+  roleSidebarCode.includes("'students'") &&
+  roleSidebarCode.includes("'grading'") &&
+  roleSidebarCode.includes("'analytics'") &&
+  roleSidebarCode.includes("'notifications'") &&
+  roleSidebarCode.includes("'ai_assistant'"),
+  'Teacher Sidebar: Đầy đủ chính xác 11 mục điều hướng Cổng Giảng viên'
+);
+
+// 3. Student Dashboard
+assert(fs.existsSync('src/components/dashboard/StudentPortalDashboard.tsx'), 'Student Portal: Component StudentPortalDashboard.tsx tồn tại');
+const studentDashCode = fs.readFileSync('src/components/dashboard/StudentPortalDashboard.tsx', 'utf8');
+assert(studentDashCode.includes('Xin chào,') && studentDashCode.includes('Tiếp tục hành trình học tập của bạn.'), 'Student Dashboard: Lời chào cá nhân hóa và thông điệp chuẩn');
+assert(
+  studentDashCode.includes('Tiếp tục học') &&
+  studentDashCode.includes('Lịch sắp tới') &&
+  studentDashCode.includes('Tóm tắt học tập') &&
+  studentDashCode.includes('Khóa học đề xuất'),
+  'Student Dashboard: Đầy đủ 4 khu vực thông tin cốt lõi'
+);
+
+// 4. Student Course Page
+assert(fs.existsSync('src/components/courses/StudentCoursePage.tsx'), 'Student Courses: Component StudentCoursePage.tsx tồn tại');
+const studentCoursesCode = fs.readFileSync('src/components/courses/StudentCoursePage.tsx', 'utf8');
+assert(
+  studentCoursesCode.includes('my_courses') &&
+  studentCoursesCode.includes('explore') &&
+  studentCoursesCode.includes('Khóa học của tôi') &&
+  studentCoursesCode.includes('Khám phá khóa học'),
+  'Student Courses: Phân tách rõ ràng 2 Tab Khóa học của tôi & Khám phá khóa học'
+);
+assert(
+  studentCoursesCode.includes('Tin học văn phòng') &&
+  studentCoursesCode.includes('Lập trình Web') &&
+  studentCoursesCode.includes('AI & Tự động hóa'),
+  'Student Courses: Bộ lọc danh mục đào tạo phong phú và trực quan'
+);
+
+// 5. Teacher Dashboard
+assert(fs.existsSync('src/components/teacher/TeacherDashboard.tsx'), 'Teacher Portal: Component TeacherDashboard.tsx tồn tại');
+const teacherDashCode = fs.readFileSync('src/components/teacher/TeacherDashboard.tsx', 'utf8');
+assert(teacherDashCode.includes('Xin chào,') && teacherDashCode.includes('Đây là tổng quan hoạt động giảng dạy của bạn.'), 'Teacher Dashboard: Lời chào và thông điệp giảng viên chuẩn');
+assert(
+  teacherDashCode.includes('Lớp học đang phụ trách') &&
+  teacherDashCode.includes('Công việc cần xử lý') &&
+  teacherDashCode.includes('Thống kê giảng dạy') &&
+  teacherDashCode.includes('Hoạt động gần đây'),
+  'Teacher Dashboard: Đầy đủ 4 khu vực nghiệp vụ sư phạm'
+);
+
+// 6. Teacher Class Detail (Exact 8 Tabs & Boundary)
+assert(fs.existsSync('src/components/teacher/TeacherClassDetail.tsx'), 'Teacher Class: Component TeacherClassDetail.tsx tồn tại');
+const teacherClassCode = fs.readFileSync('src/components/teacher/TeacherClassDetail.tsx', 'utf8');
+assert(
+  teacherClassCode.includes("'overview'") &&
+  teacherClassCode.includes("'students'") &&
+  teacherClassCode.includes("'courses_content'") &&
+  teacherClassCode.includes("'assignments'") &&
+  teacherClassCode.includes("'quizzes_exams'") &&
+  teacherClassCode.includes("'attendance'") &&
+  teacherClassCode.includes("'grades'") &&
+  teacherClassCode.includes("'analytics'"),
+  'Teacher Class: Đầy đủ chính xác 8 Tab quản lý lớp học chuyên sâu'
+);
+
+// 7. Gen Z Mascot AI Chatbot Across Portals
+assert(fs.existsSync('src/components/ai/GenZMascotChatbot.tsx'), 'AI Mascot: Component GenZMascotChatbot.tsx dùng chung 2 cổng tồn tại');
+const genzMascotCode = fs.readFileSync('src/components/ai/GenZMascotChatbot.tsx', 'utf8');
+assert(
+  genzMascotCode.includes('Tôi đang học đến đâu?') &&
+  genzMascotCode.includes('Bài tiếp theo của tôi là gì?') &&
+  genzMascotCode.includes('Giải thích khóa học này.'),
+  'AI Mascot Student: Đầy đủ bộ câu hỏi gợi ý nhanh cho Học viên'
+);
+assert(
+  genzMascotCode.includes('Lớp nào sắp có bài cần chấm?') &&
+  genzMascotCode.includes('Tóm tắt tiến độ lớp của tôi.') &&
+  genzMascotCode.includes('Hướng dẫn tạo bài tập.'),
+  'AI Mascot Teacher: Đầy đủ bộ câu hỏi gợi ý nhanh cho Giảng viên'
+);
+assert(
+  (genzMascotCode.includes('380px') || genzMascotCode.includes('w-[380px]')) &&
+  genzMascotCode.includes('LanguageSelector'),
+  'AI Mascot Layout: Chiều rộng chuẩn 380px, responsive và tích hợp chọn ngôn ngữ'
+);
 
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);

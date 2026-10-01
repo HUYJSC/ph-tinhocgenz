@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  Home, BookOpen, Sparkles, Calendar, CheckSquare,
+  BookOpen, Sparkles, Calendar, CheckSquare,
   QrCode, Award, Users, FolderArchive, Bell, User,
   Headphones, LayoutDashboard, Briefcase, ClipboardCheck,
   Shield, Layers, BarChart3, Database, Key, CreditCard,
-  TrendingUp, Settings, Share2, Lock, ChevronRight, Video, HelpCircle
+  TrendingUp, Settings, Share2, Lock, ChevronRight, HelpCircle
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 import { AdminBrandLockup } from '../brand/AdminBrandLockup';
@@ -49,37 +49,16 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
   onOpenConsultation,
   currentUser
 }) => {
-  // ── 1. STUDENT NAVIGATION (Clean Grouped Architecture) ──
-  const getStudentGroups = (): NavGroup[] => [
-    {
-      groupTitle: 'HỌC TẬP',
-      items: [
-        { id: 'courses', label: 'Khóa học', icon: BookOpen },
-        { id: 'schedule', label: 'Lịch học', icon: Calendar },
-        { id: 'assignments', label: 'Bài tập', icon: CheckSquare },
-        { id: 'attendance', label: 'Điểm danh', icon: QrCode, isRedDot: true }
-      ]
-    },
-    {
-      groupTitle: 'TIẾN ĐỘ',
-      items: [
-        { id: 'dashboard', label: 'Thành tích', icon: Home },
-        { id: 'certificates', label: 'Chứng chỉ', icon: Award }
-      ]
-    },
-    {
-      groupTitle: 'AI',
-      items: [
-        { id: 'learning_path', label: 'Lộ trình AI', icon: Sparkles },
-        { id: 'smart_review', label: 'Trợ lý học tập', icon: Sparkles }
-      ]
-    },
-    {
-      groupTitle: 'CÁ NHÂN',
-      items: [
-        { id: 'profile', label: 'Hồ sơ', icon: User }
-      ]
-    }
+  // ── 1. STUDENT NAVIGATION (Exact 8 Canonical Items from Spec) ──
+  const getStudentItems = (): NavItem[] => [
+    { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
+    { id: 'courses', label: 'Khóa học', icon: BookOpen },
+    { id: 'schedule', label: 'Lịch học', icon: Calendar },
+    { id: 'assignments', label: 'Bài tập', icon: CheckSquare },
+    { id: 'attendance', label: 'Điểm danh', icon: QrCode },
+    { id: 'certificates', label: 'Thành tích & Chứng chỉ', icon: Award },
+    { id: 'ai_tutor', label: 'Trợ lý AI', icon: Sparkles },
+    { id: 'profile', label: 'Hồ sơ', icon: User }
   ];
 
   // ── 2. ADMIN NAVIGATION (7 Grouped Sections with Fine-Grained RBAC Filtering) ──
@@ -165,24 +144,28 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
     })).filter(group => group.items.length > 0);
   };
 
-  // ── 3. TEACHER NAVIGATION (Exact 15 Canonical Items from Spec) ──
-  const getTeacherItems = (): NavItem[] => [
-    { id: 'dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
-    { id: 'classes', label: 'Lớp học', icon: Layers },
-    { id: 'lessons', label: 'Bài giảng', icon: BookOpen },
-    { id: 'students', label: 'Học viên', icon: Users },
-    { id: 'assignments', label: 'Bài tập', icon: CheckSquare, badge: 'Cần chấm', badgeColor: '#FEF3C7' },
-    { id: 'question_bank', label: 'Ngân hàng câu hỏi', icon: Database },
-    { id: 'exams', label: 'Đề thi', icon: ClipboardCheck },
-    { id: 'grading', label: 'Chấm điểm', icon: Award },
-    { id: 'schedule', label: 'Lịch dạy', icon: Calendar },
-    { id: 'live', label: 'Lớp trực tuyến', icon: Video },
-    { id: 'attendance', label: 'Điểm danh QR', icon: QrCode },
-    { id: 'library', label: 'Thư viện', icon: FolderArchive },
-    { id: 'analytics', label: 'Thống kê', icon: BarChart3 },
-    { id: 'notifications', label: 'Thông báo', icon: Bell },
-    { id: 'profile', label: 'Hồ sơ giảng viên', icon: User }
-  ];
+  // ── 3. TEACHER NAVIGATION (Exact 11 Canonical Items from Spec) ──
+  const getTeacherItems = (): NavItem[] => {
+    const isAssistant = (currentUser?.role as any) === 'teaching_assistant' || role === 'teaching_assistant';
+    const items: NavItem[] = [
+      { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
+      { id: 'classes', label: 'Lớp học của tôi', icon: Layers },
+      { id: 'courses_content', label: 'Khóa học & Nội dung', icon: BookOpen },
+      { id: 'assignments_exams', label: 'Bài tập & Kiểm tra', icon: CheckSquare, badge: 'Cần chấm', badgeColor: '#FEF3C7' },
+      { id: 'attendance', label: 'Điểm danh', icon: QrCode },
+      { id: 'students', label: 'Học viên', icon: Users },
+      { id: 'grading', label: 'Chấm điểm', icon: Award },
+      { id: 'analytics', label: 'Thống kê lớp', icon: BarChart3 },
+      { id: 'notifications', label: 'Thông báo', icon: Bell },
+      { id: 'ai_assistant', label: 'Trợ lý AI', icon: Sparkles },
+      { id: 'profile', label: 'Hồ sơ', icon: User }
+    ];
+
+    if (isAssistant) {
+      return items.filter(it => it.id !== 'analytics');
+    }
+    return items;
+  };
 
   // ── 4. GIAO VU NAVIGATION (Exact 14 Canonical Items from Spec) ──
   const getGiaoVuItems = (): NavItem[] => [
@@ -263,85 +246,69 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
         {/* ── Navigation Content ── */}
         <div style={{ padding: isCollapsed ? '16px 8px' : '16px 12px', flex: 1 }}>
           {isStudent && (
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {getStudentGroups().map((group, gIdx) => (
-                <div key={gIdx} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  {group.groupTitle && !isCollapsed && (
-                    <div style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#94A3B8',
-                      letterSpacing: '0.06em',
-                      padding: '4px 12px 2px',
-                      textTransform: 'uppercase'
-                    }}>
-                      {group.groupTitle}
-                    </div>
-                  )}
-                  {group.items.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id || (item.id === 'courses' && activeTab === '');
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {getStudentItems().map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id || (item.id === 'dashboard' && activeTab === '');
 
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          onSelectTab(item.id);
-                          if (onCloseMobile) onCloseMobile();
-                        }}
-                        title={item.label}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          width: '100%',
-                          minHeight: '38px',
-                          padding: isCollapsed ? '9px 0' : '8px 12px',
-                          justifyContent: isCollapsed ? 'center' : 'flex-start',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: isActive ? '#0057B8' : 'transparent',
-                          color: isActive ? '#FFFFFF' : '#475569',
-                          fontWeight: isActive ? 700 : 500,
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          textAlign: 'left',
-                          position: 'relative'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isActive) {
-                            e.currentTarget.style.background = '#F1F5F9';
-                            e.currentTarget.style.color = '#0B2545';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = '#475569';
-                          }
-                        }}
-                      >
-                        <Icon size={18} color={isActive ? '#FFFFFF' : '#64748B'} />
-                        {!isCollapsed && (
-                          <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {item.label}
-                          </span>
-                        )}
-                        {item.isRedDot && !isCollapsed && (
-                          <span style={{
-                            width: '7px',
-                            height: '7px',
-                            borderRadius: '50%',
-                            background: '#EF4444',
-                            display: 'inline-block'
-                          }} />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onSelectTab(item.id);
+                      if (onCloseMobile) onCloseMobile();
+                    }}
+                    title={item.label}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      width: '100%',
+                      minHeight: '40px',
+                      padding: isCollapsed ? '9px 0' : '8px 12px',
+                      justifyContent: isCollapsed ? 'center' : 'flex-start',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: isActive ? '#0057B8' : 'transparent',
+                      color: isActive ? '#FFFFFF' : '#475569',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      textAlign: 'left',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = '#F1F5F9';
+                        e.currentTarget.style.color = '#0B2545';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#475569';
+                      }
+                    }}
+                  >
+                    <Icon size={18} color={isActive ? '#FFFFFF' : '#64748B'} />
+                    {!isCollapsed && (
+                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.label}
+                      </span>
+                    )}
+                    {item.isRedDot && !isCollapsed && (
+                      <span style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        background: '#EF4444',
+                        display: 'inline-block'
+                      }} />
+                    )}
+                  </button>
+                );
+              })}
             </nav>
           )}
 

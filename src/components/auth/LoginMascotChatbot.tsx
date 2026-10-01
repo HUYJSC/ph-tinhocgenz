@@ -198,8 +198,8 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
           const botMsg: ChatMessage = {
             id: `m-${Date.now()}`,
             sender: 'mascot',
-            text: aiResponse.response,
-            originalText: aiResponse.response,
+            text: aiResponse.reply || aiResponse.response || '',
+            originalText: aiResponse.reply || aiResponse.response || '',
             timestamp: formatTime(new Date()) || new Date().toLocaleTimeString(),
             sources: aiResponse.sources,
             actionButton
@@ -860,9 +860,8 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                         fontSize: '0.78rem'
                       }}
                     >
-                      <div style={{ fontWeight: 700, color: '#0057B8' }}>{s.title}</div>
                       <div style={{ color: '#64748B', fontSize: '0.72rem', margin: '2px 0 4px 0' }}>
-                        Loại: {s.type} • Cập nhật: {new Date(s.updatedAt).toLocaleDateString()}
+                        Loại: {s.type || s.sourceType} • Cập nhật: {s.updatedAt ? new Date(s.updatedAt).toLocaleDateString() : 'Gần đây'}
                       </div>
                       <div style={{ color: '#334155', fontStyle: 'italic', background: '#FFFFFF', padding: '6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
                         "{s.snippet}"
