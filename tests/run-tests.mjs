@@ -645,6 +645,46 @@ assert(mascotContent.includes('handleToggleTranslateMessage') && mascotContent.i
 assert(mascotContent.includes('currentLocale') && mascotContent.includes('useLanguage'), 'i18n Synchronization: Mascot chatbot đồng bộ chung thiết lập ngôn ngữ qua useLanguage()');
 assert(mascotContent.includes('SECURITY POLICY') && mascotContent.includes('NGUYÊN TẮC BẢO MẬT'), 'i18n Security Boundary: Duy trì rào chắn an ninh AI đa ngôn ngữ không lộ mật khẩu');
 
+console.log('\n🔑 NHÓM 22: Tái Cấu Trúc Trang Đăng Nhập LMS 2026 (Modular, Minimalist, i18n & Mascot AI)');
+
+// Modular component inventory
+assert(fs.existsSync('src/components/auth/LoginPage.tsx'), 'Modular Auth: LoginPage.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/RoleSwitcher.tsx'), 'Modular Auth: RoleSwitcher.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/AuthForm.tsx'), 'Modular Auth: AuthForm.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/SupportLink.tsx'), 'Modular Auth: SupportLink.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/LoginMascotChatbot.tsx'), 'Modular Auth: LoginMascotChatbot.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/ChatbotWidget.tsx'), 'Modular Auth: ChatbotWidget.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/ChatPanel.tsx'), 'Modular Auth: ChatPanel.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/ProgramPickerModal.tsx'), 'Modular Auth: ProgramPickerModal.tsx tồn tại');
+assert(fs.existsSync('src/components/auth/OtpVerifyModal.tsx'), 'Modular Auth: OtpVerifyModal.tsx tồn tại');
+
+const loginPageCode = fs.readFileSync('src/components/auth/LoginPage.tsx', 'utf8');
+const roleSwitcherCode = fs.readFileSync('src/components/auth/RoleSwitcher.tsx', 'utf8');
+const authFormCode = fs.readFileSync('src/components/auth/AuthForm.tsx', 'utf8');
+const loginMascotCode = fs.readFileSync('src/components/auth/LoginMascotChatbot.tsx', 'utf8');
+
+// Layout check: Light background #F4F8FD and center card width ~440-500px
+assert(loginPageCode.includes('#F4F8FD'), 'UI Layout: Nền sáng màu #F4F8FD theo đúng quy chuẩn thương hiệu');
+assert(loginPageCode.includes('480px'), 'UI Layout: Thẻ đăng nhập trung tâm có chiều rộng chuẩn 440-500px');
+assert(loginPageCode.includes('BrandMark'), 'Brand Gate: Sử dụng BrandMark chính thống giữ nguyên monogram PH');
+
+// Role switcher check: Student (default) and Teacher
+assert(roleSwitcherCode.includes('auth.roleStudent') && roleSwitcherCode.includes('auth.roleTeacher'), 'Role Switcher: Đầy đủ 2 tab Học viên và Giảng viên');
+assert(roleSwitcherCode.includes("role=\"tab\"") && roleSwitcherCode.includes('aria-selected'), 'Accessibility: RoleSwitcher hỗ trợ đầy đủ WAI-ARIA tablist/tab');
+
+// Auth Form checks: Show/Hide password, inputs, remember me, forgot password, authenticating state
+assert(authFormCode.includes('setShowPassword(!showPassword)'), 'Form Gate: Nút hiển thị/ẩn mật khẩu an toàn');
+assert(authFormCode.includes('auth.rememberMe') && authFormCode.includes('auth.forgotPassword'), 'Form Gate: Đầy đủ tùy chọn Ghi nhớ đăng nhập và Quên mật khẩu');
+assert(authFormCode.includes('auth.authenticating'), 'Form Feedback: Trạng thái Đang xác thực… kèm spinner khi gửi form');
+
+// Business rules: Program picker for multi-track accounts
+assert(loginPageCode.includes('ProgramPickerModal') && loginPageCode.includes('enrolledTracks'), 'Business Rule: Tự động chuyển hướng nếu 1 môn hoặc mở ProgramPickerModal nếu nhiều môn');
+
+// Login Mascot AI Chatbot: Trợ lý Gen Z, prompts, language sync, security boundaries
+assert(loginMascotCode.includes('mascot.loginWelcome') && loginMascotCode.includes('mascot.loginPrompt1'), 'AI Mascot: Lời chào thân thiện và 3 nút gợi ý hướng dẫn');
+assert(loginMascotCode.includes('LanguageSelector'), 'AI Mascot: Header tích hợp dropdown chọn ngôn ngữ đồng bộ');
+assert(loginMascotCode.includes('NGUYÊN TẮC BẢO MẬT') && loginMascotCode.includes('AN TOÀN HỆ THỐNG'), 'AI Security Gate: Rào chắn an ninh nghiêm ngặt không lộ mật khẩu và không tự ý nâng quyền');
+
 
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);

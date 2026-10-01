@@ -56,3 +56,4 @@ export const DEFAULT_LOCALE: SupportedLocale = 'vi';
 export const LOCALE_STORAGE_KEY = 'phtgz_locale';
 
 export type TranslationDictionary = Record<string, string>;
+
