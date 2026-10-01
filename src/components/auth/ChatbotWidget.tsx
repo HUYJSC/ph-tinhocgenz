@@ -11,3 +11,4 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = (props) => {
 };
 
 export { LoginMascotChatbot };
+

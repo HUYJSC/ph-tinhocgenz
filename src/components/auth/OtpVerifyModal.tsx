@@ -304,3 +304,4 @@ export const OtpVerifyModal: React.FC<OtpVerifyModalProps> = ({
     </div>
   );
 };
+

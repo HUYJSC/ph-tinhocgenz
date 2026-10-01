@@ -685,6 +685,40 @@ assert(loginMascotCode.includes('mascot.loginWelcome') && loginMascotCode.includ
 assert(loginMascotCode.includes('LanguageSelector'), 'AI Mascot: Header tích hợp dropdown chọn ngôn ngữ đồng bộ');
 assert(loginMascotCode.includes('NGUYÊN TẮC BẢO MẬT') && loginMascotCode.includes('AN TOÀN HỆ THỐNG'), 'AI Security Gate: Rào chắn an ninh nghiêm ngặt không lộ mật khẩu và không tự ý nâng quyền');
 
+console.log('\n🤖 NHÓM 23: Tích Hợp Gemini Pro Cho Mascot AI Chatbot (Backend POST /api/ai/chat, Scoped RAG & RBAC)');
+
+// 1. Files & Modules
+assert(fs.existsSync('api/ai/chat.ts'), 'Gemini API: Endpoint Serverless api/ai/chat.ts tồn tại');
+assert(fs.existsSync('api/_lib/geminiRAG.ts'), 'Gemini RAG: Module api/_lib/geminiRAG.ts tồn tại');
+assert(fs.existsSync('src/services/aiChatService.ts'), 'AI Service: Client service src/services/aiChatService.ts tồn tại');
+
+const apiChatCode = fs.readFileSync('api/ai/chat.ts', 'utf8');
+const ragEngineCode = fs.readFileSync('api/_lib/geminiRAG.ts', 'utf8');
+const clientAiCode = fs.readFileSync('src/services/aiChatService.ts', 'utf8');
+const envExampleCode = fs.readFileSync('.env.example', 'utf8');
+
+// 2. Environment Variables & Secret Safety (Requirement 1 & 10)
+assert(envExampleCode.includes('GEMINI_API_KEY') && envExampleCode.includes('GEMINI_MODEL') && envExampleCode.includes('GEMINI_MAX_OUTPUT_TOKENS') && envExampleCode.includes('GEMINI_TEMPERATURE'), 'Config Gate: .env.example định nghĩa đầy đủ 4 biến cấu hình Gemini');
+assert(!loginMascotCode.includes('AIzaSy'), 'Security Gate: Tuyệt đối không rò rỉ Gemini API Key trong frontend source code');
+
+// 3. Backend RBAC & Verification (Requirement 1 & 3)
+assert(apiChatCode.includes('getSessionFromRequest') && apiChatCode.includes('checkRateLimit'), 'Security Gate: Endpoint xác thực phiên đăng nhập và áp dụng Rate Limiting');
+assert(apiChatCode.includes('retrieveScopedContext') && apiChatCode.includes('buildGeminiSystemPrompt'), 'RAG Pipeline: Điều phối ngữ cảnh phân quyền và System Prompt chuẩn mực');
+
+// 4. Prompt Injection Shield (Requirement 9)
+assert(ragEngineCode.includes('detectPromptInjection') && ragEngineCode.includes('ignore') && ragEngineCode.includes('system prompt'), 'Security Shield: Bộ lọc phát hiện và chặn Prompt Injection trước khi xử lý');
+
+// 5. Approved Google Drive & Knowledge Base (Requirement 8)
+assert(ragEngineCode.includes('APPROVED_DRIVE_DOCUMENTS') && ragEngineCode.includes('version') && ragEngineCode.includes('updatedAt'), 'Google Drive Store: Hỗ trợ tài liệu được phê duyệt kèm metadata phiên bản & ngày cập nhật');
+
+// 6. Strict Fallback Directive (Requirement 4)
+assert(ragEngineCode.includes('Tôi chưa tìm thấy thông tin này trong dữ liệu được cấp quyền'), 'RAG Accuracy: Chỉ định phản hồi chuẩn mực khi không tìm thấy dữ liệu cấp quyền (Chống bịa thông tin)');
+
+// 7. Client UI Features (Requirement 7)
+assert(clientAiCode.includes('sendMessage') && clientAiCode.includes('saveHistory') && clientAiCode.includes('clearHistory'), 'Client Service: Đầy đủ các phương thức gửi tin, quản lý lịch sử và xóa hội thoại');
+assert(loginMascotCode.includes('handleStopGeneration') && loginMascotCode.includes('handleCopyMessage'), 'Chatbot UI: Hỗ trợ Nút dừng tạo câu trả lời và Nút sao chép tin nhắn');
+assert(loginMascotCode.includes('handleRateMessage') && loginMascotCode.includes('activeSourcesModal'), 'Chatbot UI: Hỗ trợ Nút đánh giá hữu ích/không hữu ích và Nút xem nguồn dữ liệu');
+
 
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);

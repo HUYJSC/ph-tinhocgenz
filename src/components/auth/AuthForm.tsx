@@ -412,3 +412,4 @@ export const AuthForm: React.FC<AuthFormProps> = ({
     </form>
   );
 };
+

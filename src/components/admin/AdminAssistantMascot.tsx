@@ -12,6 +12,7 @@ import {
 import { TeacherAccount, UserProfile } from '../../types/auth';
 import { useLanguage, SupportedLocale } from '../../i18n';
 import { LanguageSelector } from '../ui/LanguageSelector';
+import { AIChatService } from '../../services/aiChatService';
 
 interface AdminAssistantMascotProps {
   currentUser: UserProfile;
@@ -72,7 +73,7 @@ export const AdminAssistantMascot: React.FC<AdminAssistantMascotProps> = ({
     { id: 'p5', label: t('mascot.quickPrompt5'), query: t('mascot.quickPrompt5') }
   ], [t]);
 
-  const handleSendPrompt = (promptText: string) => {
+  const handleSendPrompt = async (promptText: string) => {
     if (!promptText.trim()) return;
 
     const time = formatTime(new Date()) || new Date().toLocaleTimeString();
@@ -89,11 +90,28 @@ export const AdminAssistantMascot: React.FC<AdminAssistantMascotProps> = ({
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
 
-    // Generate response adhering strictly to AI Security Boundaries & Language
+    // Try calling backend Gemini AI service first
+    try {
+      const aiRes = await AIChatService.sendMessage(promptText.trim(), currentLocale);
+      if (aiRes.success && aiRes.response) {
+        const botResponse: ChatMessage = {
+          id: `m-${Date.now()}`,
+          sender: 'mascot',
+          text: aiRes.response,
+          originalText: aiRes.response,
+          locale: currentLocale,
+          timestamp: formatTime(new Date()) || new Date().toLocaleTimeString()
+        };
+        setMessages(prev => [...prev, botResponse]);
+        return;
+      }
+    } catch {}
+
+    // Fallback to grounded localized response
     setTimeout(() => {
       const botResponse = generateLocalizedResponse(promptText.trim(), currentLocale);
       setMessages(prev => [...prev, botResponse]);
-    }, 400);
+    }, 300);
   };
 
   /**

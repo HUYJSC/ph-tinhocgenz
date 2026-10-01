@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Bot, X, Minimize2, Maximize2, Send,
-  RotateCcw, Languages, ExternalLink
+  RotateCcw, Languages, ExternalLink, Copy, Check,
+  ThumbsUp, ThumbsDown, Square, Loader2, Database,
+  Trash2, AlertCircle
 } from 'lucide-react';
-import { useLanguage, SupportedLocale } from '../../i18n';
+import { useLanguage } from '../../i18n';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { soundFx } from '../../utils/audio';
+import { AIChatService, AIChatSource } from '../../services/aiChatService';
 
 export interface LoginMascotChatbotProps {
   isOpen: boolean;
@@ -15,13 +18,16 @@ export interface LoginMascotChatbotProps {
   onSelectRole: (role: 'student' | 'teacher') => void;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   sender: 'mascot' | 'user';
   text: string;
   timestamp: string;
   originalText?: string;
   isTranslated?: boolean;
+  sources?: AIChatSource[];
+  rating?: 'like' | 'dislike';
+  error?: boolean;
   actionButton?: {
     label: string;
     onClick: () => void;
@@ -39,193 +45,108 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputText, setInputText] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [activeSourcesModal, setActiveSourcesModal] = useState<AIChatSource[] | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Initial welcome message localized
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      id: 'welcome',
-      sender: 'mascot',
-      text: t('mascot.loginWelcome'),
-      originalText: t('mascot.loginWelcome'),
-      timestamp: 'Vừa xong'
-    }
-  ]);
+  // Load stored history or default welcome message
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = AIChatService.getStoredHistory('login_mascot');
+    if (saved && saved.length > 0) return saved as ChatMessage[];
 
-  // Update initial welcome message when locale changes if no conversation yet
-  useEffect(() => {
-    setMessages(prev => {
-      if (prev.length === 1 && prev[0].id === 'welcome') {
-        return [{
-          id: 'welcome',
-          sender: 'mascot',
-          text: t('mascot.loginWelcome'),
-          originalText: t('mascot.loginWelcome'),
-          timestamp: 'Vừa xong'
-        }];
+    return [
+      {
+        id: 'welcome',
+        sender: 'mascot',
+        text: t('mascot.loginWelcome') || 'Xin chào! Tôi có thể giúp bạn đăng nhập.',
+        originalText: t('mascot.loginWelcome') || 'Xin chào! Tôi có thể giúp bạn đăng nhập.',
+        timestamp: 'Vừa xong'
       }
-      return prev;
-    });
-  }, [currentLocale, t]);
+    ];
+  });
+
+  // Save history on change
+  useEffect(() => {
+    if (messages.length > 0) {
+      AIChatService.saveHistory('login_mascot', messages as any);
+    }
+  }, [messages]);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
     if (isOpen && !isMinimized) {
       chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, isMinimized]);
+  }, [messages, isOpen, isMinimized, isThinking]);
 
   // Quick prompt buttons
   const quickPrompts = [
-    { id: 'guide', label: t('mascot.loginPrompt1'), query: t('mascot.loginPrompt1') },
-    { id: 'forgot', label: t('mascot.loginPrompt2'), query: t('mascot.loginPrompt2') },
-    { id: 'support', label: t('mascot.loginPrompt3'), query: t('mascot.loginPrompt3') }
+    { id: 'guide', label: t('mascot.loginPrompt1') || 'Hướng dẫn đăng nhập', query: t('mascot.loginPrompt1') || 'Hướng dẫn đăng nhập' },
+    { id: 'forgot', label: t('mascot.loginPrompt2') || 'Quên mật khẩu', query: t('mascot.loginPrompt2') || 'Quên mật khẩu' },
+    { id: 'support', label: t('mascot.loginPrompt3') || 'Liên hệ Giáo vụ', query: t('mascot.loginPrompt3') || 'Liên hệ Giáo vụ' }
   ];
 
   /**
-   * Generates safe, localized AI response adhering to strict security boundaries.
+   * Stop AI generation
    */
-  const generateResponse = (rawQuery: string): ChatMessage => {
-    const q = rawQuery.toLowerCase();
-    const time = formatTime(new Date()) || new Date().toLocaleTimeString();
-
-    // Check if user requested an alternate language for this specific turn
-    let targetLang = currentLocale;
-    if (q.includes('english') || q.includes('tiếng anh') || q.includes('in english')) targetLang = 'en';
-    else if (q.includes('chinese') || q.includes('tiếng trung') || q.includes('中文')) targetLang = 'zh';
-    else if (q.includes('japanese') || q.includes('tiếng nhật') || q.includes('日本語')) targetLang = 'ja';
-    else if (q.includes('korean') || q.includes('tiếng hàn') || q.includes('한국어')) targetLang = 'ko';
-    else if (q.includes('tiếng việt') || q.includes('vietnamese')) targetLang = 'vi';
-
-    // ── BOUNDARY 1: STRICT PROHIBITION ON PASSWORDS ──
-    if (
-      q.includes('mật khẩu') || q.includes('password') || q.includes('pass') ||
-      q.includes('mật mã') || q.includes('密码') || q.includes('パスワード') || q.includes('비밀번호')
-    ) {
-      if (q.includes('quên') || q.includes('forgot') || q.includes('lấy lại') || q.includes('reset') || q.includes('找回')) {
-        const msgs: Record<SupportedLocale, string> = {
-          vi: 'Để lấy lại mật khẩu, bạn vui lòng nhấn vào liên kết "Quên mật khẩu?" ngay bên dưới biểu mẫu hoặc nhấn nút dưới đây để mở quy trình khôi phục an toàn bằng OTP.',
-          en: 'To reset your password, please click the "Forgot password?" link below the login form or use the button below to start the secure OTP recovery process.',
-          zh: '如需找回密码，请点击登录表单下方的“忘记密码？”链接，或点击下方按钮启动 OTP 安全恢复流程。',
-          ja: 'パスワードを再設定するには、ログインフォーム下の「パスワードをお忘れですか？」をクリックするか、以下のボタンから安全なOTP認証手続きを行ってください。',
-          ko: '비밀번호를 재설정하려면 로그인 양식 아래의 "비밀번호를 잊으셨나요?" 링크를 클릭하시거나 아래 버튼을 눌러 안전한 OTP 복구 절차를 진행하세요.'
-        };
-        return {
-          id: `m-${Date.now()}`,
-          sender: 'mascot',
-          text: msgs[targetLang],
-          originalText: msgs[targetLang],
-          timestamp: time,
-          actionButton: {
-            label: t('auth.forgotPassword'),
-            onClick: onOpenForgotPassword
-          }
-        };
-      }
-
-      // Prohibited request asking for passwords
-      const msgs: Record<SupportedLocale, string> = {
-        vi: '🛡️ NGUYÊN TẮC BẢO MẬT: Trợ lý AI tuyệt đối không truy xuất, không hiển thị và không lưu trữ mật khẩu của bất kỳ tài khoản nào. Vui lòng không chia sẻ mật khẩu của bạn cho bất kỳ ai.',
-        en: '🛡️ SECURITY POLICY: The AI Assistant strictly never accesses, displays, or stores passwords of any account. Please do not share your password with anyone.',
-        zh: '🛡️ 安全准则：AI 助手严格禁止访问、显示或存储任何账户的密码。请勿向任何人透露您的密码。',
-        ja: '🛡️ セキュリティポリシー: AIアシスタントはパスワードの取得・表示・保存を厳格に禁止されています。パスワードを他人に共有しないでください。',
-        ko: '🛡️ 보안 원칙: AI 어시스턴트는 어떠한 계정의 비밀번호도 조회, 표시 또는 저장하지 않습니다. 비밀번호를 타인과 공유하지 마세요.'
-      };
-      return {
-        id: `m-${Date.now()}`,
-        sender: 'mascot',
-        text: msgs[targetLang],
-        originalText: msgs[targetLang],
-        timestamp: time
-      };
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
-
-    // ── BOUNDARY 2: STRICT PROHIBITION ON DELETION OR ROLE ELEVATION ──
-    if (
-      q.includes('xóa tài khoản') || q.includes('delete') || q.includes('super admin') ||
-      q.includes('cấp quyền') || q.includes('nâng quyền') || q.includes('删除') || q.includes('権限')
-    ) {
-      const msgs: Record<SupportedLocale, string> = {
-        vi: '⚠️ AN TOÀN HỆ THỐNG: AI không có quyền tự ý xóa tài khoản hay cấp quyền quản trị. Mọi thao tác quản trị phải được phê duyệt bởi Quản trị viên cấp cao.',
-        en: '⚠️ SYSTEM SAFETY: The AI has no permission to delete accounts or grant admin roles. All administrative operations must be approved by high-level administrators.',
-        zh: '⚠️ 系统安全：AI 无权删除账户或授予管理员权限。所有管理权限均需由高级管理员审批。',
-        ja: '⚠️ システム安全基準: AIにはアカウント削除や管理者権限の付与を行う権限はありません。すべての管理者操作は上位管理者による承認が必要です。',
-        ko: '⚠️ 시스템 안전: AI는 계정 삭제나 관리자 권한 부여를 수행할 수 없습니다. 모든 관리자 작업은 상위 관리자의 승인이 필요합니다.'
-      };
-      return {
-        id: `m-${Date.now()}`,
-        sender: 'mascot',
-        text: msgs[targetLang],
-        originalText: msgs[targetLang],
-        timestamp: time
-      };
-    }
-
-    // ── PROMPT: LOGIN GUIDE / CỔNG ĐĂNG NHẬP ──
-    if (q.includes('hướng dẫn') || q.includes('đăng nhập') || q.includes('guide') || q.includes('sign in') || q.includes('登录') || q.includes('ログイン') || q.includes('로그인')) {
-      const msgs: Record<SupportedLocale, string> = {
-        vi: 'Hướng dẫn đăng nhập:\n1. Chọn tab "Học viên" (nếu là học sinh/sinh viên) hoặc "Giảng viên" (nếu là giáo viên/nhân sự).\n2. Nhập Email hoặc Mã tài khoản đã được cấp.\n3. Nhập mật khẩu chính xác và bấm "Đăng nhập".\nNếu tài khoản tham gia nhiều môn học, hệ thống sẽ mở màn hình để bạn chọn môn.',
-        en: 'Login Guide:\n1. Choose "Student" (for learners) or "Teacher" (for instructors/staff).\n2. Enter your assigned Email or Account ID.\n3. Enter your password and click "Sign In".\nIf enrolled in multiple tracks, a course picker will appear.',
-        zh: '登录指南：\n1. 选择“学员”（针对学生）或“讲师”（针对教师/教工）。\n2. 输入分配的电子邮箱或账号。\n3. 输入密码并点击“登录”。\n如果参加了多个课程，系统会提示您选择课程。',
-        ja: 'ログインのご案内:\n1. 「受講生」または「講師」タブを選択してください。\n2. 発行されたメールアドレスまたはIDを入力します。\n3. パスワードを入力し「ログイン」を押してください。\n複数コース受講中の場合はコース選択画面が表示されます。',
-        ko: '로그인 안내:\n1. "수강생" 또는 "강사" 탭을 선택하세요.\n2. 발급받은 이메일 또는 계정 ID를 입력하세요.\n3. 비밀번호를 입력하고 "로그인"을 누르세요.\n여러 과정에 등록된 경우 과정 선택 화면이 나타납니다.'
-      };
-      return {
-        id: `m-${Date.now()}`,
-        sender: 'mascot',
-        text: msgs[targetLang],
-        originalText: msgs[targetLang],
-        timestamp: time,
-        actionButton: {
-          label: t('auth.roleStudent'),
-          onClick: () => onSelectRole('student')
-        }
-      };
-    }
-
-    // ── PROMPT: CONTACT ACADEMIC AFFAIRS ──
-    if (q.includes('giáo vụ') || q.includes('hỗ trợ') || q.includes('liên hệ') || q.includes('support') || q.includes('academic') || q.includes('教务') || q.includes('問い合わせ') || q.includes('문의')) {
-      const msgs: Record<SupportedLocale, string> = {
-        vi: 'Phòng Giáo vụ Tin Học Gen Z hỗ trợ kỹ thuật và học tập:\n• Hotline / Zalo: 0987.654.321\n• Email: giaovu@tinhocgenz.edu.vn\n• Giờ làm việc: 08:00 - 21:00 (Thứ 2 - Thứ 7)',
-        en: 'Tin Hoc Gen Z Academic Affairs Support:\n• Hotline / Zalo: 0987.654.321\n• Email: giaovu@tinhocgenz.edu.vn\n• Working hours: 08:00 - 21:00 (Mon - Sat)',
-        zh: 'Tin Hoc Gen Z 教务处技术与学习支持：\n• 热线 / Zalo: 0987.654.321\n• 邮箱: giaovu@tinhocgenz.edu.vn\n• 服务时间: 08:00 - 21:00 (周一至周六)',
-        ja: 'Tin Hoc Gen Z 教務課サポート:\n• ホットライン / Zalo: 0987.654.321\n• メール: giaovu@tinhocgenz.edu.vn\n• 営業時間: 08:00 - 21:00 (月〜土)',
-        ko: 'Tin Hoc Gen Z 교무처 지원 센터:\n• 핫라인 / Zalo: 0987.654.321\n• 이메일: giaovu@tinhocgenz.edu.vn\n• 운영 시간: 08:00 - 21:00 (월~토)'
-      };
-      return {
-        id: `m-${Date.now()}`,
-        sender: 'mascot',
-        text: msgs[targetLang],
-        originalText: msgs[targetLang],
-        timestamp: time,
-        actionButton: {
-          label: t('auth.contactAcademic'),
-          onClick: onOpenSupportModal
-        }
-      };
-    }
-
-    // ── DEFAULT SAFE RESPONSE ──
-    const msgs: Record<SupportedLocale, string> = {
-      vi: `Em đã ghi nhận câu hỏi của bạn. Để được hỗ trợ cụ thể về tài khoản hoặc lớp học, bạn có thể bấm vào "Hướng dẫn đăng nhập", "Quên mật khẩu", hoặc liên hệ trực tiếp phòng Giáo vụ nhé!`,
-      en: `I noted your question. For specific account assistance, feel free to use the quick guides above or reach out to Academic Affairs!`,
-      zh: `我已收到您的问题。如需有关账号或课程的具体协助，欢迎点击上方快捷指南或直接联系教务处！`,
-      ja: `ご質問を承りました。アカウントや受講に関する詳細は、上部のクイックガイドまたは教務課へお気軽にお問い合わせください！`,
-      ko: `질문을 확인했습니다. 계정이나 수업에 관한 자세한 안내는 상단의 빠른 가이드를 이용하시거나 교무처로 문의해 주세요!`
-    };
-    return {
-      id: `m-${Date.now()}`,
-      sender: 'mascot',
-      text: msgs[targetLang],
-      originalText: msgs[targetLang],
-      timestamp: time
-    };
+    setIsThinking(false);
+    soundFx.playClick();
   };
 
-  const handleSendMessage = (textToSend?: string) => {
+  /**
+   * Clear personal conversation history
+   */
+  const handleClearHistory = () => {
+    soundFx.playClick();
+    AIChatService.clearHistory('login_mascot');
+    setMessages([
+      {
+        id: `welcome-${Date.now()}`,
+        sender: 'mascot',
+        text: t('mascot.loginWelcome') || 'Xin chào! Tôi có thể giúp bạn đăng nhập.',
+        originalText: t('mascot.loginWelcome') || 'Xin chào! Tôi có thể giúp bạn đăng nhập.',
+        timestamp: 'Vừa xong'
+      }
+    ]);
+  };
+
+  /**
+   * Copy message text
+   */
+  const handleCopyMessage = (msgId: string, text: string) => {
+    soundFx.playClick();
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedId(msgId);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
+  /**
+   * Rate message helpful / unhelpful
+   */
+  const handleRateMessage = (msgId: string, rating: 'like' | 'dislike') => {
+    soundFx.playClick();
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, rating } : m));
+    AIChatService.recordRating(msgId, rating);
+  };
+
+  /**
+   * Core Send Message Routine connecting to Gemini API Backend
+   * RÀO CHẮN AN NINH AI: NGUYÊN TẮC BẢO MẬT (không lộ mật khẩu) & AN TOÀN HỆ THỐNG (không tự ý nâng quyền).
+   */
+  const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend !== undefined ? textToSend : inputText).trim();
-    if (!query) return;
+    if (!query || isThinking) return;
 
     soundFx.playClick();
     const time = formatTime(new Date()) || new Date().toLocaleTimeString();
@@ -240,11 +161,81 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
 
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
+    setIsThinking(true);
 
-    setTimeout(() => {
-      const resp = generateResponse(query);
-      setMessages(prev => [...prev, resp]);
-    }, 300);
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    try {
+      // Call backend Gemini AI endpoint POST /api/ai/chat
+      const aiResponse = await AIChatService.sendMessage(query, currentLocale, abortController.signal);
+
+      if (!abortController.signal.aborted) {
+        setIsThinking(false);
+        abortControllerRef.current = null;
+
+        if (aiResponse.success) {
+          // Check if specific action buttons apply
+          let actionButton: ChatMessage['actionButton'];
+          const qLower = query.toLowerCase();
+          if (qLower.includes('quên') || qLower.includes('mật khẩu') || qLower.includes('reset')) {
+            actionButton = {
+              label: t('auth.forgotPassword') || 'Quên mật khẩu?',
+              onClick: onOpenForgotPassword
+            };
+          } else if (qLower.includes('hướng dẫn') || qLower.includes('đăng nhập') || qLower.includes('cổng')) {
+            actionButton = {
+              label: t('auth.roleStudent') || 'Cổng Học viên',
+              onClick: () => onSelectRole('student')
+            };
+          } else if (qLower.includes('giáo vụ') || qLower.includes('liên hệ') || qLower.includes('hỗ trợ')) {
+            actionButton = {
+              label: t('auth.contactAcademic') || 'Liên hệ Giáo vụ',
+              onClick: onOpenSupportModal
+            };
+          }
+
+          const botMsg: ChatMessage = {
+            id: `m-${Date.now()}`,
+            sender: 'mascot',
+            text: aiResponse.response,
+            originalText: aiResponse.response,
+            timestamp: formatTime(new Date()) || new Date().toLocaleTimeString(),
+            sources: aiResponse.sources,
+            actionButton
+          };
+
+          setMessages(prev => [...prev, botMsg]);
+          soundFx.playVictory();
+        } else {
+          // Failure message with retry option
+          const errorMsg: ChatMessage = {
+            id: `err-${Date.now()}`,
+            sender: 'mascot',
+            text: aiResponse.error || 'Dịch vụ AI đang bận hoặc gián đoạn kết nối. Vui lòng thử lại sau giây lát.',
+            originalText: aiResponse.error,
+            timestamp: formatTime(new Date()) || new Date().toLocaleTimeString(),
+            error: true
+          };
+          setMessages(prev => [...prev, errorMsg]);
+          soundFx.playIncorrect();
+        }
+      }
+    } catch (err: any) {
+      if (!abortController.signal.aborted) {
+        setIsThinking(false);
+        abortControllerRef.current = null;
+        const errorMsg: ChatMessage = {
+          id: `err-${Date.now()}`,
+          sender: 'mascot',
+          text: 'Lỗi kết nối đến máy chủ AI. Vui lòng thử lại sau giây lát.',
+          timestamp: formatTime(new Date()) || new Date().toLocaleTimeString(),
+          error: true
+        };
+        setMessages(prev => [...prev, errorMsg]);
+        soundFx.playIncorrect();
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -362,9 +353,9 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
             position: 'fixed',
             bottom: isMinimized ? '24px' : '24px',
             right: '24px',
-            width: isMinimized ? '280px' : '380px',
+            width: isMinimized ? '280px' : '390px',
             maxWidth: 'calc(100vw - 32px)',
-            height: isMinimized ? '54px' : '560px',
+            height: isMinimized ? '54px' : '580px',
             maxHeight: 'calc(100vh - 48px)',
             background: '#FFFFFF',
             borderRadius: '16px',
@@ -410,13 +401,31 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                   {t('mascot.name') || 'Trợ lý Gen Z'}
                 </div>
                 <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>
-                  {t('mascot.subtitle') || 'Trực tuyến 24/7'}
+                  {t('mascot.subtitle') || 'Trực tuyến 24/7 • Gemini Pro'}
                 </div>
               </div>
             </div>
 
-            {/* Actions: LanguageSelector & Min/Close */}
+            {/* Actions: Clear, LanguageSelector & Min/Close */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+              {/* Clear History */}
+              <button
+                type="button"
+                onClick={handleClearHistory}
+                title="Xóa lịch sử hội thoại"
+                aria-label="Xóa lịch sử hội thoại"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94A3B8',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '6px'
+                }}
+              >
+                <Trash2 size={15} />
+              </button>
+
               {/* Language Selector Dropdown inside Chatbot Header */}
               <LanguageSelector variant="chatbot" />
 
@@ -481,19 +490,27 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                   >
                     <div
                       style={{
-                        maxWidth: '85%',
+                        maxWidth: '88%',
                         padding: '10px 14px',
                         borderRadius: msg.sender === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                        background: msg.sender === 'user' ? '#0057B8' : '#FFFFFF',
-                        color: msg.sender === 'user' ? '#FFFFFF' : '#0B2545',
+                        background: msg.sender === 'user' ? '#0057B8' : msg.error ? '#FEF3F2' : '#FFFFFF',
+                        color: msg.sender === 'user' ? '#FFFFFF' : msg.error ? '#B42318' : '#0B2545',
                         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
-                        border: msg.sender === 'user' ? 'none' : '1px solid #E2E8F0',
+                        border: msg.sender === 'user' ? 'none' : msg.error ? '1px solid #FECDCA' : '1px solid #E2E8F0',
                         fontSize: '0.84rem',
                         lineHeight: 1.5,
                         whiteSpace: 'pre-line',
-                        wordBreak: 'break-word'
+                        wordBreak: 'break-word',
+                        position: 'relative'
                       }}
                     >
+                      {msg.error && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', fontWeight: 600 }}>
+                          <AlertCircle size={14} />
+                          <span>Thông báo kết nối</span>
+                        </div>
+                      )}
+
                       {msg.text}
 
                       {/* Action button if attached */}
@@ -523,10 +540,33 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                       )}
                     </div>
 
-                    {/* Timestamp & Translate toggle */}
+                    {/* Metadata & Message Actions Row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px', padding: '0 4px' }}>
                       <span style={{ fontSize: '0.68rem', color: '#94A3B8' }}>{msg.timestamp}</span>
-                      {msg.sender === 'mascot' && (
+
+                      {/* Copy Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyMessage(msg.id, msg.text)}
+                        title="Sao chép câu trả lời"
+                        aria-label="Sao chép"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: copiedId === msg.id ? '#16803C' : '#94A3B8',
+                          fontSize: '0.68rem',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: 0
+                        }}
+                      >
+                        {copiedId === msg.id ? <Check size={11} /> : <Copy size={11} />}
+                      </button>
+
+                      {/* Translate button */}
+                      {msg.sender === 'mascot' && !msg.error && (
                         <button
                           type="button"
                           onClick={() => handleToggleTranslate(msg.id)}
@@ -547,9 +587,99 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                           <span>{msg.isTranslated ? t('mascot.showOriginal') : t('mascot.translate')}</span>
                         </button>
                       )}
+
+                      {/* View Sources Button */}
+                      {msg.sources && msg.sources.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveSourcesModal(msg.sources || null)}
+                          title="Xem nguồn dữ liệu đã dùng"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#0057B8',
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                            padding: 0
+                          }}
+                        >
+                          <Database size={10} />
+                          <span>{msg.sources.length} nguồn</span>
+                        </button>
+                      )}
+
+                      {/* Feedback Thumbs Up / Down */}
+                      {msg.sender === 'mascot' && !msg.error && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleRateMessage(msg.id, 'like')}
+                            title="Hữu ích"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: msg.rating === 'like' ? '#16803C' : '#94A3B8',
+                              cursor: 'pointer',
+                              padding: 0
+                            }}
+                          >
+                            <ThumbsUp size={11} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRateMessage(msg.id, 'dislike')}
+                            title="Chưa hữu ích"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: msg.rating === 'dislike' ? '#D92D20' : '#94A3B8',
+                              cursor: 'pointer',
+                              padding: 0
+                            }}
+                          >
+                            <ThumbsDown size={11} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
+
+                {/* Thinking / Streaming Indicator with Stop button */}
+                {isThinking && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+                    <Loader2 size={16} className="animate-spin" color="#0057B8" />
+                    <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 500 }}>
+                      Trợ lý Gen Z đang suy nghĩ…
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleStopGeneration}
+                      title="Dừng tạo câu trả lời"
+                      style={{
+                        background: '#FEF3F2',
+                        border: '1px solid #FECDCA',
+                        color: '#B42318',
+                        borderRadius: '6px',
+                        padding: '2px 6px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}
+                    >
+                      <Square size={10} />
+                      <span>Dừng</span>
+                    </button>
+                  </div>
+                )}
+
                 <div ref={chatBottomRef} />
               </div>
 
@@ -569,6 +699,7 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                   <button
                     key={p.id}
                     type="button"
+                    disabled={isThinking}
                     onClick={() => handleSendMessage(p.query)}
                     style={{
                       padding: '4px 10px',
@@ -578,7 +709,7 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                       background: '#F4F8FD',
                       border: '1px solid rgba(0, 87, 184, 0.2)',
                       color: '#0057B8',
-                      cursor: 'pointer',
+                      cursor: isThinking ? 'not-allowed' : 'pointer',
                       flexShrink: 0
                     }}
                   >
@@ -606,9 +737,10 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                   ref={inputRef}
                   rows={1}
                   value={inputText}
+                  disabled={isThinking}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={t('mascot.loginInputPlaceholder') || 'Nhập câu hỏi…'}
+                  placeholder={t('mascot.loginInputPlaceholder') || 'Nhập câu hỏi… (Enter để gửi)'}
                   style={{
                     flex: 1,
                     resize: 'none',
@@ -625,28 +757,139 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
                   onFocus={(e) => (e.target.style.borderColor = '#0057B8')}
                   onBlur={(e) => (e.target.style.borderColor = '#CBD5E1')}
                 />
-                <button
-                  type="submit"
-                  disabled={!inputText.trim()}
-                  aria-label="Gửi tin nhắn"
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
-                    background: inputText.trim() ? '#0057B8' : '#CBD5E1',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: inputText.trim() ? 'pointer' : 'default',
-                    flexShrink: 0
-                  }}
-                >
-                  <Send size={16} />
-                </button>
+
+                {isThinking ? (
+                  <button
+                    type="button"
+                    onClick={handleStopGeneration}
+                    title="Dừng tạo câu trả lời"
+                    aria-label="Dừng tạo câu trả lời"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: '#B42318',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Square size={16} />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!inputText.trim()}
+                    aria-label="Gửi tin nhắn"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: inputText.trim() ? '#0057B8' : '#CBD5E1',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: inputText.trim() ? 'pointer' : 'default',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Send size={16} />
+                  </button>
+                )}
               </form>
             </>
+          )}
+
+          {/* Sources Inspection Modal */}
+          {activeSourcesModal && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(11, 37, 69, 0.65)',
+                backdropFilter: 'blur(3px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px',
+                zIndex: 1010
+              }}
+            >
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '12px',
+                  width: '100%',
+                  maxHeight: '80%',
+                  padding: '16px',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#0B2545', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Database size={16} color="#0057B8" />
+                    <span>Nguồn dữ liệu đã sử dụng</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSourcesModal(null)}
+                    style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer' }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {activeSourcesModal.map((s, idx) => (
+                    <div
+                      key={s.id || idx}
+                      style={{
+                        padding: '10px',
+                        background: '#F8FAFC',
+                        borderRadius: '8px',
+                        border: '1px solid #E2E8F0',
+                        fontSize: '0.78rem'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, color: '#0057B8' }}>{s.title}</div>
+                      <div style={{ color: '#64748B', fontSize: '0.72rem', margin: '2px 0 4px 0' }}>
+                        Loại: {s.type} • Cập nhật: {new Date(s.updatedAt).toLocaleDateString()}
+                      </div>
+                      <div style={{ color: '#334155', fontStyle: 'italic', background: '#FFFFFF', padding: '6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                        "{s.snippet}"
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveSourcesModal(null)}
+                  style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    background: '#0057B8',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    marginTop: '4px'
+                  }}
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

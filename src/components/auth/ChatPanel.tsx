@@ -9,3 +9,4 @@ export interface ChatPanelProps extends LoginMascotChatbotProps {}
 export const ChatPanel: React.FC<ChatPanelProps> = (props) => {
   return <LoginMascotChatbot {...props} />;
 };
+
