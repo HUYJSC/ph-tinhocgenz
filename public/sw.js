@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v8-2026-clean)
-// Nâng cấp: Tự động purge cache cũ để hiển thị ngay dashboard mới (đã xóa logo dư)
-const CACHE_NAME = 'ph-eduquest-v8-2026-clean';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v9-2026-portal)
+// Nâng cấp: Tự động purge cache cũ để hiển thị ngay Dual-Portal LMS Tin Học Gen Z
+const CACHE_NAME = 'ph-eduquest-v9-2026-portal';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
