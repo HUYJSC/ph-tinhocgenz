@@ -565,6 +565,43 @@ assert(testTeacherQrContent.includes('present') || testTeacherQrContent.includes
 assert(fs.existsSync('src/components/admin/AttendanceManager.tsx'), 'QA Admin: ✓ Quản trị viên xem báo cáo tỷ lệ chuyên cần và xuất dữ liệu');
 
 
+console.log('\n👨‍🏫 NHÓM 20: Tái Cấu Trúc Quản Lý Giảng Viên & Nhân Sự 2026 (Modern, Secure, Detail Modal, AI Mascot)');
+assert(fs.existsSync('src/components/admin/TeacherManager.tsx'), 'Teacher Management: Component TeacherManager.tsx tồn tại');
+assert(fs.existsSync('src/components/admin/AdminAssistantMascot.tsx'), 'Teacher Management: Component AdminAssistantMascot.tsx tồn tại');
+
+const teacherMgrContent = fs.readFileSync('src/components/admin/TeacherManager.tsx', 'utf8');
+const adminPortalCode = fs.readFileSync('src/components/admin/AdminPortal.tsx', 'utf8');
+const mascotContent = fs.readFileSync('src/components/admin/AdminAssistantMascot.tsx', 'utf8');
+const adminNavContent = fs.readFileSync('src/config/adminNavigation.ts', 'utf8');
+
+// Security check: Zero plain-text password column in tables
+assert(!teacherMgrContent.includes('<th>Mật Khẩu</th>') && !teacherMgrContent.includes('t.password'), 'Security Gate: XÓA hoàn toàn cột mật khẩu khỏi bảng danh sách giảng viên');
+assert(!adminPortalCode.includes('<th style={{ padding: \'12px 14px\' }}>Mật Khẩu</th>'), 'Security Gate: XÓA hoàn toàn cột mật khẩu khỏi bảng học viên');
+
+
+// Redesign check: 3 Stat cards & Breadcrumbs
+assert(teacherMgrContent.includes('Tổng giảng viên & nhân sự') && teacherMgrContent.includes('Đang hoạt động') && teacherMgrContent.includes('Đã tạm khóa'), 'UI Gate: Có đủ 3 thẻ thống kê (Tổng số, Đang hoạt động, Đã tạm khóa)');
+assert(teacherMgrContent.includes('Quản lý giảng viên & nhân sự') && teacherMgrContent.includes('Quản trị hệ thống'), 'UI Gate: Có tiêu đề và breadcrumb chuẩn mực');
+
+// Standardized terminology check
+assert(teacherMgrContent.includes('Mã tài khoản') && teacherMgrContent.includes('Môn/phân hệ') && teacherMgrContent.includes('Hành động'), 'Data Gate: Chuẩn hóa thuật ngữ (Mã tài khoản, Môn/phân hệ, Vai trò, Hành động)');
+
+// Detail modal & Reset pass modal check
+assert(teacherMgrContent.includes('detailTeacher') && teacherMgrContent.includes('Thông tin liên hệ & Trạng thái'), 'Feature Gate: Có Modal xem chi tiết giảng viên đầy đủ thông tin');
+assert(teacherMgrContent.includes('resetPassTeacher') && teacherMgrContent.includes('Đặt Lại Mật Khẩu An Toàn'), 'Feature Gate: Có chức năng đặt lại mật khẩu riêng biệt có xác nhận');
+assert(teacherMgrContent.includes('AuditLogService.log'), 'Security Gate: Ghi vết nhật ký kiểm toán (Audit Trail) khi đổi trạng thái hoặc đặt lại mật khẩu');
+
+// Truncated track list check (+N)
+assert(teacherMgrContent.includes('+{hiddenTrackCount}') || teacherMgrContent.includes('hiddenTrackCount'), 'UI Gate: Rút gọn danh sách môn học bằng nhãn +N');
+
+// Mascot AI Assistant & Boundaries
+assert(mascotContent.includes('Tìm giảng viên') && mascotContent.includes('Kiểm tra tài khoản bị khóa') && mascotContent.includes('Hướng dẫn phân quyền') && mascotContent.includes('Tìm dữ liệu còn thiếu') && mascotContent.includes('Hướng dẫn thêm giảng viên'), 'AI Mascot: Đầy đủ 5 prompt gợi ý thao tác nhanh');
+assert(mascotContent.includes('NGUYÊN TẮC BẢO MẬT') && mascotContent.includes('AI không có quyền tự ý xóa tài khoản'), 'AI Security Boundary: Nghiêm cấm AI truy xuất mật khẩu hoặc tự ý xóa/phân quyền tài khoản');
+
+// Route synchronization check
+assert(adminNavContent.includes('[\'students\', \'student_directory\']') && adminNavContent.includes('[\'teachers\', \'teachers\']'), 'Route Gate: Đồng bộ route phân định rõ ràng giữa students và teachers');
+
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

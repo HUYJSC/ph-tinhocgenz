@@ -60,8 +60,9 @@ export const ADMIN_NAVIGATION: AdminNavigationSection[] = [
     label: 'User Management',
     icon: Users,
     items: [
-      { tab: 'student_directory', label: 'Học viên', path: 'user-management/students', icon: Users, requiredPermission: 'students.read', legacyIds: ['users', 'students_mgmt'] },
-      { tab: 'teachers', label: 'Giảng viên & Nhân sự', path: 'user-management/teachers', icon: UserCheck, requiredPermission: 'teachers.read', legacyIds: ['teachers_mgmt', 'teachers', 'roles', 'permissions'] }
+      { tab: 'student_directory', label: 'Học viên', path: 'user-management/students', icon: Users, requiredPermission: 'students.read', legacyIds: ['users', 'students_mgmt', 'students'] },
+      { tab: 'teachers', label: 'Giảng viên & Nhân sự', path: 'user-management/teachers', icon: UserCheck, requiredPermission: 'teachers.read', legacyIds: ['teachers_mgmt', 'teachers', 'roles', 'permissions', 'staff'] }
+
     ]
   },
   {
@@ -136,6 +137,11 @@ ADMIN_NAVIGATION_ITEMS.forEach(item => {
 // Existing routes which were previously resolved by App.tsx but not exposed
 // as a first-class menu item are retained here as compatibility aliases.
 [
+  ['students', 'student_directory'],
+  ['teachers', 'teachers'],
+  ['staff', 'teachers'],
+  ['user-management/students', 'student_directory'],
+  ['user-management/teachers', 'teachers'],
   ['tuition_enrollment', 'schedules'],
   ['attendance_mgmt', 'early_warning'],
   ['attendance', 'early_warning'],
@@ -144,6 +150,7 @@ ADMIN_NAVIGATION_ITEMS.forEach(item => {
   ['lessons_mgmt', 'courses'],
   ['audit_logs', 'sync_history']
 ].forEach(([legacyId, target]) => legacyToTab.set(legacyId, target as AdminPortalSubTab));
+
 
 export function resolveAdminPortalTab(value?: string | null): AdminPortalSubTab {
   if (!value) return 'overview';

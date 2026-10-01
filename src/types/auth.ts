@@ -70,8 +70,15 @@ export interface TeacherAccount {
   assignedTracks: CurriculumTrack[];
   mustChangePassword?: boolean;
   role: 'teacher' | 'admin';
+  status?: 'active' | 'locked';
+  lastLogin?: string;
+  department?: string;
+  notes?: string;
   createdAt: string;
 }
+
+export type TeacherAccountSafe = Omit<TeacherAccount, 'password' | 'passwordHash'>;
+
 
 export interface UserProfile {
   id: string;
