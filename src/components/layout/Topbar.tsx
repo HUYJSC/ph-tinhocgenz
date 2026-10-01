@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 import { UserRole } from '../../types/auth';
+import { LanguageSelector } from '../ui/LanguageSelector';
 
 export interface TopbarProps {
   user?: {
@@ -175,8 +176,11 @@ export const Topbar: React.FC<TopbarProps> = ({
         </div>
       </form>
 
-      {/* ── Right Actions: AI Tutor, Notifications, Messages, Help, User Profile ── */}
+      {/* ── Right Actions: Language Selector, AI Tutor, Notifications, Messages, Help, User Profile ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Multi-language Selector Dropdown */}
+        <LanguageSelector variant="nav" />
+
         {/* AI Assistant Button */}
         {onOpenAITutor && (
           <button

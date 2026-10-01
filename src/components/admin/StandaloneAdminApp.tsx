@@ -20,6 +20,8 @@ import { LearningResourceService } from '../../services/learningResourceService'
 import { CertificateService } from '../../services/certificateService';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
 import { AdminBrandLockup } from '../brand/AdminBrandLockup';
+import { LanguageSelector } from '../ui/LanguageSelector';
+
 
 interface MenuItem {
   id: AdminPortalSubTab;
@@ -753,8 +755,12 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
 
           {/* Right: Actions matching Design Truth */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Multi-language Selector Dropdown */}
+            <LanguageSelector variant="nav" />
+
             {/* AI Assistant Button */}
             <button
+
               type="button"
               style={{
                 display: 'inline-flex',

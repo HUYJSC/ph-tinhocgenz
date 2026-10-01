@@ -601,6 +601,50 @@ assert(mascotContent.includes('NGUYÊN TẮC BẢO MẬT') && mascotContent.incl
 // Route synchronization check
 assert(adminNavContent.includes('[\'students\', \'student_directory\']') && adminNavContent.includes('[\'teachers\', \'teachers\']'), 'Route Gate: Đồng bộ route phân định rõ ràng giữa students và teachers');
 
+console.log('\n🌐 NHÓM 21: Đa Ngôn Ngữ LMS & Mascot AI Chatbot (vi, en, zh, ja, ko)');
+assert(fs.existsSync('src/i18n/types.ts'), 'i18n Types: Tệp định nghĩa types.ts tồn tại');
+assert(fs.existsSync('src/i18n/LanguageContext.tsx'), 'i18n Context: LanguageContext.tsx cung cấp Provider và useLanguage');
+assert(fs.existsSync('src/components/ui/LanguageSelector.tsx'), 'i18n UI: Component LanguageSelector.tsx tồn tại');
+
+const i18nTypesCode = fs.readFileSync('src/i18n/types.ts', 'utf8');
+assert(
+  i18nTypesCode.includes("'vi'") &&
+  i18nTypesCode.includes("'en'") &&
+  i18nTypesCode.includes("'zh'") &&
+  i18nTypesCode.includes("'ja'") &&
+  i18nTypesCode.includes("'ko'"),
+  'i18n Locales: Hỗ trợ đầy đủ 5 ngôn ngữ (vi, en, zh, ja, ko)'
+);
+
+// Verify all 5 translation dictionaries exist with standard sections
+const locales = ['vi', 'en', 'zh', 'ja', 'ko'];
+for (const loc of locales) {
+  const filePath = `src/i18n/locales/${loc}.ts`;
+  assert(fs.existsSync(filePath), `i18n Dictionary: Bộ từ điển ${filePath} tồn tại`);
+  const content = fs.readFileSync(filePath, 'utf8');
+  assert(
+    content.includes('common.') &&
+    content.includes('nav.') &&
+    content.includes('mascot.') &&
+    content.includes('teachers.'),
+    `i18n Dictionary [${loc}]: Chứa đầy đủ các nhóm khóa chuẩn (common, nav, mascot, teachers)`
+  );
+}
+
+// LanguageSelector integration in Navigation and Mascot Chatbot
+const topbarCode = fs.readFileSync('src/components/layout/Topbar.tsx', 'utf8');
+const headerCode = fs.readFileSync('src/components/layout/LmsMainHeader.tsx', 'utf8');
+const adminAppCode = fs.readFileSync('src/components/admin/StandaloneAdminApp.tsx', 'utf8');
+assert(topbarCode.includes('LanguageSelector'), 'i18n Integration: Topbar tích hợp LanguageSelector trên thanh điều hướng');
+assert(headerCode.includes('LanguageSelector'), 'i18n Integration: LmsMainHeader tích hợp LanguageSelector trên public header');
+assert(adminAppCode.includes('LanguageSelector'), 'i18n Integration: StandaloneAdminApp tích hợp LanguageSelector');
+assert(mascotContent.includes('LanguageSelector'), 'i18n Mascot: AdminAssistantMascot tích hợp LanguageSelector cạnh tên trợ lý');
+
+// AI Mascot conversation localization & message translation toggle
+assert(mascotContent.includes('handleToggleTranslateMessage') && mascotContent.includes('showOriginal'), 'i18n Mascot: Hỗ trợ nút dịch từng tin nhắn và xem lại bản gốc');
+assert(mascotContent.includes('currentLocale') && mascotContent.includes('useLanguage'), 'i18n Synchronization: Mascot chatbot đồng bộ chung thiết lập ngôn ngữ qua useLanguage()');
+assert(mascotContent.includes('SECURITY POLICY') && mascotContent.includes('NGUYÊN TẮC BẢO MẬT'), 'i18n Security Boundary: Duy trì rào chắn an ninh AI đa ngôn ngữ không lộ mật khẩu');
+
 
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);

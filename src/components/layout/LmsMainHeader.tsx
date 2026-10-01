@@ -4,6 +4,8 @@ import {
   LogOut
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
+import { LanguageSelector } from '../ui/LanguageSelector';
+
 
 export interface LmsMainHeaderProps {
   activeNav?: string;
@@ -160,11 +162,15 @@ export const LmsMainHeader: React.FC<LmsMainHeaderProps> = ({
           />
         </form>
 
-        {/* ── 4. RIGHT ACTIONS (NOTIFICATIONS & USER PROFILE) ── */}
+        {/* ── 4. RIGHT ACTIONS (LANGUAGE SELECTOR, NOTIFICATIONS & USER PROFILE) ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          {/* Multi-language Selector Dropdown */}
+          <LanguageSelector variant="nav" />
+
           {/* Notifications Bell */}
           <button
             onClick={onOpenNotifications}
+
             style={{
               width: '38px',
               height: '38px',
