@@ -83,3 +83,4 @@ export function isStaffIdentifier(
   const role = detectRoleFromIdentifier(identifier, [], teacherAccounts);
   return role === 'admin' || role === 'teacher';
 }
+
