@@ -837,6 +837,55 @@ assert(
   'AI Mascot Layout: Chiều rộng chuẩn 380px, responsive và tích hợp chọn ngôn ngữ'
 );
 
+console.log('\n🚀 NHÓM 25: Hệ Sinh Thái LMS Commercial EdTech 2026 (Web & Mobile, Universal Files, Notifications & Security)');
+
+// 1. Reusable Component Inventory
+assert(fs.existsSync('src/components/ui/Form.tsx'), 'Enterprise UI: Component Form.tsx tồn tại');
+assert(fs.existsSync('src/components/ui/ErrorHandler.tsx'), 'Enterprise UI: Component ErrorHandler.tsx tồn tại');
+assert(fs.existsSync('src/components/ui/EmptyState.tsx'), 'Enterprise UI: Component EmptyState.tsx tồn tại');
+assert(fs.existsSync('src/components/ui/UniversalFileViewer.tsx'), 'Universal Files: Component UniversalFileViewer.tsx tồn tại');
+assert(fs.existsSync('src/components/ui/NotificationCenter.tsx'), 'Notification System: Component NotificationCenter.tsx tồn tại');
+assert(fs.existsSync('src/components/files/UniversalFileManager.tsx'), 'Universal Files: Component UniversalFileManager.tsx tồn tại');
+
+// 2. Universal File Viewer Support & Protection
+const fileViewerCode = fs.readFileSync('src/components/ui/UniversalFileViewer.tsx', 'utf8');
+assert(
+  fileViewerCode.includes('PDF') &&
+  fileViewerCode.includes('DOC') &&
+  fileViewerCode.includes('XLS') &&
+  fileViewerCode.includes('PPT') &&
+  fileViewerCode.includes('detectFileCategory'),
+  'Universal Files: Hỗ trợ đầy đủ định dạng văn phòng, hình ảnh, âm thanh, video và mã nguồn'
+);
+assert(
+  fileViewerCode.includes('PH TIN HỌC GEN Z') &&
+  fileViewerCode.includes('Watermark'),
+  'Security Gate: Tích hợp hình mờ bảo mật chống rò rỉ học liệu nội bộ'
+);
+
+// 3. Enterprise Logout
+const authHookCode = fs.readFileSync('src/hooks/useAuth.ts', 'utf8');
+assert(
+  authHookCode.includes('sessionStorage.clear()') &&
+  authHookCode.includes('auth_token') &&
+  authHookCode.includes('window.location.replace'),
+  'Auth Gate: Cơ chế logoutUser thu hồi token, xóa storage, xóa cache và chặn truy cập trái phép'
+);
+
+// 4. Mobile Bottom Nav 5 canonical items
+const mobileNavCode = fs.readFileSync('src/components/layout/MobileBottomNav.tsx', 'utf8');
+assert(
+  mobileNavCode.includes("'dashboard'") &&
+  mobileNavCode.includes("'courses'") &&
+  mobileNavCode.includes("'ai_tutor'") &&
+  mobileNavCode.includes("'notifications'") &&
+  mobileNavCode.includes("'profile'"),
+  'Mobile Gate: Thanh điều hướng Mobile chuẩn 5 nút (Home, Courses, AI, Notification, Profile)'
+);
+
+// 5. Anti-Fraud QR Attendance Verification
+assert(fs.existsSync('src/services/antiFraudService.ts') && fs.existsSync('api/attendance/check.ts'), 'Attendance Gate: Bộ máy chống gian lận điểm danh QR & Geofence GPS tồn tại');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

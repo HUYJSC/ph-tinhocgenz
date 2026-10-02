@@ -1275,6 +1275,8 @@ export function App() {
           isStaff={isStaff}
           onNavigateTab={handleNavigateTab}
           onOpenProfile={() => setShowProfileModal(true)}
+          onOpenAITutor={() => setShowAITutorDrawer(true)}
+          onOpenNotifications={() => setActiveTab('notifications')}
           onNavigateLearn={() => {
             setActiveTab('dashboard');
             window.scrollTo({ top: 0, behavior: 'smooth' });

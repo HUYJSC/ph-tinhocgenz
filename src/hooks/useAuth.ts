@@ -938,15 +938,48 @@ export function useAuth() {
   };
 
   /**
-   * Đăng xuất xóa toàn bộ Session cookie máy chủ và bộ nhớ tạm
+   * Đăng xuất toàn diện: Xóa Access Token, Refresh Token, LocalStorage, SessionStorage,
+   * Cache bộ nhớ tạm và ngăn chặn truy cập các phân hệ được bảo vệ (/student, /teacher, /admin)
    */
   const logoutUser = async () => {
     try {
       await authService.serverLogout();
+      // 1. Xóa toàn bộ token và phiên làm việc
       localStorage.removeItem('phtinhocgenz_session_active_v4');
       localStorage.removeItem(AUTH_USER_KEY);
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('access_token');
+      sessionStorage.clear();
+
+      // 2. Dọn dẹp cache phiên nếu trình duyệt hỗ trợ
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        try {
+          const cacheKeys = await window.caches.keys();
+          for (const key of cacheKeys) {
+            if (key.includes('user') || key.includes('session') || key.includes('auth')) {
+              await window.caches.delete(key);
+            }
+          }
+        } catch {}
+      }
     } catch {}
+
+    // 3. Đặt lại trạng thái ứng dụng về Khách (GUEST_USER)
     setUser(GUEST_USER);
+
+    // 4. Khóa truy cập: Điều hướng dứt khoát khỏi các route nội bộ
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname.toLowerCase();
+      const h = window.location.hash.toLowerCase();
+      if (
+        p.includes('/student') || p.includes('/teacher') || p.includes('/giaovien') ||
+        p.includes('/admin') || p.includes('/giaovu') || p.includes('/academic') ||
+        h.includes('student') || h.includes('teacher') || h.includes('admin') || h.includes('giaovien')
+      ) {
+        window.location.replace('/');
+      }
+    }
   };
 
   return {

@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v12-2026-clean-header)
-// Nâng cấp: Tự động purge cache cũ để hiển thị thanh điều hướng top navigation 6 tác vụ chuẩn mực
-const CACHE_NAME = 'ph-eduquest-v12-2026-clean-header';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v13-2026-enterprise-edtech)
+// Nâng cấp: Tự động purge cache cũ để kích hoạt hệ sinh thái LMS Web & Mobile EdTech thương mại
+const CACHE_NAME = 'ph-eduquest-v13-2026-enterprise-edtech';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

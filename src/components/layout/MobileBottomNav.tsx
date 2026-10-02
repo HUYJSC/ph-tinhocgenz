@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Calendar, QrCode, CheckSquare, User } from 'lucide-react';
+import { Home, BookOpen, Bot, Bell, User } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { triggerHapticFeedback } from '../../utils/mobilePlatform';
 
@@ -9,6 +9,8 @@ export interface MobileBottomNavProps {
   onNavigateTab?: (newTab: string) => void;
   isStaff?: boolean;
   onOpenProfile?: () => void;
+  onOpenAITutor?: () => void;
+  onOpenNotifications?: () => void;
   onNavigateLearn?: () => void;
   onNavigateClass?: () => void;
   onNavigateCreds?: () => void;
@@ -19,23 +21,37 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
   onSelectTab,
   onNavigateTab,
-  onOpenProfile
+  onOpenProfile,
+  onOpenAITutor,
+  onOpenNotifications
 }) => {
+  // Canonical 5-item Mobile Navigation according to Phase 11 LMS Standard:
+  // Home | Courses | AI (Center) | Notification | Profile
   const navItems = [
+    { id: 'dashboard', label: 'Trang chủ', icon: Home },
     { id: 'courses', label: 'Khóa học', icon: BookOpen },
-    { id: 'schedule', label: 'Lịch học', icon: Calendar },
-    { id: 'attendance', label: 'Điểm danh', icon: QrCode, isCenter: true },
-    { id: 'assignments', label: 'Bài tập', icon: CheckSquare },
+    { id: 'ai_tutor', label: 'Trợ lý AI', icon: Bot, isCenter: true },
+    { id: 'notifications', label: 'Thông báo', icon: Bell },
     { id: 'profile', label: 'Cá nhân', icon: User }
   ];
 
   const handleItemClick = (id: string, isCenter?: boolean) => {
     soundFx.playClick();
     triggerHapticFeedback(isCenter ? 'medium' : 'light');
+
     if (id === 'profile' && onOpenProfile) {
       onOpenProfile();
       return;
     }
+    if (id === 'ai_tutor' && onOpenAITutor) {
+      onOpenAITutor();
+      return;
+    }
+    if (id === 'notifications' && onOpenNotifications) {
+      onOpenNotifications();
+      return;
+    }
+
     if (onSelectTab) {
       onSelectTab(id);
     } else if (onNavigateTab) {
@@ -65,12 +81,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       >
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id || (item.id === 'courses' && activeTab === 'dashboard');
+          const isActive = activeTab === item.id || (item.id === 'dashboard' && activeTab === 'home');
 
           if (item.isCenter) {
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => handleItemClick(item.id, true)}
                 style={{
                   display: 'flex',
@@ -113,6 +130,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           return (
             <button
               key={item.id}
+              type="button"
               onClick={() => handleItemClick(item.id, false)}
               style={{
                 display: 'flex',
