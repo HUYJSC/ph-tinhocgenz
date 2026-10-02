@@ -57,3 +57,4 @@ split_de1_script.py
 .env.*
 .env.local
 !.env.example
+*.zip
