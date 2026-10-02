@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v13-2026-enterprise-edtech)
-// Nâng cấp: Tự động purge cache cũ để kích hoạt hệ sinh thái LMS Web & Mobile EdTech thương mại
-const CACHE_NAME = 'ph-eduquest-v13-2026-enterprise-edtech';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v14-2026-blockchain-multichannel)
+// Nâng cấp: Tự động purge cache cũ để kích hoạt trọn vẹn Blockchain & Đa nền tảng 2026
+const CACHE_NAME = 'ph-eduquest-v14-2026-blockchain-multichannel';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

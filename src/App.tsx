@@ -84,11 +84,14 @@ export const getAppRoute = (): { route: AppRoute; param?: string } => {
     else if (p.startsWith('/teacher/')) sub = p.replace(/^\/teacher\/?/, '').split('/')[0];
     return { route: 'teacher', param: sub };
   }
-  if (p.startsWith('/giaovu') || h.includes('giaovu') || p.includes('/academic') || h.includes('academic')) {
+  if (p.startsWith('/academic') || h.includes('academic')) {
+    const sub = p.startsWith('/academic/') ? p.replace(/^\/academic\/?/, '').split('/')[0] : '';
+    return { route: 'academic', param: sub };
+  }
+  if (p.startsWith('/giaovu') || h.includes('giaovu')) {
     let sub = '';
     if (p.startsWith('/giaovu/')) sub = p.replace(/^\/giaovu\/?/, '').split('/')[0];
-    else if (p.startsWith('/academic/')) sub = p.replace(/^\/academic\/?/, '').split('/')[0];
-    return { route: 'giaovu', param: sub };
+    return { route: 'academic', param: sub };
   }
   if (p.startsWith('/courses') || h.includes('courses')) return { route: 'courses' };
   if (p.startsWith('/attendance') || h.includes('attendance')) return { route: 'attendance' };
@@ -561,7 +564,7 @@ export function App() {
       const allCerts = CertificateService.getAllCertificates();
       const matched = param ? allCerts.find((c: DigitalCertificate) => c.certificateId.toLowerCase() === param.toLowerCase()) : allCerts[0];
       if (matched) setVerifyCert(matched);
-    } else if (route === 'giaovu') {
+    } else if (route === 'giaovu' || route === 'academic') {
       handleSwitchPortal('giaovu', param);
     } else if (route === 'teacher') {
       handleSwitchPortal('teacher', param);
@@ -1057,7 +1060,7 @@ export function App() {
             )}
 
             {/* 3.4 ACADEMIC OPERATIONS PORTAL (Giáo Vụ) */}
-            {(user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu' || (appRouteInfo.route === 'giaovu' && user.role !== 'admin' && user.role !== 'super_admin')) &&
+            {(user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu' || ((appRouteInfo.route === 'giaovu' || appRouteInfo.route === 'academic') && user.role !== 'admin' && user.role !== 'super_admin')) &&
              activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
               <GiaoVuDashboard
                 key={mapGiaoVuSubTab(activeTab)}

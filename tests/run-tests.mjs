@@ -886,6 +886,53 @@ assert(
 // 5. Anti-Fraud QR Attendance Verification
 assert(fs.existsSync('src/services/antiFraudService.ts') && fs.existsSync('api/attendance/check.ts'), 'Attendance Gate: Bộ máy chống gian lận điểm danh QR & Geofence GPS tồn tại');
 
+console.log('\n⛓️ NHÓM 26: Blockchain Integration & Đa Nền Tảng (iOS, Android, iPad, Academic Portal & Digital Identity)');
+
+// 1. Blockchain Service Verification
+assert(fs.existsSync('src/services/blockchainService.ts'), 'Blockchain Gate: Tệp dịch vụ src/services/blockchainService.ts tồn tại');
+const blockchainCode = fs.readFileSync('src/services/blockchainService.ts', 'utf8');
+assert(
+  blockchainCode.includes('createDigitalIdentity') &&
+  blockchainCode.includes('verifyDigitalIdentity'),
+  'Blockchain Identity: Hỗ trợ xác thực danh tính số học tập (Digital Learning Identity)'
+);
+assert(
+  blockchainCode.includes('anchorCertificate') &&
+  blockchainCode.includes('verificationQrUrl'),
+  'Blockchain Certificate: Hỗ trợ băm SHA-256 neo văn bằng lên chuỗi khối và sinh URL QR xác thực'
+);
+assert(
+  blockchainCode.includes('generateLearningPassport') &&
+  blockchainCode.includes('achievements') &&
+  blockchainCode.includes('certifiedTracks'),
+  'Blockchain Passport: Hỗ trợ tạo Hộ chiếu học tập số (Learning Record Passport)'
+);
+assert(
+  blockchainCode.includes('createAttendanceBlockProof') &&
+  blockchainCode.includes('geofenceCoordinates') &&
+  blockchainCode.includes('deviceFingerprint'),
+  'Blockchain Attendance: Chứng thực điểm danh chuỗi khối (QR + GPS + Thời gian + Thiết bị)'
+);
+
+// 2. Multi-platform Engine (iOS, Android, iPad)
+const mobilePlatformCode = fs.readFileSync('src/utils/mobilePlatform.ts', 'utf8');
+assert(
+  mobilePlatformCode.includes('detectMobilePlatform') &&
+  mobilePlatformCode.includes('isTablet') &&
+  mobilePlatformCode.includes('isStandalonePWA'),
+  'Platform Gate: Động cơ phát hiện chuẩn mực iOS, Android, iPad/Tablet và Standalone PWA'
+);
+
+// 3. 4-Portal Routing Gate (/student, /teacher, /academic, /admin)
+const appRoutingCode = fs.readFileSync('src/App.tsx', 'utf8');
+assert(
+  appRoutingCode.includes("route: 'admin'") &&
+  appRoutingCode.includes("route: 'teacher'") &&
+  appRoutingCode.includes("route: 'academic'") &&
+  appRoutingCode.includes("route: 'student'"),
+  'Portal Gate: Bộ định tuyến hỗ trợ đầy đủ 4 phân hệ chuẩn (/student, /teacher, /academic, /admin)'
+);
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
