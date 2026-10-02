@@ -16,6 +16,7 @@ import { ChangePasswordModal } from './ChangePasswordModal';
 import { LoginMascotChatbot } from './LoginMascotChatbot';
 import { soundFx } from '../../utils/audio';
 import { AuditLogService } from '../../services/auditLogService';
+import { detectRoleFromIdentifier, DetectedRole } from '../../utils/roleDetection';
 
 export interface LoginPageProps {
   initialRole?: 'student' | 'teacher' | 'admin';
@@ -84,6 +85,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     return true;
   });
 
+  // Real-time auto-detected role
+  const [detectedRole, setDetectedRole] = useState<DetectedRole>(() =>
+    detectRoleFromIdentifier(accountValue, studentAccounts, teacherAccounts)
+  );
+
+  const handleAccountInputChange = (val: string) => {
+    setAccountValue(val);
+    const detected = detectRoleFromIdentifier(val, studentAccounts, teacherAccounts);
+    setDetectedRole(detected);
+
+    // Auto-synchronize tab highlight seamlessly if role detected
+    if (detected === 'admin' || detected === 'teacher') {
+      if (role !== 'teacher') {
+        setRole('teacher');
+      }
+    } else if (detected === 'student') {
+      if (role !== 'student') {
+        setRole('student');
+      }
+    }
+  };
+
   // Status & Feedback
   const [loginStatus, setLoginStatus] = useState<'idle' | 'loading' | 'success' | 'failed'>('idle');
   const [formError, setFormError] = useState('');
@@ -138,7 +161,123 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
 
-  // ── 5. FORM SUBMISSION ──
+  // ── 5. AUTHENTICATION EXECUTION HELPERS ──
+  const processStudentLogin = (cleanAccount: string, cleanPass: string) => {
+    const matchedStudent = studentAccounts.find(s => {
+      const sCode = s.studentCode.trim().toUpperCase();
+      const sEmail = (s.email || '').trim().toUpperCase();
+      const clean = cleanAccount.toUpperCase();
+      return sCode === clean || sEmail === clean;
+    });
+
+    const enrolledTracks: CurriculumTrack[] = matchedStudent?.enrolledTracks && matchedStudent.enrolledTracks.length > 0
+      ? matchedStudent.enrolledTracks
+      : (matchedStudent?.programTrack ? [matchedStudent.programTrack] : ['office-fast-3in1']);
+
+    // Multi-track check: open ProgramPickerModal if more than 1 program
+    if (enrolledTracks.length > 1 && matchedStudent) {
+      setPendingCandidate({
+        code: cleanAccount,
+        pass: cleanPass,
+        tracks: enrolledTracks,
+        name: matchedStudent.name || 'Học viên'
+      });
+      setLoginStatus('idle');
+      setIsProgramPickerOpen(true);
+      return { success: true, pendingPicker: true };
+    }
+
+    const selectedTrack = enrolledTracks[0] || 'office-fast-3in1';
+    AuditLogService.log({
+      actorId: cleanAccount,
+      actorRole: 'student',
+      action: 'auth.login_attempt',
+      entityType: 'session',
+      entityId: cleanAccount
+    });
+
+    const res = onStudentLogin(cleanAccount, cleanPass, selectedTrack);
+
+    if (res.success && res.user) {
+      soundFx.playVictory();
+      setLoginStatus('success');
+
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem('phtgz_remember_me', 'true');
+          localStorage.setItem('phtgz_remembered_account', cleanAccount);
+        } else {
+          localStorage.removeItem('phtgz_remember_me');
+          localStorage.removeItem('phtgz_remembered_account');
+        }
+      }
+
+      AuditLogService.log({
+        actorId: res.user.id,
+        actorName: res.user.name,
+        actorRole: 'student',
+        action: 'auth.login_success',
+        entityType: 'session',
+        entityId: res.user.id
+      });
+
+      if (res.user.mustChangePassword) {
+        setPendingUserForChangePass(res.user);
+        setIsChangePassModalOpen(true);
+      }
+      return { success: true };
+    }
+
+    return { success: false, message: res.message };
+  };
+
+  const processStaffLogin = async (cleanAccount: string, cleanPass: string) => {
+    AuditLogService.log({
+      actorId: cleanAccount,
+      actorRole: detectedRole === 'admin' ? 'admin' : 'teacher',
+      action: 'auth.login_attempt',
+      entityType: 'session',
+      entityId: cleanAccount
+    });
+
+    const res = await onAdminLogin(cleanPass, cleanAccount, 'all');
+
+    if (res.success && res.user) {
+      soundFx.playVictory();
+      setLoginStatus('success');
+
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem('phtgz_remember_me', 'true');
+          localStorage.setItem('phtgz_remembered_account', cleanAccount);
+        } else {
+          localStorage.removeItem('phtgz_remember_me');
+          localStorage.removeItem('phtgz_remembered_account');
+        }
+      }
+
+      AuditLogService.log({
+        actorId: res.user.id,
+        actorName: res.user.name,
+        actorRole: res.user.role,
+        action: 'auth.login_success',
+        entityType: 'session',
+        entityId: res.user.id
+      });
+      return { success: true };
+    }
+
+    if (res.message && res.message.toLowerCase().includes('otp')) {
+      setPendingOtpAccount(cleanAccount);
+      setIsOtpModalOpen(true);
+      setLoginStatus('idle');
+      return { success: true, pendingOtp: true };
+    }
+
+    return { success: false, message: res.message };
+  };
+
+  // ── 6. SMART FORM SUBMISSION (Universal Auto-Detection) ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loginStatus === 'loading' || lockoutSeconds > 0) return;
@@ -161,120 +300,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     setLoginStatus('loading');
 
+    const detected = detectRoleFromIdentifier(cleanAccount, studentAccounts, teacherAccounts);
+
+    // Smart Routing Strategy:
+    // If account matches Admin / Staff OR current tab is Teacher (and not detected as Student), try Staff login first.
+    // Otherwise try Student login first.
+    // If the primary attempt fails, automatically try the other role as a seamless fallback!
+    const preferStaff = detected === 'admin' || detected === 'teacher' || (role === 'teacher' && detected !== 'student');
+
     try {
-      if (role === 'student') {
-        // Find student account to inspect enrolled programs
-        const matchedStudent = studentAccounts.find(s => {
-          const sCode = s.studentCode.trim().toUpperCase();
-          const sEmail = (s.email || '').trim().toUpperCase();
-          const clean = cleanAccount.toUpperCase();
-          return sCode === clean || sEmail === clean;
-        });
+      if (preferStaff) {
+        const staffRes = await processStaffLogin(cleanAccount, cleanPass);
+        if (staffRes.success) return;
 
-        const enrolledTracks: CurriculumTrack[] = matchedStudent?.enrolledTracks && matchedStudent.enrolledTracks.length > 0
-          ? matchedStudent.enrolledTracks
-          : (matchedStudent?.programTrack ? [matchedStudent.programTrack] : ['office-fast-3in1']);
-
-        // Requirement 6:
-        // If single program -> directly log in
-        // If multiple programs -> open ProgramPickerModal
-        if (enrolledTracks.length > 1 && matchedStudent) {
-          setPendingCandidate({
-            code: cleanAccount,
-            pass: cleanPass,
-            tracks: enrolledTracks,
-            name: matchedStudent.name || 'Học viên'
-          });
-          setLoginStatus('idle');
-          setIsProgramPickerOpen(true);
-          return;
+        // Fallback: Check if it's actually a student account
+        if (detected !== 'admin' && detected !== 'teacher') {
+          const studentRes = processStudentLogin(cleanAccount, cleanPass);
+          if (studentRes.success) return;
         }
 
-        const selectedTrack = enrolledTracks[0] || 'office-fast-3in1';
-        AuditLogService.log({
-          actorId: cleanAccount,
-          actorRole: 'student',
-          action: 'auth.login_attempt',
-          entityType: 'session',
-          entityId: cleanAccount
-        });
-
-        const res = onStudentLogin(cleanAccount, cleanPass, selectedTrack);
-
-        if (res.success && res.user) {
-          soundFx.playVictory();
-          setLoginStatus('success');
-
-          if (typeof window !== 'undefined') {
-            if (rememberMe) {
-              localStorage.setItem('phtgz_remember_me', 'true');
-              localStorage.setItem('phtgz_remembered_account', cleanAccount);
-            } else {
-              localStorage.removeItem('phtgz_remember_me');
-              localStorage.removeItem('phtgz_remembered_account');
-            }
-          }
-
-          AuditLogService.log({
-            actorId: res.user.id,
-            actorName: res.user.name,
-            actorRole: 'student',
-            action: 'auth.login_success',
-            entityType: 'session',
-            entityId: res.user.id
-          });
-
-          if (res.user.mustChangePassword) {
-            setPendingUserForChangePass(res.user);
-            setIsChangePassModalOpen(true);
-          }
-        } else {
-          handleAuthFailure(res.message);
-        }
+        handleAuthFailure(staffRes.message);
       } else {
-        // Teacher role
-        AuditLogService.log({
-          actorId: cleanAccount,
-          actorRole: 'teacher',
-          action: 'auth.login_attempt',
-          entityType: 'session',
-          entityId: cleanAccount
-        });
+        const studentRes = processStudentLogin(cleanAccount, cleanPass);
+        if (studentRes.success) return;
 
-        const res = await onAdminLogin(cleanPass, cleanAccount, 'all');
+        // Fallback: Check if it's actually an admin / teacher account
+        const staffRes = await processStaffLogin(cleanAccount, cleanPass);
+        if (staffRes.success) return;
 
-        if (res.success && res.user) {
-          soundFx.playVictory();
-          setLoginStatus('success');
-
-          if (typeof window !== 'undefined') {
-            if (rememberMe) {
-              localStorage.setItem('phtgz_remember_me', 'true');
-              localStorage.setItem('phtgz_remembered_account', cleanAccount);
-            } else {
-              localStorage.removeItem('phtgz_remember_me');
-              localStorage.removeItem('phtgz_remembered_account');
-            }
-          }
-
-          AuditLogService.log({
-            actorId: res.user.id,
-            actorName: res.user.name,
-            actorRole: res.user.role,
-            action: 'auth.login_success',
-            entityType: 'session',
-            entityId: res.user.id
-          });
-        } else {
-          // If response indicates OTP is needed or new device
-          if (res.message && res.message.toLowerCase().includes('otp')) {
-            setPendingOtpAccount(cleanAccount);
-            setIsOtpModalOpen(true);
-            setLoginStatus('idle');
-          } else {
-            handleAuthFailure(res.message);
-          }
-        }
+        handleAuthFailure(studentRes.message || staffRes.message);
       }
     } catch {
       soundFx.playIncorrect();
@@ -438,7 +492,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             gap: '20px'
           }}
         >
-          {/* Card Top: Small Logo & Heading */}
+          {/* Card Top: Authentic Monogram Logo & Heading */}
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <BrandMark size={44} alt="Tin Học Gen Z" style={{ marginBottom: '12px' }} />
             <h1
@@ -464,14 +518,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </p>
           </div>
 
-          {/* Role Switcher Tabs */}
+          {/* Role Switcher Tabs (With Real-Time Auto-Detect Feedback) */}
           <RoleSwitcher
             currentRole={role}
             onChangeRole={handleRoleChange}
             disabled={loginStatus === 'loading'}
+            detectedRole={detectedRole}
           />
 
-          {/* Auth Form */}
+          {/* Auth Form (With Smart Role Badge & Universal Login Routing) */}
           <AuthForm
             role={role}
             accountValue={accountValue}
@@ -481,7 +536,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             formError={formError}
             lockoutSeconds={lockoutSeconds}
             isOnline={isOnline}
-            onAccountChange={setAccountValue}
+            detectedRole={detectedRole}
+            onAccountChange={handleAccountInputChange}
             onPasswordChange={setPasswordValue}
             onRememberMeChange={setRememberMe}
             onSubmit={handleSubmit}
@@ -637,4 +693,3 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     </div>
   );
 };
-

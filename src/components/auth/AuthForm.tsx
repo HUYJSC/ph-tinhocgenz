@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
   Eye, EyeOff, ArrowRight, Loader2, Lock, User,
-  AlertTriangle, WifiOff, CheckCircle2, Shield
+  AlertTriangle, WifiOff, CheckCircle2, Shield, Briefcase, GraduationCap
 } from 'lucide-react';
 import { useLanguage } from '../../i18n';
-import { soundFx } from '../../utils/audio';
+import { DetectedRole } from '../../utils/roleDetection';
 
 export interface AuthFormProps {
   role: 'student' | 'teacher';
@@ -15,6 +15,7 @@ export interface AuthFormProps {
   formError: string;
   lockoutSeconds: number;
   isOnline: boolean;
+  detectedRole?: DetectedRole;
   onAccountChange: (val: string) => void;
   onPasswordChange: (val: string) => void;
   onRememberMeChange: (val: boolean) => void;
@@ -31,6 +32,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   formError,
   lockoutSeconds,
   isOnline,
+  detectedRole = null,
   onAccountChange,
   onPasswordChange,
   onRememberMeChange,
@@ -44,13 +46,21 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   const isLoading = loginStatus === 'loading';
   const isSuccess = loginStatus === 'success';
 
-  const accountLabel = role === 'student'
-    ? t('auth.studentAccountLabel')
-    : t('auth.teacherAccountLabel');
+  // Dynamic label based on detected role
+  const getAccountLabel = () => {
+    if (detectedRole === 'admin') return 'Tài khoản Quản trị viên';
+    if (detectedRole === 'teacher') return t('auth.teacherAccountLabel');
+    if (detectedRole === 'student') return t('auth.studentAccountLabel');
+    return role === 'student'
+      ? t('auth.studentAccountLabel')
+      : t('auth.teacherAccountLabel');
+  };
 
-  const submitButtonText = role === 'student'
-    ? t('auth.signIn')
-    : t('auth.signInTeacher');
+  const getSubmitButtonText = () => {
+    if (detectedRole === 'admin') return 'Đăng nhập Quản trị viên';
+    if (detectedRole === 'teacher' || role === 'teacher') return t('auth.signInTeacher');
+    return t('auth.signIn');
+  };
 
   return (
     <form
@@ -62,8 +72,31 @@ export const AuthForm: React.FC<AuthFormProps> = ({
         width: '100%'
       }}
     >
-      {/* Teacher Role Badge */}
-      {role === 'teacher' && (
+      {/* Teacher / Admin Detected Role Banner */}
+      {detectedRole === 'admin' ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            background: 'rgba(0, 87, 184, 0.08)',
+            border: '1px solid rgba(0, 87, 184, 0.25)',
+            color: '#0057B8',
+            fontSize: '0.8rem',
+            fontWeight: 600
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Shield size={15} />
+            <span>Tự động nhận diện: <strong>Quản trị viên hệ thống</strong></span>
+          </div>
+          <span style={{ fontSize: '0.72rem', background: '#0057B8', color: '#FFFFFF', padding: '1px 6px', borderRadius: '4px' }}>
+            Toàn quyền
+          </span>
+        </div>
+      ) : (role === 'teacher' || detectedRole === 'teacher') ? (
         <div
           style={{
             display: 'flex',
@@ -78,10 +111,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             fontWeight: 600
           }}
         >
-          <Shield size={14} />
-          <span>{t('auth.teacherBadge')}</span>
+          <Briefcase size={14} />
+          <span>{detectedRole === 'teacher' ? 'Tự động nhận diện: Giảng viên bộ môn' : t('auth.teacherBadge')}</span>
         </div>
-      )}
+      ) : null}
 
       {/* Offline Alert */}
       {!isOnline && (
@@ -99,7 +132,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             fontSize: '0.82rem'
           }}
         >
-          <WifiOff size={16} flex-shrink="0" />
+          <WifiOff size={16} />
           <span>{t('auth.offlineNotice')}</span>
         </div>
       )}
@@ -151,18 +184,40 @@ export const AuthForm: React.FC<AuthFormProps> = ({
 
       {/* Account Input Field */}
       <div>
-        <label
-          htmlFor="auth-account-input"
-          style={{
-            display: 'block',
-            fontSize: '0.84rem',
-            fontWeight: 600,
-            color: '#0B2545',
-            marginBottom: '6px'
-          }}
-        >
-          {accountLabel} <span style={{ color: '#D92D20' }}>*</span>
-        </label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+          <label
+            htmlFor="auth-account-input"
+            style={{
+              fontSize: '0.84rem',
+              fontWeight: 600,
+              color: '#0B2545'
+            }}
+          >
+            {getAccountLabel()} <span style={{ color: '#D92D20' }}>*</span>
+          </label>
+
+          {/* Real-time Role Chip Badge */}
+          {detectedRole && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                color: detectedRole === 'admin' ? '#0057B8' : detectedRole === 'teacher' ? '#0284C7' : '#16803C',
+                background: detectedRole === 'admin' ? '#EFF6FF' : detectedRole === 'teacher' ? '#F0F9FF' : '#F0FDF4',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                border: '1px solid currentColor'
+              }}
+            >
+              {detectedRole === 'admin' ? <Shield size={11} /> : detectedRole === 'teacher' ? <Briefcase size={11} /> : <GraduationCap size={11} />}
+              {detectedRole === 'admin' ? 'Quản trị viên' : detectedRole === 'teacher' ? 'Giảng viên' : 'Học viên'}
+            </span>
+          )}
+        </div>
+
         <div style={{ position: 'relative' }}>
           <span
             style={{
@@ -170,13 +225,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({
               left: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#94A3B8',
+              color: detectedRole === 'admin' ? '#0057B8' : '#94A3B8',
               display: 'flex',
               alignItems: 'center',
               pointerEvents: 'none'
             }}
           >
-            <User size={18} />
+            {detectedRole === 'admin' ? <Shield size={18} /> : <User size={18} />}
           </span>
           <input
             id="auth-account-input"
@@ -186,13 +241,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             disabled={isLoading || isLocked}
             value={accountValue}
             onChange={(e) => onAccountChange(e.target.value)}
-            placeholder={t('auth.accountPlaceholder')}
+            placeholder="Mã học viên, email, SĐT hoặc admin..."
             style={{
               width: '100%',
               boxSizing: 'border-box',
               padding: '11px 14px 11px 42px',
               borderRadius: '10px',
-              border: '1.5px solid #CBD5E1',
+              border: detectedRole === 'admin' ? '1.5px solid #0057B8' : '1.5px solid #CBD5E1',
               background: isLoading || isLocked ? '#F8FAFC' : '#FFFFFF',
               color: '#0B2545',
               fontSize: '0.92rem',
@@ -204,7 +259,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
               e.target.style.boxShadow = '0 0 0 3px rgba(0, 87, 184, 0.12)';
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = '#CBD5E1';
+              e.target.style.borderColor = detectedRole === 'admin' ? '#0057B8' : '#CBD5E1';
               e.target.style.boxShadow = 'none';
             }}
           />
@@ -334,7 +389,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({
         <button
           type="button"
           onClick={() => {
-            soundFx.playClick();
             onOpenForgotPassword();
           }}
           style={{
@@ -404,7 +458,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           </>
         ) : (
           <>
-            <span>{submitButtonText}</span>
+            <span>{getSubmitButtonText()}</span>
             <ArrowRight size={17} />
           </>
         )}
@@ -412,4 +466,3 @@ export const AuthForm: React.FC<AuthFormProps> = ({
     </form>
   );
 };
-
