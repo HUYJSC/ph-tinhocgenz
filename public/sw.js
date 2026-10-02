@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v14-2026-blockchain-multichannel)
-// Nâng cấp: Tự động purge cache cũ để kích hoạt trọn vẹn Blockchain & Đa nền tảng 2026
-const CACHE_NAME = 'ph-eduquest-v14-2026-blockchain-multichannel';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v15-2026-smart-auth-autodetect)
+// Nâng cấp: Tự động purge cache cũ để kích hoạt trọn vẹn Luồng Đăng nhập thông minh 2026
+const CACHE_NAME = 'ph-eduquest-v15-2026-smart-auth-autodetect';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
