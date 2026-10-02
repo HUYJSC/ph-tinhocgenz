@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Search, Bell, Sparkles, MessageSquare, HelpCircle,
+  Search, Bell, MessageSquare, HelpCircle,
   Menu, ChevronDown, User, LogOut, Key
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
@@ -199,7 +199,14 @@ export const Topbar: React.FC<TopbarProps> = ({
             }}
             title={isAdmin ? "Trợ lý quản trị AI" : "AI Hỗ trợ học tập"}
           >
-            <Sparkles size={15} color="#0057B8" />
+            <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img
+                src="/chatbot.ai.png"
+                alt="Mascot Trợ lý Gen Z"
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                onError={(e) => { e.currentTarget.src = '/assets/chatbot.ai.png'; }}
+              />
+            </div>
             <span>{isAdmin ? 'AI Assistant' : 'AI Hỗ trợ'}</span>
           </button>
         )}

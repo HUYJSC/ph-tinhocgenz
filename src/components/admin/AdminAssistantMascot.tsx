@@ -1,11 +1,9 @@
 import React, { useState, useId, useMemo } from 'react';
 import {
-  Bot,
   X,
   Minimize2,
   Maximize2,
   Send,
-  Sparkles,
   Languages,
   RotateCcw
 } from 'lucide-react';
@@ -447,17 +445,30 @@ export const AdminAssistantMascot: React.FC<AdminAssistantMascotProps> = ({
                 style={{
                   width: '34px',
                   height: '34px',
-                  borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '50%',
+                  background: '#FFFFFF',
+                  border: '1.5px solid rgba(255, 255, 255, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#FFFFFF',
+                  padding: '2px',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                   flexShrink: 0
                 }}
               >
-                <Bot size={20} />
+                <img
+                  src="/chatbot.ai.png"
+                  alt="Mascot Trợ lý Gen Z"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: 'block'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = '/assets/chatbot.ai.png';
+                  }}
+                />
               </div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: '0.86rem', fontWeight: 800, lineHeight: 1.2, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -731,58 +742,51 @@ export const AdminAssistantMascot: React.FC<AdminAssistantMascotProps> = ({
           setIsMinimized(false);
         }}
         style={{
-          width: '56px',
-          height: '56px',
+          width: '60px',
+          height: '60px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #0057B8 0%, #003F88 100%)',
-          color: '#FFFFFF',
-          border: '2.5px solid #FFFFFF',
-          boxShadow: '0 8px 24px rgba(0, 87, 184, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1)',
+          background: '#FFFFFF',
+          border: '1.5px solid #0057B8',
+          boxShadow: '0 8px 24px rgba(0, 87, 184, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          padding: '6px',
+          transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease',
           animation: !isOpen ? 'gentle-bounce 3s infinite ease-in-out' : 'none'
         }}
         title={t('mascot.title')}
         aria-label={t('mascot.title')}
       >
-        <Bot size={28} />
+        <img
+          src="/chatbot.ai.png"
+          alt="Mascot Trợ lý Gen Z"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block'
+          }}
+          onError={(e) => {
+            e.currentTarget.src = '/assets/chatbot.ai.png';
+          }}
+        />
         {/* Pulsing Green Online Indicator */}
         <span
           style={{
             position: 'absolute',
             top: '2px',
             right: '2px',
-            width: '13px',
-            height: '13px',
+            width: '12px',
+            height: '12px',
             borderRadius: '50%',
             background: '#22c55e',
             border: '2px solid #FFFFFF',
             boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.3)'
           }}
         />
-        {/* Sparkle badge */}
-        <span
-          style={{
-            position: 'absolute',
-            bottom: '-2px',
-            left: '-2px',
-            width: '18px',
-            height: '18px',
-            borderRadius: '50%',
-            background: '#F59E0B',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1.5px solid #FFFFFF'
-          }}
-        >
-          <Sparkles size={10} />
-        </span>
       </button>
 
       <style>{`

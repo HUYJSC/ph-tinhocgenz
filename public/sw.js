@@ -1,11 +1,12 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v9-2026-portal)
-// Nâng cấp: Tự động purge cache cũ để hiển thị ngay Dual-Portal LMS Tin Học Gen Z
-const CACHE_NAME = 'ph-eduquest-v9-2026-portal';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v10-2026-mascot)
+// Nâng cấp: Tự động purge cache cũ để hiển thị ngay Mascot Chatbot AI Tin Học Gen Z
+const CACHE_NAME = 'ph-eduquest-v10-2026-mascot';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
+  '/chatbot.ai.png',
   '/logo.png',
   '/logo-icon.png',
   '/icon-192.png',

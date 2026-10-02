@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Bot, X, Minimize2, Maximize2, Send,
+  X, Minimize2, Maximize2, Send,
   RotateCcw, Languages, ExternalLink, Copy, Check,
   ThumbsUp, ThumbsDown, Square, Loader2, Database,
   Trash2, AlertCircle
@@ -309,23 +309,35 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
             aria-label={t('mascot.loginTooltip')}
             title={t('mascot.loginTooltip')}
             style={{
-              width: '56px',
-              height: '56px',
+              width: '60px',
+              height: '60px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #0057B8 0%, #003F88 100%)',
-              color: '#FFFFFF',
-              border: '2.5px solid #FFFFFF',
-              boxShadow: '0 8px 24px rgba(0, 87, 184, 0.35)',
+              background: '#FFFFFF',
+              border: '1.5px solid #0057B8',
+              boxShadow: '0 8px 24px rgba(0, 87, 184, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              padding: '6px',
+              transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease',
               animation: 'gentle-bounce 3.5s infinite ease-in-out'
             }}
           >
-            <Bot size={28} />
+            <img
+              src="/chatbot.ai.png"
+              alt="Mascot Trợ lý Gen Z"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+              onError={(e) => {
+                e.currentTarget.src = '/assets/chatbot.ai.png';
+              }}
+            />
             {/* Green Online Dot */}
             <span
               style={{
@@ -384,17 +396,32 @@ export const LoginMascotChatbot: React.FC<LoginMascotChatbotProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '50%',
-                  background: '#0057B8',
+                  background: '#FFFFFF',
+                  border: '1.5px solid rgba(255, 255, 255, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  padding: '2px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
                   flexShrink: 0
                 }}
               >
-                <Bot size={18} />
+                <img
+                  src="/chatbot.ai.png"
+                  alt="Mascot Trợ lý Gen Z"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: 'block'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = '/assets/chatbot.ai.png';
+                  }}
+                />
               </div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

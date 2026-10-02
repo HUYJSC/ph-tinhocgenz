@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Sparkles, X, Minimize2, Maximize2, Send,
+  X, Minimize2, Maximize2, Send,
   RotateCcw, Copy, Check, ThumbsUp, ThumbsDown,
-  Square, Loader2, Database, Bot
+  Square, Database
 } from 'lucide-react';
 import { useLanguage } from '../../i18n';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { soundFx } from '../../utils/audio';
 import { AIChatService, AIChatSource, AIChatMessage } from '../../services/aiChatService';
 import { PORTAL_TOKENS } from '../../styles/portalDesignTokens';
+import { MascotChatbotButton } from './MascotChatbotButton';
 
 export interface GenZMascotChatbotProps {
   role?: 'student' | 'teacher' | 'admin' | 'guest';
@@ -22,7 +23,7 @@ export interface GenZMascotChatbotProps {
 export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
   role = 'student',
   userId = 'default_user',
-  userName = 'Bạn',
+  userName: _userName = 'Bạn',
   isOpen: controlledIsOpen,
   onToggleOpen: controlledToggleOpen,
   initialPrompt
@@ -31,7 +32,6 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [showTooltip, setShowTooltip] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeSourcesModal, setActiveSourcesModal] = useState<AIChatSource[] | null>(null);
@@ -51,10 +51,9 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
 
   const storageKey = `portal_mascot_${role}_${userId}`;
 
-  // 1. Initial messages
-  const defaultWelcomeText = role === 'teacher'
-    ? `Xin chào Thầy/Cô ${userName}! Tôi là Trợ lý Gen Z. Tôi có thể hỗ trợ tóm tắt tiến độ lớp, kiểm tra bài cần chấm, hướng dẫn điểm danh và quản lý học vụ.`
-    : `Xin chào ${userName}! Mình là Trợ lý Gen Z. Mình có thể hỗ trợ bạn theo dõi tiến độ bài học, giải thích kiến thức, xem chứng chỉ và nộp bài tập.`;
+  // 1. Initial messages - Standardized welcome per Section 4
+  const defaultWelcomeText =
+    'Xin chào! Tôi là Trợ lý Gen Z. Tôi có thể giúp bạn sử dụng hệ thống, tìm khóa học, kiểm tra lịch học và giải đáp thắc mắc.';
 
   const [messages, setMessages] = useState<AIChatMessage[]>(() => {
     const saved = AIChatService.getStoredHistory(storageKey);
@@ -92,22 +91,25 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
     }
   }, [messages, isOpen, isMinimized, isThinking]);
 
-  // Exact quick suggestions required in Section X
+  // Exact quick suggestions required in Section 4
   const studentPrompts = [
+    'Hướng dẫn tôi vào khóa học',
     'Tôi đang học đến đâu?',
     'Bài tiếp theo của tôi là gì?',
+    'Tôi quên mật khẩu',
+    'Hướng dẫn xem chứng chỉ',
     'Giải thích khóa học này.',
-    'Tôi chưa đăng ký được khóa học.',
-    'Hướng dẫn xem chứng chỉ.',
     'Hướng dẫn nộp bài.'
   ];
 
   const teacherPrompts = [
+    'Tóm tắt tiến độ lớp học',
+    'Học viên nào chưa nộp bài?',
+    'Hướng dẫn điểm danh',
+    'Hướng dẫn tạo bài tập.',
+    'Bài nào đang chờ chấm?',
     'Lớp nào sắp có bài cần chấm?',
     'Tóm tắt tiến độ lớp của tôi.',
-    'Hướng dẫn tạo bài tập.',
-    'Hướng dẫn điểm danh.',
-    'Học viên nào chưa nộp bài?',
     'Tạo thông báo cho lớp.'
   ];
 
@@ -208,65 +210,12 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
     <>
       {/* ── 1. FLOATING LAUNCHER (BOTTOM-RIGHT) ── */}
       {!isOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 900,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
-        >
-          {showTooltip && (
-            <div
-              style={{
-                backgroundColor: PORTAL_TOKENS.colors.text,
-                color: '#FFFFFF',
-                padding: '6px 12px',
-                borderRadius: PORTAL_TOKENS.radii.sm,
-                fontSize: '12px',
-                fontWeight: 600,
-                boxShadow: PORTAL_TOKENS.shadows.card,
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none'
-              }}
-            >
-              Trợ lý Gen Z • Sẵn sàng hỗ trợ bạn
-            </div>
-          )}
-
-          <button
-            onClick={handleToggle}
-            aria-label="Mở Trợ lý Gen Z"
-            style={{
-              width: '54px',
-              height: '54px',
-              borderRadius: '50%',
-              backgroundColor: PORTAL_TOKENS.colors.primary,
-              color: '#FFFFFF',
-              border: '2px solid #FFFFFF',
-              boxShadow: '0 4px 16px rgba(0, 87, 184, 0.3)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              outline: 'none'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            <Sparkles size={24} />
-          </button>
-        </div>
+        <MascotChatbotButton
+          onClick={handleToggle}
+          isOpen={false}
+          isThinking={isThinking}
+          tooltipText="Bạn cần hỗ trợ?"
+        />
       )}
 
       {/* ── 2. CHAT PANEL (DESKTOP 380px / MOBILE BOTTOM SHEET) ── */}
@@ -275,8 +224,8 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
           className="portal-mascot-panel"
           style={{
             position: 'fixed',
-            bottom: isMinimized ? '24px' : '20px',
-            right: '24px',
+            bottom: isMinimized ? '22px' : '20px',
+            right: '22px',
             width: '380px',
             maxWidth: 'calc(100vw - 32px)',
             height: isMinimized ? '56px' : '560px',
@@ -290,7 +239,7 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
             zIndex: 950,
             overflow: 'hidden',
             fontFamily: PORTAL_TOKENS.typography.fontFamily,
-            transition: 'height 0.2s ease'
+            transition: 'height 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease'
           }}
         >
           {/* Header */}
@@ -307,19 +256,35 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {/* Mascot Robot Avatar from chatbot.ai.png */}
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '50%',
-                  backgroundColor: '#EFF6FF',
-                  color: PORTAL_TOKENS.colors.primary,
+                  backgroundColor: '#FFFFFF',
+                  border: '1.5px solid rgba(0, 87, 184, 0.25)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  padding: '2px',
+                  boxShadow: '0 1px 4px rgba(0, 87, 184, 0.12)',
+                  flexShrink: 0
                 }}
               >
-                <Bot size={18} />
+                <img
+                  src="/chatbot.ai.png"
+                  alt="Mascot Trợ lý Gen Z"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: 'block'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = '/assets/chatbot.ai.png';
+                  }}
+                />
               </div>
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: PORTAL_TOKENS.colors.text }}>
@@ -327,7 +292,7 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
                 </div>
                 <div style={{ fontSize: '11px', color: PORTAL_TOKENS.colors.success, display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: PORTAL_TOKENS.colors.success }} />
-                  Trực tuyến (Gemini Pro)
+                  Đang trực tuyến
                 </div>
               </div>
             </div>
@@ -410,93 +375,127 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
                       key={msg.id}
                       style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: isUser ? 'flex-end' : 'flex-start',
-                        maxWidth: '85%',
-                        alignSelf: isUser ? 'flex-end' : 'flex-start'
+                        alignItems: 'flex-start',
+                        gap: isUser ? '0' : '8px',
+                        alignSelf: isUser ? 'flex-end' : 'flex-start',
+                        maxWidth: '88%'
                       }}
                     >
-                      <div
-                        style={{
-                          padding: '10px 14px',
-                          borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                          backgroundColor: isUser ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.card,
-                          color: isUser ? '#FFFFFF' : PORTAL_TOKENS.colors.text,
-                          border: isUser ? 'none' : `1px solid ${PORTAL_TOKENS.colors.border}`,
-                          fontSize: '13px',
-                          lineHeight: 1.5,
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                          wordBreak: 'break-word'
-                        }}
-                      >
-                        {msg.text}
-                      </div>
+                      {!isUser && (
+                        <div
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            backgroundColor: '#FFFFFF',
+                            border: '1.5px solid rgba(0, 87, 184, 0.25)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '2px',
+                            flexShrink: 0,
+                            marginTop: '2px',
+                            boxShadow: '0 1px 3px rgba(0, 87, 184, 0.1)'
+                          }}
+                        >
+                          <img
+                            src="/chatbot.ai.png"
+                            alt="Mascot Trợ lý Gen Z"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            onError={(e) => { e.currentTarget.src = '/assets/chatbot.ai.png'; }}
+                          />
+                        </div>
+                      )}
 
-                      {/* Message Footer Actions */}
                       <div
                         style={{
                           display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          marginTop: '4px',
-                          fontSize: '10px',
-                          color: PORTAL_TOKENS.colors.textMuted
+                          flexDirection: 'column',
+                          alignItems: isUser ? 'flex-end' : 'flex-start'
                         }}
                       >
-                        <span>{msg.timestamp}</span>
+                        <div
+                          style={{
+                            padding: '10px 14px',
+                            borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                            backgroundColor: isUser ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.card,
+                            color: isUser ? '#FFFFFF' : PORTAL_TOKENS.colors.text,
+                            border: isUser ? 'none' : `1px solid ${PORTAL_TOKENS.colors.border}`,
+                            fontSize: '13px',
+                            lineHeight: 1.5,
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                            wordBreak: 'break-word'
+                          }}
+                        >
+                          {msg.text}
+                        </div>
 
-                        {!isUser && (
-                          <>
-                            <button
-                              onClick={() => handleCopyMessage(msg.id, msg.text)}
-                              title="Sao chép"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px', color: PORTAL_TOKENS.colors.textMuted }}
-                            >
-                              {copiedId === msg.id ? <Check size={12} color={PORTAL_TOKENS.colors.success} /> : <Copy size={12} />}
-                            </button>
+                        {/* Message Footer Actions */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            marginTop: '4px',
+                            fontSize: '10px',
+                            color: PORTAL_TOKENS.colors.textMuted
+                          }}
+                        >
+                          <span>{msg.timestamp}</span>
 
-                            <button
-                              onClick={() => handleRateMessage(msg.id, 'like')}
-                              title="Hữu ích"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px', color: msg.rating === 'like' ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.textMuted }}
-                            >
-                              <ThumbsUp size={12} />
-                            </button>
-
-                            <button
-                              onClick={() => handleRateMessage(msg.id, 'dislike')}
-                              title="Chưa hữu ích"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px', color: msg.rating === 'dislike' ? PORTAL_TOKENS.colors.error : PORTAL_TOKENS.colors.textMuted }}
-                            >
-                              <ThumbsDown size={12} />
-                            </button>
-
-                            {msg.sources && msg.sources.length > 0 && (
+                          {!isUser && (
+                            <>
                               <button
-                                onClick={() => setActiveSourcesModal(msg.sources!)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: PORTAL_TOKENS.colors.primary,
-                                  fontSize: '11px',
-                                  fontWeight: 600,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '2px'
-                                }}
+                                onClick={() => handleCopyMessage(msg.id, msg.text)}
+                                title="Sao chép"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px', color: PORTAL_TOKENS.colors.textMuted }}
                               >
-                                <Database size={11} /> Nguồn ({msg.sources.length})
+                                {copiedId === msg.id ? <Check size={12} color={PORTAL_TOKENS.colors.success} /> : <Copy size={12} />}
                               </button>
-                            )}
-                          </>
-                        )}
+
+                              <button
+                                onClick={() => handleRateMessage(msg.id, 'like')}
+                                title="Hữu ích"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px', color: msg.rating === 'like' ? PORTAL_TOKENS.colors.primary : PORTAL_TOKENS.colors.textMuted }}
+                              >
+                                <ThumbsUp size={12} />
+                              </button>
+
+                              <button
+                                onClick={() => handleRateMessage(msg.id, 'dislike')}
+                                title="Chưa hữu ích"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px', color: msg.rating === 'dislike' ? PORTAL_TOKENS.colors.error : PORTAL_TOKENS.colors.textMuted }}
+                              >
+                                <ThumbsDown size={12} />
+                              </button>
+
+                              {msg.sources && msg.sources.length > 0 && (
+                                <button
+                                  onClick={() => setActiveSourcesModal(msg.sources!)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: PORTAL_TOKENS.colors.primary,
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '2px'
+                                  }}
+                                >
+                                  <Database size={11} /> Nguồn ({msg.sources.length})
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Thinking Indicator */}
+                {/* Thinking Indicator with mascot avatar & bouncing dots */}
                 {isThinking && (
                   <div
                     style={{
@@ -509,11 +508,37 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
                       borderRadius: '12px',
                       border: `1px solid ${PORTAL_TOKENS.colors.border}`,
                       fontSize: '12px',
-                      color: PORTAL_TOKENS.colors.primary
+                      color: PORTAL_TOKENS.colors.primary,
+                      boxShadow: '0 1px 3px rgba(0, 87, 184, 0.08)'
                     }}
                   >
-                    <Loader2 size={14} className="animate-spin" />
-                    <span>Trợ lý Gen Z đang xử lý...</span>
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: '#FFFFFF',
+                        border: '1.5px solid rgba(0, 87, 184, 0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '1.5px',
+                        flexShrink: 0
+                      }}
+                    >
+                      <img
+                        src="/chatbot.ai.png"
+                        alt="Mascot"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        onError={(e) => { e.currentTarget.src = '/assets/chatbot.ai.png'; }}
+                      />
+                    </div>
+                    <span>Trợ lý Gen Z đang trả lời</span>
+                    <span style={{ display: 'inline-flex', gap: '3px', alignItems: 'center' }}>
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#0057B8', animation: 'mascotDotBounce 1.2s infinite ease-in-out' }} />
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#0057B8', animation: 'mascotDotBounce 1.2s infinite ease-in-out 0.2s' }} />
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#0057B8', animation: 'mascotDotBounce 1.2s infinite ease-in-out 0.4s' }} />
+                    </span>
                     <button
                       onClick={handleStopGeneration}
                       style={{
@@ -696,6 +721,26 @@ export const GenZMascotChatbot: React.FC<GenZMascotChatbotProps> = ({
           )}
         </div>
       )}
+
+      <style>{`
+        @keyframes mascotDotBounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+          40% { transform: translateY(-4px); opacity: 1; }
+        }
+        @media (max-width: 640px) {
+          .portal-mascot-panel {
+            bottom: 0 !important;
+            right: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 92vh !important;
+            max-height: 92vh !important;
+            border-bottom-left-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+          }
+        }
+      `}</style>
     </>
   );
 };
