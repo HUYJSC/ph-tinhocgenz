@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v10-2026-mascot)
-// Nâng cấp: Tự động purge cache cũ để hiển thị ngay Mascot Chatbot AI Tin Học Gen Z
-const CACHE_NAME = 'ph-eduquest-v10-2026-mascot';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v11-2026-clean-logo)
+// Nâng cấp: Tự động purge cache cũ để hiển thị giao diện tối ưu (loại bỏ logo trùng nhau)
+const CACHE_NAME = 'ph-eduquest-v11-2026-clean-logo';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
