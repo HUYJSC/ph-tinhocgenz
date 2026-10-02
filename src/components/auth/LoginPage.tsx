@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   CurriculumTrack, StudentAccount, TeacherAccount, UserProfile
 } from '../../types/auth';
-import { Home, PhoneCall, Mail, X } from 'lucide-react';
+import {
+  Home, PhoneCall, Mail, X, Shield, Sparkles, BookOpen, Award, Users
+} from 'lucide-react';
 import { useLanguage } from '../../i18n';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { BrandMark } from '../brand';
@@ -95,7 +97,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const detected = detectRoleFromIdentifier(val, studentAccounts, teacherAccounts);
     setDetectedRole(detected);
 
-    // Auto-synchronize tab highlight seamlessly if role detected
     if (detected === 'admin' || detected === 'teacher') {
       if (role !== 'teacher') {
         setRole('teacher');
@@ -174,7 +175,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       ? matchedStudent.enrolledTracks
       : (matchedStudent?.programTrack ? [matchedStudent.programTrack] : ['office-fast-3in1']);
 
-    // Multi-track check: open ProgramPickerModal if more than 1 program
     if (enrolledTracks.length > 1 && matchedStudent) {
       setPendingCandidate({
         code: cleanAccount,
@@ -301,11 +301,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setLoginStatus('loading');
 
     const detected = detectRoleFromIdentifier(cleanAccount, studentAccounts, teacherAccounts);
-
-    // Smart Routing Strategy:
-    // If account matches Admin / Staff OR current tab is Teacher (and not detected as Student), try Staff login first.
-    // Otherwise try Student login first.
-    // If the primary attempt fails, automatically try the other role as a seamless fallback!
     const preferStaff = detected === 'admin' || detected === 'teacher' || (role === 'teacher' && detected !== 'student');
 
     try {
@@ -313,7 +308,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const staffRes = await processStaffLogin(cleanAccount, cleanPass);
         if (staffRes.success) return;
 
-        // Fallback: Check if it's actually a student account
         if (detected !== 'admin' && detected !== 'teacher') {
           const studentRes = processStudentLogin(cleanAccount, cleanPass);
           if (studentRes.success) return;
@@ -324,7 +318,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const studentRes = processStudentLogin(cleanAccount, cleanPass);
         if (studentRes.success) return;
 
-        // Fallback: Check if it's actually an admin / teacher account
         const staffRes = await processStaffLogin(cleanAccount, cleanPass);
         if (staffRes.success) return;
 
@@ -396,38 +389,76 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         overflowX: 'hidden'
       }}
     >
-      {/* ── 1. TOP BAR ── */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .login-hero-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 60px;
+          max-width: 1240px;
+          width: 100%;
+          margin: 0 auto;
+        }
+        @media (max-width: 980px) {
+          .login-hero-sidebar {
+            display: none !important;
+          }
+          .login-hero-container {
+            gap: 0;
+            justify-content: center;
+          }
+        }
+      `}</style>
+
+      {/* ── 1. MODERN TOP BAR ── */}
       <header
         role="banner"
         style={{
           width: '100%',
           background: '#FFFFFF',
           borderBottom: '1px solid #E2E8F0',
-          padding: '12px 24px',
+          padding: '14px 28px',
           boxSizing: 'border-box',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           position: 'sticky',
           top: 0,
-          zIndex: 100
+          zIndex: 100,
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
         }}
       >
         {/* Left: Authentic Logo PH–TINHOCGENZ */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <BrandMark size={36} alt="PH–TINHOCGENZ" />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '1.02rem', fontWeight: 800, color: '#0057B8', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-              Tin Học Gen Z
-            </span>
-            <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              LMS Learning Platform
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <BrandMark size={38} alt="PH–TINHOCGENZ" />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.08rem', fontWeight: 800, color: '#0057B8', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                  Tin Học Gen Z
+                </span>
+                <span style={{ fontSize: '0.66rem', fontWeight: 700, background: 'rgba(0, 87, 184, 0.08)', color: '#0057B8', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(0, 87, 184, 0.2)' }}>
+                  LMS 2026
+                </span>
+              </div>
+              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: '2px' }}>
+                Hệ Sinh Thái Đào Tạo Trực Tuyến
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Right: Back to Home + Synchronized LanguageSelector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '8px' }} className="hidden-mobile">
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16803C', display: 'inline-block' }} />
+            <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 500 }}>Hệ thống sẵn sàng</span>
+          </div>
+
           <button
             type="button"
             onClick={() => {
@@ -445,15 +476,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               padding: '8px 14px',
               borderRadius: '8px',
               background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
+              border: '1px solid #CBD5E1',
               color: '#0B2545',
               fontSize: '0.84rem',
               fontWeight: 600,
               cursor: 'pointer',
-              transition: 'background 0.15s'
+              transition: 'all 0.15s ease'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#F1F5F9';
+              e.currentTarget.style.borderColor = '#94A3B8';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#F8FAFC';
+              e.currentTarget.style.borderColor = '#CBD5E1';
+            }}
           >
             <Home size={15} />
             <span className="hidden-mobile">{t('auth.backToHome')}</span>
@@ -464,7 +501,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </div>
       </header>
 
-      {/* ── 2. CENTER STAGE (LOGIN CARD + OPTIONAL CHATBOT DOCKED) ── */}
+      {/* ── 2. CENTER STAGE (SPLIT VIEW HERO + MODERN CARD) ── */}
       <main
         role="main"
         style={{
@@ -472,80 +509,218 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '32px 16px',
+          padding: '40px 24px',
           boxSizing: 'border-box',
           position: 'relative'
         }}
       >
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '480px',
-            background: '#FFFFFF',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0, 63, 136, 0.08)',
-            border: '1px solid #E2E8F0',
-            padding: '36px 32px',
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px'
-          }}
-        >
-          {/* Card Top: Authentic Monogram Logo & Heading */}
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <BrandMark size={44} alt="Tin Học Gen Z" style={{ marginBottom: '12px' }} />
-            <h1
-              style={{
-                margin: 0,
-                fontSize: '1.45rem',
-                fontWeight: 800,
-                color: '#0B2545',
-                letterSpacing: '-0.02em'
-              }}
-            >
-              {t('auth.welcomeTitle')}
-            </h1>
-            <p
-              style={{
-                margin: '6px 0 0 0',
-                fontSize: '0.88rem',
-                color: '#64748B',
-                lineHeight: 1.4
-              }}
-            >
-              {t('auth.welcomeSubtitle')}
-            </p>
+        <div className="login-hero-container">
+          {/* Left Column: Premium EdTech Brand Showcase (Desktop only) */}
+          <div
+            className="login-hero-sidebar"
+            style={{
+              flex: '1 1 500px',
+              maxWidth: '520px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px'
+            }}
+          >
+            {/* Tag Badge */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: 'rgba(0, 87, 184, 0.08)', border: '1px solid rgba(0, 87, 184, 0.2)', width: 'fit-content' }}>
+              <Sparkles size={14} color="#0057B8" />
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0057B8', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                Hệ Sinh Thái Đào Tạo Chuẩn Quốc Tế
+              </span>
+            </div>
+
+            {/* Title & Description */}
+            <div>
+              <h2
+                style={{
+                  margin: '0 0 12px 0',
+                  fontSize: '2.1rem',
+                  fontWeight: 900,
+                  color: '#0B2545',
+                  lineHeight: 1.25,
+                  letterSpacing: '-0.03em'
+                }}
+              >
+                Học tập Thực chiến, Đột phá Kỹ năng cùng <span style={{ color: '#0057B8' }}>Tin Học Gen Z</span>
+              </h2>
+              <p style={{ margin: 0, fontSize: '0.98rem', color: '#475569', lineHeight: 1.6 }}>
+                Cổng quản lý đào tạo trực tuyến dành cho Học viên, Giảng viên và Quản trị viên. Đăng nhập một chạm với công nghệ tự động nhận diện thông minh.
+              </p>
+            </div>
+
+            {/* 3 Pillar Features */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', background: '#FFFFFF', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0, 63, 136, 0.04)' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(0, 87, 184, 0.1)', color: '#0057B8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#0B2545', marginBottom: '2px' }}>
+                    Chương trình Đào tạo Thực chiến
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748B', lineHeight: 1.4 }}>
+                    MOS, IC3, Lập trình ứng dụng & Tin học Văn phòng Cấp tốc 3-in-1 bản quyền độc quyền.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', background: '#FFFFFF', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0, 63, 136, 0.04)' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(22, 128, 60, 0.1)', color: '#16803C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Award size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#0B2545', marginBottom: '2px' }}>
+                    Chứng thực Chuỗi khối Blockchain
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748B', lineHeight: 1.4 }}>
+                    Văn bằng số hóa và Hộ chiếu học tập bảo mật mã hóa SHA-256 xác thực tức thì qua mã QR.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', background: '#FFFFFF', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0, 63, 136, 0.04)' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(0, 63, 136, 0.1)', color: '#003F88', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Users size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#0B2545', marginBottom: '2px' }}>
+                    Trợ lý AI Mascot & Hỗ trợ Giáo vụ 24/7
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748B', lineHeight: 1.4 }}>
+                    Tích hợp Gemini Pro hỗ trợ học viên giải bài, theo dõi lộ trình và giải đáp ngay lập tức.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Metrics */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', paddingTop: '8px', borderTop: '1px solid #E2E8F0' }}>
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0057B8' }}>5,000+</div>
+                <div style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 600 }}>Học viên tin chọn</div>
+              </div>
+              <div style={{ width: '1px', height: '28px', background: '#CBD5E1' }} />
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0057B8' }}>98.5%</div>
+                <div style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 600 }}>Đạt chuẩn chứng chỉ</div>
+              </div>
+              <div style={{ width: '1px', height: '28px', background: '#CBD5E1' }} />
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0057B8' }}>10+</div>
+                <div style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 600 }}>Chương trình chuyên sâu</div>
+              </div>
+            </div>
           </div>
 
-          {/* Role Switcher Tabs (With Real-Time Auto-Detect Feedback) */}
-          <RoleSwitcher
-            currentRole={role}
-            onChangeRole={handleRoleChange}
-            disabled={loginStatus === 'loading'}
-            detectedRole={detectedRole}
-          />
+          {/* Right Column: Modern Redesigned Login Card */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              boxShadow: '0 12px 36px rgba(0, 63, 136, 0.09), 0 2px 6px rgba(0, 0, 0, 0.02)',
+              border: '1.5px solid #D9E2F0',
+              padding: '38px 32px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '22px',
+              animation: 'fadeIn 0.25s ease-out'
+            }}
+          >
+            {/* Card Header: Brand Icon & Heading */}
+            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(180deg, #F0F7FF 0%, #E0EFFE 100%)',
+                  border: '1px solid #BAE6FD',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '14px',
+                  boxShadow: '0 4px 12px rgba(0, 87, 184, 0.08)'
+                }}
+              >
+                <BrandMark size={48} alt="Tin Học Gen Z" />
+              </div>
 
-          {/* Auth Form (With Smart Role Badge & Universal Login Routing) */}
-          <AuthForm
-            role={role}
-            accountValue={accountValue}
-            passwordValue={passwordValue}
-            rememberMe={rememberMe}
-            loginStatus={loginStatus}
-            formError={formError}
-            lockoutSeconds={lockoutSeconds}
-            isOnline={isOnline}
-            detectedRole={detectedRole}
-            onAccountChange={handleAccountInputChange}
-            onPasswordChange={setPasswordValue}
-            onRememberMeChange={setRememberMe}
-            onSubmit={handleSubmit}
-            onOpenForgotPassword={() => setIsForgotModalOpen(true)}
-          />
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: '1.55rem',
+                  fontWeight: 900,
+                  color: '#0B2545',
+                  letterSpacing: '-0.03em'
+                }}
+              >
+                {t('auth.welcomeTitle')}
+              </h1>
+              <p
+                style={{
+                  margin: '8px 0 0 0',
+                  fontSize: '0.9rem',
+                  color: '#64748B',
+                  lineHeight: 1.45
+                }}
+              >
+                {t('auth.welcomeSubtitle')}
+              </p>
+            </div>
 
-          {/* Support Link */}
-          <SupportLink onOpenSupportModal={() => setIsSupportModalOpen(true)} />
+            {/* Role Switcher Tabs (With Real-Time Auto-Detect Feedback) */}
+            <RoleSwitcher
+              currentRole={role}
+              onChangeRole={handleRoleChange}
+              disabled={loginStatus === 'loading'}
+              detectedRole={detectedRole}
+            />
+
+            {/* Auth Form (With Smart Role Badge & Universal Login Routing) */}
+            <AuthForm
+              role={role}
+              accountValue={accountValue}
+              passwordValue={passwordValue}
+              rememberMe={rememberMe}
+              loginStatus={loginStatus}
+              formError={formError}
+              lockoutSeconds={lockoutSeconds}
+              isOnline={isOnline}
+              detectedRole={detectedRole}
+              onAccountChange={handleAccountInputChange}
+              onPasswordChange={setPasswordValue}
+              onRememberMeChange={setRememberMe}
+              onSubmit={handleSubmit}
+              onOpenForgotPassword={() => setIsForgotModalOpen(true)}
+            />
+
+            {/* Support Link */}
+            <SupportLink onOpenSupportModal={() => setIsSupportModalOpen(true)} />
+
+            {/* Security Guarantee Footnote */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                fontSize: '0.74rem',
+                color: '#94A3B8',
+                paddingTop: '6px'
+              }}
+            >
+              <Shield size={12} color="#16803C" />
+              <span>Bảo mật chuẩn SSL 256-bit • Mã hóa phiên đăng nhập</span>
+            </div>
+          </div>
         </div>
       </main>
 
@@ -693,4 +868,3 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     </div>
   );
 };
-

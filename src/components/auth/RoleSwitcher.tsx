@@ -32,9 +32,9 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
         aria-label="Cổng đăng nhập"
         style={{
           display: 'flex',
-          background: '#F4F8FD',
+          background: '#F1F5F9',
           padding: '4px',
-          borderRadius: '12px',
+          borderRadius: '14px',
           border: '1px solid #E2E8F0',
           position: 'relative',
           width: '100%',
@@ -54,20 +54,20 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
           onClick={() => handleSelect('student')}
           style={{
             flex: 1,
+            height: '42px',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            padding: '10px 16px',
-            borderRadius: '9px',
-            fontSize: '0.88rem',
-            fontWeight: currentRole === 'student' ? 700 : 500,
-            border: 'none',
+            borderRadius: '10px',
+            fontSize: '0.9rem',
+            fontWeight: currentRole === 'student' ? 700 : 600,
+            border: currentRole === 'student' ? '1px solid rgba(0, 87, 184, 0.15)' : '1px solid transparent',
             cursor: disabled ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
             background: currentRole === 'student' ? '#FFFFFF' : 'transparent',
             color: currentRole === 'student' ? '#0057B8' : '#64748B',
-            boxShadow: currentRole === 'student' ? '0 2px 8px rgba(0, 63, 136, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)' : 'none',
+            boxShadow: currentRole === 'student' ? '0 2px 10px rgba(0, 63, 136, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)' : 'none',
             opacity: disabled ? 0.6 : 1
           }}
         >
@@ -99,20 +99,20 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
           onClick={() => handleSelect('teacher')}
           style={{
             flex: 1,
+            height: '42px',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            padding: '10px 16px',
-            borderRadius: '9px',
-            fontSize: '0.88rem',
-            fontWeight: currentRole === 'teacher' ? 700 : 500,
-            border: 'none',
+            borderRadius: '10px',
+            fontSize: '0.9rem',
+            fontWeight: currentRole === 'teacher' ? 700 : 600,
+            border: currentRole === 'teacher' ? '1px solid rgba(0, 87, 184, 0.15)' : '1px solid transparent',
             cursor: disabled ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
             background: currentRole === 'teacher' ? '#FFFFFF' : 'transparent',
             color: currentRole === 'teacher' ? '#0057B8' : '#64748B',
-            boxShadow: currentRole === 'teacher' ? '0 2px 8px rgba(0, 63, 136, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)' : 'none',
+            boxShadow: currentRole === 'teacher' ? '0 2px 10px rgba(0, 63, 136, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)' : 'none',
             opacity: disabled ? 0.6 : 1
           }}
         >
@@ -146,9 +146,8 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
         }}
       >
         <Sparkles size={12} color="#0057B8" />
-        <span>Hệ thống tự động nhận diện Học viên, Giảng viên & Quản trị viên</span>
+        <span>Tự động nhận diện Học viên, Giảng viên & Quản trị viên</span>
       </div>
     </div>
   );
 };
-

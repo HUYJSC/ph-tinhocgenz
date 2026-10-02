@@ -41,6 +41,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({
 }) => {
   const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
+  const [accountFocused, setAccountFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const isLocked = lockoutSeconds > 0;
   const isLoading = loginStatus === 'loading';
@@ -68,7 +70,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        gap: '18px',
         width: '100%'
       }}
     >
@@ -79,20 +81,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '8px 12px',
-            borderRadius: '8px',
-            background: 'rgba(0, 87, 184, 0.08)',
-            border: '1px solid rgba(0, 87, 184, 0.25)',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            background: 'linear-gradient(90deg, rgba(0, 87, 184, 0.08) 0%, rgba(0, 63, 136, 0.04) 100%)',
+            border: '1.5px solid rgba(0, 87, 184, 0.25)',
             color: '#0057B8',
-            fontSize: '0.8rem',
+            fontSize: '0.82rem',
             fontWeight: 600
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Shield size={15} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Shield size={16} />
             <span>Tự động nhận diện: <strong>Quản trị viên hệ thống</strong></span>
           </div>
-          <span style={{ fontSize: '0.72rem', background: '#0057B8', color: '#FFFFFF', padding: '1px 6px', borderRadius: '4px' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, background: '#0057B8', color: '#FFFFFF', padding: '2px 8px', borderRadius: '6px' }}>
             Toàn quyền
           </span>
         </div>
@@ -101,17 +103,17 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '6px 12px',
-            borderRadius: '8px',
+            gap: '8px',
+            padding: '8px 12px',
+            borderRadius: '10px',
             background: 'rgba(0, 87, 184, 0.08)',
             border: '1px solid rgba(0, 87, 184, 0.2)',
             color: '#0057B8',
-            fontSize: '0.78rem',
+            fontSize: '0.8rem',
             fontWeight: 600
           }}
         >
-          <Briefcase size={14} />
+          <Briefcase size={15} />
           <span>{detectedRole === 'teacher' ? 'Tự động nhận diện: Giảng viên bộ môn' : t('auth.teacherBadge')}</span>
         </div>
       ) : null}
@@ -168,13 +170,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '10px 14px',
+            padding: '11px 14px',
             borderRadius: '10px',
             background: '#FEF3F2',
             border: '1px solid #FECDCA',
             color: '#B42318',
-            fontSize: '0.82rem',
-            animation: 'shake 0.3s ease'
+            fontSize: '0.84rem'
           }}
         >
           <AlertTriangle size={16} />
@@ -184,12 +185,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({
 
       {/* Account Input Field */}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
           <label
             htmlFor="auth-account-input"
             style={{
-              fontSize: '0.84rem',
-              fontWeight: 600,
+              fontSize: '0.86rem',
+              fontWeight: 700,
               color: '#0B2545'
             }}
           >
@@ -204,7 +205,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                 alignItems: 'center',
                 gap: '4px',
                 fontSize: '0.72rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 color: detectedRole === 'admin' ? '#0057B8' : detectedRole === 'teacher' ? '#0284C7' : '#16803C',
                 background: detectedRole === 'admin' ? '#EFF6FF' : detectedRole === 'teacher' ? '#F0F9FF' : '#F0FDF4',
                 padding: '2px 8px',
@@ -225,10 +226,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({
               left: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: detectedRole === 'admin' ? '#0057B8' : '#94A3B8',
+              color: accountFocused || detectedRole === 'admin' ? '#0057B8' : '#94A3B8',
               display: 'flex',
               alignItems: 'center',
-              pointerEvents: 'none'
+              pointerEvents: 'none',
+              transition: 'color 0.15s'
             }}
           >
             {detectedRole === 'admin' ? <Shield size={18} /> : <User size={18} />}
@@ -241,26 +243,26 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             disabled={isLoading || isLocked}
             value={accountValue}
             onChange={(e) => onAccountChange(e.target.value)}
+            onFocus={() => setAccountFocused(true)}
+            onBlur={() => setAccountFocused(false)}
             placeholder="Mã học viên, email, SĐT hoặc admin..."
             style={{
               width: '100%',
               boxSizing: 'border-box',
-              padding: '11px 14px 11px 42px',
-              borderRadius: '10px',
-              border: detectedRole === 'admin' ? '1.5px solid #0057B8' : '1.5px solid #CBD5E1',
-              background: isLoading || isLocked ? '#F8FAFC' : '#FFFFFF',
+              padding: '13px 14px 13px 44px',
+              borderRadius: '12px',
+              border: accountFocused
+                ? '1.5px solid #0057B8'
+                : detectedRole === 'admin'
+                  ? '1.5px solid #0057B8'
+                  : '1.5px solid #CBD5E1',
+              background: isLoading || isLocked ? '#F8FAFC' : accountFocused ? '#FFFFFF' : '#F8FAFC',
               color: '#0B2545',
-              fontSize: '0.92rem',
+              fontSize: '0.94rem',
+              fontWeight: 500,
               outline: 'none',
-              transition: 'border-color 0.15s, box-shadow 0.15s'
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#0057B8';
-              e.target.style.boxShadow = '0 0 0 3px rgba(0, 87, 184, 0.12)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = detectedRole === 'admin' ? '#0057B8' : '#CBD5E1';
-              e.target.style.boxShadow = 'none';
+              boxShadow: accountFocused ? '0 0 0 4px rgba(0, 87, 184, 0.12)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           />
         </div>
@@ -272,10 +274,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           htmlFor="auth-password-input"
           style={{
             display: 'block',
-            fontSize: '0.84rem',
-            fontWeight: 600,
+            fontSize: '0.86rem',
+            fontWeight: 700,
             color: '#0B2545',
-            marginBottom: '6px'
+            marginBottom: '7px'
           }}
         >
           {t('auth.passwordLabel')} <span style={{ color: '#D92D20' }}>*</span>
@@ -287,10 +289,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({
               left: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#94A3B8',
+              color: passwordFocused ? '#0057B8' : '#94A3B8',
               display: 'flex',
               alignItems: 'center',
-              pointerEvents: 'none'
+              pointerEvents: 'none',
+              transition: 'color 0.15s'
             }}
           >
             <Lock size={18} />
@@ -303,26 +306,22 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             disabled={isLoading || isLocked}
             value={passwordValue}
             onChange={(e) => onPasswordChange(e.target.value)}
+            onFocus={() => setPasswordFocused(true)}
+            onBlur={() => setPasswordFocused(false)}
             placeholder={t('auth.passwordPlaceholder')}
             style={{
               width: '100%',
               boxSizing: 'border-box',
-              padding: '11px 44px 11px 42px',
-              borderRadius: '10px',
-              border: '1.5px solid #CBD5E1',
-              background: isLoading || isLocked ? '#F8FAFC' : '#FFFFFF',
+              padding: '13px 46px 13px 44px',
+              borderRadius: '12px',
+              border: passwordFocused ? '1.5px solid #0057B8' : '1.5px solid #CBD5E1',
+              background: isLoading || isLocked ? '#F8FAFC' : passwordFocused ? '#FFFFFF' : '#F8FAFC',
               color: '#0B2545',
-              fontSize: '0.92rem',
+              fontSize: '0.94rem',
+              fontWeight: 500,
               outline: 'none',
-              transition: 'border-color 0.15s, box-shadow 0.15s'
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#0057B8';
-              e.target.style.boxShadow = '0 0 0 3px rgba(0, 87, 184, 0.12)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = '#CBD5E1';
-              e.target.style.boxShadow = 'none';
+              boxShadow: passwordFocused ? '0 0 0 4px rgba(0, 87, 184, 0.12)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           />
           {/* Show / Hide Toggle Button */}
@@ -333,7 +332,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
             style={{
               position: 'absolute',
-              right: '10px',
+              right: '8px',
               top: '50%',
               transform: 'translateY(-50%)',
               background: 'none',
@@ -344,8 +343,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '6px'
+              borderRadius: '8px',
+              transition: 'background 0.15s'
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#E2E8F0')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -358,7 +360,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: '0.84rem'
+          fontSize: '0.85rem',
+          padding: '2px 0'
         }}
       >
         <label
@@ -368,7 +371,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             gap: '8px',
             color: '#475569',
             cursor: 'pointer',
-            userSelect: 'none'
+            userSelect: 'none',
+            fontWeight: 500
           }}
         >
           <input
@@ -395,10 +399,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             background: 'none',
             border: 'none',
             color: '#0057B8',
-            fontWeight: 600,
+            fontWeight: 700,
             cursor: 'pointer',
             padding: 0,
-            fontSize: '0.84rem'
+            fontSize: '0.85rem',
+            transition: 'color 0.15s'
           }}
           onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
           onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
@@ -413,36 +418,39 @@ export const AuthForm: React.FC<AuthFormProps> = ({
         disabled={isLoading || isLocked || !isOnline}
         style={{
           width: '100%',
-          padding: '12px 18px',
-          borderRadius: '10px',
+          height: '48px',
+          padding: '0 20px',
+          borderRadius: '12px',
           background: isSuccess
             ? '#16803C'
             : isLoading || isLocked || !isOnline
               ? '#94A3B8'
-              : '#0057B8',
+              : 'linear-gradient(180deg, #0057B8 0%, #004BA0 100%)',
           color: '#FFFFFF',
           border: 'none',
-          fontSize: '0.94rem',
+          fontSize: '0.96rem',
           fontWeight: 700,
           cursor: isLoading || isLocked || !isOnline ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px',
+          gap: '10px',
           transition: 'all 0.15s ease',
-          boxShadow: isLoading || isLocked ? 'none' : '0 4px 12px rgba(0, 87, 184, 0.25)',
-          marginTop: '6px'
+          boxShadow: isLoading || isLocked ? 'none' : '0 4px 14px rgba(0, 87, 184, 0.3)',
+          marginTop: '4px'
         }}
         onMouseEnter={(e) => {
           if (!isLoading && !isLocked && isOnline && !isSuccess) {
-            e.currentTarget.style.background = '#003F88';
+            e.currentTarget.style.background = 'linear-gradient(180deg, #004BA0 0%, #003F88 100%)';
             e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 6px 18px rgba(0, 87, 184, 0.36)';
           }
         }}
         onMouseLeave={(e) => {
           if (!isLoading && !isLocked && isOnline && !isSuccess) {
-            e.currentTarget.style.background = '#0057B8';
+            e.currentTarget.style.background = 'linear-gradient(180deg, #0057B8 0%, #004BA0 100%)';
             e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 87, 184, 0.3)';
           }
         }}
       >
@@ -466,4 +474,3 @@ export const AuthForm: React.FC<AuthFormProps> = ({
     </form>
   );
 };
-
