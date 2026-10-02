@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v11-2026-clean-logo)
-// Nâng cấp: Tự động purge cache cũ để hiển thị giao diện tối ưu (loại bỏ logo trùng nhau)
-const CACHE_NAME = 'ph-eduquest-v11-2026-clean-logo';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v12-2026-clean-header)
+// Nâng cấp: Tự động purge cache cũ để hiển thị thanh điều hướng top navigation 6 tác vụ chuẩn mực
+const CACHE_NAME = 'ph-eduquest-v12-2026-clean-header';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

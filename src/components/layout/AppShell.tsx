@@ -14,7 +14,7 @@ export interface AppShellProps {
   } | null;
   activeTab: string;
   onSelectTab: (tabId: string) => void;
-  onOpenAITutor?: () => void;
+  onOpenAITutor?: (prompt?: string) => void;
   onOpenNotifications?: () => void;
   onOpenProfile?: () => void;
   onOpenChangePassword?: () => void;
