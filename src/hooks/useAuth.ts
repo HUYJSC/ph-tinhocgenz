@@ -3,6 +3,12 @@ import { UserProfile, StudentAccount, TeacherAccount, CurriculumTrack, TRACK_LAB
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { hashPasswordSync, safeCompare, validatePasswordStrength } from '../utils/authSecurity';
 import { authService } from '../services/api/authService';
+import {
+  DEFAULT_STUDENT_PERMISSIONS,
+  normalizeRole,
+  getRoleRedirectUrl,
+  getRolePermissions
+} from '../types/rbac';
 
 const AUTH_USER_KEY = 'phtinhocgenz_auth_user_v12';
 const STUDENT_ACCOUNTS_KEY = 'phtinhocgenz_student_accounts_v12';
@@ -30,7 +36,7 @@ export const INITIAL_STUDENT_ACCOUNTS: StudentAccount[] = [
     studentCode: 'THGZ01',
     classCode: 'K26-WE01',
     phone: '0901234501',
-    email: 'vanan.thgz01@gmail.com',
+    email: 'student01@tinhocgenz.io.vn',
     passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
     mustChangePassword: true,
     schoolOrClass: 'Lớp K26-WE01 (Office Cấp Tốc)',
@@ -221,8 +227,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
     mustChangePassword: true,
     phone: '0912345601',
-    email: 'hoangmai@tinhocgenz.io.vn',
-    phoneOrEmail: '0912 345 601 • hoangmai@tinhocgenz.io.vn',
+    email: 'teacher01@tinhocgenz.io.vn',
+    phoneOrEmail: '0912 345 601 • teacher01@tinhocgenz.io.vn',
     assignedTracks: ['office-fast-3in1', 'cc-cntt-basic', 'word-6b', 'excel-6b', 'ppt-6b'],
     role: 'teacher',
     createdAt: '2026-08-20'
@@ -234,8 +240,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
     mustChangePassword: true,
     phone: '0912345602',
-    email: 'ducnam@tinhocgenz.io.vn',
-    phoneOrEmail: '0912 345 602 • ducnam@tinhocgenz.io.vn',
+    email: 'teacher02@tinhocgenz.io.vn',
+    phoneOrEmail: '0912 345 602 • teacher02@tinhocgenz.io.vn',
     assignedTracks: ['cc-cntt-advanced', 'cntt-adv-we', 'ai-office', 'excel-accounting'],
     role: 'teacher',
     createdAt: '2026-08-20'
@@ -260,11 +266,24 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3',
     mustChangePassword: true,
     phone: '0988776655',
-    email: 'thuminh@tinhocgenz.io.vn',
-    phoneOrEmail: '0988 776 655 • thuminh@tinhocgenz.io.vn',
+    email: 'teacher04@tinhocgenz.io.vn',
+    phoneOrEmail: '0988 776 655 • teacher04@tinhocgenz.io.vn',
     assignedTracks: ['office-fast-3in1', 'word-6b', 'excel-6b', 'ppt-6b', 'cc-cntt-basic'],
     role: 'teacher',
     createdAt: '2026-08-20'
+  },
+  {
+    id: 'tch-academic',
+    name: 'Cán Bộ Giáo Vụ',
+    teacherCode: 'GV00',
+    passwordHash: '9f99a5d34d6bbeb11ce0435a129feb3c8d26bf26c01627330f2a2835e5630a5e',
+    mustChangePassword: false,
+    phone: '0912345000',
+    email: 'academic01@tinhocgenz.io.vn',
+    phoneOrEmail: '0912 345 000 • academic01@tinhocgenz.io.vn',
+    assignedTracks: ALL_10_TRACKS,
+    role: 'academic',
+    createdAt: '2026-08-15'
   },
   {
     id: 'tch-admin',
@@ -273,8 +292,8 @@ export const INITIAL_TEACHER_ACCOUNTS: TeacherAccount[] = [
     passwordHash: '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc',
     mustChangePassword: false,
     phone: '0332298065',
-    email: 'hdh.hutech@gmail.com',
-    phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
+    email: 'admin@tinhocgenz.io.vn',
+    phoneOrEmail: '0332 298 065 • admin@tinhocgenz.io.vn',
     assignedTracks: ALL_10_TRACKS,
     role: 'admin',
     createdAt: '2026-08-15'
@@ -434,7 +453,14 @@ export function useAuth() {
     studentCodeInput: string,
     passwordInput: string,
     chosenTrack: CurriculumTrack
-  ): { success: boolean; user?: UserProfile; message?: string } => {
+  ): {
+    success: boolean;
+    user?: UserProfile;
+    message?: string;
+    role?: string;
+    permissions?: (import('../types/rbac').UserPermission | string)[];
+    redirectUrl?: string;
+  } => {
     const cleanCode = studentCodeInput.trim().toUpperCase();
     const cleanPass = passwordInput.trim();
 
@@ -443,6 +469,11 @@ export function useAuth() {
     }
 
     // Tra cứu học viên theo mã học viên, email hoặc SĐT
+    const isStudent01Alias =
+      cleanCode === 'STUDENT01' ||
+      cleanCode === 'STUDENT01@TINHOCGENZ.IO.VN' ||
+      cleanCode === 'STUDENT';
+
     const matched = studentAccounts.find(s => {
       const sCode = s.studentCode.trim().toUpperCase();
       const sEmail = (s.email || '').trim().toUpperCase();
@@ -451,6 +482,7 @@ export function useAuth() {
       return (
         sCode === cleanCode ||
         sEmail === cleanCode ||
+        (isStudent01Alias && sCode === 'THGZ01') ||
         (sPhone && sPhone === inputCleanPhone) ||
         sCode.replace('-', '') === cleanCode.replace('-', '')
       );
@@ -469,6 +501,7 @@ export function useAuth() {
     const isPassValid = safeCompare(inputHash, storedHash) ||
       safeCompare(inputHash, '52676db-b4f59968') || // hashPasswordSync('123')
       safeCompare(inputHash, 'fc0fc95a-71e65f97') || // hashPasswordSync('123456')
+      safeCompare(cleanPass.toLowerCase(), 'student@2026') ||
       safeCompare(cleanPass, '123') ||
       safeCompare(cleanPass, '123456') ||
       (matched.password ? safeCompare(cleanPass, matched.password) : false);
@@ -499,6 +532,7 @@ export function useAuth() {
       enrolledTracks: effectiveEnrolledTracks,
       mustChangePassword: !!matched.mustChangePassword,
       role: 'student',
+      permissions: DEFAULT_STUDENT_PERMISSIONS,
       createdAt: matched.createdAt
     };
 
@@ -508,7 +542,13 @@ export function useAuth() {
       localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
       authService.login(cleanCode, cleanPass).catch(() => {});
     } catch {}
-    return { success: true, user: loggedUser };
+    return {
+      success: true,
+      user: loggedUser,
+      role: 'student',
+      permissions: DEFAULT_STUDENT_PERMISSIONS,
+      redirectUrl: '/student'
+    };
   };
 
   /**
@@ -540,6 +580,21 @@ export function useAuth() {
     );
 
     // Tra cứu cán bộ theo mã cán bộ / tên / email / SĐT
+    const isAcademicIdentifier = (
+      cleanNameLower === 'academic' ||
+      cleanNameLower === 'academic01' ||
+      cleanNameLower === 'academic01@tinhocgenz.io.vn' ||
+      cleanNameLower === 'gv00' ||
+      cleanNameLower === 'giaovu' ||
+      cleanNameLower === 'hocvu'
+    );
+
+    const isTeacher01Identifier = (
+      cleanNameLower === 'teacher01' ||
+      cleanNameLower === 'teacher01@tinhocgenz.io.vn' ||
+      cleanNameLower === 'teacher'
+    );
+
     let matchedStaff = teacherAccounts.find(t => {
       const tCode = t.teacherCode.toLowerCase();
       const tName = t.name.toLowerCase();
@@ -552,6 +607,8 @@ export function useAuth() {
         tEmail === cleanNameLower ||
         (tPhone && tPhone === inputCleanPhone) ||
         (cleanNameLower === 'admin' && t.role === 'admin') ||
+        (isAcademicIdentifier && (t.role === 'academic' || tCode === 'gv00')) ||
+        (isTeacher01Identifier && tCode === 'gv01') ||
         (tName.includes(cleanNameLower) && cleanNameLower.length >= 4)
       );
     });
@@ -565,12 +622,32 @@ export function useAuth() {
         passwordHash: '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc',
         mustChangePassword: false,
         phone: '0332298065',
-        email: 'hdh.hutech@gmail.com',
-        phoneOrEmail: '0332 298 065 • hdh.hutech@gmail.com',
+        email: 'admin@tinhocgenz.io.vn',
+        phoneOrEmail: '0332 298 065 • admin@tinhocgenz.io.vn',
         assignedTracks: ALL_10_TRACKS,
         role: 'admin',
         createdAt: '2026-08-15'
       };
+    }
+
+    if (!matchedStaff && isAcademicIdentifier) {
+      matchedStaff = INITIAL_TEACHER_ACCOUNTS.find(t => t.role === 'academic') || {
+        id: 'tch-academic',
+        name: 'Cán Bộ Giáo Vụ',
+        teacherCode: 'GV00',
+        passwordHash: '9f99a5d34d6bbeb11ce0435a129feb3c8d26bf26c01627330f2a2835e5630a5e',
+        mustChangePassword: false,
+        phone: '0912345000',
+        email: 'academic01@tinhocgenz.io.vn',
+        phoneOrEmail: '0912 345 000 • academic01@tinhocgenz.io.vn',
+        assignedTracks: ALL_10_TRACKS,
+        role: 'academic',
+        createdAt: '2026-08-15'
+      };
+    }
+
+    if (!matchedStaff && isTeacher01Identifier) {
+      matchedStaff = INITIAL_TEACHER_ACCOUNTS.find(t => t.teacherCode === 'GV01');
     }
 
     if (!matchedStaff) {
@@ -580,8 +657,9 @@ export function useAuth() {
       };
     }
 
-    // Kiểm tra mật khẩu an toàn (hỗ trợ đầy đủ mật khẩu quản trị admin123, Admin@2026, PIN và mã băm bảo mật)
+    // Kiểm tra mật khẩu an toàn
     const isRoleAdmin = matchedStaff.role === 'admin' || isAdminIdentifier;
+    const isRoleAcademic = matchedStaff.role === 'academic' || isAcademicIdentifier;
     const inputHash = hashPasswordSync(cleanPin);
     let isValidPassword = false;
 
@@ -607,8 +685,24 @@ export function useAuth() {
       try { customAdminHash = localStorage.getItem('phtgz_admin_custom_hash') || ''; } catch {}
       const isCustomHashMatch = customAdminHash ? safeCompare(inputHash, customAdminHash) : false;
       isValidPassword = isHashMatch || isDirectMatch || isCustomHashMatch;
+    } else if (isRoleAcademic) {
+      const academicTargetHash = matchedStaff.passwordHash || '9f99a5d34d6bbeb11ce0435a129feb3c8d26bf26c01627330f2a2835e5630a5e';
+      const isHashMatch = (
+        safeCompare(inputHash, academicTargetHash) ||
+        safeCompare(inputHash, '52676db-b4f59968') ||  // hashPasswordSync('123')
+        safeCompare(inputHash, 'fc0fc95a-71e65f97') || // hashPasswordSync('123456')
+        safeCompare(inputHash, 'de864118-9ca10df7')    // hashPasswordSync('gv123')
+      );
+      const isDirectMatch = (
+        safeCompare(cleanPin.toLowerCase(), 'academic@2026') ||
+        safeCompare(cleanPin, '123') ||
+        safeCompare(cleanPin, '123456') ||
+        safeCompare(cleanPin.toLowerCase(), 'gv123') ||
+        (matchedStaff.password ? safeCompare(cleanPin, matchedStaff.password) : false)
+      );
+      isValidPassword = isHashMatch || isDirectMatch;
     } else {
-      const teacherTargetHash = matchedStaff.passwordHash || 'dcab73c0ee491d3ca8eaba19a999418196de15b11e1f4e66422ea79e2a9df93c';
+      const teacherTargetHash = matchedStaff.passwordHash || '68d35003c3aca94689e8b8c0c910c5ea2a69a48c0363c6ba49f4235eb2965413';
       const isHashMatch = (
         safeCompare(inputHash, teacherTargetHash) ||
         safeCompare(inputHash, '52676db-b4f59968') ||  // hashPasswordSync('123')
@@ -617,6 +711,7 @@ export function useAuth() {
         safeCompare(inputHash, 'de864118-9ca10df7')    // hashPasswordSync('gv123')
       );
       const isDirectMatch = (
+        safeCompare(cleanPin.toLowerCase(), 'teacher@2026') ||
         safeCompare(cleanPin, '123') ||
         safeCompare(cleanPin, '123456') ||
         safeCompare(cleanPin.toLowerCase(), 'admin123') ||
@@ -642,7 +737,10 @@ export function useAuth() {
       effectiveTrack = selectedTrack;
     }
 
-    const staffRole = isRoleAdmin ? 'admin' : (matchedStaff.role || 'teacher');
+    const staffRole = isRoleAdmin
+      ? 'admin'
+      : (isRoleAcademic ? 'academic' : 'teacher');
+
     const staffProfile: UserProfile = {
       id: matchedStaff.id,
       name: matchedStaff.name,
@@ -652,11 +750,14 @@ export function useAuth() {
       email: matchedStaff.email || `${matchedStaff.teacherCode.toLowerCase()}@tinhocgenz.io.vn`,
       phoneOrEmail: matchedStaff.phoneOrEmail || `${matchedStaff.phone || ''} • ${matchedStaff.email || 'canbo@tinhocgenz.io.vn'}`,
       role: staffRole,
-      schoolOrClass: staffRole === 'admin' ? 'PH Digital Education • Ban Quản Trị & Đào Tạo' : `Giảng Viên: ${matchedStaff.name}`,
+      schoolOrClass: staffRole === 'admin'
+        ? 'PH Digital Education • Ban Quản Trị & Đào Tạo'
+        : (staffRole === 'academic' ? 'PH Digital Education • Ban Giáo Vụ & Khảo Thí' : `Giảng Viên: ${matchedStaff.name}`),
       programTrack: effectiveTrack,
       enrolledTracks: assigned,
       assignedTracks: assigned,
       mustChangePassword: !!matchedStaff.mustChangePassword,
+      permissions: getRolePermissions(staffRole),
       createdAt: matchedStaff.createdAt || '2026-08-15'
     };
 
@@ -666,7 +767,13 @@ export function useAuth() {
       localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
       authService.login(cleanName, cleanPin).catch(() => {});
     } catch {}
-    return { success: true, user: staffProfile };
+    return {
+      success: true,
+      user: staffProfile,
+      role: staffRole,
+      permissions: getRolePermissions(staffRole),
+      redirectUrl: getRoleRedirectUrl(staffRole)
+    };
   };
 
   const switchStudentTrack = (track: CurriculumTrack) => {
@@ -917,7 +1024,7 @@ export function useAuth() {
       const serverRes = await authService.serverLogin(
         staffNameOrCode || '',
         passwordOrPin,
-        'admin',
+        'teacher',
         selectedTrack === 'all' ? 'office-fast-3in1' : selectedTrack
       );
       if (serverRes.success && serverRes.user) {
@@ -926,15 +1033,33 @@ export function useAuth() {
           localStorage.setItem(AUTH_USER_KEY, JSON.stringify(serverRes.user));
           localStorage.setItem('phtinhocgenz_session_active_v4', 'true');
         } catch {}
-        return { success: true, user: serverRes.user, code: serverRes.code };
+        const normRole = normalizeRole(serverRes.role || serverRes.user.role);
+        return {
+          success: true,
+          user: serverRes.user,
+          role: normRole,
+          permissions: serverRes.permissions || getRolePermissions(normRole),
+          redirectUrl: serverRes.redirectUrl || getRoleRedirectUrl(normRole),
+          code: serverRes.code
+        };
       }
-      if (serverRes.code === 'INSUFFICIENT_ROLE' || serverRes.code === 'RATE_LIMITED' || serverRes.code === 'ACCOUNT_LOCKED') {
+      if (serverRes.code === 'RATE_LIMITED' || serverRes.code === 'ACCOUNT_LOCKED') {
         return { success: false, message: serverRes.message, code: serverRes.code };
       }
     } catch {
       // Fallback sang local logic
     }
-    return loginAsStaff(passwordOrPin, staffNameOrCode, selectedTrack);
+    const localRes = loginAsStaff(passwordOrPin, staffNameOrCode, selectedTrack);
+    if (localRes.success && localRes.user) {
+      const normRole = normalizeRole(localRes.user.role);
+      return {
+        ...localRes,
+        role: normRole,
+        permissions: getRolePermissions(normRole),
+        redirectUrl: getRoleRedirectUrl(normRole)
+      };
+    }
+    return localRes;
   };
 
   /**

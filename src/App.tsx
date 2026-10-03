@@ -18,6 +18,7 @@ import { AppShell } from './components/layout/AppShell';
 import { updateTitleByRoute } from './utils/documentTitle';
 import type { AdminPortalSubTab } from './components/admin/AdminPortal';
 import { getAdminPathForTab, resolveAdminPortalTab } from './config/adminNavigation';
+import { normalizeRole, getRoleRedirectUrl } from './types/rbac';
 
 // ── CODE SPLITTING (DYNAMIC IMPORTS FOR HEAVY ROUTE COMPONENTS) ──
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -227,13 +228,22 @@ export function App() {
       const { route, param } = getAppRoute();
       if (route === 'admin') {
         if (isSessionActive && isStaff) {
-          setActiveTab('admin');
+          const normRole = normalizeRole(user.role);
+          if (normRole === 'teacher') {
+            window.history.replaceState(null, '', '/teacher');
+            setActiveTab('dashboard');
+          } else if (normRole === 'academic') {
+            window.history.replaceState(null, '', '/academic');
+            setActiveTab('dashboard');
+          } else {
+            setActiveTab('admin');
+          }
         } else if (!isSessionActive) {
           setShowAuthGateway(true);
         }
       } else if (route === 'teacher' || route === 'academic') {
         if (isSessionActive) {
-          setActiveTab('admin');
+          setActiveTab('dashboard');
         } else {
           setShowAuthGateway(true);
         }
@@ -257,21 +267,27 @@ export function App() {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [isSessionActive, isStaff, activeTab]);
+  }, [isSessionActive, isStaff, activeTab, user.role]);
 
   // RBAC Client Guard & Redirect enforcement
   useEffect(() => {
     if (!isSessionActive) return;
     const { route } = getAppRoute();
-    if (user.role === 'student') {
+    const role = normalizeRole(user.role);
+    if (role === 'student') {
       if (route === 'admin' || route === 'teacher' || route === 'academic') {
         window.history.replaceState(null, '', '/student');
         setActiveTab('dashboard');
       }
-    } else if (user.role === 'teacher') {
+    } else if (role === 'teacher') {
       if (route === 'admin') {
         window.history.replaceState(null, '', '/teacher');
-        setActiveTab('admin');
+        setActiveTab('dashboard');
+      }
+    } else if (role === 'academic') {
+      if (route === 'admin') {
+        window.history.replaceState(null, '', '/academic');
+        setActiveTab('dashboard');
       }
     }
   }, [isSessionActive, user.role]);
@@ -621,15 +637,15 @@ export function App() {
       setActiveTab('dashboard');
       try {
         localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
-        if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('admin')) {
-          window.history.pushState(null, '', '/');
+        if (typeof window !== 'undefined') {
+          window.history.pushState(null, '', '/student');
         }
       } catch (e) {}
     }
     return res;
   };
 
-  // Unified Admin / Teacher Login (Choose track or All tracks + PIN/Password)
+  // Unified Admin / Staff / Teacher Login (Choose track or All tracks + PIN/Password)
   const handleAdminUnifiedLogin = async (pinOrPassword: string, name?: string, selectedTrack?: CurriculumTrack | 'all') => {
     const res = await loginAsStaffAsync(pinOrPassword, name, selectedTrack);
     if (res.success && res.user) {
@@ -638,13 +654,32 @@ export function App() {
         switchStudentTrack(selectedTrack);
       }
       setIsSessionActive(true);
-      setActiveTab('admin');
-      try {
-        localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
-        if (typeof window !== 'undefined' && !window.location.pathname.toLowerCase().includes('admin')) {
-          window.history.pushState(null, '', '/admin');
+      try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch (e) {}
+
+      const role = normalizeRole(res.user.role);
+      const targetUrl = res.redirectUrl || getRoleRedirectUrl(role);
+
+      if (role === 'teacher') {
+        setActiveTab('dashboard');
+        if (typeof window !== 'undefined') {
+          window.history.pushState(null, '', targetUrl || '/teacher');
         }
-      } catch (e) {}
+      } else if (role === 'academic') {
+        setActiveTab('dashboard');
+        if (typeof window !== 'undefined') {
+          window.history.pushState(null, '', targetUrl || '/academic');
+        }
+      } else if (role === 'admin' || role === 'super_admin') {
+        setActiveTab('admin');
+        if (typeof window !== 'undefined' && !window.location.pathname.toLowerCase().includes('admin')) {
+          window.history.pushState(null, '', targetUrl || '/admin');
+        }
+      } else {
+        setActiveTab('dashboard');
+        if (typeof window !== 'undefined') {
+          window.history.pushState(null, '', '/student');
+        }
+      }
     }
     return res;
   };
@@ -750,62 +785,23 @@ export function App() {
   );
   const isCurrentlyOnAdmin = isExplicitAdminUrl && activeTab !== 'attendance' && activeTab !== 'schedule' && activeTab !== 'assignments';
 
-  // RBAC Access Control Guard: only Super Admin/legacy Admin may enter /admin.
+  // RBAC Access Control Guard: only Super Admin/Admin may enter /admin.
+  // Other authenticated roles are gracefully redirected to their respective portals without 403 error.
   if (isCurrentlyOnAdmin && isSessionActive && user.role !== 'admin' && user.role !== 'super_admin') {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        background: '#0f172a',
-        color: '#f8fafc',
-        textAlign: 'center',
-        fontFamily: 'Inter, system-ui, sans-serif'
-      }}>
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: '16px',
-          padding: '32px 24px',
-          maxWidth: '480px',
-          width: '100%'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
-          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#F87171', margin: '0 0 8px' }}>
-            403 — Quyền Truy Cập Bị Từ Chối (RBAC)
-          </h2>
-          <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.6, margin: '0 0 24px' }}>
-            Tài khoản học viên <strong>{user.name} ({user.studentCode})</strong> không có đặc quyền truy cập phân hệ Quản trị viên. Vui lòng quay lại không gian học tập của bạn.
-          </p>
-          <button
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                window.history.pushState(null, '', '/');
-              }
-              setActiveTab('dashboard');
-            }}
-            style={{
-              background: '#2563EB',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '12px 24px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Quay lại Góc học tập
-          </button>
-        </div>
-      </div>
-    );
+    const norm = normalizeRole(user.role);
+    if (norm === 'teacher') {
+      if (typeof window !== 'undefined') window.history.replaceState(null, '', '/teacher');
+      setActiveTab('dashboard');
+    } else if (norm === 'academic') {
+      if (typeof window !== 'undefined') window.history.replaceState(null, '', '/academic');
+      setActiveTab('dashboard');
+    } else {
+      if (typeof window !== 'undefined') window.history.replaceState(null, '', '/student');
+      setActiveTab('dashboard');
+    }
   }
 
-  if (isCurrentlyOnAdmin) {
+  if (isCurrentlyOnAdmin && (user.role === 'admin' || user.role === 'super_admin')) {
     return (
       <div style={{ minHeight: '100vh', background: '#0F172A', display: 'flex', flexDirection: 'column', width: '100%' }}>
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -853,7 +849,17 @@ export function App() {
                 if (res.success && res.user) {
                   setUser(res.user);
                   setIsSessionActive(true);
-                  setActiveTab('admin');
+                  const role = normalizeRole(res.user.role);
+                  if (role === 'teacher') {
+                    setActiveTab('dashboard');
+                    if (typeof window !== 'undefined') window.history.pushState(null, '', '/teacher');
+                  } else if (role === 'academic') {
+                    setActiveTab('dashboard');
+                    if (typeof window !== 'undefined') window.history.pushState(null, '', '/academic');
+                  } else {
+                    setActiveTab('admin');
+                    if (typeof window !== 'undefined') window.history.pushState(null, '', '/admin');
+                  }
                   try { localStorage.setItem(SESSION_ACTIVE_KEY, 'true'); } catch {}
                 }
                 return res;

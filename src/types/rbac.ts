@@ -261,33 +261,130 @@ export const DEFAULT_ACADEMIC_STAFF_PERMISSIONS: UserPermission[] = [
   'reports.read'
 ];
 
+export const DEFAULT_STUDENT_PERMISSIONS: UserPermission[] = [
+  'courses.read',
+  'classes.read',
+  'schedules.read',
+  'lessons.read',
+  'resources.read',
+  'assignments.read',
+  'exams.read',
+  'attendance.read',
+  'certificates.read',
+  'ai.assistant'
+];
+
+export type CanonicalRole = 'SUPER_ADMIN' | 'ADMIN' | 'ACADEMIC' | 'TEACHER' | 'STUDENT';
+
+/**
+ * Standardize any role string into canonical lowercase role.
+ * Handles variations like TEACHER, Teacher, gv, giangvien, sub_admin, giaovu, etc.
+ */
+export function normalizeRole(roleInput?: string | null): 'super_admin' | 'admin' | 'academic' | 'teacher' | 'student' {
+  if (!roleInput) return 'student';
+  const clean = roleInput.toString().trim().toLowerCase().replace(/[\s\-_]/g, '');
+  if (clean === 'superadmin') return 'super_admin';
+  if (clean === 'admin' || clean === 'quantri' || clean === 'quantrivien' || clean === 'subadmin') return 'admin';
+  if (
+    clean === 'academic' ||
+    clean === 'academicmanager' ||
+    clean === 'academicstaff' ||
+    clean === 'giaovu' ||
+    clean === 'hocvu' ||
+    clean === 'nhanvienhocvu'
+  ) {
+    return 'academic';
+  }
+  if (
+    clean === 'teacher' ||
+    clean === 'giangvien' ||
+    clean === 'giaovien' ||
+    clean === 'gv' ||
+    clean === 'lecturer'
+  ) {
+    return 'teacher';
+  }
+  if (clean === 'student' || clean === 'hocvien' || clean === 'hv') return 'student';
+  return 'student';
+}
+
+/**
+ * Get canonical uppercase role enum name
+ */
+export function getRoleCanonicalName(roleInput?: string | null): CanonicalRole {
+  const norm = normalizeRole(roleInput);
+  switch (norm) {
+    case 'super_admin': return 'SUPER_ADMIN';
+    case 'admin': return 'ADMIN';
+    case 'academic': return 'ACADEMIC';
+    case 'teacher': return 'TEACHER';
+    case 'student': return 'STUDENT';
+  }
+}
+
+/**
+ * Get dedicated dashboard redirect URL for role
+ */
+export function getRoleRedirectUrl(roleInput?: string | null): string {
+  const norm = normalizeRole(roleInput);
+  switch (norm) {
+    case 'super_admin':
+    case 'admin':
+      return '/admin';
+    case 'academic':
+      return '/academic';
+    case 'teacher':
+      return '/teacher';
+    case 'student':
+    default:
+      return '/student';
+  }
+}
+
+/**
+ * Get permissions array for given role
+ */
+export function getRolePermissions(roleInput?: string | null): UserPermission[] {
+  const norm = normalizeRole(roleInput);
+  switch (norm) {
+    case 'super_admin': return DEFAULT_SUPER_ADMIN_PERMISSIONS;
+    case 'admin': return DEFAULT_ADMIN_PERMISSIONS;
+    case 'academic': return DEFAULT_ACADEMIC_STAFF_PERMISSIONS;
+    case 'teacher': return DEFAULT_TEACHER_PERMISSIONS;
+    case 'student': return DEFAULT_STUDENT_PERMISSIONS;
+  }
+}
+
 /**
  * Fine-grained permission checker
  */
 export function hasPermission(
   user: { role?: string; permissions?: (UserPermission | string)[] } | null | undefined,
-  permission: UserPermission
+  permission: UserPermission | string
 ): boolean {
   if (!user) return false;
-  const role = (user.role || '').toLowerCase();
+  const role = normalizeRole(user.role);
   
   // Super admin always has full privileges
   if (role === 'super_admin') return true;
 
   // Check explicit permission array if defined
   if (Array.isArray(user.permissions) && user.permissions.length > 0) {
-    return user.permissions.includes(permission);
+    return user.permissions.includes(permission as any);
   }
 
   // Fallback to role-based default permission set
   if (role === 'admin') {
-    return DEFAULT_ADMIN_PERMISSIONS.includes(permission);
+    return DEFAULT_ADMIN_PERMISSIONS.includes(permission as any);
   }
   if (role === 'teacher') {
-    return DEFAULT_TEACHER_PERMISSIONS.includes(permission);
+    return DEFAULT_TEACHER_PERMISSIONS.includes(permission as any);
   }
-  if (role === 'academic_manager' || role === 'academic_staff' || role === 'academic' || role === 'giaovu') {
-    return DEFAULT_ACADEMIC_STAFF_PERMISSIONS.includes(permission);
+  if (role === 'academic') {
+    return DEFAULT_ACADEMIC_STAFF_PERMISSIONS.includes(permission as any);
+  }
+  if (role === 'student') {
+    return DEFAULT_STUDENT_PERMISSIONS.includes(permission as any);
   }
 
   return false;

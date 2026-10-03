@@ -18,10 +18,12 @@ function getAuthSecret(): string {
 
 export interface SessionPayload {
   userId: string;
-  role: 'student' | 'teacher' | 'academic' | 'academic_manager' | 'academic_staff' | 'admin' | 'super_admin';
+  role: 'student' | 'teacher' | 'academic' | 'academic_manager' | 'academic_staff' | 'admin' | 'super_admin' | string;
   name: string;
   studentCode?: string;
   teacherCode?: string;
+  email?: string;
+  permissions?: string[];
   track?: string;
   exp: number;
   iat: number;

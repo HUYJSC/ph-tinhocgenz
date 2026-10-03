@@ -85,7 +85,7 @@ export const TeacherManager: React.FC<TeacherManagerProps> = ({
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newTracks, setNewTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
-  const [newRole, setNewRole] = useState<'teacher' | 'admin'>('teacher');
+  const [newRole, setNewRole] = useState<TeacherAccount['role']>('teacher');
 
   // ── EDIT FORM STATE ──
   const [editName, setEditName] = useState('');
@@ -94,7 +94,7 @@ export const TeacherManager: React.FC<TeacherManagerProps> = ({
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editTracks, setEditTracks] = useState<CurriculumTrack[]>([]);
-  const [editRole, setEditRole] = useState<'teacher' | 'admin'>('teacher');
+  const [editRole, setEditRole] = useState<TeacherAccount['role']>('teacher');
   const [editStatus, setEditStatus] = useState<'active' | 'locked'>('active');
 
   // ── RESET PASS STATE ──

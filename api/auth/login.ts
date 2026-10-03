@@ -4,7 +4,8 @@
  * 1. Xác thực toàn diện tại Server, không so khớp mật khẩu ở client
  * 2. Rate limiting theo IP/User ngăn chặn Brute-force
  * 3. Thiết lập Session Cookie HttpOnly + Secure
- * 4. Chuẩn hóa mã lỗi và không tiết lộ sự tồn tại của tài khoản
+ * 4. Trả về Token JWT, Role chuẩn hóa, Quyền hạn (Permissions) và RedirectUrl tương ứng
+ * 5. Chuẩn hóa mã lỗi và không tiết lộ sự tồn tại của tài khoản
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -12,16 +13,21 @@ import crypto from 'crypto';
 import { checkRateLimit } from '../_lib/rateLimiter.js';
 import { signSessionToken, setSessionCookie } from '../_lib/authSession.js';
 import { getSupabaseAdminClient } from '../_lib/supabase.js';
+import {
+  normalizeRole,
+  getRoleRedirectUrl,
+  getRolePermissions
+} from '../_lib/rbacCore.js';
 
 const AUTH_SALT = 'tgz_sec_2026_salt_9d8f7e6a5b4c';
 
-function hashPasswordServer(password: string): string {
+export function hashPasswordServer(password: string): string {
   const clean = (password || '').trim();
   if (!clean) return '';
   return crypto.createHash('sha256').update(clean + ':' + AUTH_SALT).digest('hex');
 }
 
-function safeCompareStrings(a: string, b: string): boolean {
+export function safeCompareStrings(a: string, b: string): boolean {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
   if (a.length !== b.length) return false;
   const bufA = Buffer.from(a);
@@ -29,48 +35,99 @@ function safeCompareStrings(a: string, b: string): boolean {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-// Danh mục tài khoản cán bộ mặc định có sẵn (Server-only Source of Truth)
-const PRESET_STAFF_ACCOUNTS = [
+// Preset Staff & System Accounts
+export const PRESET_STAFF_ACCOUNTS = [
   {
-    id: 'tch-admin',
+    id: 'usr-admin-01',
     name: 'Thầy Quang Huy (Quản Trị Viên)',
     teacherCode: 'ADMIN01',
-    aliases: ['admin', 'admin01', 'quantri', 'quantrivien', '0332298065'],
+    studentCode: 'ADMIN01',
+    email: 'admin@tinhocgenz.io.vn',
+    phone: '0332298065',
+    aliases: ['admin', 'admin01', 'quantri', 'quantrivien', '0332298065', 'admin@tinhocgenz.io.vn', 'hdh.hutech@gmail.com'],
     role: 'admin' as const,
-    passwordHash: '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc', // Hash của Admin@2026
-    admin123Hash: 'e7596dbaa16f5acbac77da80425730d7435e84d97da1b9ad76807f85044a1954' // Hash của admin123
+    passwordHashes: [
+      '0d8d3d420252f9b82aacbcb11755b20069ce2cccc849be3eff7d1f9960090efc', // Admin@2026
+      'e7596dbaa16f5acbac77da80425730d7435e84d97da1b9ad76807f85044a1954', // admin123
+      '2c04069d620601f942c9dc11b1341b9606e018cef31560aed88a9d753a0ba6f5', // admin
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'  // 123
+    ],
+    plainFallbacks: ['admin@2026', 'admin123', 'admin', '123', '0332298065']
   },
   {
-    id: 'tch-01',
+    id: 'usr-academic-01',
+    name: 'Cán Bộ Giáo Vụ',
+    teacherCode: 'GV00',
+    studentCode: 'GV00',
+    email: 'academic01@tinhocgenz.io.vn',
+    phone: '0912345000',
+    aliases: ['gv00', 'academic01', 'academic01@tinhocgenz.io.vn', 'giaovu', 'academic', 'hocvu'],
+    role: 'academic' as const,
+    passwordHashes: [
+      '9f99a5d34d6bbeb11ce0435a129feb3c8d26bf26c01627330f2a2835e5630a5e', // academic@2026
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'  // 123
+    ],
+    plainFallbacks: ['academic@2026', '123', 'gv123']
+  },
+  {
+    id: 'usr-tch-01',
     name: 'Cô Hoàng Mai',
     teacherCode: 'GV01',
-    aliases: ['gv01', 'hoangmai'],
+    studentCode: 'GV01',
+    email: 'teacher01@tinhocgenz.io.vn',
+    phone: '0912345601',
+    aliases: ['gv01', 'teacher01', 'teacher01@tinhocgenz.io.vn', 'hoangmai', 'hoangmai@tinhocgenz.io.vn'],
     role: 'teacher' as const,
-    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    passwordHashes: [
+      '68d35003c3aca94689e8b8c0c910c5ea2a69a48c0363c6ba49f4235eb2965413', // teacher@2026
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'  // 123
+    ],
+    plainFallbacks: ['teacher@2026', '123', 'gv123']
   },
   {
-    id: 'tch-02',
+    id: 'usr-tch-02',
     name: 'Thầy Đức Nam',
     teacherCode: 'GV02',
-    aliases: ['gv02', 'ducnam'],
+    studentCode: 'GV02',
+    email: 'teacher02@tinhocgenz.io.vn',
+    phone: '0912345602',
+    aliases: ['gv02', 'teacher02', 'teacher02@tinhocgenz.io.vn', 'ducnam', 'ducnam@tinhocgenz.io.vn'],
     role: 'teacher' as const,
-    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    passwordHashes: [
+      '68d35003c3aca94689e8b8c0c910c5ea2a69a48c0363c6ba49f4235eb2965413',
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    ],
+    plainFallbacks: ['teacher@2026', '123', 'gv123']
   },
   {
-    id: 'tch-03',
+    id: 'usr-tch-03',
     name: 'Thầy Quang Huy',
     teacherCode: 'GV03',
-    aliases: ['gv03', 'quanghuy'],
+    studentCode: 'GV03',
+    email: 'teacher03@tinhocgenz.io.vn',
+    phone: '0912345603',
+    aliases: ['gv03', 'teacher03', 'teacher03@tinhocgenz.io.vn', 'quanghuy', 'quanghuy@tinhocgenz.io.vn'],
     role: 'teacher' as const,
-    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    passwordHashes: [
+      '68d35003c3aca94689e8b8c0c910c5ea2a69a48c0363c6ba49f4235eb2965413',
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    ],
+    plainFallbacks: ['teacher@2026', '123', 'gv123']
   },
   {
-    id: 'tch-04',
+    id: 'usr-tch-04',
     name: 'Cô Thu Minh',
     teacherCode: 'GV04',
-    aliases: ['gv04', 'thuminh'],
+    studentCode: 'GV04',
+    email: 'teacher04@tinhocgenz.io.vn',
+    phone: '0988776655',
+    aliases: ['gv04', 'teacher04', 'teacher04@tinhocgenz.io.vn', 'thuminh', 'thuminh@tinhocgenz.io.vn'],
     role: 'teacher' as const,
-    passwordHash: '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    passwordHashes: [
+      '68d35003c3aca94689e8b8c0c910c5ea2a69a48c0363c6ba49f4235eb2965413',
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'
+    ],
+    plainFallbacks: ['teacher@2026', '123', 'gv123']
   }
 ];
 
@@ -83,7 +140,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 1. Kiểm tra Rate Limiting chống Brute-force theo IP
   const clientIp = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
   const rateLimitKey = `auth_login_${clientIp}`;
-  const rateLimit = checkRateLimit(rateLimitKey, 10, 60 * 1000); // 10 lần trong 1 phút
+  const rateLimit = checkRateLimit(rateLimitKey, 15, 60 * 1000); // 15 lần trong 1 phút
 
   if (!rateLimit.allowed) {
     return res.status(429).json({
@@ -93,7 +150,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const { username, password, portal = 'student', selectedTrack = 'office-fast-3in1' } = req.body || {};
+  const { username, password, selectedTrack = 'office-fast-3in1' } = req.body || {};
 
   const cleanUser = String(username || '').trim();
   const cleanPass = String(password || '').trim();
@@ -120,23 +177,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .maybeSingle();
 
       if (!dbErr && dbProfile) {
-        // Kiểm tra mật khẩu trong Supabase
         const isDbPassMatch = dbProfile.password_hash && safeCompareStrings(hashedInput, dbProfile.password_hash);
         if (isDbPassMatch) {
-          if (portal === 'admin' && dbProfile.role !== 'admin' && dbProfile.role !== 'super_admin') {
-            return res.status(403).json({
-              success: false,
-              code: 'INSUFFICIENT_ROLE',
-              message: 'Bạn không có quyền truy cập vào phân hệ Quản trị viên.'
-            });
-          }
+          const normRole = normalizeRole(dbProfile.role);
+          const permissions = getRolePermissions(normRole);
+          const redirectUrl = getRoleRedirectUrl(normRole);
 
           const token = signSessionToken({
             userId: dbProfile.id,
-            role: dbProfile.role,
+            role: normRole,
             name: dbProfile.full_name || cleanUser,
             studentCode: dbProfile.student_code,
             teacherCode: dbProfile.teacher_code,
+            email: dbProfile.email,
+            permissions,
             track: selectedTrack
           });
 
@@ -146,13 +200,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             user: {
               id: dbProfile.id,
               name: dbProfile.full_name || cleanUser,
-              role: dbProfile.role,
+              role: normRole,
               studentCode: dbProfile.student_code,
               teacherCode: dbProfile.teacher_code,
               email: dbProfile.email,
               phone: dbProfile.phone,
-              programTrack: selectedTrack
+              programTrack: selectedTrack,
+              permissions
             },
+            role: normRole,
+            permissions,
+            token,
+            redirectUrl,
             message: 'Đăng nhập thành công.'
           });
         }
@@ -162,33 +221,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 3. Fallback Cán bộ / Quản trị viên Server-side
+  // 3. Tra cứu Cán bộ / Giáo viên / Quản trị viên
   const matchedStaff = PRESET_STAFF_ACCOUNTS.find(s =>
     s.teacherCode.toLowerCase() === cleanUserLower ||
-    s.aliases.includes(cleanUserLower) ||
-    (cleanUserLower === 'admin' && s.role === 'admin')
+    (s.email && s.email.toLowerCase() === cleanUserLower) ||
+    s.aliases.includes(cleanUserLower)
   );
 
   if (matchedStaff) {
-    // Kiểm tra quyền truy cập portal
-    if (portal === 'admin' && matchedStaff.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        code: 'INSUFFICIENT_ROLE',
-        message: 'Bạn không có quyền truy cập vào Cổng Quản trị.'
-      });
-    }
+    const isHashMatch = matchedStaff.passwordHashes.some(h => safeCompareStrings(hashedInput, h));
+    const isPlainMatch = matchedStaff.plainFallbacks.some(f => safeCompareStrings(cleanPass.toLowerCase(), f.toLowerCase()));
 
-    const isMatch =
-      safeCompareStrings(hashedInput, matchedStaff.passwordHash) ||
-      (matchedStaff.admin123Hash ? safeCompareStrings(hashedInput, matchedStaff.admin123Hash) : false) ||
-      safeCompareStrings(cleanPass.toLowerCase(), 'admin123') ||
-      safeCompareStrings(cleanPass.toLowerCase(), 'admin@2026') ||
-      safeCompareStrings(cleanPass.toLowerCase(), 'admin') ||
-      safeCompareStrings(cleanPass, '123') ||
-      safeCompareStrings(cleanPass, '0332298065');
-
-    if (!isMatch) {
+    if (!isHashMatch && !isPlainMatch) {
       return res.status(401).json({
         success: false,
         code: 'INVALID_CREDENTIALS',
@@ -196,11 +240,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    const normRole = normalizeRole(matchedStaff.role);
+    const permissions = getRolePermissions(normRole);
+    const redirectUrl = getRoleRedirectUrl(normRole);
+
     const token = signSessionToken({
       userId: matchedStaff.id,
-      role: matchedStaff.role,
+      role: normRole,
       name: matchedStaff.name,
       teacherCode: matchedStaff.teacherCode,
+      studentCode: matchedStaff.studentCode,
+      email: matchedStaff.email,
+      permissions,
       track: selectedTrack
     });
 
@@ -210,28 +261,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       user: {
         id: matchedStaff.id,
         name: matchedStaff.name,
-        role: matchedStaff.role,
+        role: normRole,
         teacherCode: matchedStaff.teacherCode,
-        studentCode: matchedStaff.teacherCode,
-        programTrack: selectedTrack
+        studentCode: matchedStaff.studentCode,
+        email: matchedStaff.email,
+        phone: matchedStaff.phone,
+        programTrack: selectedTrack,
+        permissions
       },
+      role: normRole,
+      permissions,
+      token,
+      redirectUrl,
       message: 'Đăng nhập thành công.'
     });
   }
 
-  // 4. Fallback Học viên Server-side (THGZ01 - THGZ12)
-  const isStudentPattern = /^THGZ\d{2}$/i.test(cleanUser);
-  if (isStudentPattern) {
-    if (portal === 'admin') {
-      return res.status(403).json({
-        success: false,
-        code: 'INSUFFICIENT_ROLE',
-        message: 'Tài khoản học viên không được phép truy cập vào Cổng Quản trị.'
-      });
-    }
+  // 4. Tra cứu Học viên Server-side (THGZ01 - THGZ12 hoặc student01@tinhocgenz.io.vn)
+  const isStudentPattern =
+    /^THGZ\d{2}$/i.test(cleanUser) ||
+    cleanUserLower === 'student01' ||
+    cleanUserLower === 'student01@tinhocgenz.io.vn' ||
+    cleanUserLower === 'student';
 
-    const defaultStudentHash = '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'; // Hash của 123
-    const isStudentMatch = safeCompareStrings(hashedInput, defaultStudentHash) || safeCompareStrings(cleanPass, '123');
+  if (isStudentPattern) {
+    const studentHashes = [
+      '99bf37fc119f9309210e9fae0477a72d1f3ca0d41ad47ba1fa04b733f95fcdbe', // student@2026
+      '5c44038168b3cc107698a0f3e40ee72a585ae8818709155a5b63b1f832d812d3'  // 123
+    ];
+    const isStudentMatch =
+      studentHashes.some(h => safeCompareStrings(hashedInput, h)) ||
+      safeCompareStrings(cleanPass.toLowerCase(), 'student@2026') ||
+      safeCompareStrings(cleanPass, '123');
 
     if (!isStudentMatch) {
       return res.status(401).json({
@@ -241,12 +302,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const studentCodeUpper = cleanUser.toUpperCase();
+    const studentCodeUpper = (cleanUserLower === 'student01' || cleanUserLower === 'student01@tinhocgenz.io.vn' || cleanUserLower === 'student')
+      ? 'THGZ01'
+      : cleanUser.toUpperCase();
+
+    const normRole = 'student';
+    const permissions = getRolePermissions(normRole);
+    const redirectUrl = getRoleRedirectUrl(normRole);
+
     const token = signSessionToken({
       userId: `std-${studentCodeUpper.toLowerCase()}`,
-      role: 'student',
+      role: normRole,
       name: `Học Viên ${studentCodeUpper}`,
       studentCode: studentCodeUpper,
+      email: `${studentCodeUpper.toLowerCase()}@tinhocgenz.io.vn`,
+      permissions,
       track: selectedTrack
     });
 
@@ -256,15 +326,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       user: {
         id: `std-${studentCodeUpper.toLowerCase()}`,
         name: `Học Viên ${studentCodeUpper}`,
-        role: 'student',
+        role: normRole,
         studentCode: studentCodeUpper,
-        programTrack: selectedTrack
+        email: `${studentCodeUpper.toLowerCase()}@tinhocgenz.io.vn`,
+        programTrack: selectedTrack,
+        permissions
       },
+      role: normRole,
+      permissions,
+      token,
+      redirectUrl,
       message: 'Đăng nhập học viên thành công.'
     });
   }
 
-  // Nếu không khớp bất kỳ tài khoản nào: phản hồi an toàn, không tiết lộ tài khoản tồn tại hay không
+  // 5. Nếu không khớp bất kỳ tài khoản nào
   return res.status(401).json({
     success: false,
     code: 'INVALID_CREDENTIALS',

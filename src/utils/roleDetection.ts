@@ -48,14 +48,18 @@ export function detectRoleFromIdentifier(
   );
   if (matchedAdmin) return 'admin';
 
-  // 2. Nhận diện Giảng viên
+  // 2. Nhận diện Giảng viên & Giáo vụ
+  if (clean.startsWith('academic') || clean === 'giaovu' || clean === 'hocvu') {
+    return 'teacher'; // Staff group
+  }
+
   const matchedTeacher = teacherAccounts.find(t =>
     t.teacherCode.toLowerCase() === clean ||
     t.name.toLowerCase() === clean ||
     (t.email && t.email.toLowerCase() === clean) ||
     (t.phone && t.phone.replace(/[\s.\-()+]/g, '') === cleanPhone)
   );
-  if (matchedTeacher || clean.startsWith('gv') || clean.startsWith('tch')) {
+  if (matchedTeacher || clean.startsWith('gv') || clean.startsWith('tch') || clean.startsWith('teacher')) {
     return 'teacher';
   }
 
@@ -66,7 +70,7 @@ export function detectRoleFromIdentifier(
     (s.email && s.email.toLowerCase() === clean) ||
     (s.phone && s.phone.replace(/[\s.\-()+]/g, '') === cleanPhone)
   );
-  if (matchedStudent || clean.startsWith('hv') || clean.startsWith('std')) {
+  if (matchedStudent || clean.startsWith('hv') || clean.startsWith('std') || clean.startsWith('thgz') || clean.startsWith('student')) {
     return 'student';
   }
 

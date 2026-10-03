@@ -66,7 +66,16 @@ export const authService = {
     password: string,
     portal: 'student' | 'teacher' | 'admin' = 'student',
     selectedTrack?: string
-  ): Promise<{ success: boolean; code?: string; message: string; user?: UserProfile }> {
+  ): Promise<{
+    success: boolean;
+    code?: string;
+    message: string;
+    user?: UserProfile;
+    role?: string;
+    permissions?: string[];
+    token?: string;
+    redirectUrl?: string;
+  }> {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -88,7 +97,14 @@ export const authService = {
   /**
    * Kiểm tra phiên làm việc từ Serverless Session Cookie (/api/auth/session)
    */
-  async getServerSession(): Promise<{ authenticated: boolean; code?: string; user?: UserProfile }> {
+  async getServerSession(): Promise<{
+    authenticated: boolean;
+    code?: string;
+    user?: UserProfile;
+    role?: string;
+    permissions?: string[];
+    redirectUrl?: string;
+  }> {
     try {
       const res = await fetch('/api/auth/session', {
         method: 'GET',

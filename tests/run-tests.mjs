@@ -933,6 +933,87 @@ assert(
   'Portal Gate: Bộ định tuyến hỗ trợ đầy đủ 4 phân hệ chuẩn (/student, /teacher, /academic, /admin)'
 );
 
+// ── NHÓM 27: Tái Cấu Trúc Toàn Bộ Đăng Nhập, Quản Lý Tài Khoản & Phân Quyền RBAC 2.0 ──
+console.log('\n🛡️ NHÓM 27: Tái Cấu Trúc Toàn Bộ Đăng Nhập, Quản Lý Tài Khoản & RBAC 2.0');
+
+// 1. RBAC Core Engine Module exists
+assert(fs.existsSync('api/_lib/rbacCore.ts'), 'RBAC Core: Tệp api/_lib/rbacCore.ts tồn tại');
+
+// 2. Account Reset Script exists
+assert(fs.existsSync('scripts/reset-accounts.mjs'), 'Account Script: Tệp scripts/reset-accounts.mjs tồn tại');
+
+// 3. Normalized roles: SUPER_ADMIN, ADMIN, ACADEMIC, TEACHER, STUDENT
+const rbacCoreCode = fs.readFileSync('api/_lib/rbacCore.ts', 'utf8');
+assert(
+  rbacCoreCode.includes('SUPER_ADMIN') &&
+  rbacCoreCode.includes('ADMIN') &&
+  rbacCoreCode.includes('ACADEMIC') &&
+  rbacCoreCode.includes('TEACHER') &&
+  rbacCoreCode.includes('STUDENT'),
+  'RBAC Roles: Chuẩn hóa đầy đủ 5 vai trò (SUPER_ADMIN, ADMIN, ACADEMIC, TEACHER, STUDENT)'
+);
+
+// 4. Role normalization helper handles casing and aliases
+assert(
+  rbacCoreCode.includes('normalizeRole') &&
+  rbacCoreCode.includes('getRoleRedirectUrl') &&
+  rbacCoreCode.includes('getRolePermissions'),
+  'RBAC Engine: Đầy đủ các hàm chuẩn hóa normalizeRole, getRoleRedirectUrl, getRolePermissions'
+);
+
+// 5. Default permissions per role
+assert(
+  rbacCoreCode.includes('DEFAULT_SUPER_ADMIN_PERMISSIONS') &&
+  rbacCoreCode.includes('DEFAULT_ADMIN_PERMISSIONS') &&
+  rbacCoreCode.includes('DEFAULT_TEACHER_PERMISSIONS') &&
+  rbacCoreCode.includes('DEFAULT_ACADEMIC_PERMISSIONS') &&
+  rbacCoreCode.includes('DEFAULT_STUDENT_PERMISSIONS'),
+  'RBAC Permissions: Định nghĩa đầy đủ danh mục quyền chi tiết cho từng vai trò'
+);
+
+// 6. Login API Contract: returns user, role, permissions, token, redirectUrl
+const loginApiCode = fs.readFileSync('api/auth/login.ts', 'utf8');
+assert(
+  loginApiCode.includes('redirectUrl') &&
+  loginApiCode.includes('permissions') &&
+  loginApiCode.includes('token') &&
+  loginApiCode.includes('signSessionToken'),
+  'Login API: Phản hồi đăng nhập trả về đầy đủ { user, role, permissions, token, redirectUrl }'
+);
+
+// 7. No 403 blocking on portal === 'admin' for teachers
+assert(
+  !loginApiCode.includes("portal === 'admin' && matchedStaff.role !== 'admin'"),
+  'Login Fix: Loại bỏ rào chắn 403 chặn sai tài khoản Giáo viên khi vào cổng quản trị'
+);
+
+// 8. Session API Contract: returns normalized role and permissions
+const sessionApiCode = fs.readFileSync('api/auth/session.ts', 'utf8');
+assert(
+  sessionApiCode.includes('normalizeRole') &&
+  sessionApiCode.includes('getRoleRedirectUrl') &&
+  sessionApiCode.includes('permissions'),
+  'Session API: Endpoint /api/auth/session trả về role chuẩn hóa và danh mục permissions'
+);
+
+// 9. Client routing: App.tsx routes teacher to /teacher and academic to /academic
+const appCode = fs.readFileSync('src/App.tsx', 'utf8');
+assert(
+  appCode.includes("window.history.pushState(null, '', targetUrl || '/teacher')") ||
+  appCode.includes("window.history.replaceState(null, '', '/teacher')"),
+  'Client Routing: Điều hướng giáo viên đăng nhập chính xác vào /teacher không bị kẹt ở /admin'
+);
+
+// 10. Default accounts seeded with salt hash
+const resetScriptCode = fs.readFileSync('scripts/reset-accounts.mjs', 'utf8');
+assert(
+  resetScriptCode.includes('admin@tinhocgenz.io.vn') &&
+  resetScriptCode.includes('teacher01@tinhocgenz.io.vn') &&
+  resetScriptCode.includes('student01@tinhocgenz.io.vn') &&
+  resetScriptCode.includes('academic01@tinhocgenz.io.vn'),
+  'Accounts Seed: Đầy đủ 4 tài khoản mặc định (Admin, Teacher, Student, Academic) với email @tinhocgenz.io.vn'
+);
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

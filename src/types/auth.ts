@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher' | 'academic_manager' | 'academic_staff' | 'giaovu' | 'admin' | 'super_admin';
+export type UserRole = 'student' | 'teacher' | 'academic' | 'academic_manager' | 'academic_staff' | 'giaovu' | 'admin' | 'super_admin';
 
 export type CurriculumTrack =
   | 'office-fast-3in1'
@@ -69,7 +69,7 @@ export interface TeacherAccount {
   passwordHash?: string;
   assignedTracks: CurriculumTrack[];
   mustChangePassword?: boolean;
-  role: 'teacher' | 'admin';
+  role: 'teacher' | 'admin' | 'academic' | 'academic_manager' | 'super_admin';
   status?: 'active' | 'locked';
   lastLogin?: string;
   department?: string;

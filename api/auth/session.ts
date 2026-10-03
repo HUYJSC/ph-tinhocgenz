@@ -1,10 +1,16 @@
 /**
  * Serverless Auth Endpoint: GET /api/auth/session
- * Kiểm tra phiên đăng nhập an toàn từ HttpOnly Session Cookie
+ * Kiểm tra phiên đăng nhập an toàn từ HttpOnly Session Cookie hoặc Bearer Header.
+ * Trả về User, Role chuẩn hóa, Permissions và RedirectUrl.
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSessionFromRequest } from '../_lib/authSession.js';
+import {
+  normalizeRole,
+  getRoleRedirectUrl,
+  getRolePermissions
+} from '../_lib/rbacCore.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -22,19 +28,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const canonicalRole = session.role === 'academic' || session.role === 'academic_staff'
-    ? 'academic_manager'
-    : session.role;
+  const normRole = normalizeRole(session.role);
+  const permissions = (session.permissions && session.permissions.length > 0)
+    ? session.permissions
+    : getRolePermissions(normRole);
+  const redirectUrl = getRoleRedirectUrl(normRole);
 
   return res.status(200).json({
     authenticated: true,
     user: {
       id: session.userId,
-      role: canonicalRole,
+      role: normRole,
       name: session.name,
       studentCode: session.studentCode,
       teacherCode: session.teacherCode,
-      programTrack: session.track || 'office-fast-3in1'
-    }
+      email: session.email,
+      programTrack: session.track || 'office-fast-3in1',
+      permissions
+    },
+    role: normRole,
+    permissions,
+    redirectUrl
   });
 }
