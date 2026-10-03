@@ -3,8 +3,12 @@ import {
   Users, UserCheck, Shield, Search, Plus, Filter,
   Clock, CheckCircle2, Key, Trash2, Edit3,
   X, Lock, Activity, Award
+  CheckCircle2, Key, Trash2, Edit3,
+  X, Lock, Activity, Award, Eye, Sparkles, Send,
+  ShieldCheck
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
+import { UserProfile } from '../user-management/UserProfile';
 import {
   StudentAccount, TeacherAccount, CurriculumTrack,
   TRACK_LABELS
@@ -171,6 +175,69 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
   const totalTeachers = teacherAccounts.length;
   const lockedCount = unifiedUsers.filter(u => u.status === 'locked').length;
   const activeRate = totalUsers > 0 ? ((totalUsers - lockedCount) / totalUsers * 100).toFixed(1) : '100';
+
+  // Transform selected user into Unified Profile Framework data
+  const selectedUserProfileData = useMemo(() => {
+    if (!selectedUserForTimeline) return null;
+    const u = selectedUserForTimeline;
+    const isStudent = u.role === 'student';
+    const isTeacher = u.role === 'teacher';
+
+    return {
+      id: u.id,
+      name: u.name,
+      code: u.code,
+      role: u.role,
+      status: u.status,
+      avatar: undefined,
+      departmentOrClass: u.schoolOrClass,
+      email: u.emailOrPhone.includes('@') ? u.emailOrPhone : `${u.code.toLowerCase()}@tinhocgenz.edu.vn`,
+      phone: !u.emailOrPhone.includes('@') ? u.emailOrPhone : '0988 123 456',
+      createdAt: u.createdAt,
+      studentData: isStudent ? {
+        totalCourses: u.tracks?.length || 3,
+        overallProgress: 76,
+        totalTests: 12,
+        totalCertificates: 2,
+        courses: (u.tracks || ['office-fast-3in1']).map((tr, idx) => ({
+          id: `c-${idx}`,
+          name: TRACK_LABELS[tr] || tr,
+          progressPercent: idx === 0 ? 80 : 65,
+          gpaScore: idx === 0 ? 8.5 : 9.0,
+          maxScore: 10,
+          attendanceRate: 95,
+          completedLessons: 5,
+          totalLessons: 6,
+          status: (idx === 0 ? 'active' : 'active') as any
+        })),
+        certificates: [
+          {
+            id: 'cert-1',
+            title: 'Chứng Chỉ Tin Học Văn Phòng Chuẩn Quốc Tế MOS',
+            issueDate: '15/09/2026',
+            verificationHash: '0x8f2a...7c91',
+            blockchainVerified: true
+          }
+        ]
+      } : undefined,
+      teacherData: isTeacher ? {
+        totalSubjects: u.tracks?.length || 5,
+        totalStudents: 142,
+        averageRating: 4.9,
+        totalHours: 96,
+        totalClasses: 4,
+        classes: (u.tracks || ['office-fast-3in1']).map((tr, idx) => ({
+          id: `tc-${idx}`,
+          classCode: `K26-${idx === 0 ? 'WE01' : 'CB02'}`,
+          subjectName: TRACK_LABELS[tr] || tr,
+          studentCount: 28,
+          scheduleTime: 'Tối 2 - 4 - 6 (19:30 - 21:00)',
+          room: 'Phòng LAB 01',
+          attendanceRate: 98
+        }))
+      } : undefined
+    };
+  }, [selectedUserForTimeline]);
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -512,6 +579,127 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
         </div>
       </div>
 
+      {/* ── 2.5 AI USER ASSISTANT & BLOCKCHAIN TRUST LAYER ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '16px'
+      }}>
+        {/* Left: AI User Assistant Banner */}
+        <div style={{
+          padding: '16px 20px',
+          borderRadius: '14px',
+          background: '#EFF6FF',
+          border: '1.5px solid #BFDBFE',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 800, color: '#0057B8', textTransform: 'uppercase' }}>
+              <Sparkles size={14} />
+              <span>AI USER ASSISTANT (TINHOCGENZ CO-PILOT)</span>
+            </div>
+            <span style={{ fontSize: '0.72rem', color: '#64748B' }}>Tự động phân tích</span>
+          </div>
+
+          <div style={{ fontSize: '0.84rem', color: '#0B2545', lineHeight: 1.5 }}>
+            <strong>Phân tích cảnh báo: </strong>
+            Có <strong>32 học viên</strong> chưa hoàn thành khóa học kỳ này (15 người chưa học trên 7 ngày). Bạn có muốn gửi thông báo nhắc nhở tự động không?
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playVictory();
+                alert('✓ Đã gửi tin nhắn nhắc nhở tự động đến 32 học viên qua Email & Zalo!');
+              }}
+              style={{
+                padding: '7px 14px',
+                borderRadius: '8px',
+                background: '#0057B8',
+                color: '#FFFFFF',
+                border: 'none',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Send size={13} />
+              <span>Gửi nhắc nhở ngay</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playClick();
+                setRoleFilter('student');
+                setStatusFilter('active');
+              }}
+              style={{
+                padding: '7px 12px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                color: '#0057B8',
+                border: '1px solid #BFDBFE',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Lọc danh sách cần hỗ trợ
+            </button>
+          </div>
+        </div>
+
+        {/* Right: Blockchain Trust Layer (Non-technical) */}
+        <div style={{
+          padding: '16px 20px',
+          borderRadius: '14px',
+          background: '#FFFFFF',
+          border: '1.5px solid #E2E8F0',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: '10px'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 800, color: '#0057B8', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <ShieldCheck size={14} />
+              <span>LỚP BẢO CHỨNG DANH TÍNH (BLOCKCHAIN TRUST LAYER)</span>
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#64748B' }}>
+              Toàn bộ hồ sơ người dùng và chứng chỉ số được bảo vệ bằng mã hóa toàn vẹn.
+            </div>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px'
+          }}>
+            <div style={{ padding: '8px 10px', borderRadius: '8px', background: '#F0FDF4', border: '1px solid #BBF7D0', fontSize: '0.74rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <CheckCircle2 size={13} color="#16A34A" />
+              <span>Hồ sơ đã xác thực</span>
+            </div>
+
+            <div style={{ padding: '8px 10px', borderRadius: '8px', background: '#F0FDF4', border: '1px solid #BBF7D0', fontSize: '0.74rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <CheckCircle2 size={13} color="#16A34A" />
+              <span>Lịch sử học tập an toàn</span>
+            </div>
+
+            <div style={{ padding: '8px 10px', borderRadius: '8px', background: '#F0FDF4', border: '1px solid #BBF7D0', fontSize: '0.74rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <CheckCircle2 size={13} color="#16A34A" />
+              <span>Chứng chỉ kiểm tra được</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── 3. SMART FILTER & REALTIME SEARCH BAR ── */}
       <div style={{
         background: '#FFFFFF',
@@ -797,6 +985,7 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                           {/* Activity Timeline Trigger */}
+                          {/* User Profile Trigger */}
                           <button
                             type="button"
                             onClick={() => {
@@ -804,14 +993,19 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                               setSelectedUserForTimeline(user);
                             }}
                             title="Xem dòng thời gian hoạt động (Activity Timeline)"
+                            title="Xem chi tiết hồ sơ cá nhân"
                             style={{
                               padding: '5px 8px',
+                              padding: '5px 10px',
                               borderRadius: '6px',
                               border: '1px solid #CBD5E1',
                               background: '#FFFFFF',
+                              border: '1px solid #BFDBFE',
+                              background: '#EFF6FF',
                               color: '#0057B8',
                               fontSize: '11px',
                               fontWeight: 600,
+                              fontWeight: 700,
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -820,6 +1014,8 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                           >
                             <Clock size={12} />
                             <span>Timeline</span>
+                            <Eye size={13} />
+                            <span>Chi tiết</span>
                           </button>
 
                           {/* Edit button */}
@@ -924,6 +1120,7 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
 
       {/* ── 5. ACTIVITY TIMELINE DRAWER (Right Side Panel) ── */}
       {selectedUserForTimeline && (
+        {/* Mobile View: Cards Layout (Visible on small screens) */}
         <div style={{
           position: 'fixed',
           top: 0,
@@ -938,8 +1135,16 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
           flexDirection: 'column',
           borderLeft: '1px solid #E2E8F0',
           fontFamily: 'Inter, system-ui, sans-serif'
+          gap: '12px',
+          padding: '16px',
+          borderTop: '1px solid #E2E8F0',
+          background: '#F8FAFC'
         }}>
           {/* Drawer Header */}
+          <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>
+            Thẻ người dùng (Mobile View)
+          </div>
+
           <div style={{
             padding: '20px',
             borderBottom: '1px solid #E2E8F0',
@@ -947,6 +1152,9 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             background: '#F8FAFC'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '12px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
@@ -972,6 +1180,11 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                 </div>
               </div>
             </div>
+            {filteredUsers.map((user) => {
+              const isLocked = user.status === 'locked';
+              const initials = user.name
+                ? user.name.split(' ').map(n => n[0]).slice(-2).join('').toUpperCase()
+                : 'U';
 
             <button
               type="button"
@@ -981,6 +1194,45 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
               <X size={20} />
             </button>
           </div>
+              return (
+                <div
+                  key={`card-${user.id}`}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: '1px solid #E2E8F0',
+                    background: '#FFFFFF',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    boxShadow: '0 2px 4px rgba(11, 37, 69, 0.03)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        background: user.role === 'teacher' ? 'linear-gradient(135deg, #0B2545 0%, #003F88 100%)' : 'linear-gradient(135deg, #0057B8 0%, #0284C7 100%)',
+                        color: '#FFFFFF',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        fontWeight: 700
+                      }}>
+                        {initials}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0B2545' }}>
+                          {user.name}
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: '#64748B' }}>
+                          {user.code} • {user.role === 'teacher' ? 'Giảng viên' : user.role === 'admin' ? 'Quản trị' : 'Học viên'}
+                        </div>
+                      </div>
+                    </div>
 
           {/* User Details & DID Info */}
           <div style={{ padding: '16px 20px', background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
@@ -995,6 +1247,22 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
               <span>Xác thực bởi PH-DIGITAL-EDU-ISSUER-2026 trên Polygon PoS</span>
             </div>
           </div>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      color: isLocked ? '#DC2626' : '#16A34A',
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      background: isLocked ? '#FEF2F2' : '#F0FDF4',
+                      border: `1px solid ${isLocked ? '#FECACA' : '#BBF7D0'}`
+                    }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isLocked ? '#DC2626' : '#16A34A' }} />
+                      <span>{isLocked ? 'Tạm khóa' : (user.role === 'student' ? 'Đang học' : 'Hoạt động')}</span>
+                    </span>
+                  </div>
 
           {/* Timeline Scroll Area */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
@@ -1002,6 +1270,21 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
               <Activity size={16} color="#0057B8" />
               <span>Dòng Thời Gian Hoạt Động (Audit Trail)</span>
             </div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    background: '#F8FAFC',
+                    fontSize: '0.78rem',
+                    color: '#475569'
+                  }}>
+                    <span>Khóa học: <strong>{user.tracks?.length || 1} môn</strong></span>
+                    <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user.schoolOrClass}
+                    </span>
+                  </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid #E2E8F0', marginLeft: '8px', paddingLeft: '16px' }}>
               {/* Event 1 */}
@@ -1072,6 +1355,34 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                 <div style={{ fontSize: '12px', color: '#475569' }}>Khóa mật mã học đã neo lên Polygon PoS Ledger</div>
               </div>
             </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      setSelectedUserForTimeline(user);
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '42px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: '#0057B8',
+                      color: '#FFFFFF',
+                      fontSize: '0.84rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Eye size={15} />
+                    <span>Xem Chi Tiết Hồ Sơ</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Drawer Footer */}
@@ -1096,6 +1407,22 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
           </div>
         </div>
       )}
+      </div>
+
+      {/* ── 5. UNIFIED USER PROFILE DRAWER (ACCORDION + AI + TRUST LAYER) ── */}
+      <UserProfile
+        isOpen={!!selectedUserForTimeline}
+        onClose={() => setSelectedUserForTimeline(null)}
+        user={selectedUserProfileData}
+        onResetPassword={(userId) => {
+          const u = unifiedUsers.find(item => item.id === userId);
+          if (u) handleOpenReset(u);
+        }}
+        onToggleLockAccount={(userId) => {
+          const u = unifiedUsers.find(item => item.id === userId);
+          if (u) handleToggleLock(u);
+        }}
+      />
 
       {/* ── 6. CREATE USER MODAL ── */}
       {showCreateModal && (
