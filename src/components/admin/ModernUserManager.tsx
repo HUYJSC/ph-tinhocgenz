@@ -1,14 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   Users, UserCheck, Shield, Search, Plus, Filter,
-  Clock, CheckCircle2, Key, Trash2, Edit3,
-  X, Lock, Activity, Award
   CheckCircle2, Key, Trash2, Edit3,
   X, Lock, Activity, Award, Eye, Sparkles, Send,
   ShieldCheck
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
-import { UserProfile } from '../user-management/UserProfile';
+import { UserProfile, UserUnifiedProfile } from '../user';
 import {
   StudentAccount, TeacherAccount, CurriculumTrack,
   TRACK_LABELS
@@ -177,7 +175,7 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
   const activeRate = totalUsers > 0 ? ((totalUsers - lockedCount) / totalUsers * 100).toFixed(1) : '100';
 
   // Transform selected user into Unified Profile Framework data
-  const selectedUserProfileData = useMemo(() => {
+  const selectedUserProfileData = useMemo<UserUnifiedProfile | null>(() => {
     if (!selectedUserForTimeline) return null;
     const u = selectedUserForTimeline;
     const isStudent = u.role === 'student';
@@ -984,7 +982,6 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                       {/* Actions */}
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          {/* Activity Timeline Trigger */}
                           {/* User Profile Trigger */}
                           <button
                             type="button"
@@ -992,19 +989,14 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                               soundFx.playClick();
                               setSelectedUserForTimeline(user);
                             }}
-                            title="Xem dòng thời gian hoạt động (Activity Timeline)"
                             title="Xem chi tiết hồ sơ cá nhân"
                             style={{
-                              padding: '5px 8px',
                               padding: '5px 10px',
                               borderRadius: '6px',
-                              border: '1px solid #CBD5E1',
-                              background: '#FFFFFF',
                               border: '1px solid #BFDBFE',
                               background: '#EFF6FF',
                               color: '#0057B8',
                               fontSize: '11px',
-                              fontWeight: 600,
                               fontWeight: 700,
                               cursor: 'pointer',
                               display: 'inline-flex',
@@ -1012,8 +1004,6 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
                               gap: '4px'
                             }}
                           >
-                            <Clock size={12} />
-                            <span>Timeline</span>
                             <Eye size={13} />
                             <span>Chi tiết</span>
                           </button>
@@ -1116,297 +1106,6 @@ export const ModernUserManager: React.FC<ModernUserManagerProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* ── 5. ACTIVITY TIMELINE DRAWER (Right Side Panel) ── */}
-      {selectedUserForTimeline && (
-        {/* Mobile View: Cards Layout (Visible on small screens) */}
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: '100%',
-          maxWidth: '440px',
-          background: '#FFFFFF',
-          boxShadow: '-4px 0 24px rgba(11, 37, 69, 0.15)',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          borderLeft: '1px solid #E2E8F0',
-          fontFamily: 'Inter, system-ui, sans-serif'
-          gap: '12px',
-          padding: '16px',
-          borderTop: '1px solid #E2E8F0',
-          background: '#F8FAFC'
-        }}>
-          {/* Drawer Header */}
-          <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>
-            Thẻ người dùng (Mobile View)
-          </div>
-
-          <div style={{
-            padding: '20px',
-            borderBottom: '1px solid #E2E8F0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: '#F8FAFC'
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '12px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: '#0057B8',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 800,
-                fontSize: '14px'
-              }}>
-                {selectedUserForTimeline.name.slice(0, 1).toUpperCase()}
-              </div>
-              <div>
-                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0B2545', margin: '0 0 2px' }}>
-                  {selectedUserForTimeline.name}
-                </h3>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>
-                  Mã: {selectedUserForTimeline.code} • {selectedUserForTimeline.role === 'teacher' ? 'Giảng viên' : 'Học viên'}
-                </div>
-              </div>
-            </div>
-            {filteredUsers.map((user) => {
-              const isLocked = user.status === 'locked';
-              const initials = user.name
-                ? user.name.split(' ').map(n => n[0]).slice(-2).join('').toUpperCase()
-                : 'U';
-
-            <button
-              type="button"
-              onClick={() => { soundFx.playClick(); setSelectedUserForTimeline(null); }}
-              style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '6px' }}
-            >
-              <X size={20} />
-            </button>
-          </div>
-              return (
-                <div
-                  key={`card-${user.id}`}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '12px',
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    boxShadow: '0 2px 4px rgba(11, 37, 69, 0.03)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        background: user.role === 'teacher' ? 'linear-gradient(135deg, #0B2545 0%, #003F88 100%)' : 'linear-gradient(135deg, #0057B8 0%, #0284C7 100%)',
-                        color: '#FFFFFF',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        fontWeight: 700
-                      }}>
-                        {initials}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0B2545' }}>
-                          {user.name}
-                        </div>
-                        <div style={{ fontSize: '0.74rem', color: '#64748B' }}>
-                          {user.code} • {user.role === 'teacher' ? 'Giảng viên' : user.role === 'admin' ? 'Quản trị' : 'Học viên'}
-                        </div>
-                      </div>
-                    </div>
-
-          {/* User Details & DID Info */}
-          <div style={{ padding: '16px 20px', background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '6px' }}>
-              Danh Tính Số Chuỗi Khối (Decentralized Identity)
-            </div>
-            <code style={{ fontSize: '12px', color: '#0057B8', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
-              {selectedUserForTimeline.didString}
-            </code>
-            <div style={{ fontSize: '11px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CheckCircle2 size={13} color="#16A34A" />
-              <span>Xác thực bởi PH-DIGITAL-EDU-ISSUER-2026 trên Polygon PoS</span>
-            </div>
-          </div>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      color: isLocked ? '#DC2626' : '#16A34A',
-                      padding: '2px 8px',
-                      borderRadius: '999px',
-                      background: isLocked ? '#FEF2F2' : '#F0FDF4',
-                      border: `1px solid ${isLocked ? '#FECACA' : '#BBF7D0'}`
-                    }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isLocked ? '#DC2626' : '#16A34A' }} />
-                      <span>{isLocked ? 'Tạm khóa' : (user.role === 'student' ? 'Đang học' : 'Hoạt động')}</span>
-                    </span>
-                  </div>
-
-          {/* Timeline Scroll Area */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0B2545', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Activity size={16} color="#0057B8" />
-              <span>Dòng Thời Gian Hoạt Động (Audit Trail)</span>
-            </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    background: '#F8FAFC',
-                    fontSize: '0.78rem',
-                    color: '#475569'
-                  }}>
-                    <span>Khóa học: <strong>{user.tracks?.length || 1} môn</strong></span>
-                    <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {user.schoolOrClass}
-                    </span>
-                  </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid #E2E8F0', marginLeft: '8px', paddingLeft: '16px' }}>
-              {/* Event 1 */}
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '-23px',
-                  top: '2px',
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: '#0057B8',
-                  border: '2px solid #FFFFFF'
-                }} />
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Hôm nay • 14:32</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B2545' }}>Đăng nhập phiên bảo mật thành công</div>
-                <div style={{ fontSize: '12px', color: '#475569' }}>Thiết bị: Windows 11 Chrome (IP: 118.69.182.42)</div>
-              </div>
-
-              {/* Event 2 */}
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '-23px',
-                  top: '2px',
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: '#16A34A',
-                  border: '2px solid #FFFFFF'
-                }} />
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>01/10/2026 • 20:15</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B2545' }}>Hoàn thành khảo thí trực tuyến</div>
-                <div style={{ fontSize: '12px', color: '#475569' }}>Bài thi: Word & Excel 3in1 Fast-Track • Điểm: 95/100</div>
-              </div>
-
-              {/* Event 3 */}
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '-23px',
-                  top: '2px',
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: '#0284C7',
-                  border: '2px solid #FFFFFF'
-                }} />
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>28/09/2026 • 18:30</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B2545' }}>Điểm danh lớp học thành công</div>
-                <div style={{ fontSize: '12px', color: '#475569' }}>Mã QR lớp OF3IN1-K26 (Geofence GPS hợp lệ)</div>
-              </div>
-
-              {/* Event 4 */}
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '-23px',
-                  top: '2px',
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: '#6366F1',
-                  border: '2px solid #FFFFFF'
-                }} />
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>15/09/2026 • 09:00</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B2545' }}>Cấp mã danh tính số W3C DID</div>
-                <div style={{ fontSize: '12px', color: '#475569' }}>Khóa mật mã học đã neo lên Polygon PoS Ledger</div>
-              </div>
-            </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playClick();
-                      setSelectedUserForTimeline(user);
-                    }}
-                    style={{
-                      width: '100%',
-                      height: '42px',
-                      borderRadius: '10px',
-                      border: 'none',
-                      background: '#0057B8',
-                      color: '#FFFFFF',
-                      fontSize: '0.84rem',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <Eye size={15} />
-                    <span>Xem Chi Tiết Hồ Sơ</span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Drawer Footer */}
-          <div style={{ padding: '16px 20px', borderTop: '1px solid #E2E8F0', background: '#F8FAFC' }}>
-            <button
-              type="button"
-              onClick={() => { soundFx.playClick(); setSelectedUserForTimeline(null); }}
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '8px',
-                border: '1px solid #CBD5E1',
-                background: '#FFFFFF',
-                color: '#0B2545',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              Đóng Dòng Thời Gian
-            </button>
-          </div>
-        </div>
-      )}
       </div>
 
       {/* ── 5. UNIFIED USER PROFILE DRAWER (ACCORDION + AI + TRUST LAYER) ── */}
