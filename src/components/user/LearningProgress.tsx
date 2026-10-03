@@ -345,3 +345,4 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({
     </div>
   );
 };
+
