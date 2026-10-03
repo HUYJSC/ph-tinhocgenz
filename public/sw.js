@@ -1,6 +1,6 @@
-// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v15-2026-smart-auth-autodetect)
-// Nâng cấp: Tự động purge cache cũ để kích hoạt trọn vẹn Luồng Đăng nhập thông minh 2026
-const CACHE_NAME = 'ph-eduquest-v15-2026-smart-auth-autodetect';
+// PH DIGITAL EDUCATION — Advanced PWA Service Worker (v16-2026-admin-modern-saas)
+// Nâng cấp: Tái cấu trúc Admin Dashboard LMS (6 pillars, Modern User Management, Blockchain Layer, AI Mascot)
+const CACHE_NAME = 'ph-eduquest-v16-2026-admin-modern-saas';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

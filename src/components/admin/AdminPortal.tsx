@@ -11,7 +11,7 @@ import { FileSplitter3in1Modal } from './FileSplitter3in1Modal';
 import { SingleFileSplitResult } from '../../utils/packageBundleParser';
 import {
   BookOpen, Users, BarChart3, Trash2,
-  Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, Square, X,
+  Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, X,
   Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
   Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Award
 } from 'lucide-react';
@@ -22,6 +22,8 @@ import { CertificateManager } from './CertificateManager';
 import { AdminOverviewDashboard } from './AdminOverviewDashboard';
 import { PermissionManagerModal } from './PermissionManagerModal';
 import { TeacherManager } from './TeacherManager';
+import { ModernUserManager } from './ModernUserManager';
+import { BlockchainSecurityDashboard } from './BlockchainSecurityDashboard';
 import { UserPermission } from '../../types/rbac';
 
 export type AdminPortalSubTab =
@@ -43,7 +45,10 @@ export type AdminPortalSubTab =
   | 'sync_history'
   | 'quality_reports'
   | 'failing_sources'
-  | 'automation_settings';
+  | 'automation_settings'
+  | 'security_blockchain'
+  | 'audit_logs'
+  | 'permissions';
 
 interface AdminPortalProps {
   quizzes: Quiz[];
@@ -321,35 +326,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [isCopiedSitemap, setIsCopiedSitemap] = useState(false);
   const [seoSavedSuccess, setSeoSavedSuccess] = useState(false);
 
-  // Student Form State
-  const [newStudentName, setNewStudentName] = useState('');
-  const [newStudentCode, setNewStudentCode] = useState(`THGZ${String(studentAccounts.length + 1).padStart(2, '0')}`);
-  const [newStudentPass, setNewStudentPass] = useState('123');
-  const [newStudentClass, setNewStudentClass] = useState('Lớp Word, Excel, PowerPoint (3b/môn)');
-  const [newStudentTrack, setNewStudentTrack] = useState<CurriculumTrack>('office-fast-3in1');
-  const [showAddStudentForm, setShowAddStudentForm] = useState(false);
-
-  // Edit Student State
-  const [editingStudent, setEditingStudent] = useState<StudentAccount | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editCode, setEditCode] = useState('');
-  const [editPass, setEditPass] = useState('123');
-  const [editClass, setEditClass] = useState('');
-  const [editTrack, setEditTrack] = useState<CurriculumTrack>('office-fast-3in1');
-  const [editEnrolledTracks, setEditEnrolledTracks] = useState<CurriculumTrack[]>(['office-fast-3in1']);
-
   // Stats computation
   const totalQuizzes = quizzes.length;
   const totalQuestions = quizzes.reduce((sum, q) => sum + q.questions.length, 0);
 
   // Filtered lists
-  const filteredStudents = studentAccounts.filter(s =>
-    s.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    s.studentCode.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    s.schoolOrClass.toLowerCase().includes(searchFilter.toLowerCase())
-  );
-
-
   const filteredQuizzes = quizzes.filter(q => {
     const matchSearch = q.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
       q.description.toLowerCase().includes(searchFilter.toLowerCase());
@@ -373,79 +354,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     return matchSearch && matchCat;
   });
 
-  // Student Actions
-  const handleCreateStudent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newStudentName.trim() || !newStudentCode.trim()) {
-      alert('Vui lòng nhập đầy đủ họ tên và mã học viên!');
-      return;
-    }
 
-    onCreateStudentAccount(
-      newStudentName,
-      newStudentCode,
-      newStudentPass,
-      newStudentClass,
-      newStudentTrack
-    );
-
-    soundFx.playVictory();
-    setNewStudentName('');
-    setNewStudentCode(`THGZ${String(studentAccounts.length + 2).padStart(2, '0')}`);
-    setShowAddStudentForm(false);
-  };
-
-  const handleOpenEdit = (student: StudentAccount) => {
-    setEditingStudent(student);
-    setEditName(student.name);
-    setEditCode(student.studentCode);
-    setEditPass(student.password || '123');
-    setEditClass(student.schoolOrClass || '');
-    setEditTrack(student.programTrack || 'mos-office');
-    setEditEnrolledTracks(
-      student.enrolledTracks && student.enrolledTracks.length > 0
-        ? [...student.enrolledTracks]
-        : [student.programTrack || 'mos-office']
-    );
-    soundFx.playClick();
-  };
-
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingStudent) return;
-    if (!editName.trim() || !editCode.trim()) {
-      alert('Vui lòng nhập họ tên và mã học viên!');
-      return;
-    }
-
-    const updated: StudentAccount = {
-      ...editingStudent,
-      name: editName.trim(),
-      studentCode: editCode.trim().toUpperCase(),
-      password: editPass.trim() || '123',
-      schoolOrClass: editClass.trim() || `Lớp ${TRACK_LABELS[editTrack]}`,
-      programTrack: editTrack,
-      enrolledTracks: editEnrolledTracks.length > 0 ? editEnrolledTracks : [editTrack]
-    };
-
-    if (onUpdateStudentAccount) {
-      onUpdateStudentAccount(updated);
-    }
-    setEditingStudent(null);
-    soundFx.playVictory();
-  };
-
-  const toggleEnrolledTrack = (trackId: CurriculumTrack) => {
-    setEditEnrolledTracks(prev => {
-      if (prev.includes(trackId)) {
-        if (prev.length === 1) return prev;
-        return prev.filter(t => t !== trackId);
-      } else {
-        return [...prev, trackId];
-      }
-    });
-    soundFx.playClick();
-  };
 
 
 
@@ -721,400 +630,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         />
       )}
 
-      {/* 2. STUDENT DIRECTORY TAB */}
+      {/* 2. MODERN USER MANAGEMENT TAB (SaaS Standard 2026) */}
       {activeSubTab === 'student_directory' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Action Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ position: 'relative', minWidth: '240px', flex: 1 }}>
-              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                type="text"
-                placeholder="Tìm học viên theo tên, mã THGZ, lớp..."
-                value={searchFilter}
-                onChange={e => setSearchFilter(e.target.value)}
-                style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-              />
-            </div>
+        <ModernUserManager
+          studentAccounts={studentAccounts}
+          teacherAccounts={teacherAccounts}
+          onCreateStudentAccount={onCreateStudentAccount}
+          onUpdateStudentAccount={onUpdateStudentAccount}
+          onDeleteStudentAccount={onDeleteStudentAccount}
+          onCreateTeacherAccount={onCreateTeacherAccount}
+          onUpdateTeacherAccount={onUpdateTeacherAccount}
+          onDeleteTeacherAccount={onDeleteTeacherAccount}
+          onResetPassword={onResetPassword}
+          onOpenPermissions={(targetUser) => {
+            setPermissionTargetUser(targetUser);
+          }}
+        />
+      )}
 
-            <button
-              onClick={() => setShowAddStudentForm(!showAddStudentForm)}
-              className="btn btn-primary"
-            >
-              <UserCheck size={16} />
-              <span>{showAddStudentForm ? 'Đóng Biểu Mẫu' : 'Tạo Tài Khoản Học Viên Mới'}</span>
-            </button>
-          </div>
-
-          {/* Add Student Form */}
-          {showAddStudentForm && (
-            <form onSubmit={handleCreateStudent} className="card animate-slide-up" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', border: '1.5px solid var(--accent-primary)' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                Tạo & Cấp Mã Đăng Nhập Cho Học Viên Mới
-              </h3>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Họ và Tên Học Sinh *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ví dụ: Hoàng Văn Nam"
-                    value={newStudentName}
-                    onChange={e => setNewStudentName(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Mã Học Viên (Tài Khoản) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ví dụ: THGZ04"
-                    value={newStudentCode}
-                    onChange={e => setNewStudentCode(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Mật Khẩu Đăng Nhập (Mặc định: 123)
-                  </label>
-                  <input
-                    type="text"
-                    value={newStudentPass}
-                    onChange={e => setNewStudentPass(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Lớp Học Phân Công
-                  </label>
-                  <input
-                    type="text"
-                    value={newStudentClass}
-                    onChange={e => setNewStudentClass(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                    Phân Hệ Chương Trình Học
-                  </label>
-                  <select
-                    value={newStudentTrack}
-                    onChange={e => setNewStudentTrack(e.target.value as CurriculumTrack)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                  >
-                    {ALL_TRACK_OPTIONS.map(trk => (
-                      <option key={trk.id} value={trk.id}>
-                        {trk.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="submit" className="btn btn-primary" style={{ padding: '9px 18px', fontWeight: 800 }}>
-                  Lưu & Cấp Tài Khoản
-                </button>
-                <button type="button" onClick={() => setShowAddStudentForm(false)} className="btn btn-secondary">
-                  Hủy
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Student Accounts Table */}
-          <div className="card" style={{ overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                  <th style={{ padding: '12px 16px' }}>Họ và Tên</th>
-                  <th style={{ padding: '12px 14px' }}>Mã Học Viên (Tài Khoản)</th>
-                  <th style={{ padding: '12px 14px' }}>Lớp Học</th>
-                  <th style={{ padding: '12px 14px' }}>Phân Hệ Đào Tạo</th>
-                  <th style={{ padding: '12px 14px' }}>Quyền Hạn Môn Học</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'right' }}>Thao Tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.map(s => {
-                  const allowedTracks = s.enrolledTracks && s.enrolledTracks.length > 0 ? s.enrolledTracks : [s.programTrack || 'mos-office'];
-                  return (
-                    <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {s.name}
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span style={{ fontWeight: 800, color: 'var(--accent-primary)', background: 'rgba(37, 99, 235, 0.1)', padding: '3px 8px', borderRadius: 'var(--radius-sm)' }}>
-                          {s.studentCode}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 14px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                        {s.schoolOrClass || `Lớp ${TRACK_LABELS[s.programTrack || 'office-fast-3in1']}`}
-                      </td>
-                      <td style={{ padding: '12px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                        <div>{TRACK_LABELS[s.programTrack || 'office-fast-3in1']}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>🔒 Phân hệ chính</div>
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          {allowedTracks.map(trk => (
-                            <span
-                              key={trk}
-                              style={{
-                                fontSize: '0.72rem',
-                                background: 'rgba(37, 99, 235, 0.12)',
-                                color: '#2563eb',
-                                padding: '2px 8px',
-                                borderRadius: 'var(--radius-full)',
-                                fontWeight: 700
-                              }}
-                            >
-                              ✓ {TRACK_LABELS[trk] ? TRACK_LABELS[trk].split('(')[0].replace(/^\d+\.\s*/, '').trim() : trk}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
-                          <button
-                            onClick={() => handleOpenEdit(s)}
-                            style={{
-                              background: 'rgba(37, 99, 235, 0.08)',
-                              border: '1px solid rgba(37, 99, 235, 0.25)',
-                              color: 'var(--accent-primary)',
-                              padding: '5px 9px',
-                              borderRadius: 'var(--radius-sm)',
-                              cursor: 'pointer',
-                              fontSize: '0.78rem',
-                              fontWeight: 700,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                            title="Chỉnh sửa thông tin & phân quyền môn học"
-                          >
-                            <Edit3 size={13} />
-                            <span>Sửa & Cấp Quyền</span>
-                          </button>
-
-                          <button
-                            onClick={() => onDeleteStudentAccount(s.id)}
-                            style={{
-                              background: 'rgba(239, 68, 68, 0.08)',
-                              border: '1px solid rgba(239, 68, 68, 0.25)',
-                              color: '#ef4444',
-                              padding: '5px 7px',
-                              borderRadius: 'var(--radius-sm)',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center'
-                            }}
-                            title="Xóa học viên này"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* EDIT STUDENT MODAL */}
-          {editingStudent && (
-            <div
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0, 0, 0, 0.65)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 9999,
-                padding: '16px',
-                backdropFilter: 'blur(4px)'
-              }}
-              className="animate-fade-in"
-            >
-              <div
-                className="card"
-                style={{
-                  maxWidth: '620px',
-                  width: '100%',
-                  padding: '24px',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-xl)',
-                  background: 'var(--bg-card)',
-                  maxHeight: '90vh',
-                  overflowY: 'auto'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <Edit3 size={18} color="var(--accent-primary)" />
-                    <span>Chỉnh Sửa Thông Tin & Phân Quyền Học Viên</span>
-                  </h3>
-                  <button
-                    onClick={() => setEditingStudent(null)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Họ và Tên Học Viên *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editName}
-                        onChange={e => setEditName(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Mã Học Viên (Tài Khoản) *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editCode}
-                        onChange={e => setEditCode(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 800, outline: 'none' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Mật Khẩu Đăng Nhập
-                      </label>
-                      <input
-                        type="text"
-                        value={editPass}
-                        onChange={e => setEditPass(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                        Lớp Học Phân Công
-                      </label>
-                      <input
-                        type="text"
-                        value={editClass}
-                        onChange={e => setEditClass(e.target.value)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-                      Phân Hệ Đào Tạo Trọng Tâm (Mặc Định):
-                    </label>
-                    <select
-                      value={editTrack}
-                      onChange={e => {
-                        const trk = e.target.value as CurriculumTrack;
-                        setEditTrack(trk);
-                        if (!editEnrolledTracks.includes(trk)) {
-                          setEditEnrolledTracks(prev => [...prev, trk]);
-                        }
-                      }}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}
-                    >
-                      {ALL_TRACK_OPTIONS.map(trk => (
-                        <option key={trk.id} value={trk.id}>
-                          {trk.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div style={{ background: 'var(--bg-primary)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
-                      CẤP QUYỀN TRUY CẬP CÁC PHÂN HỆ ĐÀO TẠO (Tích chọn để mở quyền):
-                    </label>
-                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
-                      Học viên chỉ có thể đăng nhập vào những phân hệ được thầy cô tích chọn bên dưới.
-                    </p>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
-                      {ALL_TRACK_OPTIONS.map(trk => {
-                        const isChecked = editEnrolledTracks.includes(trk.id);
-                        return (
-                          <div
-                            key={trk.id}
-                            onClick={() => toggleEnrolledTrack(trk.id)}
-                            style={{
-                              padding: '8px 10px',
-                              borderRadius: 'var(--radius-sm)',
-                              background: isChecked ? 'rgba(37, 99, 235, 0.1)' : 'var(--bg-card)',
-                              border: isChecked ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              fontSize: '0.8rem',
-                              fontWeight: isChecked ? 700 : 500,
-                              color: isChecked ? 'var(--accent-primary)' : 'var(--text-secondary)'
-                            }}
-                          >
-                            {isChecked ? <CheckSquare size={15} color="var(--accent-primary)" /> : <Square size={15} />}
-                            <span>{trk.label}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setEditingStudent(null)}
-                      className="btn btn-secondary"
-                      style={{ padding: '9px 16px' }}
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      style={{ padding: '9px 20px', fontWeight: 800 }}
-                    >
-                      Lưu Thay Đổi & Cập Nhật Quyền
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
+      {/* ── 2B. BLOCKCHAIN SECURITY & IMMUTABLE AUDIT LOG (SBT Layer 2026) ── */}
+      {(activeSubTab === 'security_blockchain' || activeSubTab === 'audit_logs') && (
+        <BlockchainSecurityDashboard
+          studentAccounts={studentAccounts}
+          teacherAccounts={teacherAccounts}
+        />
       )}
 
       {/* 3. TEACHERS & STAFF MANAGEMENT TAB */}

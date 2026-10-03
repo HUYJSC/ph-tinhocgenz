@@ -21,6 +21,7 @@ import { CertificateService } from '../../services/certificateService';
 import { SystemDataCenterModal } from './SystemDataCenterModal';
 import { AdminBrandLockup } from '../brand/AdminBrandLockup';
 import { LanguageSelector } from '../ui/LanguageSelector';
+import { AdminAssistantMascot } from './AdminAssistantMascot';
 
 
 interface MenuItem {
@@ -101,6 +102,7 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<AdminPortalSubTab>(initialSubTab);
   const [showDataCenter, setShowDataCenter] = useState(false);
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
 
   const handleAdminTabSelect = (tab: AdminPortalSubTab) => {
     setActiveSubTab(tab);
@@ -760,23 +762,26 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
 
             {/* AI Assistant Button */}
             <button
-
               type="button"
+              onClick={() => {
+                setShowAiAssistant(!showAiAssistant);
+                soundFx.playClick();
+              }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
                 padding: '7px 14px',
                 borderRadius: '8px',
-                background: 'rgba(37, 99, 235, 0.08)',
-                border: '1.5px solid rgba(37, 99, 235, 0.25)',
-                color: '#2563eb',
+                background: showAiAssistant ? '#0057B8' : 'rgba(0, 87, 184, 0.08)',
+                border: '1.5px solid rgba(0, 87, 184, 0.25)',
+                color: showAiAssistant ? '#FFFFFF' : '#0057B8',
                 fontSize: '0.82rem',
                 fontWeight: 700,
                 cursor: 'pointer'
               }}
             >
-              <Sparkles size={15} color="#2563eb" />
+              <Sparkles size={15} color={showAiAssistant ? '#FFFFFF' : '#0057B8'} />
               <span>AI Assistant</span>
             </button>
 
@@ -905,6 +910,20 @@ export const StandaloneAdminApp: React.FC<StandaloneAdminAppProps> = (props) => 
         isOpen={showDataCenter}
         onClose={() => setShowDataCenter(false)}
         currentUser={currentUser}
+      />
+
+      {/* AI Assistant Mascot for Admin LMS */}
+      <AdminAssistantMascot
+        currentUser={currentUser}
+        teacherAccounts={teacherAccounts}
+        studentAccounts={studentAccounts}
+        quizzes={props.quizzes}
+        schedules={props.schedules}
+        assignments={props.assignments}
+        attempts={props.attempts}
+        isOpenExternal={showAiAssistant}
+        onCloseExternal={() => setShowAiAssistant(false)}
+        onNavigateSubTab={(tab) => handleAdminTabSelect(tab as any)}
       />
     </div>
   );
