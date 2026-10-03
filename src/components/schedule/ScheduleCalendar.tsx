@@ -143,11 +143,11 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     suggestedFix?: string;
   }
 
-  // Generate a unique Google Meet-style room code
+  // Generate a unique Google Meet room code conforming to standard 3-4-3 format (xxx-yyyy-zzz)
   const generateMeetCode = (): string => {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
-    const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    return `https://meet.google.com/${seg()}-${seg()}-${seg()}`;
+    const seg = (len: number) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `https://meet.google.com/${seg(3)}-${seg(4)}-${seg(3)}`;
   };
 
   const inferShiftFromTime = (startTime: string): ShiftTimeSlot => {

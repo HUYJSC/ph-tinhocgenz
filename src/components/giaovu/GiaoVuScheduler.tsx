@@ -81,7 +81,7 @@ export const GiaoVuScheduler: React.FC<GiaoVuSchedulerProps> = ({
         track: 'ai-office',
         classCode: 'K26-AI01',
         room: 'Phòng Hội Thảo Online',
-        onlineMeetingUrl: 'https://meet.google.com/ph-tinhocgenz-ai',
+        onlineMeetingUrl: 'https://meet.google.com/pht-aivp-pro',
         teacherName: 'Thầy Nguyễn Đình Huy',
         teacherId: 't1',
         lessonNumber: 2,

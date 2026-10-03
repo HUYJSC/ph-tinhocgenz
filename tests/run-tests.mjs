@@ -1014,6 +1014,36 @@ assert(
   'Accounts Seed: Đầy đủ 4 tài khoản mặc định (Admin, Teacher, Student, Academic) với email @tinhocgenz.io.vn'
 );
 
+// ====================================================
+// NHÓM 28: CHUẨN HÓA TOÀN DIỆN GOOGLE MEET 3-4-3
+// ====================================================
+console.log('\n📹 NHÓM 28: Chuẩn Hóa Toàn Diện Hệ Thống Google Meet (Cú Pháp 3-4-3 & Phòng Học Thông Minh)');
+
+const meetUtilsExist = fs.existsSync('src/utils/googleMeetUtils.ts');
+assert(meetUtilsExist, 'Meet Engine: Tệp tiện ích src/utils/googleMeetUtils.ts tồn tại');
+
+const meetRegex = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+const testInvalidCode1 = 'pht-mos-we01'; // Chứa số 01, phân đoạn 3-3-4
+assert(!meetRegex.test(testInvalidCode1), 'Google Meet Rule: Từ chối mã pht-mos-we01 (chứa số và sai độ dài)');
+
+const testInvalidCode2 = 'ph-tinhocgenz-ai'; // Slug tự do không đúng chuẩn
+assert(!meetRegex.test(testInvalidCode2), 'Google Meet Rule: Từ chối slug tùy ý ph-tinhocgenz-ai');
+
+const testValidCode1 = 'pht-mosw-wed';
+assert(meetRegex.test(testValidCode1), 'Google Meet Rule: Chấp thuận mã chuẩn quốc tế pht-mosw-wed (3-4-3)');
+
+const smartClassroomHubCode = fs.readFileSync('src/components/classroom/SmartLiveClassroomHub.tsx', 'utf8');
+assert(!smartClassroomHubCode.includes('pht-mos-we01'), 'Smart Classroom Hub: Đã loại bỏ hoàn toàn mã lỗi pht-mos-we01');
+assert(smartClassroomHubCode.includes('pht-mosw-wed'), 'Smart Classroom Hub: Đã thay thế bằng mã chuẩn 3-4-3 pht-mosw-wed');
+assert(smartClassroomHubCode.includes('Cấu Hình Phòng Google Meet'), 'Smart Classroom Hub: Tích hợp Modal Cấu hình phòng Meet cho Giảng viên/Quản trị');
+assert(smartClassroomHubCode.includes('getOfficialCreateMeetingUrl'), 'Smart Classroom Hub: Tích hợp nút tạo phòng chính thống trên Google Meet (meet.google.com/new)');
+
+const scheduleCode = fs.readFileSync('src/components/schedule/ScheduleCalendar.tsx', 'utf8');
+assert(scheduleCode.includes('${seg(3)}-${seg(4)}-${seg(3)}'), 'Schedule Calendar: Trình sinh mã tự động đã chuẩn hóa 3-4-3');
+
+const giaovuCode = fs.readFileSync('src/components/giaovu/GiaoVuScheduler.tsx', 'utf8');
+assert(giaovuCode.includes('https://meet.google.com/pht-aivp-pro'), 'Giáo Vụ Scheduler: URL phòng họp trực tuyến chuẩn 3-4-3 (pht-aivp-pro)');
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {

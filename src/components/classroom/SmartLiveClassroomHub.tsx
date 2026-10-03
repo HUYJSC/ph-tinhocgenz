@@ -2,11 +2,21 @@ import React, { useState, useMemo } from 'react';
 import {
   Video, Clock, Users, CheckCircle2, Search,
   Play, Eye, Shield, Sparkles, Filter, Check,
-  QrCode, Calendar
+  QrCode, Calendar, Settings, ExternalLink, RefreshCw, X, AlertCircle
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 import { UserProfile, CurriculumTrack } from '../../types/auth';
 import { BlockchainService } from '../../services/blockchainService';
+import {
+  getClassroomMeetUrl,
+  setClassroomMeetUrl,
+  isValidGoogleMeetCode,
+  isValidGoogleMeetUrl,
+  extractGoogleMeetCode,
+  formatGoogleMeetUrl,
+  getOfficialCreateMeetingUrl,
+  generateValidGoogleMeetUrl
+} from '../../utils/googleMeetUtils';
 
 export interface SmartLiveClassroom {
   id: string;
@@ -20,7 +30,7 @@ export interface SmartLiveClassroom {
   maxStudents: number;
   scheduleTime: string; // e.g. "Hôm nay, 19:30 - 21:00"
   status: 'live' | 'upcoming' | 'offline';
-  meetCode: string; // Internal meeting code (e.g. "pht-mos-we01")
+  meetCode: string; // Internal meeting code (e.g. "pht-mosw-wed")
   roomUrl: string; // Background Meet URL (Never shown as long raw string)
   apiVerified: boolean;
   blockchainAnchorId?: string;
@@ -45,8 +55,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 30,
     scheduleTime: 'Hôm nay: 19:30 - 21:00',
     status: 'live',
-    meetCode: 'pht-mos-we01',
-    roomUrl: 'https://meet.google.com/pht-mos-we01',
+    meetCode: 'pht-mosw-wed',
+    roomUrl: 'https://meet.google.com/pht-mosw-wed',
     apiVerified: true,
     blockchainAnchorId: '0x8f2a...7c91',
     roomNotes: 'Phòng học trực tuyến chuẩn Google Meet chất lượng cao HD.'
@@ -62,8 +72,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 25,
     scheduleTime: 'Hôm nay: 18:00 - 19:30',
     status: 'upcoming',
-    meetCode: 'pht-cntt-cb02',
-    roomUrl: 'https://meet.google.com/pht-cntt-cb02',
+    meetCode: 'pht-cntt-cba',
+    roomUrl: 'https://meet.google.com/pht-cntt-cba',
     apiVerified: true,
     blockchainAnchorId: '0x3b1c...99a4',
     roomNotes: 'Ôn tập ngân hàng câu hỏi lý thuyết và thực hành máy tính tính điểm.'
@@ -79,8 +89,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 25,
     scheduleTime: 'Hôm nay: 20:00 - 21:30',
     status: 'upcoming',
-    meetCode: 'pht-cntt-nc01',
-    roomUrl: 'https://meet.google.com/pht-cntt-nc01',
+    meetCode: 'pht-cntt-nca',
+    roomUrl: 'https://meet.google.com/pht-cntt-nca',
     apiVerified: true,
     blockchainAnchorId: '0x7e4d...11b2',
     roomNotes: 'Thực hành nâng cao bảng biểu Access, Excel Macro và Word Form.'
@@ -96,8 +106,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 35,
     scheduleTime: 'Tối 2 - 4 - 6: 19:30 - 21:00',
     status: 'live',
-    meetCode: 'pht-we-cb04',
-    roomUrl: 'https://meet.google.com/pht-we-cb04',
+    meetCode: 'pht-word-exc',
+    roomUrl: 'https://meet.google.com/pht-word-exc',
     apiVerified: true,
     blockchainAnchorId: '0x99aa...3341',
     roomNotes: 'Thực chiến đề thi văn phòng trên máy tính có chấm điểm tự động.'
@@ -113,8 +123,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 25,
     scheduleTime: 'Tối 3 - 5 - 7: 19:30 - 21:00',
     status: 'upcoming',
-    meetCode: 'pht-we-nc05',
-    roomUrl: 'https://meet.google.com/pht-we-nc05',
+    meetCode: 'pht-wenc-adv',
+    roomUrl: 'https://meet.google.com/pht-wenc-adv',
     apiVerified: true,
     blockchainAnchorId: '0x12fc...88a9',
     roomNotes: 'Kỹ thuật phân tích tài chính và soạn thảo hợp đồng thương mại.'
@@ -130,8 +140,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 40,
     scheduleTime: 'Hôm nay: 19:00 - 21:00',
     status: 'live',
-    meetCode: 'pht-ai-off01',
-    roomUrl: 'https://meet.google.com/pht-ai-off01',
+    meetCode: 'pht-aivp-pro',
+    roomUrl: 'https://meet.google.com/pht-aivp-pro',
     apiVerified: true,
     blockchainAnchorId: '0x55aa...22dd',
     roomNotes: 'Thực hành Gemini Pro, ChatGPT, Copilot tự động hóa tài liệu & slide.'
@@ -147,8 +157,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 25,
     scheduleTime: 'Tối Thứ 7: 19:00 - 21:00',
     status: 'upcoming',
-    meetCode: 'pht-ex-kt07',
-    roomUrl: 'https://meet.google.com/pht-ex-kt07',
+    meetCode: 'pht-exkt-acc',
+    roomUrl: 'https://meet.google.com/pht-exkt-acc',
     apiVerified: true,
     blockchainAnchorId: '0x88ee...66ab',
     roomNotes: 'Kế toán tổng hợp, trích lọc dữ liệu và lập báo cáo tài chính.'
@@ -164,8 +174,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 25,
     scheduleTime: 'Tối 3 - 5: 18:00 - 19:30',
     status: 'upcoming',
-    meetCode: 'pht-wd-6b08',
-    roomUrl: 'https://meet.google.com/pht-wd-6b08',
+    meetCode: 'pht-word-six',
+    roomUrl: 'https://meet.google.com/pht-word-six',
     apiVerified: true,
     blockchainAnchorId: '0x44bc...9911',
     roomNotes: 'Định dạng văn bản quy chuẩn hành chính, mục lục tự động và Mail Merge.'
@@ -181,8 +191,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 30,
     scheduleTime: 'Hôm nay: 19:30 - 21:00',
     status: 'live',
-    meetCode: 'pht-ex-6b09',
-    roomUrl: 'https://meet.google.com/pht-ex-6b09',
+    meetCode: 'pht-excl-six',
+    roomUrl: 'https://meet.google.com/pht-excl-six',
     apiVerified: true,
     blockchainAnchorId: '0x77ff...33ee',
     roomNotes: 'Hàm xử lý logic, VLOOKUP/XLOOKUP, PivotTable và biểu đồ dashboard.'
@@ -198,8 +208,8 @@ const DEFAULT_SMART_CLASSROOMS: SmartLiveClassroom[] = [
     maxStudents: 30,
     scheduleTime: 'Tối Chủ Nhật: 19:30 - 21:00',
     status: 'upcoming',
-    meetCode: 'pht-pp-6b10',
-    roomUrl: 'https://meet.google.com/pht-pp-6b10',
+    meetCode: 'pht-ppnt-six',
+    roomUrl: 'https://meet.google.com/pht-ppnt-six',
     apiVerified: true,
     blockchainAnchorId: '0x22ee...55bb',
     roomNotes: 'Bố cục slide chuẩn quốc tế, kỹ xảo Morph và hiệu ứng hoạt họa chuyên sâu.'
@@ -216,6 +226,22 @@ export const SmartLiveClassroomHub: React.FC<SmartLiveClassroomHubProps> = ({
   const [joiningClassId, setJoiningClassId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Local state for custom meet URLs configured by teachers/admins
+  const [customMeetUrls, setCustomMeetUrls] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem('phtgz_custom_classroom_meet_urls');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Modal State for Meet configuration
+  const [editingClassroom, setEditingClassroom] = useState<SmartLiveClassroom | null>(null);
+  const [inputMeetUrl, setInputMeetUrl] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   // User Role Detection
   const isStudent = currentUser.role === 'student';
   const isTeacher = currentUser.role === 'teacher';
@@ -225,6 +251,42 @@ export const SmartLiveClassroomHub: React.FC<SmartLiveClassroomHubProps> = ({
     currentUser.role === 'giaovu' ||
     currentUser.role === 'admin' ||
     currentUser.role === 'super_admin';
+
+  const openConfigModal = (cls: SmartLiveClassroom) => {
+    soundFx.playClick();
+    const activeUrl = customMeetUrls[cls.classCode] || getClassroomMeetUrl(cls.classCode, cls.roomUrl);
+    setEditingClassroom(cls);
+    setInputMeetUrl(activeUrl);
+    setValidationError(null);
+  };
+
+  const handleSaveMeetConfig = () => {
+    if (!editingClassroom) return;
+    const trimmed = inputMeetUrl.trim();
+    const code = extractGoogleMeetCode(trimmed);
+
+    // Validate format against Google standard 3-4-3
+    if (!isValidGoogleMeetUrl(trimmed) && !isValidGoogleMeetCode(code)) {
+      setValidationError('Mã hoặc liên kết Google Meet không đúng định dạng 3-4-3 (Ví dụ: meet.google.com/xxx-yyyy-zzz, chỉ chứa chữ cái a-z, không chứa số).');
+      soundFx.playIncorrect();
+      return;
+    }
+
+    const formatted = formatGoogleMeetUrl(trimmed);
+    setClassroomMeetUrl(editingClassroom.classCode, formatted);
+    setCustomMeetUrls(prev => ({ ...prev, [editingClassroom.classCode]: formatted }));
+    setEditingClassroom(null);
+    soundFx.playCorrect();
+    setToastMessage(`Đã cập nhật phòng Google Meet cho lớp ${editingClassroom.classCode}: ${formatted}`);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const handleGenerateRandomCode = () => {
+    soundFx.playClick();
+    const generatedUrl = generateValidGoogleMeetUrl();
+    setInputMeetUrl(generatedUrl);
+    setValidationError(null);
+  };
 
   // Role Action Configuration (Coursera + Google Classroom clean standard)
   const getActionConfig = (cls: SmartLiveClassroom) => {
@@ -300,10 +362,11 @@ export const SmartLiveClassroomHub: React.FC<SmartLiveClassroomHubProps> = ({
     const actionConfig = getActionConfig(cls);
     setToastMessage(`Đang chuyển tiếp vào lớp ${cls.classCode} (${actionConfig.label}). Đã xác thực bảo chứng Blockchain.`);
 
-    // 3. Open Room directly (1-click without technical delay)
+    // 3. Open Room directly (resolved dynamically from custom settings or default)
+    const effectiveRoomUrl = customMeetUrls[cls.classCode] || cls.roomUrl;
     setTimeout(() => {
       setJoiningClassId(null);
-      window.open(cls.roomUrl, '_blank', 'noopener,noreferrer');
+      window.open(effectiveRoomUrl, '_blank', 'noopener,noreferrer');
       soundFx.playCorrect();
     }, 450);
 
@@ -555,18 +618,44 @@ export const SmartLiveClassroomHub: React.FC<SmartLiveClassroomHubProps> = ({
               {/* Card Header: Class Code & Live/Upcoming Badge */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    background: '#EFF6FF',
-                    color: '#0057B8',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    letterSpacing: '0.02em',
-                    border: '1px solid #DBEAFE'
-                  }}>
-                    {cls.classCode}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: '#EFF6FF',
+                      color: '#0057B8',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      letterSpacing: '0.02em',
+                      border: '1px solid #DBEAFE'
+                    }}>
+                      {cls.classCode}
+                    </span>
+                    {(isTeacher || isAcademicOrAdmin) && (
+                      <button
+                        type="button"
+                        onClick={() => openConfigModal(cls)}
+                        title="Cấu hình Google Meet phòng này"
+                        style={{
+                          background: '#F8FAFC',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: '6px',
+                          padding: '3px 7px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: '#0057B8',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <Settings size={12} />
+                        <span>Sửa Meet</span>
+                      </button>
+                    )}
+                  </div>
 
                   {/* Status Badge */}
                   {isLive ? (
@@ -729,6 +818,242 @@ export const SmartLiveClassroomHub: React.FC<SmartLiveClassroomHubProps> = ({
           );
         })}
       </div>
+
+      {/* ── 5. GOOGLE MEET ROOM CONFIGURATION MODAL ── */}
+      {editingClassroom && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(11, 37, 69, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+            width: '100%',
+            maxWidth: '520px',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              background: '#0057B8',
+              color: '#FFFFFF',
+              padding: '18px 22px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Video size={20} />
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                    Cấu Hình Phòng Google Meet
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>
+                    Lớp: {editingClassroom.classCode} — {editingClassroom.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingClassroom(null)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  color: '#FFFFFF',
+                  borderRadius: '8px',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Specification Notice */}
+              <div style={{
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '10px',
+                padding: '12px 14px',
+                fontSize: '12px',
+                color: '#1E40AF',
+                lineHeight: 1.5
+              }}>
+                <strong>Quy chuẩn Google Meet quốc tế:</strong>
+                <br />
+                Mã phòng phải có đúng định dạng <strong>3-4-3</strong> (Ví dụ: <code>meet.google.com/xxx-yyyy-zzz</code>). 
+                Chỉ chứa 10 chữ cái tiếng Anh thường (a-z), <strong>không chứa chữ số</strong> hoặc ký tự đặc biệt.
+              </div>
+
+              {/* Input field */}
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#0B2545', marginBottom: '6px' }}>
+                  Đường dẫn phòng học (Google Meet URL hoặc mã phòng):
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    value={inputMeetUrl}
+                    onChange={(e) => {
+                      setInputMeetUrl(e.target.value);
+                      setValidationError(null);
+                    }}
+                    placeholder="https://meet.google.com/pht-mosw-wed"
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      borderRadius: '8px',
+                      border: validationError ? '1.5px solid #EF4444' : '1.5px solid #CBD5E1',
+                      fontSize: '14px',
+                      fontFamily: 'monospace',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                {validationError && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#DC2626', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertCircle size={13} />
+                    <span>{validationError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Validation Live Status */}
+              {inputMeetUrl.trim() && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: (isValidGoogleMeetUrl(inputMeetUrl.trim()) || isValidGoogleMeetCode(extractGoogleMeetCode(inputMeetUrl.trim()))) ? '#15803D' : '#D97706'
+                }}>
+                  {(isValidGoogleMeetUrl(inputMeetUrl.trim()) || isValidGoogleMeetCode(extractGoogleMeetCode(inputMeetUrl.trim()))) ? (
+                    <>
+                      <CheckCircle2 size={15} color="#16A34A" />
+                      <span>Định dạng hợp lệ (Mã: {extractGoogleMeetCode(inputMeetUrl.trim())})</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle size={15} color="#D97706" />
+                      <span>Chưa chuẩn format 3-4-3 của Google. Vui lòng kiểm tra lại.</span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Quick Assistant Actions */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
+                <a
+                  href={getOfficialCreateMeetingUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    background: '#F8FAFC',
+                    border: '1px solid #CBD5E1',
+                    color: '#0B2545',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <ExternalLink size={13} color="#0057B8" />
+                  <span>Tạo phòng thật trên Google Meet</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={handleGenerateRandomCode}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    background: '#F8FAFC',
+                    border: '1px solid #CBD5E1',
+                    color: '#0B2545',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <RefreshCw size={13} color="#0057B8" />
+                  <span>Sinh mã 3-4-3 chuẩn ngẫu nhiên</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              background: '#F8FAFC',
+              borderTop: '1px solid #E2E8F0',
+              padding: '14px 22px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px'
+            }}>
+              <button
+                type="button"
+                onClick={() => setEditingClassroom(null)}
+                style={{
+                  padding: '9px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveMeetConfig}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: '#0057B8',
+                  color: '#FFFFFF',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(0, 87, 184, 0.25)'
+                }}
+              >
+                Lưu Cấu Hình Phòng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (
