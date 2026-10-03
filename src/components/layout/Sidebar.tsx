@@ -3,7 +3,7 @@ import {
   Home, BookOpen, Layers, BookmarkCheck,
   Calendar, GitBranch, RotateCcw, Bot,
   ShieldAlert, Shield, FileText, QrCode,
-  ChevronDown, GraduationCap, Target
+  ChevronDown, GraduationCap, Target, Video
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -84,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Học tập & Giáo trình',
       icon: GraduationCap,
       items: [
+        { id: 'live',         label: 'Lớp học trực tuyến',    icon: Video },
         { id: 'attendance',   label: 'Điểm danh & Quét QR',   icon: QrCode },
         { id: 'learning_path', label: 'Lộ trình đào tạo',       icon: GitBranch },
         { id: 'quizzes',      label: 'Khóa học & Chuyên đề',   icon: BookOpen },
@@ -119,6 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Shield,
       items: [
         { id: 'admin',         label: 'Quản trị Học vụ & Học viên', icon: Shield },
+        { id: 'live',          label: 'Lớp học trực tuyến',        icon: Video },
         { id: 'assignments',   label: 'Khảo thí & Chấm điểm',        icon: FileText, count: unreadNotificationCount },
         { id: 'attendance',    label: 'Điểm danh & Quản lý lớp',     icon: QrCode },
         { id: 'early_warning', label: 'Cảnh báo học vụ sớm',        icon: ShieldAlert }

@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Play, Calendar, CheckSquare,
   Clock, ShieldCheck,
-  Sparkles, TrendingUp
+  Sparkles, TrendingUp, Video
 } from 'lucide-react';
 import { UserProfile } from '../../types/auth';
 import { ClassScheduleItem } from '../../types/schedule';
@@ -21,6 +21,7 @@ export interface StudentPortalDashboardProps {
   onOpenAttendance?: () => void;
   onOpenCertificates?: () => void;
   onOpenAITutor?: (prompt?: string) => void;
+  onOpenLiveClass?: () => void;
 }
 
 export const StudentPortalDashboard: React.FC<StudentPortalDashboardProps> = ({
@@ -32,7 +33,8 @@ export const StudentPortalDashboard: React.FC<StudentPortalDashboardProps> = ({
   onOpenAssignments,
   onOpenAttendance,
   onOpenCertificates,
-  onOpenAITutor
+  onOpenAITutor,
+  onOpenLiveClass
 }) => {
   // Recent course mock / live state
   const currentCourse = {
@@ -117,7 +119,18 @@ export const StudentPortalDashboard: React.FC<StudentPortalDashboardProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {onOpenLiveClass && (
+            <PortalButton
+              variant="primary"
+              size="sm"
+              icon={<Video size={14} />}
+              onClick={onOpenLiveClass}
+              style={{ background: '#0057B8', color: '#fff', fontWeight: 700 }}
+            >
+              Vào Lớp Trực Tuyến
+            </PortalButton>
+          )}
           <PortalButton
             variant="outline"
             size="sm"

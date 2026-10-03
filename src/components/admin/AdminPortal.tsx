@@ -12,7 +12,7 @@ import { SingleFileSplitResult } from '../../utils/packageBundleParser';
 import {
   BookOpen, Users, BarChart3, Trash2,
   Search, FileSpreadsheet, Sparkles, UserCheck, Edit3, CheckSquare, X,
-  Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video, Settings,
+  Globe, ExternalLink, Copy, Check, TrendingUp, CheckCircle2, Video,
   Eye, BookOpenCheck, Printer, Calendar, AlertTriangle, Award
 } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
@@ -24,6 +24,7 @@ import { PermissionManagerModal } from './PermissionManagerModal';
 import { TeacherManager } from './TeacherManager';
 import { ModernUserManager } from './ModernUserManager';
 import { BlockchainSecurityDashboard } from './BlockchainSecurityDashboard';
+import { SmartLiveClassroomHub } from '../classroom/SmartLiveClassroomHub';
 import { UserPermission } from '../../types/rbac';
 
 export type AdminPortalSubTab =
@@ -225,101 +226,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [readingQuiz, setReadingQuiz] = useState<Quiz | null>(null);
   const [questionSearch, setQuestionSearch] = useState('');
 
-  // Master Google Meet Hub State (Admin Only) - Synced with schedules
-  const [masterMeetUrlInput, setMasterMeetUrlInput] = useState('');
-  const [copiedMeetIndex, setCopiedMeetIndex] = useState<number | null>(null);
-
-  const [meetHubRooms, setMeetHubRooms] = useState(() => {
-    const saved = localStorage.getItem('phtinhocgenz_admin_meet_rooms_v3');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {}
-    }
-    return [
-      { track: 'office-fast-3in1', classCode: 'K26-WE01', className: '1. Word, Excel, PowerPoint (3b/môn)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' },
-      { track: 'cc-cntt-basic', classCode: 'K26-CC01', className: '2. CC CNTT Cơ bản (6 buổi)', teacher: 'Thầy Quang Huy', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' },
-      { track: 'cc-cntt-advanced', classCode: 'K26-CCN01', className: '3. CC CNTT Nâng cao (6 buổi)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
-      { track: 'cntt-basic-we', classCode: 'K26-WE-CB', className: '4. CNTT Cơ bản: Word + Excel (10-12b)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
-      { track: 'cntt-adv-we', classCode: 'K26-WENC01', className: '5. CNTT Nâng Cao: Word + Excel (10-12b)', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
-      { track: 'ai-office', classCode: 'K26-AI01', className: '6. Ứng dụng AI vào công việc Văn phòng (5b)', teacher: 'Thầy Quang Huy', room: 'Trực Tuyến Toàn Khóa', meetUrl: '' },
-      { track: 'excel-accounting', classCode: 'K26-KT01', className: '7. Excel cho Kế toán', teacher: 'Thầy Đức Nam', room: 'Phòng LAB 03 (Tầng 4)', meetUrl: '' },
-      { track: 'word-6b', classCode: 'K26-MOSW01', className: '8. Kỹ năng soạn thảo Word (6 buổi)', teacher: 'Cô Thu Minh', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
-      { track: 'excel-6b', classCode: 'K26-EX01', className: '9. Xử lý bảng tính Excel (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 02 (Tầng 3)', meetUrl: '' },
-      { track: 'ppt-6b', classCode: 'K26-PPT01', className: '10. Thiết kế PowerPoint (6 buổi)', teacher: 'Cô Hoàng Mai', room: 'Phòng LAB 01 (Tầng 2)', meetUrl: '' }
-    ];
-  });
-
-  const generateRandomMeetCode = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz';
-    const r1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    const r2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    const r3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    return `https://meet.google.com/${r1}-${r2}-${r3}`;
-  };
-
-  const handleAutoGenerateUniqueMeets = () => {
-    const updated = meetHubRooms.map((r: any) => ({
-      ...r,
-      meetUrl: generateRandomMeetCode()
-    }));
-    setMeetHubRooms(updated);
-    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v3', JSON.stringify(updated));
-
-    // Sync to schedules if callback exists
-    if (onUpdateSchedule && schedules.length > 0) {
-      updated.forEach((room: any) => {
-        schedules.filter(s => s.track === room.track || s.classCode === room.classCode).forEach(s => {
-          onUpdateSchedule({ ...s, onlineMeetingUrl: room.meetUrl });
-        });
-      });
-    }
-
-    soundFx.playVictory();
-    alert('🎉 Đã tự động sinh 10 Link Google Meet hoàn toàn độc lập cho 10 lớp học và đồng bộ vào Thời Khóa Biểu!');
-  };
-
-  const handleGenerateSingleMeet = (track: string) => {
-    const newMeet = generateRandomMeetCode();
-    handleUpdateSingleRoomMeet(track, newMeet);
-    soundFx.playClick();
-  };
-
-  const handleBatchUpdateMeetUrl = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!masterMeetUrlInput.trim()) return;
-    const updated = meetHubRooms.map((r: any) => ({ ...r, meetUrl: masterMeetUrlInput.trim() }));
-    setMeetHubRooms(updated);
-    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v3', JSON.stringify(updated));
-
-    if (onUpdateSchedule && schedules.length > 0) {
-      schedules.forEach(s => {
-        onUpdateSchedule({ ...s, onlineMeetingUrl: masterMeetUrlInput.trim() });
-      });
-    }
-
-    soundFx.playVictory();
-    alert('✓ Đã cập nhật và đồng bộ link Google Meet cho toàn bộ lớp học thành công!');
-  };
-
-  const handleUpdateSingleRoomMeet = (track: string, newUrl: string, newRoom?: string) => {
-    const updated = meetHubRooms.map((r: any) => {
-      if (r.track === track) {
-        return { ...r, meetUrl: newUrl.trim(), ...(newRoom ? { room: newRoom.trim() } : {}) };
-      }
-      return r;
-    });
-    setMeetHubRooms(updated);
-    localStorage.setItem('phtinhocgenz_admin_meet_rooms_v3', JSON.stringify(updated));
-
-    if (onUpdateSchedule && schedules.length > 0) {
-      schedules.filter(s => s.track === track).forEach(s => {
-        onUpdateSchedule({ ...s, onlineMeetingUrl: newUrl.trim(), ...(newRoom ? { room: newRoom.trim() } : {}) });
-      });
-    }
-  };
-
   // SEO State
   const [googleVerificationCode, setGoogleVerificationCode] = useState(() => localStorage.getItem('phtinhocgenz_google_verification') || 'F0YlMxxac86DrPlxEzNaOWlngIDCknlTW5BfpyP9FZo');
   const [ga4Id, setGa4Id] = useState(() => localStorage.getItem('phtinhocgenz_ga4_id') || '');
@@ -450,7 +356,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             { id: 'student_directory', label: 'Hồ sơ học viên', count: studentAccounts.length, icon: Users },
             ...(isSuperAdmin ? [{ id: 'teachers', label: 'Giảng viên', count: teacherAccounts.length, icon: UserCheck }] : []),
             { id: 'early_warning', label: 'Cảnh báo học vụ', count: EarlyWarningService.evaluateAllStudents(studentAccounts).filter(s => s.riskLevel === 'CRITICAL' || s.riskLevel === 'HIGH').length || undefined, isAlert: true, icon: AlertTriangle },
-            ...(isSuperAdmin ? [{ id: 'meet_hub', label: 'Phòng Google Meet', count: meetHubRooms.length, icon: Video }] : []),
+            { id: 'meet_hub', label: 'Lớp học trực tuyến', count: 10, icon: Video },
             { id: 'exams', label: 'Kho đề thi', count: totalQuizzes, icon: BookOpen },
             { id: 'question_bank', label: 'Ngân hàng câu hỏi', count: totalQuestions, icon: FileSpreadsheet },
             ...(isSuperAdmin ? [{ id: 'seo_center', label: 'Cấu hình SEO', icon: Globe }] : [])
@@ -1255,285 +1161,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       )}
 
-      {/* ── 7. GOOGLE MEET MASTER HUB (SUPER ADMIN ONLY) ── */}
-      {activeSubTab === 'meet_hub' && isSuperAdmin && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Top Master Controller Card */}
-          <div
-            className="card"
-            style={{
-              padding: '24px',
-              background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%)',
-              border: '1.5px solid rgba(37, 99, 235, 0.25)',
-              borderRadius: 'var(--radius-xl)'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '18px' }}>
-              <div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '999px', background: '#2563EB', color: '#fff', fontSize: '0.72rem', fontWeight: 800, marginBottom: '8px' }}>
-                  <Video size={13} />
-                  <span>TRUNG TÂM ĐIỀU PHỐI GOOGLE MEET & THANH TRA GIÁO VỤ</span>
-                </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-                  Tổng Đài Google Meet Đa Kênh (10 Lớp Học)
-                </h3>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '6px 0 0', maxWidth: '640px', lineHeight: 1.5 }}>
-                  Hệ thống tự động sinh link riêng biệt cho từng môn/lớp để <strong>2-3 giáo viên dạy cùng ngày, cùng ca học</strong> không bị trùng phòng. Ban Giám Hiệu & Thanh Tra có quyền truy cập trực tiếp giám sát dự giờ mà không cần đợi giáo viên duyệt.
-                </p>
-              </div>
-
-              {/* Master Actions Buttons */}
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={handleAutoGenerateUniqueMeets}
-                  className="btn btn-secondary"
-                  style={{
-                    padding: '10px 16px',
-                    fontSize: '0.84rem',
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    borderRadius: '10px',
-                    background: '#FEF3C7',
-                    border: '1px solid #F59E0B',
-                    color: '#92400E',
-                    cursor: 'pointer'
-                  }}
-                  title="Tự động tạo 10 link Google Meet hoàn toàn khác nhau cho 10 lớp học"
-                >
-                  <span>🎲 Tự Động Sinh 10 Link Meet Độc Lập</span>
-                </button>
-
-                {masterMeetUrlInput && (
-                  <a
-                    href={masterMeetUrlInput}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-primary"
-                    style={{
-                      padding: '10px 18px',
-                      fontSize: '0.84rem',
-                      fontWeight: 800,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                      borderRadius: '10px',
-                      background: '#2563EB',
-                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
-                    }}
-                  >
-                    <Video size={16} />
-                    <span>Vào Phòng Họp Chung</span>
-                    <ExternalLink size={13} />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Batch Update Form */}
-            <form onSubmit={handleBatchUpdateMeetUrl} style={{ background: 'var(--bg-card)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  ⚡ Gán 1 Link Chung Cho Toàn Hệ Thống (Khi Có Hội Thảo / Họp Toàn Trường):
-                </label>
-                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                  Mặc định: Các lớp nên dùng 10 link độc lập bên dưới
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="url"
-                  required
-                  value={masterMeetUrlInput}
-                  onChange={e => setMasterMeetUrlInput(e.target.value)}
-                  placeholder="https://meet.google.com/xyz-abcd-efg"
-                  style={{
-                    flex: 1,
-                    minWidth: '280px',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1.5px solid var(--border-color)',
-                    background: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.88rem',
-                    fontWeight: 600
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-secondary"
-                  style={{ padding: '10px 20px', fontSize: '0.86rem', fontWeight: 800, whiteSpace: 'nowrap' }}
-                >
-                  Đồng Bộ Cho Tất Cả 10 Lớp
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Grid of 10 Dedicated Class Rooms */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '18px' }}>
-            {meetHubRooms.map((roomItem: any, idx: number) => {
-              const isCopied = copiedMeetIndex === idx;
-              return (
-                <div
-                  key={roomItem.track}
-                  className="card"
-                  style={{
-                    padding: '20px',
-                    borderRadius: '16px',
-                    border: '1.5px solid var(--border-color)',
-                    background: 'var(--bg-card)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '14px',
-                    boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
-                  }}
-                >
-                  {/* Top: Class & Lecturer */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        background: '#EFF6FF',
-                        color: '#2563EB',
-                        fontSize: '0.76rem',
-                        fontWeight: 800,
-                        border: '1px solid #BFDBFE'
-                      }}>
-                        LỚP {roomItem.classCode}
-                      </span>
-
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        padding: '3px 10px',
-                        borderRadius: '999px',
-                        background: 'rgba(16, 185, 129, 0.12)',
-                        color: '#10b981',
-                        fontSize: '0.72rem',
-                        fontWeight: 800
-                      }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
-                        PHÒNG RIÊNG SẴN SÀNG
-                      </span>
-                    </div>
-
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.35 }}>
-                      {roomItem.className}
-                    </h4>
-
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px', background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '10px' }}>
-                      <div>👨‍🏫 <strong>Giảng viên:</strong> {roomItem.teacher}</div>
-                      <div>📍 <strong>Địa điểm / Ca học:</strong> {roomItem.room}</div>
-                    </div>
-                  </div>
-
-                  {/* Middle: Meet Link Input/Display */}
-                  <div style={{
-                    padding: '8px 12px',
-                    borderRadius: '10px',
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '8px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                      <Video size={15} color="#2563EB" />
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
-                        {roomItem.meetUrl}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(roomItem.meetUrl);
-                        setCopiedMeetIndex(idx);
-                        soundFx.playClick();
-                        setTimeout(() => setCopiedMeetIndex(null), 2000);
-                      }}
-                      className="btn btn-secondary"
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '0.74rem',
-                        height: '26px',
-                        minHeight: '26px',
-                        borderRadius: '6px',
-                        background: isCopied ? '#10b981' : undefined,
-                        color: isCopied ? '#fff' : undefined,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                      title="Sao chép link Google Meet cho lớp này"
-                    >
-                      {isCopied ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{isCopied ? 'Đã chép' : 'Chép'}</span>
-                    </button>
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <a
-                      href={roomItem.meetUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn btn-primary"
-                      style={{
-                        flex: 1,
-                        padding: '9px 12px',
-                        fontSize: '0.82rem',
-                        fontWeight: 800,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        textDecoration: 'none',
-                        background: '#2563EB',
-                        borderRadius: '10px'
-                      }}
-                      title="Admin / Thanh tra vào dự giờ lớp trực tiếp không cần đợi duyệt"
-                    >
-                      <Video size={14} />
-                      <span>Vào Dự Giờ Thanh Tra 🎥</span>
-                      <ExternalLink size={12} />
-                    </a>
-
-                    <button
-                      onClick={() => handleGenerateSingleMeet(roomItem.track)}
-                      className="btn btn-secondary"
-                      style={{ padding: '8px 10px', fontSize: '0.78rem', borderRadius: '10px' }}
-                      title="Tự động sinh link Meet ngẫu nhiên mới cho lớp này"
-                    >
-                      <span>🎲</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        const newUrl = prompt(`Nhập link Google Meet tùy chỉnh cho lớp ${roomItem.classCode}:`, roomItem.meetUrl);
-                        if (newUrl && newUrl.trim()) {
-                          handleUpdateSingleRoomMeet(roomItem.track, newUrl);
-                          soundFx.playVictory();
-                        }
-                      }}
-                      className="btn btn-secondary"
-                      style={{ padding: '8px 10px', fontSize: '0.78rem', borderRadius: '10px' }}
-                      title="Tùy chỉnh link Meet riêng cho lớp này"
-                    >
-                      <Settings size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* ── 7. SMART LIVE CLASSROOM HUB (COURSERA + GOOGLE CLASSROOM STANDARD) ── */}
+      {activeSubTab === 'meet_hub' && (
+        <SmartLiveClassroomHub
+          currentUser={currentUser}
+          onOpenAttendanceQR={onNavigateToAttendance}
+        />
       )}
 
       {/* ── 8. TRUNG TÂM NGUỒN HỌC LIỆU VÀ KIỂM DUYỆT ĐỀ THI (HỘI ĐỒNG MASTER) ── */}

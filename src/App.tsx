@@ -53,6 +53,7 @@ const CourseCatalogPage = lazy(() => import('./components/courses/CourseCatalogP
 const StudentPortalDashboard = lazy(() => import('./components/dashboard/StudentPortalDashboard').then(m => ({ default: m.StudentPortalDashboard })));
 const StudentCoursePage = lazy(() => import('./components/courses/StudentCoursePage').then(m => ({ default: m.StudentCoursePage })));
 const GenZMascotChatbot = lazy(() => import('./components/ai/GenZMascotChatbot').then(m => ({ default: m.GenZMascotChatbot })));
+const SmartLiveClassroomHub = lazy(() => import('./components/classroom/SmartLiveClassroomHub').then(m => ({ default: m.SmartLiveClassroomHub })));
 
 export const PageLoadingFallback = () => (
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px', color: '#2563eb' }}>
@@ -1016,7 +1017,7 @@ export function App() {
             )}
 
             {/* 3.3 ADMIN PORTAL — Render AdminPortal for all admin users across all sidebar items */}
-            {(user.role === 'admin' || user.role === 'super_admin') && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
+            {(user.role === 'admin' || user.role === 'super_admin') && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && activeTab !== 'live' && (
               <AdminPortal
                 key={mapAdminSubTab(activeTab)}
                 quizzes={allQuizzes}
@@ -1061,7 +1062,7 @@ export function App() {
 
             {/* 3.4 ACADEMIC OPERATIONS PORTAL (Giáo Vụ) */}
             {(user.role === 'academic_manager' || user.role === 'academic_staff' || user.role === 'giaovu' || ((appRouteInfo.route === 'giaovu' || appRouteInfo.route === 'academic') && user.role !== 'admin' && user.role !== 'super_admin')) &&
-             activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
+             activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && activeTab !== 'live' && (
               <GiaoVuDashboard
                 key={mapGiaoVuSubTab(activeTab)}
                 currentUser={user}
@@ -1074,7 +1075,7 @@ export function App() {
             )}
 
             {/* 3.5 TEACHER ACADEMIC PORTAL */}
-            {user.role === 'teacher' && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && (
+            {user.role === 'teacher' && activeTab !== 'attendance' && activeTab !== 'attendance_mgmt' && activeTab !== 'creator' && activeTab !== 'live' && (
               <TeacherAcademicPortal
                 key={mapTeacherSubTab(activeTab)}
                 currentUser={user}
@@ -1097,7 +1098,17 @@ export function App() {
               />
             )}
 
-            {/* 3.6 STUDENT VIEWS & COURSE PROGRESS */}
+            {/* 3.6 SMART LIVE CLASSROOM (All Roles: Student, Teacher, Academic, Admin) */}
+            {activeTab === 'live' && (
+              <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '0 16px 40px' }}>
+                <SmartLiveClassroomHub
+                  currentUser={user}
+                  onOpenAttendanceQR={(_classCode) => handleNavigateTab('attendance')}
+                />
+              </div>
+            )}
+
+            {/* 3.7 STUDENT VIEWS & COURSE PROGRESS */}
             {user.role === 'student' && activeTab === 'dashboard' && (
               <StudentPortalDashboard
                 currentUser={user}
@@ -1109,6 +1120,7 @@ export function App() {
                 onOpenAttendance={() => setActiveTab('attendance')}
                 onOpenCertificates={() => setActiveTab('certificates')}
                 onOpenAITutor={(prompt) => handleOpenAITutor(prompt)}
+                onOpenLiveClass={() => setActiveTab('live')}
               />
             )}
 

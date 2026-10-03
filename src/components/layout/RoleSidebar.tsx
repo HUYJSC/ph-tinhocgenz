@@ -4,7 +4,7 @@ import {
   QrCode, Award, Users, FolderArchive, Bell, User,
   Headphones, LayoutDashboard, Briefcase, ClipboardCheck,
   Shield, Layers, BarChart3, Database, Key, CreditCard,
-  TrendingUp, Settings, Share2, Lock, ChevronRight, HelpCircle
+  TrendingUp, Settings, Share2, Lock, ChevronRight, HelpCircle, Video
 } from 'lucide-react';
 
 import { UserProfile } from '../../types/auth';
@@ -52,6 +52,7 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
   const getStudentItems = (): NavItem[] => [
     { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
     { id: 'courses', label: 'Khóa học', icon: BookOpen },
+    { id: 'live', label: 'Lớp học trực tuyến', icon: Video, badge: 'Live', badgeColor: '#0057B8' },
     { id: 'schedule', label: 'Lịch học', icon: Calendar },
     { id: 'assignments', label: 'Bài tập', icon: CheckSquare },
     { id: 'attendance', label: 'Điểm danh', icon: QrCode },
@@ -148,6 +149,7 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
     const isAssistant = (currentUser?.role as any) === 'teaching_assistant' || role === 'teaching_assistant';
     const items: NavItem[] = [
       { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
+      { id: 'live', label: 'Lớp học trực tuyến', icon: Video, badge: 'Live', badgeColor: '#0057B8' },
       { id: 'classes', label: 'Lớp học của tôi', icon: Layers },
       { id: 'courses_content', label: 'Khóa học & Nội dung', icon: BookOpen },
       { id: 'assignments_exams', label: 'Bài tập & Kiểm tra', icon: CheckSquare, badge: 'Cần chấm', badgeColor: '#FEF3C7' },
@@ -169,6 +171,7 @@ export const RoleSidebar: React.FC<RoleSidebarProps> = ({
   // ── 4. GIAO VU NAVIGATION (Exact 14 Canonical Items from Spec) ──
   const getGiaoVuItems = (): NavItem[] => [
     { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
+    { id: 'live', label: 'Lớp học trực tuyến', icon: Video, badge: 'Dự giờ', badgeColor: '#0057B8' },
     { id: 'classes', label: 'Quản lý lớp học', icon: Layers },
     { id: 'schedules', label: 'Lịch & phân công GV', icon: Calendar },
     { id: 'students', label: 'Quản lý học viên', icon: Users },
