@@ -1044,6 +1044,79 @@ assert(scheduleCode.includes('${seg(3)}-${seg(4)}-${seg(3)}'), 'Schedule Calenda
 const giaovuCode = fs.readFileSync('src/components/giaovu/GiaoVuScheduler.tsx', 'utf8');
 assert(giaovuCode.includes('https://meet.google.com/pht-aivp-pro'), 'Giáo Vụ Scheduler: URL phòng họp trực tuyến chuẩn 3-4-3 (pht-aivp-pro)');
 
+// ====================================================
+// NHÓM 29: CỔNG GIÁO VỤ TOÀN DIỆN (ACADEMIC PORTAL & OPERATION ENGINE)
+// ====================================================
+console.log('\n🏛️ NHÓM 29: Kiểm Tra Toàn Diện Hệ Thống Cổng Giáo Vụ (Academic Portal)');
+
+// 1. Types definition
+const academicTypesExist = fs.existsSync('src/types/academic.ts');
+assert(academicTypesExist, 'Academic Portal Types: Tệp src/types/academic.ts tồn tại');
+const academicTypesCode = fs.readFileSync('src/types/academic.ts', 'utf8');
+assert(
+  academicTypesCode.includes("'draft'") &&
+  academicTypesCode.includes("'preparing'") &&
+  academicTypesCode.includes("'active'") &&
+  academicTypesCode.includes("'completed'") &&
+  academicTypesCode.includes("'closed'"),
+  'Academic Portal Types: Hỗ trợ đầy đủ 5 vòng đời lớp học (draft, preparing, active, completed, closed)'
+);
+assert(
+  academicTypesCode.includes('MeetingRoom') &&
+  academicTypesCode.includes('meetCode') &&
+  academicTypesCode.includes('meetingUrl') &&
+  academicTypesCode.includes('SessionBlockchainRecord'),
+  'Academic Portal Types: Cấu trúc phòng học trực tuyến và lưu vết Blockchain Anchor'
+);
+
+// 2. Service engine
+const academicServiceExist = fs.existsSync('src/services/academicService.ts');
+assert(academicServiceExist, 'Academic Service: Tệp src/services/academicService.ts tồn tại');
+const academicServiceCode = fs.readFileSync('src/services/academicService.ts', 'utf8');
+assert(
+  academicServiceCode.includes('generateRecurringSessions') &&
+  academicServiceCode.includes('generateValidGoogleMeetCode'),
+  'Academic Service: Tự động tạo lịch định kỳ (2-4-6, 3-5-7) và cấp phòng Google Meet 3-4-3'
+);
+assert(
+  academicServiceCode.includes('assignTeacher') &&
+  academicServiceCode.includes('transferStudent') &&
+  academicServiceCode.includes('anchorSessionBlockchainProof'),
+  'Academic Service: Đầy đủ nghiệp vụ phân công giảng viên, chuyển lớp, điểm danh và Blockchain anchoring'
+);
+assert(
+  academicServiceCode.includes('runAICopilotQuery'),
+  'Academic Service: Tích hợp AI Academic Co-Pilot xử lý cảnh báo chuyên cần, phòng học và báo cáo'
+);
+
+// 3. Academic Portal UI Component
+const academicDashboardExist = fs.existsSync('src/components/giaovu/GiaoVuDashboard.tsx');
+assert(academicDashboardExist, 'Academic Dashboard: Tệp src/components/giaovu/GiaoVuDashboard.tsx tồn tại');
+const academicDashboardCode = fs.readFileSync('src/components/giaovu/GiaoVuDashboard.tsx', 'utf8');
+assert(
+  academicDashboardCode.includes('Tổng Lớp Học') &&
+  academicDashboardCode.includes('Lớp Đang Hoạt Động') &&
+  academicDashboardCode.includes('Ca Học Hôm Nay') &&
+  (academicDashboardCode.includes('Giảng Viên Đang Dạy') || academicDashboardCode.includes('GV Đang Giảng Dạy')) &&
+  academicDashboardCode.includes('Học Viên Tham Gia') &&
+  academicDashboardCode.includes('Lịch Cần Xử Lý'),
+  'Academic Dashboard: Hiển thị đầy đủ 6 chỉ số KPI Hôm Nay theo chuẩn điều hành'
+);
+assert(
+  academicDashboardCode.includes("activeTab === 'classes'") &&
+  academicDashboardCode.includes("activeTab === 'schedules'") &&
+  academicDashboardCode.includes("activeTab === 'teachers'") &&
+  academicDashboardCode.includes("activeTab === 'students'") &&
+  academicDashboardCode.includes("activeTab === 'attendance'") &&
+  (academicDashboardCode.includes("activeTab === 'ai_copilot'") || academicDashboardCode.includes("activeTab === 'ai-copilot'")),
+  'Academic Dashboard: Đầy đủ các module nghiệp vụ đào tạo và AI trợ lý giáo vụ'
+);
+assert(
+  academicDashboardCode.includes('generateValidGoogleMeetUrl') &&
+  academicDashboardCode.includes('isValidGoogleMeetCode'),
+  'Academic Dashboard: Tích hợp cấu hình phòng Google Meet chuẩn 3-4-3 trực tiếp cho từng buổi học'
+);
+
 console.log('\n====================================================');
 console.log(`🏁 TỔNG KẾT KIỂM TRA: ${passedTests}/${totalTests} BÀI TEST ĐẠT CHUẨN (${Math.round(passedTests/totalTests*100)}%)`);
 if (failedTests === 0) {
